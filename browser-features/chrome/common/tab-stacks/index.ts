@@ -185,9 +185,13 @@ export default class TabStacks extends NoraComponentBase {
         "tab-group[data-derp-stack]",
       ) as StackGroup | null;
       if (!group) return;
+      // mousedown passes through untouched: the native group-label drag
+      // (reordering the whole stack within the strip) starts there. Only
+      // click is intercepted — that is where the native collapse toggle
+      // lives and where our activate/edit behavior goes.
+      if (event.type !== "click") return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      if (event.type !== "click") return;
 
       if (event.detail >= 2) {
         if (pendingActivate) {
