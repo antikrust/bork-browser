@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, onCleanup, Show } from "solid-js";
 import type { WorkspacesService } from "../workspacesService.ts";
 import { PopupToolbarElement } from "./popup-block-element.tsx";
 import { configStore } from "../data/config.ts";
@@ -62,6 +62,58 @@ const getTranslations = () => ({
 
 export function PopupElement(props: { ctx: WorkspacesService }) {
   const [texts, setTexts] = createSignal(getTranslations());
+  // Bumped on every popupshowing so rows recompute live data (tab counts).
+  // Our panel also starts invisible so the left-align reposition below
+  // happens before anyone sees it (repositioning after paint flashes).
+  const [refreshTick, setRefreshTick] = createSignal(0);
+  const isOurPanel = (node: EventTarget | null): node is HTMLElement =>
+    node instanceof Element &&
+    !!node.querySelector?.("#workspacesToolbarButtonPanel");
+
+  const handlePopupShowing = (event: Event) => {
+    setRefreshTick((t) => t + 1);
+    if (isOurPanel(event.target)) {
+      (event.target as HTMLElement).style.opacity = "0";
+    }
+  };
+  document?.addEventListener("popupshowing", handlePopupShowing);
+  onCleanup(() =>
+    document?.removeEventListener("popupshowing", handlePopupShowing)
+  );
+
+  // Left-align the popup with the chooser button (the widget panel picks
+  // its own corner otherwise), then reveal it in its final position.
+  const handlePopupShown = (event: Event) => {
+    if (!isOurPanel(event.target)) return;
+    const panel = event.target as HTMLElement & {
+      moveToAnchor?: (
+        anchor: Element,
+        position: string,
+        x?: number,
+        y?: number,
+        attributesOverride?: boolean,
+      ) => void;
+    };
+    const reveal = () => {
+      panel.style.opacity = "";
+    };
+    try {
+      const anchor = document?.getElementById("workspaces-toolbar-button");
+      if (anchor && panel.moveToAnchor) {
+        panel.moveToAnchor(anchor, "bottomleft topleft", 0, 0, false);
+      }
+    } catch (e) {
+      console.debug("[workspaces] moveToAnchor failed:", e);
+    } finally {
+      requestAnimationFrame(reveal);
+      // Failsafe: never leave the menu invisible.
+      setTimeout(reveal, 120);
+    }
+  };
+  document?.addEventListener("popupshown", handlePopupShown);
+  onCleanup(() =>
+    document?.removeEventListener("popupshown", handlePopupShown)
+  );
   const [isRestoreMode, setIsRestoreMode] = createSignal(false);
   const [archivedWorkspaces, setArchivedWorkspaces] = createSignal<
     WorkspaceArchiveSummary[]
@@ -292,6 +344,8 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
                     isSelected={id === selectedWorkspaceID()}
                     bmsMode={configStore.manageOnBms}
                     ctx={props.ctx}
+                    refreshTick={refreshTick}
+                    formatTabCount={(count) => texts().restoreTabCount(count)}
                   />
                 )}
               </For>

@@ -18,6 +18,17 @@ const USER_JS = `/**
 user_pref("devtools.debugger.prompt-connection",false);
 user_pref("security.disallow_privileged_https_script_loads", false);
 user_pref("security.allow_parent_unrestricted_js_loads", true);
+// Gecko 152 runtimes removed the disallow_privileged_https_script_loads
+// escape hatch; system-principal loads of http://localhost now trip the
+// remote-script assertion unless these are set (dev profile only).
+user_pref("dom.security.skip_remote_script_assertion_in_system_priv_context", true);
+user_pref("security.allow_unsafe_parent_loads", true);
+// Rule out silent network-layer blocks on the localhost loader fetch
+// (dev profile only): no proxy, no https upgrading, IPv4 localhost.
+user_pref("network.proxy.type", 0);
+user_pref("dom.security.https_only_mode", false);
+user_pref("dom.security.https_first", false);
+user_pref("network.dns.disableIPv6", true);
 user_pref("security.sandbox.content.level", 1);
 user_pref("remote.active-protocols", 1);
 user_pref("browser.newtabpage.enabled", true);

@@ -40,7 +40,55 @@ const createDefaultShortcuts = (): Record<string, ShortcutConfig> => {
       modifiers: { alt: false, ctrl: false, meta: false, shift: false },
       action: "floorp-toggle-command-palette",
     },
+    // derp chrome controls all live on Alt+Cmd (same family as the
+    // Alt+Cmd window drag). Plain keys fire while typing in web pages,
+    // and plain Cmd+Z/A/S are undo / select-all / save.
+    "floorp-toggle-zen-mode": {
+      key: "Z",
+      modifiers: { alt: true, ctrl: false, meta: true, shift: false },
+      action: "floorp-toggle-zen-mode",
+    },
+    "derp-toggle-urlbar": {
+      key: "A",
+      modifiers: { alt: true, ctrl: false, meta: true, shift: false },
+      action: "derp-toggle-urlbar",
+    },
+    "derp-toggle-panel-sidebar": {
+      key: "S",
+      modifiers: { alt: true, ctrl: false, meta: true, shift: false },
+      action: "derp-toggle-panel-sidebar",
+    },
   };
+};
+
+/**
+ * Earlier derp builds shipped these as bare Z/A/S, which fire while typing
+ * in web content. Saved configs win over defaults, so upgrade any entry
+ * still matching the old bare-key shape to the current chord.
+ */
+const migrateBareDerpKeys = (
+  shortcuts: Record<string, ShortcutConfig>,
+): Record<string, ShortcutConfig> => {
+  const defaults = createDefaultShortcuts();
+  const oldBareKeys: Record<string, string> = {
+    "floorp-toggle-zen-mode": "Z",
+    "derp-toggle-urlbar": "A",
+    "derp-toggle-panel-sidebar": "S",
+  };
+  const result = { ...shortcuts };
+  for (const [id, oldKey] of Object.entries(oldBareKeys)) {
+    const entry = result[id];
+    const m = entry?.modifiers;
+    if (
+      entry &&
+      entry.key === oldKey &&
+      m && !m.alt && !m.ctrl && !m.meta && !m.shift &&
+      defaults[id]
+    ) {
+      result[id] = defaults[id];
+    }
+  }
+  return result;
 };
 
 export const defaultConfig: KeyboardShortcutConfig = {
@@ -56,9 +104,14 @@ const normalizeConfig = (
   return {
     ...defaultConfig,
     ...config,
-    shortcuts:
-      (config?.shortcuts as Record<string, ShortcutConfig> | undefined) ??
-      defaultConfig.shortcuts,
+    shortcuts: migrateBareDerpKeys({
+      // Merge so new default shortcuts reach profiles that saved an older
+      // config. Caveat: a default the user deleted (rather than rebound)
+      // comes back — acceptable until configs carry a schema version.
+      ...defaultConfig.shortcuts,
+      ...((config?.shortcuts as Record<string, ShortcutConfig> | undefined) ??
+        {}),
+    }),
   } as KeyboardShortcutConfig;
 };
 

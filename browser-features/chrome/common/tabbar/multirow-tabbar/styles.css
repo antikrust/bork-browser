@@ -48,6 +48,24 @@
   display: block !important;
 }
 
+/* macOS: pin the traffic-light window buttons to the first tab row.
+   Without this they stretch/center across the whole grown multirow strip
+   and float over lower rows. Scoped to [multibar] so single-row mode and
+   other platforms keep the stock layout. */
+@media (-moz-platform: macos) {
+  #TabsToolbar[multibar="true"] .titlebar-buttonbox-container {
+    display: flex !important;
+    align-self: flex-start !important;
+    height: var(--tab-min-height, 33px) !important;
+    align-items: center !important;
+  }
+
+  #TabsToolbar[multibar="true"] .titlebar-spacer {
+    align-self: flex-start !important;
+    height: var(--tab-min-height, 33px) !important;
+  }
+}
+
 .tab-group-label-container {
   left: 0 !important;
 }

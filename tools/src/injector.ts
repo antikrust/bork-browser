@@ -12,6 +12,56 @@ import { BIN_DIR, PROD_BIN_DIR, PROJECT_ROOT } from "./defines.ts";
 
 const logger = new Logger("injector");
 
+/**
+ * derp: default extension pack, delivered via the enterprise-policy file the
+ * browser reads from <app>/distribution/policies.json. "normal_installed"
+ * auto-installs on first run (downloaded from AMO) but stays user-removable.
+ */
+const DEFAULT_POLICIES = {
+  policies: {
+    SearchEngines: {
+      Default: "DuckDuckGo",
+    },
+    ExtensionSettings: {
+      "uBlock0@raymondhill.net": {
+        installation_mode: "normal_installed",
+        install_url:
+          "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi",
+      },
+      "firefox@ghostery.com": {
+        installation_mode: "normal_installed",
+        install_url:
+          "https://addons.mozilla.org/firefox/downloads/latest/ghostery/latest.xpi",
+      },
+      "jid1-MnnxcxisBPnSXQ@jetpack": {
+        installation_mode: "normal_installed",
+        install_url:
+          "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17/latest.xpi",
+      },
+      "addon@darkreader.org": {
+        installation_mode: "normal_installed",
+        install_url:
+          "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi",
+      },
+    },
+  },
+};
+
+export function installDistributionPolicies(): void {
+  const distDir = path.join(BIN_DIR, "distribution");
+  try {
+    Deno.mkdirSync(distDir, { recursive: true });
+    Deno.writeTextFileSync(
+      path.join(distDir, "policies.json"),
+      JSON.stringify(DEFAULT_POLICIES, null, 2),
+    );
+    logger.success("distribution/policies.json written (default extensions)");
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    logger.error(`Failed to write distribution policies: ${msg}`);
+  }
+}
+
 export async function injectXhtmlFromTs(
   isDev = false,
   isCI = false,
@@ -144,6 +194,7 @@ export function run(mode: string, dirName = "noraneko-devdir"): void {
   }
 
   createManifest(mode, dirPath);
+  installDistributionPolicies();
 
   const mounts: Array<[string, string]> = [
     ["content", "bridge/loader-features/_dist"],

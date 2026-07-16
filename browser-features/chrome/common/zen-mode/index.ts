@@ -27,6 +27,36 @@ export default class ZenMode extends NoraComponentBase {
       return;
     }
 
+    // Feature switch (fault-finding, 2026-07-16): zen mode is off. The
+    // sticky floorp.zenmode.enabled state plus the delayed auto-retract
+    // matches the "sat there a bit, then everything went away" reports.
+    // Code kept — set derp.zen.enabled=true (and unlock
+    // floorp.zenmode.enabled in override.ini) to bring it back.
+    if (!Services.prefs.getBoolPref("derp.zen.enabled", false)) {
+      const clearSticky = () => {
+        try {
+          Services.prefs.clearUserPref("floorp.zenmode.enabled");
+        } catch {
+          // no saved value
+        }
+      };
+      clearSticky();
+      // The Z shortcut and command palette set the pref directly, and the
+      // injector has no pref-lock support — so while the switch is off,
+      // clear it again whenever anything sets it.
+      Services.prefs.addObserver("floorp.zenmode.enabled", clearSticky);
+      addEventListener("unload", () => {
+        Services.prefs.removeObserver("floorp.zenmode.enabled", clearSticky);
+      }, { once: true });
+      const root = document?.documentElement;
+      root?.removeAttribute("zenmode");
+      root?.removeAttribute("zenmode-reveal-top");
+      root?.removeAttribute("zenmode-reveal-bottom");
+      root?.removeAttribute("zenmode-reveal-side");
+      this.logger.info("Zen mode switched off (derp.zen.enabled=false)");
+      return;
+    }
+
     // Initialize state management and hover detection
     initZenModeState();
 

@@ -38,10 +38,13 @@ export class ModalManager {
   public show(
     form: TForm,
     options: { width: number; height: number },
-  ): Promise<TFormResult | null> | undefined {
+  ): Promise<TFormResult | null> {
     const container = document?.getElementById(
       "modal-parent-container",
     ) as unknown as XULElement;
+    console.error(
+      `[derp-trace] modal.show container=${!!container}`,
+    );
     if (container) {
       setModalVisible(true);
       setModalSize({
@@ -54,8 +57,12 @@ export class ModalManager {
         "modal-child-browser",
       ) as unknown as XULElement & { browsingContext: BrowsingContextLike } | null;
 
+      console.error(`[derp-trace] modal.show browser=${!!browser}`);
       if (!browser) {
-        return;
+        // Never leave callers awaiting undefined — that used to flow an
+        // undefined result into form handlers expecting null.
+        this.hide();
+        return Promise.resolve(null);
       }
 
       const actor = browser.browsingContext.currentWindowGlobal.getActor(
@@ -64,14 +71,53 @@ export class ModalManager {
 
       const safeForm = JSON.parse(JSON.stringify(form));
 
+      console.error("[derp-trace] modal.show sendQuery ->");
       return new Promise((resolve) => {
+        let settled = false;
+        const settle = (value: TFormResult | null) => {
+          if (settled) return;
+          settled = true;
+          resolve(value);
+        };
+        // Watchdog: the show query legitimately pends until the user
+        // submits the form, so instead probe whether the child page ever
+        // mounted. A dead page leaves the overlay blanketing the window
+        // with nothing in it ("only the address bar left") — tear it down.
+        const watchdog = setTimeout(() => {
+          const timeout = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("ping timeout")), 3000)
+          );
+          Promise.race([actor.sendQuery("NRChromeModal:ping", {}), timeout])
+            .then((ready) => {
+              if (ready !== true) {
+                throw new Error(`child page never mounted (${String(ready)})`);
+              }
+              console.error("[derp-trace] modal child alive and rendered");
+            })
+            .catch((e: unknown) => {
+              console.error(
+                "[derp-trace] modal child unresponsive; removing overlay:",
+                e,
+              );
+              this.hide();
+              settle(null);
+            });
+        }, 8000);
         actor
           .sendQuery("NRChromeModal:show", safeForm)
           .then((response: unknown) => {
-            resolve(response as TFormResult | null);
+            console.error("[derp-trace] modal.show response received");
+            clearTimeout(watchdog);
+            settle(response as TFormResult | null);
+          })
+          .catch((e: unknown) => {
+            console.error("[derp-trace] modal.show sendQuery failed:", e);
+            clearTimeout(watchdog);
+            settle(null);
           });
       });
     }
+    return Promise.resolve(null);
   }
 
   public hide(): void {

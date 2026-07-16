@@ -17,6 +17,7 @@ export const zFloorpDesignConfigs = t.intersection([
           t.literal("photon"),
           t.literal("protonfix"),
           t.literal("proton"),
+          t.literal("derp"),
         ]),
         appliedUserJs: t.string,
       }),

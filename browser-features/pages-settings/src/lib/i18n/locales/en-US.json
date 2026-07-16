@@ -86,6 +86,7 @@
         "photon": "Photon",
         "protonfix": "Firefox UI Fix",
         "fluerial": "Fluerial",
+        "derp": "Derp (Compact)",
         "interfaceDescription": "Choose the interface design. \"Lepton\" is the default.",
         "otherInterfaceSettings": "Other Interface Settings",
         "useFaviconColorToBackgroundOfNavigationBar": "Use Favicon Color for Navigation Bar Background",

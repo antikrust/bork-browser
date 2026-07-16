@@ -16,6 +16,25 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
       id="panel-sidebar-select-box"
       class="webpanel-box chromeclass-extrachrome chromeclass-directories instant customization-target"
     >
+      <xul:toolbarbutton
+        class="panel-sidebar-panel"
+        id="derp-sidebar-menu-icon"
+        onCommand={() => {
+          const anchor = document?.getElementById("derp-sidebar-menu-icon");
+          const panelUI = (globalThis as unknown as {
+            PanelUI?: {
+              showSubView: (viewId: string, anchor: Element) => void;
+            };
+          }).PanelUI;
+          try {
+            if (anchor && panelUI?.showSubView) {
+              panelUI.showSubView("appMenu-mainView", anchor);
+            }
+          } catch (e) {
+            console.error("[panel-sidebar] Failed to open app menu:", e);
+          }
+        }}
+      />
       <WorkspacesPanels />
       <For each={panelSidebarData()}>
         {(panel) => <PanelSidebarButton panel={panel} ctx={props.ctx} />}
@@ -31,8 +50,67 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
       <xul:vbox id="panel-sidebar-bottomButtonBox">
         <xul:toolbarbutton
           class="panel-sidebar-panel"
-          onCommand={() =>
-            globalThis.BrowserAddonUI.openAddonsMgr("addons://list/extension")}
+          id="derp-sidebar-reopen-icon"
+          onCommand={() => {
+            try {
+              (globalThis as unknown as { undoCloseTab?: () => void })
+                .undoCloseTab?.();
+            } catch (e) {
+              console.error("[panel-sidebar] Failed to reopen tab:", e);
+            }
+          }}
+        />
+        <xul:toolbarbutton
+          class="panel-sidebar-panel"
+          id="derp-sidebar-account-icon"
+          onCommand={() => {
+            const anchor = document?.getElementById(
+              "derp-sidebar-account-icon",
+            );
+            const panelUI = (globalThis as unknown as {
+              PanelUI?: {
+                showSubView: (viewId: string, anchor: Element) => void;
+              };
+            }).PanelUI;
+            try {
+              if (anchor && panelUI?.showSubView) {
+                panelUI.showSubView("PanelUI-fxa", anchor);
+              }
+            } catch (e) {
+              console.error(
+                "[panel-sidebar] Failed to open account panel:",
+                e,
+              );
+            }
+          }}
+        />
+        <xul:toolbarbutton
+          class="panel-sidebar-panel"
+          onCommand={() => {
+            // derp: pop the unified extensions panel (icon list, includes
+            // "Manage extensions") at this button instead of jumping
+            // straight to the addons admin page.
+            const anchor = document?.getElementById(
+              "panel-sidebar-addons-icon",
+            );
+            const panelUI = (globalThis as unknown as {
+              PanelUI?: {
+                showSubView: (viewId: string, anchor: Element) => void;
+              };
+            }).PanelUI;
+            try {
+              if (anchor && panelUI?.showSubView) {
+                panelUI.showSubView("unified-extensions-view", anchor);
+                return;
+              }
+            } catch (e) {
+              console.error(
+                "[panel-sidebar] Failed to open extensions panel:",
+                e,
+              );
+            }
+            globalThis.BrowserAddonUI.openAddonsMgr("addons://list/extension");
+          }}
           id="panel-sidebar-addons-icon"
         />
         <xul:toolbarbutton

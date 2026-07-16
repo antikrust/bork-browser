@@ -377,6 +377,17 @@
   list-style-image: url("chrome://global/skin/icons/settings.svg");
 }
 
+/* derp additions to the bottom cluster */
+#derp-sidebar-reopen-icon {
+  list-style-image: url("chrome://global/skin/icons/undo.svg");
+}
+#derp-sidebar-account-icon {
+  list-style-image: url("chrome://browser/skin/fxa/avatar-empty.svg");
+}
+#derp-sidebar-menu-icon {
+  list-style-image: url("chrome://browser/skin/menu.svg");
+}
+
 /* Child Windows */
 #browser[data-is-child] > #panel-sidebar-select-box,
 #browser[data-is-child] > #panel-sidebar-box,

@@ -153,6 +153,10 @@ function setupHoverReveal() {
       topHideTimer = setTimeout(tryHideTop, HIDE_DELAY_MS);
       return;
     }
+    // Re-measure right before retracting: the toolbox height changes while
+    // zen is active (stack bar mounting, nav bar toggling) and retracting
+    // by a stale height collapses the whole layout.
+    measureAndSetCSSVariables();
     document!.documentElement!.removeAttribute("zenmode-reveal-top");
     topHideTimer = null;
   };
@@ -196,6 +200,7 @@ function setupHoverReveal() {
         if (clientY < rect.top) {
           clearBottomTimer();
           bottomHideTimer = setTimeout(() => {
+            measureAndSetCSSVariables();
             document!.documentElement!.removeAttribute("zenmode-reveal-bottom");
             bottomHideTimer = null;
           }, HIDE_DELAY_MS);
@@ -226,6 +231,7 @@ function setupHoverReveal() {
       if (!insideSidebar) {
         clearSideTimer();
         sideHideTimer = setTimeout(() => {
+          measureAndSetCSSVariables();
           document!.documentElement!.removeAttribute("zenmode-reveal-side");
           sideHideTimer = null;
         }, HIDE_DELAY_MS);

@@ -1,0 +1,130 @@
+/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* ===== Row 1: a stack's member tabs are represented by the chip alone.
+   Everything below is scoped to groups tab-stacks explicitly owns
+   ([data-derp-stack]); split-view's groups render natively. ===== */
+#tabbrowser-tabs tab-group[data-derp-stack] > .tabbrowser-tab {
+  visibility: collapse !important;
+}
+
+/* Group chip styled as a normal tab: the stack's current tab title with the
+   count on the right. The native group color stays as the marker. */
+tab-group[data-derp-stack] .tab-group-label-container {
+  align-items: center !important;
+}
+
+tab-group[data-derp-stack] .tab-group-label {
+  /* Hide the native group-name text; our ::before shows name/tab title. */
+  font-size: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  border-radius: 4px !important;
+  padding: 0 9px !important;
+  /* Same footprint as a normal tab */
+  min-height: calc(var(--tab-min-height, 25px) - 6px);
+  min-width: 110px;
+  max-width: 190px;
+  font-weight: normal !important;
+  cursor: pointer;
+}
+
+tab-group[data-derp-stack] .tab-group-label::before {
+  content: attr(data-derp-title);
+  font-size: 12px;
+  flex: 1 1 auto;
+  text-align: start;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
+  content: attr(data-derp-count);
+  font-size: 11px;
+  opacity: 0.7;
+  margin-inline-start: auto;
+  padding-inline-start: 8px;
+}
+
+/* ===== Row 2: the stack bar ===== */
+/* Zen mode is distraction-free: the stack bar (now outside the toolbox)
+   hides itself, no geometry math involved. */
+:root[zenmode] #derp-stack-bar {
+  display: none !important;
+}
+
+#derp-stack-bar {
+  background-color: var(--toolbar-bgcolor, var(--toolbar-background-color));
+  border-bottom: 1px solid var(--chrome-content-separator-color, rgba(0, 0, 0, 0.2));
+  padding: 3px 8px;
+  min-height: 30px;
+}
+
+.derp-stack-tab {
+  border-radius: 6px;
+  padding: 3px 10px 3px 6px;
+  margin-inline-end: 4px;
+  max-width: 200px;
+  min-width: 60px;
+  cursor: default;
+}
+
+.derp-stack-tab:hover {
+  background: var(--toolbarbutton-hover-background, rgba(128, 128, 128, 0.2));
+}
+
+.derp-stack-tab[data-selected="true"] {
+  background: var(
+    --tab-selected-bgcolor,
+    var(--toolbarbutton-active-background, rgba(128, 128, 128, 0.3))
+  );
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Favicon swaps to a close button on hover — same manner as row-1 tabs */
+.derp-stack-tab-iconbox {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 6px;
+}
+
+.derp-stack-tab-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.derp-stack-tab-close {
+  display: none;
+  width: 16px;
+  height: 16px;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 4px;
+  list-style-image: url("chrome://global/skin/icons/close.svg");
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+.derp-stack-tab:hover .derp-stack-tab-icon {
+  display: none;
+}
+
+.derp-stack-tab:hover .derp-stack-tab-close {
+  display: flex;
+}
+
+.derp-stack-tab-label {
+  margin: 0;
+  font-size: 12px;
+}
+
+#derp-stack-newtab {
+  border-radius: 6px;
+  padding: 2px 8px !important;
+  font-size: 14px;
+  font-weight: 600;
+}

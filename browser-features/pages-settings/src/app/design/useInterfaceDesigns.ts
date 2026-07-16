@@ -50,6 +50,11 @@ export const useInterfaceDesigns = (): {
         title: t("design.fluerial"),
         image: isDark ? FluerialDark : FluerialLight,
       },
+      {
+        value: "derp",
+        title: t("design.derp"),
+        image: isDark ? ProtonDark : ProtonLight,
+      },
     ];
   }, [resolvedTheme, t]);
 };

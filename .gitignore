@@ -17,3 +17,4 @@ target/
 logs/
 .serena/
 .env
+.DS_Store

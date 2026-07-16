@@ -1,0 +1,214 @@
+/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import { onCleanup } from "solid-js";
+import { render } from "@nora/solid-xul";
+import {
+  noraComponent,
+  NoraComponentBase,
+} from "#features-chrome/utils/base.ts";
+import { gestureActions } from "../mouse-gesture/utils/gestures.ts";
+import { LeanUrlbarStyle } from "./lean-urlbar.tsx";
+
+const AUTOHIDE_ENABLED_PREF = "derp.urlbar.autohide.enabled";
+const SIDEBAR_TOGGLE_ENABLED_PREF = "derp.sidebar.toggle.enabled";
+const HIDDEN_PREF = "derp.urlbar.hidden";
+const SIDEBAR_HIDDEN_PREF = "derp.sidebar.hidden";
+const HIDDEN_ATTR = "derp-urlbar-hidden";
+const SIDEBAR_HIDDEN_ATTR = "derp-sidebar-hidden";
+const PEEK_ATTR = "derp-urlbar-peek";
+
+/**
+ * "Lean" address bar: the nav bar can be toggled away entirely (bound to
+ * the A key by default). While hidden, opening a new tab or focusing the
+ * urlbar (Cmd+L) slides just the URL input over the tab strip; Enter,
+ * Escape, or blur slides it away again.
+ */
+@noraComponent(import.meta.hot)
+export default class LeanUrlbar extends NoraComponentBase {
+  init(): void {
+    if (typeof document === "undefined" || typeof window === "undefined") {
+      return;
+    }
+    const root = document.documentElement;
+    const urlbar = document.getElementById("urlbar");
+    if (!root) return;
+
+    // Main browser windows only. Popup windows (window.open with features)
+    // carry chromehidden and show minimal chrome — hiding it orphans the
+    // top-layer urlbar into a bar floating over the desktop.
+    if (
+      root.getAttribute("windowtype") !== "navigator:browser" ||
+      (root.getAttribute("chromehidden") ?? "") !== ""
+    ) {
+      return;
+    }
+
+    render(LeanUrlbarStyle, document.head, { hotCtx: import.meta.hot });
+
+    // Feature switch: address-bar hiding is off by default (user request,
+    // 2026-07-16). The code stays; flip the pref to bring it back. The
+    // sidebar toggle below is independent and stays active either way.
+    const autohideEnabled = Services.prefs.getBoolPref(
+      AUTOHIDE_ENABLED_PREF,
+      false,
+    );
+    // Also off while fault-finding (user request, 2026-07-16): eliminates
+    // the sidebar show/hide path so the next incident points at tab stacks
+    // or elsewhere.
+    const sidebarToggleEnabled = Services.prefs.getBoolPref(
+      SIDEBAR_TOGGLE_ENABLED_PREF,
+      false,
+    );
+
+    const unpeek = () => root.removeAttribute(PEEK_ATTR);
+
+    const isHidden = () => root.hasAttribute(HIDDEN_ATTR);
+
+    // Session-restore opens tabs (and focuses the urlbar) during startup,
+    // which would trigger a peek nobody asked for and leave a lone URL
+    // strip stuck over the tab row ("one line across the screen").
+    const startupGraceUntil = Date.now() + 5000;
+
+    const peek = () => {
+      if (!isHidden()) return;
+      if (Date.now() < startupGraceUntil) return;
+      // Zen mode owns chrome reveals while active.
+      if (root.hasAttribute("zenmode")) return;
+      root.setAttribute(PEEK_ATTR, "");
+      setTimeout(() => {
+        const gURLBar = (globalThis as unknown as {
+          gURLBar?: { focus: () => void; select: () => void };
+        }).gURLBar;
+        gURLBar?.focus();
+        gURLBar?.select();
+      }, 0);
+    };
+
+    const applyHidden = (hidden: boolean) => {
+      if (hidden) {
+        root.setAttribute(HIDDEN_ATTR, "");
+      } else {
+        root.removeAttribute(HIDDEN_ATTR);
+        unpeek();
+      }
+    };
+    if (autohideEnabled) {
+      applyHidden(Services.prefs.getBoolPref(HIDDEN_PREF, false));
+    } else {
+      // Switched off: make sure no window starts hidden, and drop any saved
+      // hidden state so re-enabling later starts with the bar visible.
+      applyHidden(false);
+      try {
+        Services.prefs.clearUserPref(HIDDEN_PREF);
+      } catch {
+        // no saved value
+      }
+    }
+
+    // Panel sidebar visibility. (floorp.panelSidebar.enabled looks like the
+    // switch but nothing in the sidebar UI observes it for visibility, so
+    // we own an attribute + CSS instead.)
+    const applySidebarHidden = (hidden: boolean) => {
+      if (hidden) root.setAttribute(SIDEBAR_HIDDEN_ATTR, "");
+      else root.removeAttribute(SIDEBAR_HIDDEN_ATTR);
+    };
+    if (sidebarToggleEnabled) {
+      applySidebarHidden(
+        Services.prefs.getBoolPref(SIDEBAR_HIDDEN_PREF, false),
+      );
+    } else {
+      // Switched off: sidebar always visible, saved hidden state dropped.
+      applySidebarHidden(false);
+      try {
+        Services.prefs.clearUserPref(SIDEBAR_HIDDEN_PREF);
+      } catch {
+        // no saved value
+      }
+    }
+
+    // No pref observers: toggles are per-window (the prefs only seed the
+    // initial state of windows opened later).
+
+    // Actions for the keyboard-shortcut / mouse-gesture systems.
+    gestureActions.registerActions([
+      {
+        name: "derp-toggle-urlbar",
+        fn: () => {
+          // Stays registered so the shortcut binding resolves, but does
+          // nothing while the feature switch is off.
+          if (!autohideEnabled) return;
+          // This window only; the pref just seeds future windows.
+          const next = !root.hasAttribute(HIDDEN_ATTR);
+          applyHidden(next);
+          Services.prefs.setBoolPref(HIDDEN_PREF, next);
+        },
+      },
+      {
+        name: "derp-toggle-panel-sidebar",
+        fn: () => {
+          // Registered so the shortcut binding resolves; inert while the
+          // feature switch is off.
+          if (!sidebarToggleEnabled) return;
+          const next = !root.hasAttribute(SIDEBAR_HIDDEN_ATTR);
+          applySidebarHidden(next);
+          Services.prefs.setBoolPref(SIDEBAR_HIDDEN_PREF, next);
+        },
+      },
+    ]);
+
+    const isInUrlbar = (target: EventTarget | null): boolean => {
+      if (!(target instanceof Element) || !urlbar) return false;
+      return target === urlbar || urlbar.contains(target);
+    };
+
+    const onTabOpen = () => peek();
+
+    const onFocusIn = (event: FocusEvent) => {
+      if (isInUrlbar(event.target)) peek();
+    };
+
+    const onFocusOut = (event: FocusEvent) => {
+      if (!isInUrlbar(event.target)) return;
+      // Delay: the urlbar dropdown swaps focus around while open.
+      setTimeout(() => {
+        const focused = document?.activeElement ?? null;
+        const stillInside = isInUrlbar(focused);
+        if (!stillInside && !urlbar?.hasAttribute("open")) {
+          unpeek();
+        }
+      }, 150);
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && root.hasAttribute(PEEK_ATTR)) {
+        unpeek();
+      }
+    };
+
+    // Peek machinery only runs while the feature is on; with it off the
+    // bar is always visible and there is nothing to slide in or out.
+    if (autohideEnabled) {
+      addEventListener("TabOpen", onTabOpen);
+      document.addEventListener("focusin", onFocusIn);
+      document.addEventListener("focusout", onFocusOut);
+      addEventListener("keydown", onKeyDown, true);
+    }
+
+    onCleanup(() => {
+      removeEventListener("TabOpen", onTabOpen);
+      document?.removeEventListener("focusin", onFocusIn);
+      document?.removeEventListener("focusout", onFocusOut);
+      removeEventListener("keydown", onKeyDown, true);
+      root.removeAttribute(PEEK_ATTR);
+    });
+
+    this.logger.info(
+      `LeanUrlbar initialized (autohide ${
+        autohideEnabled ? "on" : "off"
+      }, sidebar toggle ${sidebarToggleEnabled ? "on" : "off"})`,
+    );
+  }
+}

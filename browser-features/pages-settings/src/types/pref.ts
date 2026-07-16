@@ -37,6 +37,7 @@ export const zDesignFormData = t.type({
     t.literal("photon"),
     t.literal("protonfix"),
     t.literal("proton"),
+    t.literal("derp"),
   ]),
   faviconColor: t.boolean,
 

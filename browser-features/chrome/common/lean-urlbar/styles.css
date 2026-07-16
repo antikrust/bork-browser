@@ -1,0 +1,85 @@
+/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* The hide persists through zen mode — zen measures the toolbox height when
+   it activates, so the nav bar flickering back for zen would leave a blank
+   row of unaccounted height at the top. Only the peek stands down in zen. */
+
+/* Address bar hidden ("a"): the nav bar takes no space at all. */
+:root[derp-urlbar-hidden]:not([derp-urlbar-peek]) #nav-bar {
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  opacity: 0;
+  overflow: hidden !important;
+  pointer-events: none;
+}
+
+/* The urlbar itself lives in the top layer (Popover API), so hiding its
+   ancestors does not hide it — it must be hidden directly (same trick as
+   zen-mode). */
+:root[derp-urlbar-hidden]:not([derp-urlbar-peek]) #urlbar {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Zen's top-edge reveal would otherwise resurrect the urlbar (its reveal
+   rule targets #urlbar directly); while the address bar is A-hidden, the
+   reveal shows tabs only. */
+:root[zenmode][zenmode-reveal-top][derp-urlbar-hidden] #urlbar {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Panel sidebar toggle (Alt+Cmd+S) */
+:root[derp-sidebar-hidden] #panel-sidebar-select-box,
+:root[derp-sidebar-hidden] #panel-sidebar-box,
+:root[derp-sidebar-hidden] #panel-sidebar-splitter {
+  display: none !important;
+}
+
+/* Peek: the URL input overlays the tab row via negative top margin (fixed
+   positioning is unreliable inside the chrome flex layout). Everything in
+   the nav bar except the input stays hidden. */
+:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #nav-bar {
+  position: relative !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin-top: calc(-1 * var(--tab-min-height, 25px) - 4px) !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 1;
+  overflow: visible !important;
+  pointer-events: auto;
+  z-index: 100;
+}
+
+:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode])
+  #nav-bar
+  > *:not(#urlbar-container) {
+  display: none !important;
+}
+
+:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #urlbar-container {
+  max-width: 60vw;
+  margin-inline: auto !important;
+  animation: derp-urlbar-slide 0.15s ease;
+}
+
+@keyframes derp-urlbar-slide {
+  from {
+    transform: translateY(-10px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

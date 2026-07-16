@@ -115,8 +115,20 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
     // IMPORTANT: This must happen before restoration completes so that
     // SessionStore includes floorpWorkspaceId in the restored tab data.
     globalThis.SessionStore.promiseInitialized.then(() => {
-      globalThis.SessionStore.persistTabAttribute(WORKSPACE_TAB_ATTRIBUTION_ID);
-      globalThis.SessionStore.persistTabAttribute(WORKSPACE_LAST_SHOW_ID);
+      // Firefox 152 removed persistTabAttribute; guard so window init
+      // survives (split-view's session-restore patch shows the
+      // setCustomTabValue fallback for real persistence — TODO here).
+      const ss = globalThis.SessionStore as unknown as {
+        persistTabAttribute?: (attr: string) => void;
+      };
+      if (typeof ss.persistTabAttribute === "function") {
+        ss.persistTabAttribute(WORKSPACE_TAB_ATTRIBUTION_ID);
+        ss.persistTabAttribute(WORKSPACE_LAST_SHOW_ID);
+      } else {
+        console.warn(
+          "[workspaces] SessionStore.persistTabAttribute unavailable; workspace tab attributes will not persist across restarts",
+        );
+      }
     });
 
     // Delay TabOpen handler and ProgressListener registration until AFTER
@@ -296,8 +308,14 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
    */
   public async manageWorkspaceFromDialog(id?: TWorkspaceID) {
     const targetWorkspaceID = id ?? this.getSelectedWorkspaceID();
+    console.error("[derp-trace] manageWorkspaceFromDialog enter");
     const result = await this.modalCtx.showWorkspacesModal(targetWorkspaceID);
-    if (result === null) return;
+    console.error(
+      `[derp-trace] manageWorkspaceFromDialog result=${result === null ? "null" : typeof result}`,
+    );
+    // Loose check: a missing modal used to resolve undefined, which slid
+    // past === null into a destructure crash.
+    if (result == null) return;
     const { name, icon, userContextId } = result;
     const workspace = this.getRawWorkspace(targetWorkspaceID);
     if (!workspace) return;
@@ -314,6 +332,22 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
     });
     this.tabManagerCtx.updateTabsVisibility();
     return result;
+  }
+
+  /**
+   * Rename a workspace in place (used by the popup's double-click inline
+   * rename). No modal, no icon/container changes.
+   */
+  public renameWorkspace(id: TWorkspaceID, name: string) {
+    const workspace = this.getRawWorkspace(id);
+    if (!workspace) return;
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === workspace.name) return;
+    setWorkspacesDataStore("data", (prev) => {
+      const temp = this.cloneWorkspaceMap(prev);
+      temp.set(id, { ...workspace, name: trimmed });
+      return temp as unknown as TWorkspacesStoreData["data"];
+    });
   }
 
   public changeWorkspace(id: TWorkspaceID) {

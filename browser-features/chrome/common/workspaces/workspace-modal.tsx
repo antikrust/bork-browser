@@ -138,8 +138,11 @@ export class WorkspaceManageModal {
         },
         {
           id: "icon",
-          type: "dropdown",
+          type: "icon-picker",
           label: texts.icon,
+          placeholder: i18next.t("workspaces.modal.icon-search", {
+            defaultValue: "Search icons…",
+          }),
           value: workspace.icon || "fingerprint",
           required: true,
           options: this.iconCtx.workspaceIconsArray.map((iconName) => ({

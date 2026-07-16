@@ -104,6 +104,151 @@
   margin: 0px 20px 0px 0px !important;
 }
 
+/* Library icons (data URIs using context-stroke/fill) follow the UI text
+   color; the bundled fixed-color icons are unaffected. */
+#workspaces-toolbar-button .toolbarbutton-icon,
+.workspaceButton > .toolbarbutton-icon {
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+/* The chooser button owns its icon: our injected <image>, left of the name.
+   The native icon slot stays in the tree (the popup anchors to it — hiding
+   it with display:none makes the button appear dead) but takes no space. */
+#workspaces-toolbar-button > .toolbarbutton-badge-stack,
+#workspaces-toolbar-button > .toolbarbutton-icon {
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+}
+
+.derp-workspaces-chooser-icon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 6px;
+  pointer-events: none;
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+/* ===== Vivaldi-style workspace list rows ===== */
+.workspaceRow {
+  padding: 6px 10px;
+  margin: 2px 4px;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  border-left: 3px solid transparent;
+}
+
+.workspaceRow:hover {
+  background: var(--toolbarbutton-hover-background, rgba(128, 128, 128, 0.2));
+}
+
+.workspaceRow[data-selected="true"] {
+  background: var(--toolbarbutton-active-background, rgba(128, 128, 128, 0.25));
+}
+
+.workspaceRow[dragging="true"] {
+  opacity: 0.5;
+}
+
+.workspaceRow[drag-over="true"] {
+  outline: 2px solid var(--focus-outline-color, #0a84ff);
+  outline-offset: -2px;
+}
+
+.workspaceRowIcon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 10px;
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.workspaceRowText {
+  overflow: hidden;
+}
+
+.workspaceRowName {
+  font-weight: 500;
+  font-size: 13px;
+  margin: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.workspaceRowCount {
+  font-size: 11px;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.workspaceRowCheck {
+  color: var(--focus-outline-color, #0a84ff);
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0 4px 0 8px;
+}
+
+.workspaceRowHandle {
+  opacity: 0;
+  font-size: 14px;
+  margin: 0 4px 0 8px;
+}
+
+.workspaceRow:hover .workspaceRowHandle {
+  opacity: 0.5;
+}
+
+/* Footer: New Workspace as a pill button */
+#workspacesCreateNewWorkspaceButton {
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  margin: 6px !important;
+  background: var(--toolbarbutton-hover-background, rgba(128, 128, 128, 0.15)) !important;
+}
+
+/* Drag ghost for workspace rows */
+.workspaceDragGhost {
+  position: fixed;
+  top: -1000px;
+  left: -1000px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--arrowpanel-background, #42414d);
+  color: var(--arrowpanel-color, #fff);
+  border: 1px solid var(--panel-separator-color, rgba(255, 255, 255, 0.2));
+  font-size: 13px;
+  font-weight: 500;
+  max-width: 220px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Inline rename input (double-click a workspace row) */
+.workspaceRenameInput {
+  appearance: none;
+  background: var(--arrowpanel-dimmed, rgba(128, 128, 128, 0.15));
+  color: inherit;
+  border: 1px solid var(--focus-outline-color, #0a84ff);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+  margin: 2px 6px;
+  padding: 4px 6px;
+  min-width: 160px;
+}
+
 /* Footer */
 #workspacesPopupFooter {
   width: 100% !important;

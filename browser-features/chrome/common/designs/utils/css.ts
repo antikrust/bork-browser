@@ -15,6 +15,7 @@ import protonfixUserJs from "@nora/skin/lepton/userjs/protonfix.js?raw";
 import leptonChromeStylesRaw from "@nora/skin/lepton/css/leptonChrome.css?raw";
 import leptonContentStylesRaw from "@nora/skin/lepton/css/leptonContent.css?raw";
 import fluerialStylesRaw from "@nora/skin/fluerial/css/fluerial.css?raw";
+import derpStylesRaw from "@nora/skin/derp/css/derp.css?raw";
 import {
   FLUERIAL_TAB_CORNER_CSS,
   TAB_COLOR_LIKE_TOOLBAR_CSS,
@@ -269,6 +270,37 @@ export function getCSSFromConfig(
 
     case "proton": {
       return { userjs: null };
+    }
+
+    case "derp": {
+      // Photon base (Lepton engine with the photon userjs) with derp's
+      // compact overrides layered last so they win by source order.
+      if (isDev) {
+        return {
+          chromeStylesRaw: [
+            leptonChromeStylesRaw,
+            LEPTON_COMPAT_CSS,
+            navBarBackgroundColorCSS,
+            derpStylesRaw,
+          ],
+          stylesRaw: [leptonContentStylesRaw],
+          iconBasePath: "http://localhost:5174/lepton/icons",
+          userjs: photonUserJs,
+        };
+      }
+      return {
+        chromeStyles: [
+          getStylePath("lepton/css/leptonChrome.css"),
+          getStylePath("lepton/css/leptonContent.css"),
+        ],
+        chromeStylesRaw: [
+          LEPTON_COMPAT_CSS,
+          navBarBackgroundColorCSS,
+          derpStylesRaw,
+        ],
+        styles: [getStylePath("lepton/css/leptonContent.css")],
+        userjs: photonUserJs,
+      };
     }
 
     default: {

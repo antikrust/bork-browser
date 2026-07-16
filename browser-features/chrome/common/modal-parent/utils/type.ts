@@ -7,7 +7,8 @@ export interface TFormItem {
     | "dropdown"
     | "checkbox"
     | "radio"
-    | "url";
+    | "url"
+    | "icon-picker";
   id: string;
   label?: string;
   value?: string | number;

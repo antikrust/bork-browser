@@ -79,6 +79,11 @@ export class WorkspaceIcons {
   }
 
   public getWorkspaceIconUrl(icon: string | null | undefined): string {
+    // Library icons picked from the icon picker are stored as
+    // self-contained data URIs — pass them straight through.
+    if (icon?.startsWith("data:image/")) {
+      return icon;
+    }
     if (!icon || !this.workspaceIcons.has(icon)) {
       return this.resolvedIcons.fingerprint;
     }

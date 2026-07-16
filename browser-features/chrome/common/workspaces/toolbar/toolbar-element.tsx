@@ -41,6 +41,27 @@ export class WorkspacesToolbarButton {
       null,
       () => {
         const exec = () => {
+          // derp: the chooser lives at the far left of the tab strip,
+          // Vivaldi-style. Re-pin it if customization state drifted.
+          try {
+            const placement = CustomizableUI.getPlacementOfWidget(
+              "workspaces-toolbar-button",
+            );
+            if (
+              !placement ||
+              placement.area !== CustomizableUI.AREA_TABSTRIP ||
+              placement.position !== 0
+            ) {
+              CustomizableUI.addWidgetToArea(
+                "workspaces-toolbar-button",
+                CustomizableUI.AREA_TABSTRIP,
+                0,
+              );
+            }
+          } catch (e) {
+            console.error("[workspaces] Failed to pin toolbar button:", e);
+          }
+
           setTimeout(() => this.updateButtonIfNeeded(true), 500);
 
           createEffect(() => {
@@ -106,6 +127,22 @@ export class WorkspacesToolbarButton {
         "list-style-image",
         icon ? `url(${icon})` : `url("chrome://branding/content/icon32.png")`,
       );
+      // The native toolbarbutton icon slot doesn't render on this button in
+      // the tab strip, so we own the icon: a dedicated <image> injected as
+      // the first child, always left of the name. The native slots are
+      // hidden in styles.css so this can never double up.
+      const iconSrc = icon || "chrome://branding/content/icon32.png";
+      let derpIcon = xulElement.querySelector(
+        ".derp-workspaces-chooser-icon",
+      ) as XULElement | null;
+      if (!derpIcon) {
+        derpIcon = document!.createXULElement("image") as XULElement;
+        derpIcon.classList.add("derp-workspaces-chooser-icon");
+        xulElement.insertBefore(derpIcon, xulElement.firstChild);
+      }
+      if (derpIcon.getAttribute("src") !== iconSrc) {
+        derpIcon.setAttribute("src", iconSrc);
+      }
 
       if (configStore.showWorkspaceNameOnToolbar) {
         xulElement.setAttribute("label", workspace.name);
