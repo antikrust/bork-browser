@@ -49,7 +49,11 @@
   position: relative !important;
   height: auto !important;
   min-height: 0 !important;
-  margin-top: calc(-1 * var(--tab-min-height, 25px) - 4px) !important;
+  /* --derp-tab-height (theme-owned) rather than --tab-min-height: the
+     design layer overwrites the latter with a taller value, which made
+     this offset overshoot and shove the whole tab row visibly downward
+     whenever the peek slid in. */
+  margin-top: calc(-1 * var(--derp-tab-height, 25px) - 4px) !important;
   margin-bottom: 0 !important;
   padding: 0 !important;
   border: none !important;

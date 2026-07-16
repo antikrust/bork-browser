@@ -11,8 +11,32 @@
 }
 
 /* ===== Tabs: shorter, tighter, smaller text ===== */
+/* --derp-tab-height is ours alone: the design layer re-sets
+   --tab-min-height (to 32px) with equal-importance rules, so anything
+   that must agree on the compact height (tab pins below, stack chips,
+   lean-urlbar peek offset) reads this variable instead. */
 :root {
+  --derp-tab-height: 25px;
   --tab-min-height: 25px !important;
+}
+
+/* Pin every tab to the compact height — the design layer's taller
+   metrics otherwise win by load order and misalign the lean-urlbar peek
+   overlay (row jumps, tab tops covered) whenever the urlbar slides in. */
+#tabbrowser-tabs .tabbrowser-tab {
+  min-height: var(--derp-tab-height) !important;
+  max-height: var(--derp-tab-height) !important;
+}
+
+/* No indicator strip on tabs (container/keyline line at the top edge) —
+   selection reads from the tab background instead. */
+#tabbrowser-tabs .tabbrowser-tab .tab-context-line {
+  display: none !important;
+}
+
+#tabbrowser-tabs .tabbrowser-tab[visuallyselected] .tab-background {
+  background-color: color-mix(in srgb, currentColor 22%, transparent) !important;
+  box-shadow: none !important;
 }
 
 #tabbrowser-tabs {

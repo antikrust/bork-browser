@@ -22,6 +22,53 @@ import {
 } from "./stack-bar.tsx";
 
 const ENABLED_PREF = "floorp.tabstacks.enabled";
+const GROUP_KINDS_PREF = "floorp.tabstacks.groupKinds";
+
+/**
+ * Every native tab group is presented as one of two kinds:
+ * - "stack": Vivaldi-style two-level presentation (chip + stack bar) — the
+ *   default for every group the user creates.
+ * - "group": untouched native Firefox presentation (inline tabs, native
+ *   label and collapse behavior).
+ * Only explicit "group" choices are stored, keyed by the native group id
+ * (session restore preserves those ids, so the choice survives restarts).
+ * Stale ids of long-gone groups are harmless and tiny; they are dropped
+ * whenever their group is toggled back to a stack.
+ */
+type GroupKind = "stack" | "group";
+
+function readGroupKinds(): Record<string, GroupKind> {
+  try {
+    const raw = Services.prefs.getStringPref(GROUP_KINDS_PREF, "{}");
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const kinds: Record<string, GroupKind> = {};
+    for (const [id, kind] of Object.entries(parsed)) {
+      if (kind === "group") kinds[id] = "group";
+    }
+    return kinds;
+  } catch (e) {
+    console.error("[tab-stacks] Failed to read group kinds pref:", e);
+    return {};
+  }
+}
+
+function getGroupKind(groupId: string): GroupKind {
+  return readGroupKinds()[groupId] ?? "stack";
+}
+
+function setGroupKind(groupId: string, kind: GroupKind): void {
+  try {
+    const kinds = readGroupKinds();
+    if (kind === "group") {
+      kinds[groupId] = "group";
+    } else {
+      delete kinds[groupId];
+    }
+    Services.prefs.setStringPref(GROUP_KINDS_PREF, JSON.stringify(kinds));
+  } catch (e) {
+    console.error("[tab-stacks] Failed to save group kind:", e);
+  }
+}
 
 /** Every mutation that can change stack contents or chip labels. */
 const TAB_EVENTS = [
@@ -43,6 +90,11 @@ const TAB_EVENTS = [
  * restore); this feature only changes presentation: member tabs are hidden
  * from row 1 (the chip represents the stack) and the active group's tabs
  * render as proxies in a second bar under the tab strip.
+ *
+ * Groups come in two user-selectable kinds ("Turn into tab group/stack"
+ * in the label context menu): stacks as above, or plain native groups
+ * that keep Firefox's inline presentation. Split-view groups are always
+ * left native regardless of kind.
  */
 @noraComponent(import.meta.hot)
 export default class TabStacks extends NoraComponentBase {
@@ -58,13 +110,14 @@ export default class TabStacks extends NoraComponentBase {
     }
 
     const gb = getGBrowser();
-    // Mount OUTSIDE #navigator-toolbox: zen-mode animates the toolbox using
-    // measured heights, and a bar that comes and goes inside it makes those
-    // measurements stale (collapsed-layout bug). As a sibling below the
-    // toolbox, the stack bar shares no geometry with zen's math.
+    // Mount inside #navigator-toolbox, directly under the tab strip
+    // (Vivaldi row order: tabs → stack bar → address bar). Living inside
+    // the toolbox is safe for zen mode: it re-measures the toolbox height
+    // right before every retract (zen-mode.tsx tryHideTop), so the bar
+    // mounting/unmounting can no longer leave zen with a stale height.
     const toolbox = document.getElementById("navigator-toolbox");
-    const parent = toolbox?.parentElement;
-    if (!gb || !toolbox || !parent) {
+    const navBar = document.getElementById("nav-bar");
+    if (!gb || !toolbox || !navBar) {
       this.logger.warn("Browser chrome not ready; skipping tab stacks.");
       return;
     }
@@ -72,15 +125,10 @@ export default class TabStacks extends NoraComponentBase {
     render(StackStyleElement, document.head, {
       hotCtx: import.meta.hot,
     });
-    const anchor = toolbox.nextElementSibling;
-    if (anchor) {
-      render(StackBar, parent, {
-        marker: anchor,
-        hotCtx: import.meta.hot,
-      });
-    } else {
-      render(StackBar, parent, { hotCtx: import.meta.hot });
-    }
+    render(StackBar, toolbox, {
+      marker: navBar,
+      hotCtx: import.meta.hot,
+    });
 
     const onTabEvent = (event: Event) => {
       if (event.type === "TabSelect") {
@@ -148,6 +196,64 @@ export default class TabStacks extends NoraComponentBase {
       removeEventListener("click", onChipPress, true);
     });
 
+    // Stack ⇄ plain-group conversion. This build wires no context menu to
+    // group labels (no context= attribute on the label chain), so the
+    // feature owns one: right-click on any group label/chip opens it.
+    // Split-view groups are excluded — they keep native behavior wholesale.
+    const KIND_MENU_ID = "derp-stack-kind-menu";
+    const doc = document as Document & {
+      createXULElement: (tag: string) => XULElement;
+    };
+    let menuGroup: StackGroup | null = null;
+    let kindMenu:
+      | (XULElement & {
+        openPopupAtScreen: (x: number, y: number, isContext: boolean) => void;
+      })
+      | null = null;
+    let kindItem: XULElement | null = null;
+    const popupSet = doc.getElementById("mainPopupSet");
+    if (popupSet) {
+      kindMenu = doc.createXULElement("menupopup") as typeof kindMenu &
+        XULElement;
+      kindMenu.id = KIND_MENU_ID;
+      kindItem = doc.createXULElement("menuitem");
+      kindItem.addEventListener("command", () => {
+        if (!menuGroup) return;
+        const next: GroupKind = getGroupKind(menuGroup.id) === "stack"
+          ? "group"
+          : "stack";
+        setGroupKind(menuGroup.id, next);
+        this.updateGroupChips();
+        syncActiveGroup();
+        bumpStacksVersion();
+      });
+      kindMenu.appendChild(kindItem);
+      popupSet.appendChild(kindMenu);
+    }
+    const onLabelContextMenu = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      const labelContainer = target?.closest?.(".tab-group-label-container");
+      const group = (labelContainer?.closest?.("tab-group") ??
+        null) as StackGroup | null;
+      if (!group || !kindMenu || !kindItem) return;
+      if (this.isSplitViewGroup(group)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      menuGroup = group;
+      kindItem.setAttribute(
+        "label",
+        getGroupKind(group.id) === "stack"
+          ? "Turn into tab group"
+          : "Turn into tab stack",
+      );
+      kindMenu.openPopupAtScreen(event.screenX, event.screenY, true);
+    };
+    addEventListener("contextmenu", onLabelContextMenu, true);
+    onCleanup(() => {
+      removeEventListener("contextmenu", onLabelContextMenu, true);
+      kindMenu?.remove();
+    });
+
     // Some group events don't bubble reliably; a debounced observer on the
     // tab strip catches every structural change (group created, tab joins,
     // titles) regardless of event plumbing.
@@ -208,6 +314,12 @@ export default class TabStacks extends NoraComponentBase {
     for (const group of gb.tabGroups) {
       try {
         if (this.isSplitViewGroup(group)) {
+          group.removeAttribute("data-derp-stack");
+          continue;
+        }
+        if (getGroupKind(group.id) === "group") {
+          // Plain tab group by user choice: native presentation end to
+          // end. All stack CSS/behavior is scoped to [data-derp-stack].
           group.removeAttribute("data-derp-stack");
           continue;
         }

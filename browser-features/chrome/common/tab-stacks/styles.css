@@ -24,8 +24,9 @@ tab-group[data-derp-stack] .tab-group-label {
   justify-content: flex-start !important;
   border-radius: 4px !important;
   padding: 0 9px !important;
-  /* Same footprint as a normal tab */
-  min-height: calc(var(--tab-min-height, 25px) - 6px);
+  /* Same footprint as a normal tab (theme-owned height variable — the
+     design layer overwrites --tab-min-height) */
+  min-height: calc(var(--derp-tab-height, 25px) - 6px);
   min-width: 110px;
   max-width: 190px;
   font-weight: normal !important;
@@ -51,12 +52,8 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 }
 
 /* ===== Row 2: the stack bar ===== */
-/* Zen mode is distraction-free: the stack bar (now outside the toolbox)
-   hides itself, no geometry math involved. */
-:root[zenmode] #derp-stack-bar {
-  display: none !important;
-}
-
+/* Inside #navigator-toolbox the bar retracts and reveals with the rest of
+   the top chrome in zen mode — no dedicated hide rule needed. */
 #derp-stack-bar {
   background-color: var(--toolbar-bgcolor, var(--toolbar-background-color));
   border-bottom: 1px solid var(--chrome-content-separator-color, rgba(0, 0, 0, 0.2));
