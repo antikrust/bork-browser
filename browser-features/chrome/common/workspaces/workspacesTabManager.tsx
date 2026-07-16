@@ -258,17 +258,27 @@ export class WorkspacesTabManager {
 
       if (otherWorkspaceTabs.length > 0) {
         // There are tabs in other workspaces.
-        // Check if exitOnLastTabClose is enabled - if not, just create a new tab
-        // and switch to another workspace instead of closing the window.
         if (!configStore.exitOnLastTabClose) {
-          // Find the first workspace with tabs and switch to it
-          const firstOtherTab = otherWorkspaceTabs[0];
-          const targetWorkspaceId = this.getWorkspaceIdFromAttribute(
-            firstOtherTab,
-          );
-          if (targetWorkspaceId) {
-            this.changeWorkspace(targetWorkspaceId);
+          // derp: stay in the current workspace with a fresh tab — never
+          // jump to another workspace on a close. The old jump also fired
+          // spuriously: isAutoReplacementTab cannot tell Firefox's
+          // auto-replacement from user-opened blank tabs, so closing one
+          // real tab among blank ones teleported the user to another
+          // workspace. Staying makes that misclassification harmless (at
+          // worst we adopt one of those blank tabs and remain on it).
+          const replacement = allTabs.find((t) => {
+            if (t === tab || !this.isAutoReplacementTab(t)) return false;
+            const tWsId = this.getWorkspaceIdFromAttribute(t);
+            return tWsId === workspaceId || !tWsId;
+          });
+          if (replacement) {
+            this.setWorkspaceIdToAttribute(replacement, workspaceId);
+            replacement.setAttribute(WORKSPACE_LAST_SHOW_ID, workspaceId);
+            globalThis.gBrowser.selectedTab = replacement;
+          } else {
+            this.createTabForWorkspace(workspaceId, true);
           }
+          this.updateTabsVisibility();
           return;
         }
 
