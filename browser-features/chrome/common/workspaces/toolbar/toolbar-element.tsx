@@ -24,6 +24,8 @@ const { CustomizableUI } = ChromeUtils.importESModule(
   "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
 );
 
+import { CHEVRON_ICON, LAYERS_ICON } from "./icons.ts";
+
 let lastDisplayedWorkspaceId: string | null = null;
 
 export class WorkspacesToolbarButton {
@@ -123,15 +125,16 @@ export class WorkspacesToolbarButton {
       const icon = ctx.iconCtx.getWorkspaceIconUrl(workspace.icon);
       const xulElement = aNode as unknown as XULElement;
 
-      xulElement.style.setProperty(
-        "list-style-image",
-        icon ? `url(${icon})` : `url("chrome://branding/content/icon32.png")`,
-      );
+      // The default workspace always shows the neutral stacked-layers
+      // glyph (Vivaldi-style); everything else falls back to it too when
+      // no icon is set — never the branding logo.
+      const isDefault = ctx.getDefaultWorkspaceID() === currentId;
+      const iconSrc = isDefault ? LAYERS_ICON : (icon || LAYERS_ICON);
+      xulElement.style.setProperty("list-style-image", `url(${iconSrc})`);
       // The native toolbarbutton icon slot doesn't render on this button in
       // the tab strip, so we own the icon: a dedicated <image> injected as
       // the first child, always left of the name. The native slots are
       // hidden in styles.css so this can never double up.
-      const iconSrc = icon || "chrome://branding/content/icon32.png";
       let derpIcon = xulElement.querySelector(
         ".derp-workspaces-chooser-icon",
       ) as XULElement | null;
@@ -142,6 +145,18 @@ export class WorkspacesToolbarButton {
       }
       if (derpIcon.getAttribute("src") !== iconSrc) {
         derpIcon.setAttribute("src", iconSrc);
+      }
+
+      // Chevron after the name: the chooser is a menu and should read as
+      // one. Appended last so it always sits right of the label text.
+      let chevron = xulElement.querySelector(
+        ".derp-workspaces-chooser-chevron",
+      ) as XULElement | null;
+      if (!chevron) {
+        chevron = document!.createXULElement("image") as XULElement;
+        chevron.classList.add("derp-workspaces-chooser-chevron");
+        chevron.setAttribute("src", CHEVRON_ICON);
+        xulElement.appendChild(chevron);
       }
 
       if (configStore.showWorkspaceNameOnToolbar) {

@@ -9,6 +9,7 @@ import type { WorkspacesService } from "../workspacesService";
 import { getContainerColorName } from "../utils/container-color";
 import { workspacesDataStore } from "../data/data.ts";
 import { WORKSPACE_TAB_ATTRIBUTION_ID } from "../utils/workspaces-static-names.ts";
+import { LAYERS_ICON } from "./icons.ts";
 
 // A drop/drag-end can be followed by a stray click on the same row, which
 // would switch workspace and slam the popup shut mid-reorder.
@@ -21,6 +22,8 @@ export function PopupToolbarElement(props: {
   ctx: WorkspacesService;
   refreshTick?: () => number;
   formatTabCount?: (count: number) => string;
+  /** Pinned rows (the default workspace) neither drag nor accept drops. */
+  pinned?: boolean;
 }) {
   const workspace = createMemo(() =>
     props.ctx.getRawWorkspace(props.workspaceId)
@@ -81,6 +84,10 @@ export function PopupToolbarElement(props: {
       : `${tabCount()} tabs`;
 
   const handleDragStart = (event: DragEvent) => {
+    if (props.pinned) {
+      event.preventDefault();
+      return;
+    }
     try {
       const target = event.currentTarget as XULElement;
       if (event.dataTransfer) {
@@ -120,6 +127,7 @@ export function PopupToolbarElement(props: {
   };
 
   const handleDragOver = (event: DragEvent) => {
+    if (props.pinned) return;
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "move";
@@ -134,6 +142,7 @@ export function PopupToolbarElement(props: {
   };
 
   const handleDrop = (event: DragEvent) => {
+    if (props.pinned) return;
     event.preventDefault();
     const target = event.currentTarget as XULElement;
     target.removeAttribute("drag-over");
@@ -167,7 +176,12 @@ export function PopupToolbarElement(props: {
   return (
     <Show when={workspace()}>
       {(ws) => {
-        const icon = () => props.ctx.iconCtx.getWorkspaceIconUrl(ws().icon);
+        // The pinned default row carries the same layers glyph as the
+        // chooser button — one identity for "Workspaces" everywhere.
+        const icon = () =>
+          props.pinned
+            ? LAYERS_ICON
+            : props.ctx.iconCtx.getWorkspaceIconUrl(ws().icon);
         const userContextId = () => ws().userContextId ?? 0;
         const hasContainer = () => userContextId() > 0;
         const containerColorName = () => getContainerColorName(userContextId());
@@ -181,7 +195,7 @@ export function PopupToolbarElement(props: {
             data-workspaceId={props.workspaceId}
             data-has-container={hasContainer() ? "true" : "false"}
             data-container-color={containerColorName() ?? ""}
-            draggable="true"
+            draggable={props.pinned ? "false" : "true"}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOver={handleDragOver}
@@ -231,7 +245,9 @@ export function PopupToolbarElement(props: {
             </Show>
             <Show
               when={props.isSelected}
-              fallback={<xul:label class="workspaceRowHandle">≡</xul:label>}
+              fallback={props.pinned ? undefined : (
+                <xul:label class="workspaceRowHandle">≡</xul:label>
+              )}
             >
               <xul:label class="workspaceRowCheck">✓</xul:label>
             </Show>

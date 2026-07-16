@@ -110,6 +110,19 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
       this.setCurrentWorkspaceID(id);
     }
 
+    // The default workspace presents as the fixed "Workspaces" entry
+    // (pinned in the popup, layers glyph). Auto-generated names migrate
+    // once; a name the user chose themselves is left alone.
+    try {
+      const defaultId = this.getDefaultWorkspaceID();
+      const def = this.getRawWorkspace(defaultId);
+      if (def && /^(New )?Workspace(\s*\(\d+\))?$/i.test(def.name)) {
+        this.renameWorkspace(defaultId, "Workspaces");
+      }
+    } catch (e) {
+      console.error("[workspaces] default-name migration failed:", e);
+    }
+
     // Register persistTabAttribute early (after promiseInitialized) so
     // SessionStore knows to save/restore our custom tab attributes.
     // IMPORTANT: This must happen before restoration completes so that

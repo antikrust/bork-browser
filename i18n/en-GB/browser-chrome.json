@@ -69,7 +69,7 @@
       "archive": "Archive Workspace"
     },
     "popup": {
-      "create-new": "Create new Workspace...",
+      "create-new": "New Workspace",
       "manage": "Manage Workspaces",
       "restore": "Show Archived Workspaces",
       "restore-cancel": "Exit Restore Mode",

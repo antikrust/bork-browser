@@ -90,7 +90,16 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
     try {
       const anchor = document?.getElementById("workspaces-toolbar-button");
       if (anchor && panel.moveToAnchor) {
-        panel.moveToAnchor(anchor, "bottomleft topleft", 0, 0, false);
+        // Nearly flush with the window's left edge (not the button's),
+        // and a few px below the strip.
+        const rect = anchor.getBoundingClientRect();
+        panel.moveToAnchor(
+          anchor,
+          "bottomleft topleft",
+          -(rect.x - 4),
+          4,
+          false,
+        );
       }
     } catch (e) {
       console.debug("[workspaces] moveToAnchor failed:", e);
@@ -100,6 +109,14 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
   onCleanup(() =>
     document?.removeEventListener("popupshowing", handlePopupShowing)
   );
+  const defaultWorkspaceId = (): string | null => {
+    try {
+      return props.ctx.getDefaultWorkspaceID();
+    } catch {
+      return null;
+    }
+  };
+
   const [isRestoreMode, setIsRestoreMode] = createSignal(false);
   const [archivedWorkspaces, setArchivedWorkspaces] = createSignal<
     WorkspaceArchiveSummary[]
@@ -323,7 +340,30 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
                 </xul:vbox>
               }
             >
-              <For each={workspacesDataStore.order}>
+              {/* Default workspace pinned on top: not draggable, separated
+                  from the reorderable rest (Vivaldi-style). */}
+              <Show when={defaultWorkspaceId()}>
+                {(id) => (
+                  <>
+                    <PopupToolbarElement
+                      workspaceId={id()}
+                      isSelected={id() === selectedWorkspaceID()}
+                      bmsMode={configStore.manageOnBms}
+                      ctx={props.ctx}
+                      refreshTick={refreshTick}
+                      formatTabCount={(count) =>
+                        texts().restoreTabCount(count)}
+                      pinned
+                    />
+                    <xul:toolbarseparator class="workspacePinnedSeparator" />
+                  </>
+                )}
+              </Show>
+              <For
+                each={workspacesDataStore.order.filter(
+                  (id) => id !== defaultWorkspaceId(),
+                )}
+              >
                 {(id) => (
                   <PopupToolbarElement
                     workspaceId={id}
