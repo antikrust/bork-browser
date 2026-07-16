@@ -16,6 +16,43 @@ tab-group[data-derp-stack] .tab-group-label-container {
   align-items: center !important;
 }
 
+/* The chip flexes exactly like a tab: same grow/shrink weight and the
+   same width envelope, so it matches its neighbours whether the strip is
+   crowded or nearly empty. */
+tab-group[data-derp-stack] {
+  flex: 100 100 auto !important;
+  min-width: var(--tab-min-width, 76px);
+  max-width: 225px;
+}
+
+tab-group[data-derp-stack] > .tab-group-label-container {
+  flex: 1 !important;
+  max-width: none !important;
+}
+
+/* Close button (injected): hidden until the chip is hovered, ordered
+   after the count badge. Closes the whole stack. */
+tab-group[data-derp-stack] .derp-stack-close {
+  display: none;
+  width: 14px;
+  height: 14px;
+  padding: 1px;
+  margin-inline-start: 4px;
+  border-radius: 3px;
+  order: 1;
+  -moz-context-properties: fill;
+  fill: currentColor;
+  cursor: pointer;
+}
+
+tab-group[data-derp-stack] .tab-group-label-container:hover .derp-stack-close {
+  display: flex;
+}
+
+tab-group[data-derp-stack] .derp-stack-close:hover {
+  background-color: var(--toolbarbutton-hover-background, rgba(128, 128, 128, 0.3));
+}
+
 tab-group[data-derp-stack] .tab-group-label {
   /* Hide the native group-name text; our ::before shows name/tab title. */
   font-size: 0 !important;
@@ -24,13 +61,13 @@ tab-group[data-derp-stack] .tab-group-label {
   justify-content: flex-start !important;
   border-radius: 4px !important;
   padding: 0 9px !important;
-  /* Same visual height as a normal tab (theme-owned height variable —
-     the design layer overwrites --tab-min-height; tabs carry 1px block
-     margins, hence the -2px) */
-  min-height: calc(var(--derp-tab-height, 25px) - 2px);
-  /* Same width envelope as normal tabs */
-  min-width: var(--tab-min-width, 70px);
-  max-width: 225px;
+  /* Bottom edge flush with the tabs; the top stays cut off above the row
+     ("looks like a folder" — deliberate). */
+  min-height: var(--derp-tab-height, 25px);
+  /* Width comes from the group box (which flexes like a tab). */
+  flex: 1 1 auto !important;
+  min-width: 0;
+  max-width: none;
   font-weight: normal !important;
   cursor: pointer;
   /* The group color lives in the border only: the native solid pill
@@ -40,19 +77,16 @@ tab-group[data-derp-stack] .tab-group-label {
   background-color: color-mix(in srgb, currentColor 8%, transparent) !important;
   color: inherit !important;
   border: 1px solid var(--tab-group-color-invert, currentColor) !important;
+  /* Top-align with the tab backgrounds: auto bottom margin wins over the
+     container's own centering (justify-content overrides did not take —
+     the vbox re-centers its label). */
+  margin-top: 1px !important;
+  margin-bottom: auto !important;
 }
 
 /* No native 2px group underline beneath the chip. */
 tab-group[data-derp-stack] .tab-group-label-container::after {
   display: none !important;
-}
-
-/* Top-align the chip with the tabs: the container is a vbox that centers
-   its label inside the taller strip row, which sat the chip ~4px lower
-   than the tab backgrounds (they start at 1px block margin). */
-tab-group[data-derp-stack] .tab-group-label-container {
-  justify-content: flex-start !important;
-  padding-top: 1px !important;
 }
 
 /* No separator lines flanking a stack chip — each tab paints 1px lines

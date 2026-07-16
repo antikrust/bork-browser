@@ -31,6 +31,7 @@ type TabBrowser = {
   tabContainer: XULElement;
   tabGroupMenu?: { openEditModal: (group: StackGroup) => void };
   removeTab: (tab: StackTab, opts?: Record<string, unknown>) => void;
+  removeTabs?: (tabs: StackTab[], opts?: Record<string, unknown>) => void;
   addTab: (url: string, opts: Record<string, unknown>) => StackTab;
 };
 

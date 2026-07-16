@@ -155,6 +155,29 @@ export default class TabStacks extends NoraComponentBase {
     const onChipPress = (event: MouseEvent) => {
       if (event.button !== 0) return;
       const target = event.target as Element | null;
+      // Chip close button: closes the whole stack (all member tabs).
+      const closeEl = target?.closest?.(".derp-stack-close");
+      if (closeEl) {
+        const group = closeEl.closest(
+          "tab-group[data-derp-stack]",
+        ) as StackGroup | null;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (event.type !== "click" || !group) return;
+        try {
+          const gb = getGBrowser();
+          if (gb?.removeTabs) {
+            gb.removeTabs([...group.tabs]);
+          } else {
+            for (const t of [...group.tabs]) {
+              getGBrowser()?.removeTab(t, { animate: false });
+            }
+          }
+        } catch (e) {
+          console.error("[tab-stacks] Failed to close stack:", e);
+        }
+        return;
+      }
       const labelContainer = target?.closest?.(".tab-group-label-container");
       if (!labelContainer) return;
       // Only groups we own — split-view groups keep native label behavior.
@@ -315,15 +338,29 @@ export default class TabStacks extends NoraComponentBase {
       try {
         if (this.isSplitViewGroup(group)) {
           group.removeAttribute("data-derp-stack");
+          group.querySelector(".derp-stack-close")?.remove();
           continue;
         }
         if (getGroupKind(group.id) === "group") {
           // Plain tab group by user choice: native presentation end to
           // end. All stack CSS/behavior is scoped to [data-derp-stack].
           group.removeAttribute("data-derp-stack");
+          group.querySelector(".derp-stack-close")?.remove();
           continue;
         }
         group.setAttribute("data-derp-stack", "true");
+        // Close button lives inside the label so it rides the chip's flex
+        // row (order puts it after the count badge); shown on hover.
+        const labelEl = group.querySelector(".tab-group-label");
+        if (labelEl && !labelEl.querySelector(".derp-stack-close")) {
+          const close = (document as Document & {
+            createXULElement: (tag: string) => XULElement;
+          }).createXULElement("image");
+          close.classList.add("derp-stack-close");
+          close.setAttribute("src", "chrome://global/skin/icons/close.svg");
+          close.setAttribute("tooltiptext", "Close stack");
+          labelEl.appendChild(close);
+        }
         if (group.collapsed) {
           group.collapsed = false;
         }
