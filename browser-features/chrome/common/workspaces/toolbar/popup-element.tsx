@@ -63,27 +63,20 @@ const getTranslations = () => ({
 export function PopupElement(props: { ctx: WorkspacesService }) {
   const [texts, setTexts] = createSignal(getTranslations());
   // Bumped on every popupshowing so rows recompute live data (tab counts).
-  // Our panel also starts invisible so the left-align reposition below
-  // happens before anyone sees it (repositioning after paint flashes).
   const [refreshTick, setRefreshTick] = createSignal(0);
   const isOurPanel = (node: EventTarget | null): node is HTMLElement =>
     node instanceof Element &&
     !!node.querySelector?.("#workspacesToolbarButtonPanel");
 
+  // Left-align the popup with the chooser button (the widget panel picks
+  // its own corner otherwise). Reposition during popupshowing, before the
+  // native panel window first paints: moving or hiding it after it is
+  // visible races the panel's native show path, and a lost race leaves an
+  // open, input-grabbing, invisible panel. No opacity tricks for the same
+  // reason. If moveToAnchor is refused this early the popup just opens at
+  // the default corner — cosmetic, never invisible.
   const handlePopupShowing = (event: Event) => {
     setRefreshTick((t) => t + 1);
-    if (isOurPanel(event.target)) {
-      (event.target as HTMLElement).style.opacity = "0";
-    }
-  };
-  document?.addEventListener("popupshowing", handlePopupShowing);
-  onCleanup(() =>
-    document?.removeEventListener("popupshowing", handlePopupShowing)
-  );
-
-  // Left-align the popup with the chooser button (the widget panel picks
-  // its own corner otherwise), then reveal it in its final position.
-  const handlePopupShown = (event: Event) => {
     if (!isOurPanel(event.target)) return;
     const panel = event.target as HTMLElement & {
       moveToAnchor?: (
@@ -94,9 +87,6 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
         attributesOverride?: boolean,
       ) => void;
     };
-    const reveal = () => {
-      panel.style.opacity = "";
-    };
     try {
       const anchor = document?.getElementById("workspaces-toolbar-button");
       if (anchor && panel.moveToAnchor) {
@@ -104,15 +94,11 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
       }
     } catch (e) {
       console.debug("[workspaces] moveToAnchor failed:", e);
-    } finally {
-      requestAnimationFrame(reveal);
-      // Failsafe: never leave the menu invisible.
-      setTimeout(reveal, 120);
     }
   };
-  document?.addEventListener("popupshown", handlePopupShown);
+  document?.addEventListener("popupshowing", handlePopupShowing);
   onCleanup(() =>
-    document?.removeEventListener("popupshown", handlePopupShown)
+    document?.removeEventListener("popupshowing", handlePopupShowing)
   );
   const [isRestoreMode, setIsRestoreMode] = createSignal(false);
   const [archivedWorkspaces, setArchivedWorkspaces] = createSignal<
