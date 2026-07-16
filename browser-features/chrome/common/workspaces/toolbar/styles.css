@@ -107,17 +107,22 @@ panel:has(#workspacesToolbarButtonPanel) {
   white-space: nowrap;
 }
 
-/* Pinned default workspace sits above this line, undraggable. A plain
-   1px line — the native toolbarseparator appearance left a wide gap. */
-.workspacePinnedSeparator {
+/* Both popup separators draw the same explicit 1px line — the native
+   toolbarseparator painted nothing detectable here, so nothing is left
+   to the widget style. */
+.workspacePinnedSeparator,
+#workspacesPopupSeparator {
   appearance: none !important;
-  height: 1px !important;
-  min-height: 1px !important;
+  border: none !important;
+  border-top: 1px solid var(--panel-separator-color, rgba(255, 255, 255, 0.25)) !important;
+  height: 0 !important;
+  min-height: 0 !important;
   max-height: 1px !important;
   padding: 0 !important;
-  border: none !important;
-  background: rgba(255, 255, 255, 0.35);
-  margin: 3px 8px !important;
+}
+
+.workspacePinnedSeparator {
+  margin: 4px 0px !important;
 }
 
 #workspacesPopupContent {
@@ -337,7 +342,7 @@ panel:has(#workspacesToolbarButtonPanel) {
 #workspacesPopupFooter {
   width: 100% !important;
   margin: auto;
-  padding: 3px 0;
+  padding: 0 0 3px;
 }
 
 .workspaceFooterButtons {
@@ -348,8 +353,9 @@ panel:has(#workspacesToolbarButtonPanel) {
 
 /* Separator */
 #workspacesPopupSeparator {
-  margin: 4px 0px !important;
+  margin: 4px 0px 3px !important;
 }
+
 
 /* Select Workspace buttons */
 .workspaceButton {
