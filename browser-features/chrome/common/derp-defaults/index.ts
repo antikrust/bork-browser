@@ -15,6 +15,9 @@ const { CustomizableUI } = ChromeUtils.importESModule(
 const SEARCH_APPLIED_PREF = "derp.search.defaultApplied";
 const DEFAULT_ENGINE = "DuckDuckGo";
 
+/** Timestamp for trace lines so incidents can be correlated to the second. */
+const ts = (): string => new Date().toISOString().slice(11, 23);
+
 /**
  * derp runtime defaults that can't be expressed as plain prefs:
  * - DuckDuckGo as the default search engine (applied once per profile,
@@ -41,24 +44,106 @@ export default class DerpDefaults extends NoraComponentBase {
   private installStateTracer(): void {
     try {
       const w = globalThis as unknown as Window & { windowState: number };
+      // Identify WHICH chrome document is talking: the main windows share
+      // href, so include the web-panel id query and window type. A fresh
+      // document announcing itself mid-session is a lead, not noise.
+      const docId = (): string => {
+        const href = String(
+          (globalThis as unknown as { location?: { href?: string } })
+            .location?.href ?? "?",
+        );
+        const type = document?.documentElement?.getAttribute("windowtype") ??
+          "?";
+        return `href=${href} windowtype=${type}`;
+      };
       addEventListener("sizemodechange", () => {
         console.error(
-          `[derp-trace] sizemodechange windowState=${w.windowState} (1=maximized 2=minimized 3=normal 4=fullscreen)`,
+          `[derp-trace ${ts()}] sizemodechange windowState=${w.windowState} (1=maximized 2=minimized 3=normal 4=fullscreen) ${docId()}`,
         );
       });
+      // Occlusion-flap rescue: macOS occlusion state can thrash (observed:
+      // 10 visibility flips in 1ms — animated wallpapers keep the window
+      // server recalculating). The suspend/resume race can drop the
+      // window's compositing surface, leaving a healthy window drawn as an
+      // empty frame ("everything vanished"). A tiny resize forces the
+      // window server to re-composite — the same reason dragging the
+      // window used to bring it back. Skip while minimized/fullscreen.
+      let flapTimes: number[] = [];
+      let rescuePending = false;
+      const scheduleRecomposite = (reason: string) => {
+        if (rescuePending) return;
+        rescuePending = true;
+        console.error(
+          `[derp-trace ${ts()}] re-composite scheduled (${reason}) ${docId()}`,
+        );
+        setTimeout(() => {
+          try {
+            if (w.windowState === 2 || w.windowState === 4) {
+              rescuePending = false;
+              return;
+            }
+            const win = globalThis as unknown as Window;
+            win.resizeBy(1, 1);
+            setTimeout(() => {
+              try {
+                win.resizeBy(-1, -1);
+              } catch {
+                // window going away
+              }
+              rescuePending = false;
+              flapTimes = [];
+              console.error(
+                `[derp-trace ${ts()}] re-composite done hidden=${document.hidden}`,
+              );
+            }, 80);
+          } catch (e) {
+            rescuePending = false;
+            console.error("[derp-defaults] re-composite rescue failed:", e);
+          }
+        }, 800);
+      };
+      const noteFlap = () => {
+        const now = Date.now();
+        flapTimes = flapTimes.filter((t) => now - t < 1200);
+        flapTimes.push(now);
+        if (flapTimes.length >= 5) {
+          scheduleRecomposite(`occlusion flap ${flapTimes.length} events <1.2s`);
+        }
+      };
+      // Main-thread stall detector: the observed 10-events-in-1ms bursts
+      // are queued notifications delivered after a long main-thread block,
+      // and a stalled window's surface can be dropped by the window server
+      // (window stays blank afterwards until something re-composites it).
+      // Measure event-loop lag directly and self-heal after big stalls.
+      let lastTick = Date.now();
+      setInterval(() => {
+        const now = Date.now();
+        const lag = now - lastTick - 250;
+        lastTick = now;
+        if (lag > 1500) {
+          console.error(
+            `[derp-trace ${ts()}] main-thread stall ~${lag}ms ${docId()}`,
+          );
+          scheduleRecomposite(`stall ${lag}ms`);
+        }
+      }, 250);
       addEventListener("occlusionstatechange", () => {
-        console.error("[derp-trace] occlusionstatechange");
+        noteFlap();
+        console.error(`[derp-trace ${ts()}] occlusionstatechange ${docId()}`);
       });
       addEventListener("fullscreenchange", () => {
-        console.error("[derp-trace] fullscreenchange");
+        console.error(`[derp-trace ${ts()}] fullscreenchange ${docId()}`);
       });
       // Space/desktop switches and full coverage flip document.hidden
-      // without any of the events above.
+      // without any of the events above. A hidden=false with no prior
+      // hidden=true means a NEW chrome document just materialized.
       document.addEventListener("visibilitychange", () => {
+        noteFlap();
         console.error(
-          `[derp-trace] visibilitychange hidden=${document.hidden}`,
+          `[derp-trace ${ts()}] visibilitychange hidden=${document.hidden} ${docId()}`,
         );
       });
+      console.error(`[derp-trace ${ts()}] state tracer armed ${docId()}`);
       // Poll geometry: moveTo/moveBy relocations and layout collapses fire
       // no events at all. Logs only when something changes.
       let last = "";
@@ -83,8 +168,8 @@ export default class DerpDefaults extends NoraComponentBase {
           if (sample !== last) {
             console.error(
               last
-                ? `[derp-trace] geometry ${last} -> ${sample}`
-                : `[derp-trace] geometry baseline ${sample}`,
+                ? `[derp-trace ${ts()}] geometry ${last} -> ${sample}`
+                : `[derp-trace ${ts()}] geometry baseline ${sample}`,
             );
             last = sample;
           }
@@ -176,10 +261,10 @@ export default class DerpDefaults extends NoraComponentBase {
           const href = (subject as { location?: { href?: string } })
             ?.location?.href ?? "?";
           console.error(
-            `[derp-trace] ${topic} href=${href} browserWindows=${countWindows()}`,
+            `[derp-trace ${ts()}] ${topic} href=${href} browserWindows=${countWindows()}`,
           );
         } catch {
-          console.error(`[derp-trace] ${topic}`);
+          console.error(`[derp-trace ${ts()}] ${topic}`);
         }
       });
       this.logger.info("Global window watcher installed");
@@ -201,13 +286,13 @@ export default class DerpDefaults extends NoraComponentBase {
       const origClose = win.close.bind(globalThis);
       win.close = () => {
         console.error(
-          "[derp-trace] window.close() called from:",
+          `[derp-trace ${ts()}] window.close() called from:`,
           new Error("close-tracer").stack,
         );
         origClose();
       };
       addEventListener("unload", () => {
-        console.error("[derp-trace] chrome window unloading");
+        console.error(`[derp-trace ${ts()}] chrome window unloading`);
       });
     } catch (e) {
       console.error("[derp-defaults] close tracer failed:", e);
