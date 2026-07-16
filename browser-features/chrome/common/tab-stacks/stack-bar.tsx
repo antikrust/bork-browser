@@ -166,7 +166,15 @@ export function StackBar() {
 
   return (
     <Show when={activeGroup()}>
-      <xul:hbox id="derp-stack-bar" align="center">
+      {/* arrowscrollbox: one row forever — overflow scrolls behind arrow
+          buttons exactly like the tab strip, instead of wrapping into a
+          second row and growing the bar. */}
+      <xul:arrowscrollbox
+        id="derp-stack-bar"
+        orient="horizontal"
+        clicktoscroll="true"
+        align="center"
+      >
         <For each={tabs()}>{(tab) => <StackTabProxy tab={tab} />}</For>
         <xul:toolbarbutton
           id="derp-stack-newtab"
@@ -174,7 +182,7 @@ export function StackBar() {
           tooltiptext="New tab in stack"
           onClick={addTabToActiveGroup}
         />
-      </xul:hbox>
+      </xul:arrowscrollbox>
     </Show>
   );
 }

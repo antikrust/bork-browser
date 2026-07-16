@@ -6,8 +6,19 @@
 /* ===== Row 1: a stack's member tabs are represented by the chip alone.
    Everything below is scoped to groups tab-stacks explicitly owns
    ([data-derp-stack]); split-view's groups render natively. ===== */
+/* visibility:collapse only removes width in XUL box layout; the strip
+   is flexbox, where it acts like plain hidden and the invisible tabs
+   still claim their flex size (a giant blank gap in sparse strips).
+   Zero every box metric instead — the tabs stay rendered for Firefox's
+   tab machinery but take no space. */
 #tabbrowser-tabs tab-group[data-derp-stack] > .tabbrowser-tab {
   visibility: collapse !important;
+  flex: 0 0 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
 }
 
 /* Group chip styled as a normal tab: the stack's current tab title with the
@@ -16,30 +27,33 @@ tab-group[data-derp-stack] .tab-group-label-container {
   align-items: center !important;
 }
 
-/* The chip flexes exactly like a tab: same grow/shrink weight and the
-   same width envelope, so it matches its neighbours whether the strip is
-   crowded or nearly empty. */
-tab-group[data-derp-stack] {
-  flex: 100 100 auto !important;
-  min-width: var(--tab-min-width, 76px);
-  max-width: 225px;
-}
-
+/* tab-group is display:contents — it has no box, so sizing rules on it
+   do nothing and its children participate directly in the strip
+   flexbox. The chip's real box is the label container: give IT a tab's
+   flex weight and width envelope (an uncapped max-width made it grow to
+   eat the free strip space while the centered label stayed small — the
+   chip appeared to float in blank space). */
 tab-group[data-derp-stack] > .tab-group-label-container {
-  flex: 1 !important;
-  max-width: none !important;
+  flex: 100 100 auto !important;
+  min-width: var(--tab-min-width, 76px) !important;
+  max-width: 225px !important;
+  align-items: stretch !important;
 }
 
-/* Close button (injected): hidden until the chip is hovered, ordered
-   after the count badge. Closes the whole stack. */
+/* Close button (injected): absolute overlay at the chip's left edge —
+   same side as the tabs' favicon-hover close, and being out of flow it
+   can never change the chip's size on hover. Closes the whole stack. */
 tab-group[data-derp-stack] .derp-stack-close {
   display: none;
+  position: absolute;
+  inset-inline-start: 3px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
   width: 14px;
   height: 14px;
   padding: 1px;
-  margin-inline-start: 4px;
   border-radius: 3px;
-  order: 1;
+  background-color: var(--tab-selected-bgcolor, rgba(70, 70, 75, 0.9));
   -moz-context-properties: fill;
   fill: currentColor;
   cursor: pointer;
@@ -50,17 +64,45 @@ tab-group[data-derp-stack] .tab-group-label-container:hover .derp-stack-close {
 }
 
 tab-group[data-derp-stack] .derp-stack-close:hover {
-  background-color: var(--toolbarbutton-hover-background, rgba(128, 128, 128, 0.3));
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Plain tab groups: no connecting lines anywhere — membership reads as
+   a transparent wash of the group color on each member tab instead
+   (the drawn lines looked wrong against the compact theme). */
+#tabbrowser-tabs tab-group .tab-group-label-container::after {
+  display: none !important;
+}
+
+#tabbrowser-tabs tab-group .tabbrowser-tab .tab-group-line {
+  display: none !important;
+}
+
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tabbrowser-tab .tab-background {
+  background-color: color-mix(in srgb, var(--tab-group-color-invert, currentColor) 16%, transparent) !important;
+}
+
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tabbrowser-tab[visuallyselected] .tab-background {
+  background-color: color-mix(in srgb, var(--tab-group-color-invert, currentColor) 32%, transparent) !important;
+}
+
+/* Native label pill on plain groups sat ~4px low, like the chip used
+   to — same seat as the tabs. */
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label {
+  margin-top: 1px !important;
+  margin-bottom: auto !important;
 }
 
 tab-group[data-derp-stack] .tab-group-label {
   /* Hide the native group-name text; our ::before shows name/tab title. */
   font-size: 0 !important;
+  position: relative !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
   border-radius: 4px !important;
-  padding: 0 9px !important;
+  /* Title clears the (hover-shown) close button at the left edge. */
+  padding: 0 9px 0 22px !important;
   /* Bottom edge flush with the tabs; the top stays cut off above the row
      ("looks like a folder" — deliberate). */
   min-height: var(--derp-tab-height, 25px);
@@ -123,6 +165,25 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   border-bottom: 1px solid var(--chrome-content-separator-color, rgba(0, 0, 0, 0.2));
   padding: 3px 8px;
   min-height: 30px;
+  max-height: 30px;
+}
+
+/* Same scroll-arrow containers as the tab strip. */
+#derp-stack-bar::part(scrollbutton-up),
+#derp-stack-bar::part(scrollbutton-down) {
+  padding-inline: 2px !important;
+  margin-inline: 0 !important;
+  border-inline: none !important;
+}
+
+/* Proxies size like top-row tabs: start wide, shrink to the tab floor,
+   and only then overflow into the scroll arrows. The explicit basis
+   matters — with basis auto the cropped labels measure near zero and
+   everything compresses without ever overflowing. */
+.derp-stack-tab {
+  flex: 0 1 180px !important;
+  min-width: var(--tab-min-width, 76px) !important;
+  max-width: 200px;
 }
 
 .derp-stack-tab {
@@ -179,6 +240,9 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 }
 
 .derp-stack-tab-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin: 0;
   font-size: 12px;
 }
