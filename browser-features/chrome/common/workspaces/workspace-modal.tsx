@@ -143,13 +143,12 @@ export class WorkspaceManageModal {
           placeholder: i18next.t("workspaces.modal.icon-search", {
             defaultValue: "Search icons…",
           }),
-          value: workspace.icon || "fingerprint",
+          value: workspace.icon || "",
           required: true,
-          options: this.iconCtx.workspaceIconsArray.map((iconName) => ({
-            value: iconName,
-            label: this.iconTranslationsHandler.getTranslatedIconName(iconName),
-            icon: this.iconCtx.getWorkspaceIconUrl(iconName),
-          })),
+          // Picker offers the Lucide library only (monochrome, follows UI
+          // text color). The bundled colored icon set stays resolvable so
+          // existing workspaces keep their icons, but is no longer offered.
+          options: [],
         },
       ],
       title: texts.editTitle,

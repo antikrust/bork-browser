@@ -3,6 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { FOLDER_ICON } from "../toolbar/icons.ts";
+
 type ModuleStrings = {
   [key: string]: string;
 };
@@ -85,7 +87,10 @@ export class WorkspaceIcons {
       return icon;
     }
     if (!icon || !this.workspaceIcons.has(icon)) {
-      return this.resolvedIcons.fingerprint;
+      // Neutral monochrome folder — never the colored fingerprint. This
+      // also retroactively cleans up workspaces that never had an icon
+      // explicitly picked (their stored icon is null).
+      return FOLDER_ICON;
     }
     return this.resolvedIcons[icon];
   }

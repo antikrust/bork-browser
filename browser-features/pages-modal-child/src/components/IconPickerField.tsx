@@ -24,10 +24,82 @@ interface IconPickerFieldProps {
   onChange: (value: string) => void;
 }
 
-const MAX_LIBRARY_RESULTS = 120;
+const MAX_LIBRARY_RESULTS = 60;
 
 const pascalToWords = (name: string): string =>
   name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
+
+/* Material Symbols (outlined, 400): plain SVG files globbed lazily from
+ * the package. Names are available instantly for search; a file is only
+ * fetched when its cell actually renders. */
+const materialModules = import.meta.glob(
+  "../../../../../node_modules/@material-symbols/svg-400/outlined/*.svg",
+  { query: "?raw", import: "default" },
+) as Record<string, () => Promise<string>>;
+
+const materialLoaderByName = new Map(
+  Object.entries(materialModules).map(([path, load]) => [
+    path.split("/").pop()!.replace(/\.svg$/, ""),
+    load,
+  ]),
+);
+
+const materialNames = [...materialLoaderByName.keys()].filter(
+  (n) => !n.endsWith("-fill"),
+);
+
+const materialDataUriCache = new Map<string, string>();
+
+/** Same storage contract as lucideToDataUri: context-fill so chrome CSS
+ * tints the stored icon via -moz-context-properties. */
+const materialToDataUri = (raw: string, name: string): string => {
+  const themed = raw
+    .replace(/(<svg[^>]*?)\sfill="[^"]*"/, "$1")
+    .replace(/<svg /, `<svg fill="context-fill" data-derp-icon-name="material:${name}" `);
+  return `data:image/svg+xml;utf8,${encodeURIComponent(themed)}`;
+};
+
+function MaterialCell(props: {
+  name: string;
+  selected: boolean;
+  cellClass: string;
+  onPick: (uri: string) => void;
+}) {
+  const { name, cellClass, onPick } = props;
+  const [uri, setUri] = useState<string | null>(
+    materialDataUriCache.get(name) ?? null,
+  );
+
+  useEffect(() => {
+    if (uri) return;
+    let live = true;
+    materialLoaderByName.get(name)?.().then((raw) => {
+      const converted = materialToDataUri(raw, name);
+      materialDataUriCache.set(name, converted);
+      if (live) setUri(converted);
+    });
+    return () => {
+      live = false;
+    };
+  }, [name, uri]);
+
+  return (
+    <button
+      type="button"
+      title={name.replaceAll("_", " ")}
+      className={cellClass}
+      onClick={() => {
+        if (uri) onPick(uri);
+      }}
+    >
+      {/* context-fill renders black in a plain img; dark:invert keeps the
+          preview visible on the dark theme. */}
+      {uri
+        ? <img src={uri} className="w-4 h-4 dark:invert" alt="" />
+        : <span className="w-4 h-4" />}
+    </button>
+  );
+}
 
 /**
  * Render a Lucide icon to a standalone SVG data URI so the stored workspace
@@ -35,19 +107,42 @@ const pascalToWords = (name: string): string =>
  * for context-stroke/fill, which Firefox chrome CSS can tint via
  * -moz-context-properties.
  */
-const lucideToDataUri = (Icon: LucideIconComponent): string => {
+const lucideToDataUri = (Icon: LucideIconComponent, name: string): string => {
   const svg = renderToStaticMarkup(
     <Icon xmlns="http://www.w3.org/2000/svg" size={16} strokeWidth={2} />,
   );
   const themed = svg
     .replaceAll('stroke="currentColor"', 'stroke="context-stroke"')
-    .replaceAll('fill="currentColor"', 'fill="context-fill"');
+    .replaceAll('fill="currentColor"', 'fill="context-fill"')
+    // The picked name rides inside the stored SVG so the picker can show
+    // which of the thousands of icons this is when the form reopens.
+    .replace(/<svg /, `<svg data-derp-icon-name="${name}" `);
   try {
     return `data:image/svg+xml;base64,${btoa(themed)}`;
   } catch {
     return `data:image/svg+xml;utf8,${encodeURIComponent(themed)}`;
   }
 };
+
+/** Recover the embedded icon name from a stored data-URI value. */
+const iconNameFromValue = (value: string): string | null => {
+  if (!value.startsWith("data:image/")) return null;
+  try {
+    const comma = value.indexOf(",");
+    const meta = value.slice(0, comma);
+    const body = value.slice(comma + 1);
+    const text = meta.includes("base64") ? atob(body) : decodeURIComponent(body);
+    const match = text.match(/data-derp-icon-name="([^"]+)"/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+};
+
+const displayIconName = (raw: string): string =>
+  raw.startsWith("material:")
+    ? raw.slice("material:".length).replaceAll("_", " ")
+    : pascalToWords(raw);
 
 export function IconPickerField(
   { options, value, placeholder, onChange }: IconPickerFieldProps,
@@ -56,8 +151,10 @@ export function IconPickerField(
   const [lucideIcons, setLucideIcons] = useState<
     Record<string, LucideIconComponent> | null
   >(null);
+  // Seeded from the stored value so reopening the form shows which icon
+  // is currently selected (and highlights its cell when it scrolls by).
   const [pickedLibraryName, setPickedLibraryName] = useState<string | null>(
-    null,
+    () => iconNameFromValue(value),
   );
 
   useEffect(() => {
@@ -92,6 +189,15 @@ export function IconPickerField(
       : names;
     return matches.slice(0, MAX_LIBRARY_RESULTS);
   }, [lucideIcons, normalizedQuery]);
+
+  const filteredMaterial = useMemo(() => {
+    const matches = normalizedQuery
+      ? materialNames.filter((name) =>
+        name.replaceAll("_", " ").includes(normalizedQuery)
+      )
+      : materialNames;
+    return matches.slice(0, MAX_LIBRARY_RESULTS);
+  }, [normalizedQuery]);
 
   const isCustomValue = value.startsWith("data:image/");
 
@@ -141,27 +247,55 @@ export function IconPickerField(
               )}
               onClick={() => {
                 setPickedLibraryName(name);
-                onChange(lucideToDataUri(Icon));
+                onChange(lucideToDataUri(Icon, name));
               }}
             >
               <Icon size={16} className="text-gray-900 dark:text-white" />
             </button>
           );
         })}
+        {filteredMaterial.map((name) => (
+          <MaterialCell
+            key={`material-${name}`}
+            name={name}
+            selected={isCustomValue && pickedLibraryName === `material:${name}`}
+            cellClass={cellClass(
+              isCustomValue && pickedLibraryName === `material:${name}`,
+            )}
+            onPick={(uri) => {
+              setPickedLibraryName(`material:${name}`);
+              onChange(uri);
+            }}
+          />
+        ))}
       </div>
       <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
         {!lucideIcons
           ? "Loading icon library…"
-          : isCustomValue && !pickedLibraryName
+          : isCustomValue && pickedLibraryName
+          ? (
+            <span className="inline-flex items-center gap-1">
+              Selected:
+              <img src={value} className="w-4 h-4 inline dark:invert" alt="" />
+              <span className="font-medium">
+                {displayIconName(pickedLibraryName)}
+              </span>
+            </span>
+          )
+          : isCustomValue
           ? (
             <span className="inline-flex items-center gap-1">
               Current custom icon:
-              <img src={value} className="w-4 h-4 inline" alt="" />
+              <img src={value} className="w-4 h-4 inline dark:invert" alt="" />
             </span>
           )
-          : filteredLucide.length === MAX_LIBRARY_RESULTS
-          ? "Showing first matches — type to refine"
-          : `${filteredBuiltins.length + filteredLucide.length} icons`}
+          : filteredLucide.length === MAX_LIBRARY_RESULTS ||
+              filteredMaterial.length === MAX_LIBRARY_RESULTS
+          ? "Showing first matches — type to refine (Lucide + Material)"
+          : `${
+            filteredBuiltins.length + filteredLucide.length +
+            filteredMaterial.length
+          } icons`}
       </div>
     </div>
   );
