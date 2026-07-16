@@ -162,6 +162,31 @@ export class NRStartPageParent extends JSWindowActorParent {
         break;
       }
 
+      case "NRStartPage:Search": {
+        // Same interpretation as the address bar: real URLs navigate,
+        // anything else becomes a default-engine search — in this tab.
+        try {
+          const query = String(message.data?.query ?? "").trim();
+          if (!query) break;
+          const info = Services.uriFixup.getFixupURIInfo(
+            query,
+            Ci.nsIURIFixup.FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP |
+              Ci.nsIURIFixup.FIXUP_FLAG_FIX_SCHEME_TYPOS,
+          );
+          const uri = info.preferredURI;
+          if (!uri) break;
+          // Content-typed input must never run script or spoof documents.
+          if (uri.schemeIs("javascript") || uri.schemeIs("data")) break;
+          this.browsingContext.top.loadURI(uri, {
+            triggeringPrincipal: Services.scriptSecurityManager
+              .getSystemPrincipal(),
+          });
+        } catch (e) {
+          console.error("[NRStartPageParent] Search failed:", e);
+        }
+        break;
+      }
+
       case "NRStartPage:FocusUrlBar": {
         try {
           const win = this.browsingContext?.topChromeWindow;

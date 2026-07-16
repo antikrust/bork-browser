@@ -1,37 +1,53 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 
 declare global {
   var NRFocusUrlBar: (() => void) | undefined;
+  var NRSearchWithDefaultEngine: ((query: string) => void) | undefined;
 }
 
 export function SearchBar() {
   const { t } = useTranslation();
+  const [query, setQuery] = useState("");
 
-  const handleClick = () => {
-    if (globalThis.NRFocusUrlBar) {
+  const submit = () => {
+    const q = query.trim();
+    if (!q) return;
+    if (globalThis.NRSearchWithDefaultEngine) {
+      // Address-bar semantics in this tab: URLs navigate, everything
+      // else searches with the default engine.
+      globalThis.NRSearchWithDefaultEngine(q);
+    } else if (globalThis.NRFocusUrlBar) {
+      // Actor unavailable (shouldn't happen): old focus-the-urlbar path.
       globalThis.NRFocusUrlBar();
     }
   };
 
   return (
     <div className="relative w-full">
-      <div
-        className="group bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-sm flex items-center p-2 cursor-pointer hover:bg-gray-700/50 transition-colors"
-        onClick={handleClick}
-      >
+      <div className="group bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-sm flex items-center p-2 focus-within:bg-gray-700/50 hover:bg-gray-700/50 transition-colors">
         <div className="relative flex-1">
           <input
             type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submit();
+            }}
             placeholder={t("searchBar.searchOrEnterUrl")}
-            className="w-full bg-transparent border-none outline-none px-2 py-1 text-gray-100 cursor-pointer group-hover:text-white transition-colors"
-            readOnly
+            className="w-full bg-transparent border-none outline-none px-2 py-1 text-gray-100 group-hover:text-white transition-colors"
           />
         </div>
 
-        <div className="p-2 text-gray-400 group-hover:text-white transition-colors">
+        <button
+          type="button"
+          onClick={submit}
+          className="p-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+          title={t("searchBar.searchOrEnterUrl")}
+        >
           <Search size={18} />
-        </div>
+        </button>
       </div>
     </div>
   );

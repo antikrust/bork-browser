@@ -25,6 +25,9 @@ export class NRStartPageChild extends JSWindowActorChild {
       Cu.exportFunction(this.FocusUrlBar.bind(this), window, {
         defineAs: "NRFocusUrlBar",
       });
+      Cu.exportFunction(this.SearchWithDefaultEngine.bind(this), window, {
+        defineAs: "NRSearchWithDefaultEngine",
+      });
     }
   }
 
@@ -65,6 +68,10 @@ export class NRStartPageChild extends JSWindowActorChild {
 
   FocusUrlBar() {
     this.sendAsyncMessage("NRStartPage:FocusUrlBar");
+  }
+
+  SearchWithDefaultEngine(query: string) {
+    this.sendAsyncMessage("NRStartPage:Search", { query: String(query) });
   }
 
   receiveMessage(message: ReceiveMessageArgument) {
