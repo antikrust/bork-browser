@@ -24,13 +24,43 @@ tab-group[data-derp-stack] .tab-group-label {
   justify-content: flex-start !important;
   border-radius: 4px !important;
   padding: 0 9px !important;
-  /* Same footprint as a normal tab (theme-owned height variable — the
-     design layer overwrites --tab-min-height) */
-  min-height: calc(var(--derp-tab-height, 25px) - 6px);
-  min-width: 110px;
-  max-width: 190px;
+  /* Same visual height as a normal tab (theme-owned height variable —
+     the design layer overwrites --tab-min-height; tabs carry 1px block
+     margins, hence the -2px) */
+  min-height: calc(var(--derp-tab-height, 25px) - 2px);
+  /* Same width envelope as normal tabs */
+  min-width: var(--tab-min-width, 70px);
+  max-width: 225px;
   font-weight: normal !important;
   cursor: pointer;
+  /* The group color lives in the border only: the native solid pill
+     (light --tab-group-color-invert fill + dark inverted text) stood
+     out too much against the compact theme. Fill and text match normal
+     tabs; inner content (title + count) unchanged. */
+  background-color: color-mix(in srgb, currentColor 8%, transparent) !important;
+  color: inherit !important;
+  border: 1px solid var(--tab-group-color-invert, currentColor) !important;
+}
+
+/* No native 2px group underline beneath the chip. */
+tab-group[data-derp-stack] .tab-group-label-container::after {
+  display: none !important;
+}
+
+/* Top-align the chip with the tabs: the container is a vbox that centers
+   its label inside the taller strip row, which sat the chip ~4px lower
+   than the tab backgrounds (they start at 1px block margin). */
+tab-group[data-derp-stack] .tab-group-label-container {
+  justify-content: flex-start !important;
+  padding-top: 1px !important;
+}
+
+/* No separator lines flanking a stack chip — each tab paints 1px lines
+   at both edges via .tab-stack::before/::after right-borders; next to
+   the chip's colored border they read as doubled lines. */
+.tabbrowser-tab:has(+ tab-group[data-derp-stack]) .tab-stack::after,
+tab-group[data-derp-stack] + .tabbrowser-tab .tab-stack::before {
+  border-right: none !important;
 }
 
 tab-group[data-derp-stack] .tab-group-label::before {
