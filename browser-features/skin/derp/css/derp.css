@@ -16,8 +16,11 @@
    that must agree on the compact height (tab pins below, stack chips,
    lean-urlbar peek offset) reads this variable instead. */
 :root {
-  --derp-tab-height: 25px;
-  --tab-min-height: 25px !important;
+  /* 30px + the 2px block margins = the 32px bar the design layer always
+     built — everything (tab pins, stack chips, lean-urlbar peek) keys off
+     this one variable, so alignment holds at any value. */
+  --derp-tab-height: 30px;
+  --tab-min-height: 30px !important;
 }
 
 /* Pin every tab to the compact height — the design layer's taller
@@ -32,6 +35,37 @@
    selection reads from the tab background instead. */
 #tabbrowser-tabs .tabbrowser-tab .tab-context-line {
   display: none !important;
+}
+
+/* Pin the whole tab row to the compact height. The design layer sizes
+   the strip and the tab paint boxes to 32px, which sank everything built
+   to --derp-tab-height: stack chips sat ~5px low and tab backgrounds
+   painted 7px taller than their own tabs. */
+#TabsToolbar,
+#tabbrowser-arrowscrollbox,
+#tabbrowser-tabs {
+  min-height: calc(var(--derp-tab-height, 25px) + 2px) !important;
+  max-height: calc(var(--derp-tab-height, 25px) + 2px) !important;
+}
+
+#tabbrowser-tabs .tabbrowser-tab .tab-background {
+  /* Full-bleed like the original bar: background fills the row. */
+  max-height: calc(var(--derp-tab-height, 30px) + 2px) !important;
+}
+
+/* Overflow scroll arrows: identical containers on both ends (the left
+   one rendered wider than the right). */
+#tabbrowser-arrowscrollbox::part(scrollbutton-up),
+#tabbrowser-arrowscrollbox::part(scrollbutton-down) {
+  padding-inline: 2px !important;
+  margin-inline: 0 !important;
+  border-inline: none !important;
+}
+
+/* Single separator at the strip start: the pre-tabs titlebar spacer drew
+   its own line right next to the first tab's. */
+.titlebar-spacer {
+  border-inline-end: none !important;
 }
 
 #tabbrowser-tabs .tabbrowser-tab[visuallyselected] .tab-background {
