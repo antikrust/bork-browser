@@ -42,19 +42,25 @@
   display: none !important;
 }
 
-/* Peek: the URL input overlays the tab row via negative top margin (fixed
-   positioning is unreliable inside the chrome flex layout). Everything in
-   the nav bar except the input stays hidden. */
-:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #nav-bar {
+/* Peek: the URL input overlays the tab row via absolute positioning —
+   out of the layout flow entirely, so the toolbox keeps its height and
+   the content area never creeps up under the tab strip (the old negative
+   top margin never exactly matched the nav bar's height, leaking a few
+   px of content underneath the strip on every peek). Everything in the
+   nav bar except the input stays hidden. */
+:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #navigator-toolbox {
   position: relative !important;
+}
+
+:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #nav-bar {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100;
   height: auto !important;
   min-height: 0 !important;
-  /* --derp-tab-height (theme-owned) rather than --tab-min-height: the
-     design layer overwrites the latter with a taller value, which made
-     this offset overshoot and shove the whole tab row visibly downward
-     whenever the peek slid in. */
-  margin-top: calc(-1 * var(--derp-tab-height, 25px) - 4px) !important;
-  margin-bottom: 0 !important;
+  margin: 0 !important;
   padding: 0 !important;
   border: none !important;
   background: transparent !important;
@@ -62,7 +68,6 @@
   opacity: 1;
   overflow: visible !important;
   pointer-events: auto;
-  z-index: 100;
 }
 
 :root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode])
