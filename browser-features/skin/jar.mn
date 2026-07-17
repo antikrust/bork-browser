@@ -1,15 +1,6 @@
 noraneko.jar:
 % content noraneko-skin %nora-skin/ contentaccessible=yes
 
-  nora-skin/fluerial/css/fluerial.css (fluerial/css/fluerial.css)
-  nora-skin/fluerial/icons/add_FILL0_wght700_GRAD200_opsz48.svg (fluerial/icons/add_FILL0_wght700_GRAD200_opsz48.svg)
-  nora-skin/fluerial/icons/arrow_back_FILL0_wght700_GRAD200_opsz48.svg (fluerial/icons/arrow_back_FILL0_wght700_GRAD200_opsz48.svg)
-  nora-skin/fluerial/icons/arrow_forward_FILL0_wght700_GRAD200_opsz48.svg (fluerial/icons/arrow_forward_FILL0_wght700_GRAD200_opsz48.svg)
-  nora-skin/fluerial/icons/close_FILL0_wght700_GRAD200_opsz48.svg (fluerial/icons/close_FILL0_wght700_GRAD200_opsz48.svg)
-  nora-skin/fluerial/icons/expand_more_FILL0_wght700_GRAD0_opsz24.svg (fluerial/icons/expand_more_FILL0_wght700_GRAD0_opsz24.svg)
-  nora-skin/fluerial/icons/extension_FILL0_wght700_GRAD200_opsz48.svg (fluerial/icons/extension_FILL0_wght700_GRAD200_opsz48.svg)
-  nora-skin/fluerial/icons/more_vert_FILL0_wght700_GRAD200_opsz48.svg (fluerial/icons/more_vert_FILL0_wght700_GRAD200_opsz48.svg)
-  nora-skin/fluerial/icons/refresh_FILL0_wght700_GRAD200_opsz48.svg (fluerial/icons/refresh_FILL0_wght700_GRAD200_opsz48.svg)
   nora-skin/lepton/css/leptonChrome.css (lepton/css/leptonChrome.css)
   nora-skin/lepton/css/leptonContent.css (lepton/css/leptonContent.css)
   nora-skin/lepton/icons/add-device.svg (lepton/icons/add-device.svg)

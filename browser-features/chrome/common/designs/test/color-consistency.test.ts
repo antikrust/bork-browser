@@ -54,7 +54,7 @@ import {
 
 type RgbTuple = readonly [number, number, number];
 
-type DesignName = "fluerial" | "lepton" | "photon" | "protonfix" | "proton";
+type DesignName = "lepton" | "derp";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -63,10 +63,7 @@ type DesignName = "fluerial" | "lepton" | "photon" | "protonfix" | "proton";
 /** Designs covered by the color matrix. */
 const DESIGNS: readonly DesignName[] = [
   "lepton",
-  "photon",
-  "protonfix",
-  "fluerial",
-  "proton",
+  "derp",
 ] as const;
 
 /**
@@ -77,8 +74,7 @@ const DESIGNS: readonly DesignName[] = [
  */
 const TAB_TRACKS_TOOLBAR_DESIGNS: readonly DesignName[] = [
   "lepton",
-  "photon",
-  "fluerial",
+  "derp",
 ] as const;
 
 /**
@@ -277,13 +273,7 @@ function getActiveDesignFromPref(): DesignName | null {
       globalConfigs?: { userInterface?: unknown };
     };
     const ui = parsed?.globalConfigs?.userInterface;
-    if (
-      ui === "fluerial" ||
-      ui === "lepton" ||
-      ui === "photon" ||
-      ui === "protonfix" ||
-      ui === "proton"
-    ) {
+    if (ui === "lepton" || ui === "derp") {
       return ui;
     }
   } catch {

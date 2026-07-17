@@ -325,8 +325,8 @@ function testDefaultConfigWithPrefs(): void {
       const config = createDefaultOldObjectConfigs();
       assertEquals(
         config.globalConfigs.userInterface,
-        "fluerial",
-        "interface=8 should give fluerial",
+        "lepton",
+        "interface=8 (legacy fluerial) now collapses to lepton",
       );
       assertEquals(
         config.tabbar.tabbarStyle,

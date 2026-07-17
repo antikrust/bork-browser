@@ -159,6 +159,19 @@ tab-group[data-derp-stack] .tab-group-label {
   margin-bottom: 0 !important;
 }
 
+/* Active stack: the selected tab lives inside this group. Firefox marks
+   the group [hasactivetab], so no JS is needed. Match a selected tab's
+   22% currentColor wash exactly, and brighten the group-colour border, so
+   an active stack reads with the same visual language as a selected tab. */
+#tabbrowser-tabs tab-group[data-derp-stack][hasactivetab] .tab-group-label {
+  background-color: color-mix(in srgb, currentColor 22%, transparent) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--tab-group-color-invert, currentColor) 85%,
+    white 15%
+  ) !important;
+}
+
 /* No native 2px group underline beneath the chip. */
 tab-group[data-derp-stack] .tab-group-label-container::after {
   display: none !important;

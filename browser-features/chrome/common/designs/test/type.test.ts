@@ -62,7 +62,7 @@ function testValidConfigDecodes(): void {
 }
 
 function testAllUserInterfaceValues(): void {
-  const uiValues = ["fluerial", "lepton", "photon", "protonfix", "proton"];
+  const uiValues = ["lepton", "derp"];
   for (const ui of uiValues) {
     const config = makeValidConfig();
     (config.globalConfigs as Record<string, unknown>).userInterface = ui;

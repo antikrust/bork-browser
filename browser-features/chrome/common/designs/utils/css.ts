@@ -9,27 +9,15 @@ import type * as t from "io-ts";
 // UserJS imports
 import leptonUserJs from "@nora/skin/lepton/userjs/lepton.js?raw";
 import photonUserJs from "@nora/skin/lepton/userjs/photon.js?raw";
-import protonfixUserJs from "@nora/skin/lepton/userjs/protonfix.js?raw";
 
 // CSS raw imports for development
 import leptonChromeStylesRaw from "@nora/skin/lepton/css/leptonChrome.css?raw";
 import leptonContentStylesRaw from "@nora/skin/lepton/css/leptonContent.css?raw";
-import fluerialStylesRaw from "@nora/skin/fluerial/css/fluerial.css?raw";
 import derpStylesRaw from "@nora/skin/derp/css/derp.css?raw";
-import {
-  FLUERIAL_TAB_CORNER_CSS,
-  TAB_COLOR_LIKE_TOOLBAR_CSS,
-} from "./tab-color-like-toolbar.css.ts";
-// Gecko 152 (Project Nova) compatibility.
-// GECKO_152_COLOR_FIX_CSS applies to every design (dialogs/panels go black or
-// transparent on 152 regardless of which skin is active); LEPTON_COMPAT_CSS
-// layers on the Lepton-specific palette + Floorp icon patches for the
-// Lepton family. Both load AFTER the skin's own sheets so equal-specificity
-// rules win by source order.
-import {
-  GECKO_152_COLOR_FIX_CSS,
-  LEPTON_COMPAT_CSS,
-} from "./lepton-compat-152.css.ts";
+// Gecko 152 (Project Nova) compatibility: LEPTON_COMPAT_CSS layers the
+// Lepton palette + Floorp icon patches for the Lepton family (lepton, derp).
+// Loads AFTER the skin's own sheets so equal-specificity rules win by order.
+import { LEPTON_COMPAT_CSS } from "./lepton-compat-152.css.ts";
 
 /**
  * Lepton / Photon / ProtonFix: match nav-bar and bookmark bar to the toolbar
@@ -167,36 +155,6 @@ export function getCSSFromConfig(
   const uiTheme = pref.globalConfigs.userInterface;
 
   switch (uiTheme) {
-    case "fluerial": {
-      if (isDev) {
-        return {
-          chromeStylesRaw: [
-            fluerialStylesRaw,
-            TAB_COLOR_LIKE_TOOLBAR_CSS,
-            FLUERIAL_TAB_CORNER_CSS,
-            // Gecko 152 color stabilization (dialog/panel backgrounds). This
-            // is NOT Lepton-specific — fluerial surfaces the same symptoms
-            // once the built-in-theme signals go unreliable on 152.
-            GECKO_152_COLOR_FIX_CSS,
-          ],
-          iconBasePath: "http://localhost:5174/fluerial/icons",
-          userjs: null,
-          useTabColorAsToolbarColor: true,
-        };
-      }
-      return {
-        chromeStylesRaw: [
-          fluerialStylesRaw,
-          TAB_COLOR_LIKE_TOOLBAR_CSS,
-          FLUERIAL_TAB_CORNER_CSS,
-          GECKO_152_COLOR_FIX_CSS,
-        ],
-        iconBasePath: getIconBasePath("fluerial"),
-        userjs: null,
-        useTabColorAsToolbarColor: true,
-      };
-    }
-
     case "lepton": {
       if (isDev) {
         return {
@@ -218,58 +176,6 @@ export function getCSSFromConfig(
         chromeStylesRaw: [LEPTON_COMPAT_CSS, navBarBackgroundColorCSS],
         userjs: leptonUserJs,
       };
-    }
-
-    case "photon": {
-      if (isDev) {
-        return {
-          chromeStylesRaw: [
-            leptonChromeStylesRaw,
-            LEPTON_COMPAT_CSS,
-            navBarBackgroundColorCSS,
-          ],
-          stylesRaw: [leptonContentStylesRaw],
-          iconBasePath: "http://localhost:5174/lepton/icons",
-          userjs: photonUserJs,
-        };
-      }
-      return {
-        chromeStyles: [
-          getStylePath("lepton/css/leptonChrome.css"),
-          getStylePath("lepton/css/leptonContent.css"),
-        ],
-        chromeStylesRaw: [LEPTON_COMPAT_CSS, navBarBackgroundColorCSS],
-        styles: [getStylePath("lepton/css/leptonContent.css")],
-        userjs: photonUserJs,
-      };
-    }
-
-    case "protonfix": {
-      if (isDev) {
-        return {
-          chromeStylesRaw: [
-            leptonChromeStylesRaw,
-            LEPTON_COMPAT_CSS,
-            navBarBackgroundColorCSS,
-          ],
-          stylesRaw: [leptonContentStylesRaw],
-          iconBasePath: "http://localhost:5174/lepton/icons",
-          userjs: protonfixUserJs,
-        };
-      }
-      return {
-        chromeStyles: [
-          getStylePath("lepton/css/leptonChrome.css"),
-          getStylePath("lepton/css/leptonContent.css"),
-        ],
-        chromeStylesRaw: [LEPTON_COMPAT_CSS, navBarBackgroundColorCSS],
-        styles: [getStylePath("lepton/css/leptonContent.css")],
-        userjs: protonfixUserJs,
-      };
-    }
-
-    case "proton": {
-      return { userjs: null };
     }
 
     case "derp": {

@@ -56,34 +56,6 @@ function makeConfig(
 }
 
 // ---------------------------------------------------------------------------
-// Tests — fluerial theme
-// ---------------------------------------------------------------------------
-
-function testFluerialReturnsUserjsNull(): void {
-  const result = getCSSFromConfig(makeConfig("fluerial"));
-  assertEquals(result.userjs, null, "fluerial should have null userjs");
-}
-
-function testFluerialHasUseTabColorAsToolbarColor(): void {
-  const result = getCSSFromConfig(makeConfig("fluerial"));
-  assertEquals(
-    result.useTabColorAsToolbarColor,
-    true,
-    "fluerial should set useTabColorAsToolbarColor to true",
-  );
-}
-
-function testFluerialHasStylesOrRaw(): void {
-  const result = getCSSFromConfig(makeConfig("fluerial"));
-  const hasChromeStyles = (result.chromeStyles?.length ?? 0) > 0 ||
-    (result.chromeStylesRaw?.length ?? 0) > 0;
-  assert(
-    hasChromeStyles,
-    "fluerial should have chromeStyles or chromeStylesRaw",
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Tests — lepton theme
 // ---------------------------------------------------------------------------
 
@@ -129,12 +101,12 @@ function getChromeInlineCss(
   return getCSSFromConfig(makeConfig(ui)).chromeStylesRaw?.join("\n") ?? "";
 }
 
-function testLeptonPhotonProtonfixNavBarCssIncludesPersonalToolbar(): void {
+function testLeptonDerpNavBarCssIncludesPersonalToolbar(): void {
   // Each theme must actually WIRE the shared nav-bar CSS into its
   // chromeStylesRaw (content assertions are then made against
   // `navBarBackgroundColorCSS` directly, to avoid false matches from the
   // vendored Lepton sheet which legitimately contains many selectors).
-  for (const theme of ["lepton", "photon", "protonfix"] as const) {
+  for (const theme of ["lepton", "derp"] as const) {
     const css = getChromeInlineCss(theme);
     assert(
       css.includes("#PersonalToolbar"),
@@ -163,7 +135,7 @@ function testLeptonPhotonProtonfixNavBarCssIncludesPersonalToolbar(): void {
 function testNavBarCssIsLwtAware(): void {
   // The nav-bar CSS is shared across the Lepton family. Assert it is wired into
   // every theme's chromeStylesRaw first...
-  for (const theme of ["lepton", "photon", "protonfix"] as const) {
+  for (const theme of ["lepton", "derp"] as const) {
     assert(
       getChromeInlineCss(theme).includes("nav-bar") === false ||
         getChromeInlineCss(theme).includes("--floorp-chrome-surface-color"),
@@ -277,68 +249,31 @@ function testNavBarCssIsLwtAware(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Tests — photon theme
+// Tests — derp theme
 // ---------------------------------------------------------------------------
 
-function testPhotonReturnsUserjs(): void {
-  const result = getCSSFromConfig(makeConfig("photon"));
-  assert(result.userjs !== null, "photon should have non-null userjs");
+function testDerpReturnsUserjs(): void {
+  const result = getCSSFromConfig(makeConfig("derp"));
+  assert(result.userjs !== null, "derp should have non-null userjs");
 }
 
-function testPhotonHasContentStyles(): void {
-  const result = getCSSFromConfig(makeConfig("photon"));
+function testDerpHasContentStyles(): void {
+  const result = getCSSFromConfig(makeConfig("derp"));
   const hasContentStyles = (result.styles?.length ?? 0) > 0 ||
     (result.stylesRaw?.length ?? 0) > 0;
   assert(
     hasContentStyles,
-    "photon should have content styles (styles or stylesRaw)",
+    "derp should have content styles (styles or stylesRaw)",
   );
 }
 
-function testPhotonHasChromeStyles(): void {
-  const result = getCSSFromConfig(makeConfig("photon"));
+function testDerpHasChromeStyles(): void {
+  const result = getCSSFromConfig(makeConfig("derp"));
   const hasChromeStyles = (result.chromeStyles?.length ?? 0) > 0 ||
     (result.chromeStylesRaw?.length ?? 0) > 0;
   assert(
     hasChromeStyles,
-    "photon should have chrome styles (chromeStyles or chromeStylesRaw)",
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Tests — protonfix theme
-// ---------------------------------------------------------------------------
-
-function testProtonfixReturnsUserjs(): void {
-  const result = getCSSFromConfig(makeConfig("protonfix"));
-  assert(result.userjs !== null, "protonfix should have non-null userjs");
-}
-
-function testProtonfixNoUseTabColorAsToolbarColor(): void {
-  const result = getCSSFromConfig(makeConfig("protonfix"));
-  assertEquals(
-    result.useTabColorAsToolbarColor,
-    undefined,
-    "protonfix should not set useTabColorAsToolbarColor (conflicts with userjs color_like_toolbar=false)",
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Tests — proton theme (default Firefox)
-// ---------------------------------------------------------------------------
-
-function testProtonReturnsNullUserjs(): void {
-  const result = getCSSFromConfig(makeConfig("proton"));
-  assertEquals(result.userjs, null, "proton should have null userjs");
-}
-
-function testProtonNoStyles(): void {
-  const result = getCSSFromConfig(makeConfig("proton"));
-  assertEquals(result.styles, undefined, "proton should have no styles");
-  assertEquals(
-    result.chromeStyles,
-    undefined,
-    "proton should have no chromeStyles",
+    "derp should have chrome styles (chromeStyles or chromeStylesRaw)",
   );
 }
 
@@ -348,11 +283,8 @@ function testProtonNoStyles(): void {
 
 function testAllThemesReturnNonNullResult(): void {
   const themes: TFloorpDesignConfigs["globalConfigs"]["userInterface"][] = [
-    "fluerial",
     "lepton",
-    "photon",
-    "protonfix",
-    "proton",
+    "derp",
   ];
   for (const theme of themes) {
     const result = getCSSFromConfig(makeConfig(theme));
@@ -395,13 +327,6 @@ function testProductionPathsUseChromeProtocol(): void {
 
 export async function runAllTests(): Promise<void> {
   await runTests("css.test.ts", [
-    // fluerial
-    { name: "fluerial returns null userjs", fn: testFluerialReturnsUserjsNull },
-    {
-      name: "fluerial has useTabColorAsToolbarColor",
-      fn: testFluerialHasUseTabColorAsToolbarColor,
-    },
-    { name: "fluerial has styles", fn: testFluerialHasStylesOrRaw },
     // lepton
     { name: "lepton returns userjs", fn: testLeptonReturnsUserjs },
     {
@@ -413,26 +338,19 @@ export async function runAllTests(): Promise<void> {
       fn: testLeptonHasExpectedStyleEntries,
     },
     {
-      name: "lepton/photon/protonfix navBar CSS includes PersonalToolbar",
-      fn: testLeptonPhotonProtonfixNavBarCssIncludesPersonalToolbar,
+      name: "lepton/derp navBar CSS includes PersonalToolbar",
+      fn: testLeptonDerpNavBarCssIncludesPersonalToolbar,
     },
     {
-      name: "lepton/photon/protonfix navBar CSS is LWT-aware",
+      name: "lepton/derp navBar CSS is LWT-aware",
       fn: testNavBarCssIsLwtAware,
     },
-    // photon
-    { name: "photon returns userjs", fn: testPhotonReturnsUserjs },
-    { name: "photon has content styles", fn: testPhotonHasContentStyles },
-    { name: "photon has chrome styles", fn: testPhotonHasChromeStyles },
-    // protonfix
-    { name: "protonfix returns userjs", fn: testProtonfixReturnsUserjs },
-    {
-      name: "protonfix no useTabColorAsToolbarColor",
-      fn: testProtonfixNoUseTabColorAsToolbarColor,
-    },
-    // proton
-    { name: "proton returns null userjs", fn: testProtonReturnsNullUserjs },
-    { name: "proton no styles", fn: testProtonNoStyles },
+    // derp
+    { name: "derp returns userjs", fn: testDerpReturnsUserjs },
+    { name: "derp has content styles", fn: testDerpHasContentStyles },
+    { name: "derp has chrome styles", fn: testDerpHasChromeStyles },
+    { name: "derp has both style types", fn: testDerpHasBothStyleTypes },
+    { name: "derp has iconBasePath in dev", fn: testDerpHasIconBasePathInDev },
     // structural
     {
       name: "all themes return non-null result",
@@ -442,23 +360,7 @@ export async function runAllTests(): Promise<void> {
       name: "production paths use chrome:// protocol",
       fn: testProductionPathsUseChromeProtocol,
     },
-    // Additional tests
-    {
-      name: "fluerial has iconBasePath in dev",
-      fn: testFluerialHasIconBasePathInDev,
-    },
-    {
-      name: "lepton has iconBasePath in dev",
-      fn: testLeptonHasIconBasePathInDev,
-    },
-    {
-      name: "photon has both chrome and content styles",
-      fn: testPhotonHasBothStyleTypes,
-    },
-    {
-      name: "protonfix has both chrome and content styles",
-      fn: testProtonfixHasBothStyleTypes,
-    },
+    { name: "lepton has iconBasePath in dev", fn: testLeptonHasIconBasePathInDev },
     {
       name: "userjs content is non-empty for themes that have it",
       fn: testUserjsContentNonEmpty,
@@ -474,14 +376,14 @@ export async function runAllTests(): Promise<void> {
 // Additional Tests — FCSS edge cases and invariants
 // ---------------------------------------------------------------------------
 
-function testFluerialHasIconBasePathInDev(): void {
-  const result = getCSSFromConfig(makeConfig("fluerial"));
+function testDerpHasIconBasePathInDev(): void {
+  const result = getCSSFromConfig(makeConfig("derp"));
   // In dev mode, iconBasePath should be present
   // In production, it's undefined (chrome:// URLs don't need it)
   const hasIconPath = result.iconBasePath !== undefined;
   assert(
     hasIconPath || result.chromeStyles !== undefined,
-    "fluerial should have iconBasePath in dev or chromeStyles in prod",
+    "derp should have iconBasePath in dev or chromeStyles in prod",
   );
 }
 
@@ -494,10 +396,9 @@ function testLeptonHasIconBasePathInDev(): void {
   );
 }
 
-function testPhotonHasBothStyleTypes(): void {
-  const result = getCSSFromConfig(makeConfig("photon"));
-  // Photon has both chrome styles (chromeStyles/chromeStylesRaw)
-  // and content styles (styles/stylesRaw)
+function testDerpHasBothStyleTypes(): void {
+  const result = getCSSFromConfig(makeConfig("derp"));
+  // derp (compact Lepton) carries both chrome styles and content styles.
   const hasChromeStyles = (result.chromeStyles?.length ?? 0) > 0 ||
     (result.chromeStylesRaw?.length ?? 0) > 0;
   const hasContentStyles = (result.styles?.length ?? 0) > 0 ||
@@ -506,29 +407,14 @@ function testPhotonHasBothStyleTypes(): void {
   assertEquals(
     hasChromeStyles && hasContentStyles,
     true,
-    "photon should have both chrome and content styles",
-  );
-}
-
-function testProtonfixHasBothStyleTypes(): void {
-  const result = getCSSFromConfig(makeConfig("protonfix"));
-  // Protonfix also has both chrome and content styles
-  const hasChromeStyles = (result.chromeStyles?.length ?? 0) > 0 ||
-    (result.chromeStylesRaw?.length ?? 0) > 0;
-  const hasContentStyles = (result.styles?.length ?? 0) > 0 ||
-    (result.stylesRaw?.length ?? 0) > 0;
-
-  assertEquals(
-    hasChromeStyles && hasContentStyles,
-    true,
-    "protonfix should have both chrome and content styles",
+    "derp should have both chrome and content styles",
   );
 }
 
 function testUserjsContentNonEmpty(): void {
   const themesWithUserjs: Array<
     TFloorpDesignConfigs["globalConfigs"]["userInterface"]
-  > = ["lepton", "photon", "protonfix"];
+  > = ["lepton", "derp"];
 
   for (const theme of themesWithUserjs) {
     const result = getCSSFromConfig(makeConfig(theme));
@@ -547,7 +433,7 @@ function testProductionThemesCanCombineChromeStylesAndRaw(): void {
 
   const themes: Array<
     TFloorpDesignConfigs["globalConfigs"]["userInterface"]
-  > = ["fluerial", "lepton", "photon", "protonfix"];
+  > = ["lepton", "derp"];
 
   for (const theme of themes) {
     const result = getCSSFromConfig(makeConfig(theme));

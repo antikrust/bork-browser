@@ -241,7 +241,7 @@ function testSynthesizedAliasesAreEmittedCorrectly(): void {
 
 /** The three Lepton-backed designs must include the compat CSS inline. */
 function testLeptonThemesIncludeCompatCss(): void {
-  for (const theme of ["lepton", "photon", "protonfix"] as const) {
+  for (const theme of ["lepton", "derp"] as const) {
     const css = getInlineChromeCss(theme);
     assert(
       css.includes("Floorp Lepton compat"),
@@ -251,32 +251,17 @@ function testLeptonThemesIncludeCompatCss(): void {
 }
 
 /**
- * The shared color-fix layer must reach EVERY chrome-rendering theme now,
- * including fluerial (it was previously Lepton-only, leaving fluerial users
- * exposed to the black-dialog / transparent-panel symptoms).
+ * The shared color-fix layer (embedded in LEPTON_COMPAT_CSS) must reach every
+ * surviving skinned theme — lepton and derp.
  */
 function testAllSkinnedThemesIncludeColorFix(): void {
-  for (const theme of ["fluerial", "lepton", "photon", "protonfix"] as const) {
+  for (const theme of ["lepton", "derp"] as const) {
     const css = getInlineChromeCss(theme);
     assert(
       css.includes("Floorp Gecko 152 color fix"),
       `${theme} should include the shared Gecko 152 color-fix layer`,
     );
   }
-}
-
-/** The built-in `proton` design ships no Floorp skin CSS, so neither layer
- *  should be present for it. */
-function testProtonExcludesBothLayers(): void {
-  const css = getInlineChromeCss("proton");
-  assert(
-    !css.includes("Floorp Lepton compat"),
-    "proton must NOT include the Lepton compat stylesheet",
-  );
-  assert(
-    !css.includes("Floorp Gecko 152 color fix"),
-    "proton must NOT include the color-fix layer (it has no skin CSS at all)",
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -461,22 +446,13 @@ function testBundledCompatIsColorPlusLeptonPlusIcons(): void {
 /** The icon patches ride along with the Lepton family only (the IDs are
  *  Lepton-scoped). */
 function testLeptonThemesIncludeFloorpIconPatches(): void {
-  for (const theme of ["lepton", "photon", "protonfix"] as const) {
+  for (const theme of ["lepton", "derp"] as const) {
     const css = getInlineChromeCss(theme);
     assert(
       css.includes("#usercssloader-menu"),
       `${theme} should include the Floorp icon patches`,
     );
   }
-}
-
-/** fluerial gets the color fix but NOT the Lepton icon patches. */
-function testFluerialExcludesLeptonIconPatches(): void {
-  const css = getInlineChromeCss("fluerial");
-  assert(
-    !css.includes("#usercssloader-menu"),
-    "fluerial must NOT include the Lepton-scoped Floorp icon patches",
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -495,7 +471,6 @@ export async function runAllTests(): Promise<void> {
     // injection scope
     { name: "lepton themes include compat css", fn: testLeptonThemesIncludeCompatCss },
     { name: "all skinned themes include color fix", fn: testAllSkinnedThemesIncludeColorFix },
-    { name: "proton excludes both layers", fn: testProtonExcludesBothLayers },
     // robust detection
     { name: "compat avoids brittle selectors", fn: testCompatAvoidsBrittleSelectors },
     { name: "compat uses robust lwt signals", fn: testCompatUsesRobustLwtSignals },
@@ -510,7 +485,6 @@ export async function runAllTests(): Promise<void> {
     { name: "floorp icon patches present", fn: testFloorpIconPatchesPresent },
     { name: "bundled compat is color + lepton + icons", fn: testBundledCompatIsColorPlusLeptonPlusIcons },
     { name: "lepton themes include floorp icon patches", fn: testLeptonThemesIncludeFloorpIconPatches },
-    { name: "fluerial excludes lepton icon patches", fn: testFluerialExcludesLeptonIconPatches },
   ]);
 }
 

@@ -41,12 +41,12 @@ function withIntPrefs(prefs: [string, number][], fn: () => void): void {
 // Tests — getOldInterfaceConfig
 // ---------------------------------------------------------------------------
 
-function testInterfaceDefaultLepton(): void {
+function testInterfaceDefaultDerp(): void {
   withIntPref("floorp.browser.user.interface", 0, () => {
     assertEquals(
       getOldInterfaceConfig(),
-      "lepton",
-      "default (0) should return lepton",
+      "derp",
+      "default (0, no legacy pref) should return derp",
     );
   });
 }
@@ -67,7 +67,7 @@ function testInterfaceCase3DefaultLepton(): void {
   );
 }
 
-function testInterfaceCase3Photon(): void {
+function testInterfaceCase3PhotonNowLepton(): void {
   withIntPrefs(
     [
       ["floorp.browser.user.interface", 3],
@@ -76,14 +76,14 @@ function testInterfaceCase3Photon(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "photon",
-        "interface=3, lepton=1 should return photon",
+        "lepton",
+        "legacy photon (3, 1) collapses to lepton",
       );
     },
   );
 }
 
-function testInterfaceCase3Protonfix(): void {
+function testInterfaceCase3ProtonfixNowLepton(): void {
   withIntPrefs(
     [
       ["floorp.browser.user.interface", 3],
@@ -92,19 +92,19 @@ function testInterfaceCase3Protonfix(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "protonfix",
-        "interface=3, lepton=3 should return protonfix",
+        "lepton",
+        "legacy protonfix (3, 3) collapses to lepton",
       );
     },
   );
 }
 
-function testInterfaceCase8Fluerial(): void {
+function testInterfaceCase8FluerialNowLepton(): void {
   withIntPref("floorp.browser.user.interface", 8, () => {
     assertEquals(
       getOldInterfaceConfig(),
-      "fluerial",
-      "interface=8 should return fluerial",
+      "lepton",
+      "legacy fluerial (8) collapses to lepton",
     );
   });
 }
@@ -201,12 +201,12 @@ function testTabbarPositionBottomWindow(): void {
 // Tests — edge cases (invalid / unknown values)
 // ---------------------------------------------------------------------------
 
-function testInterfaceInvalidValueReturnsLepton(): void {
+function testInterfaceInvalidValueReturnsDerp(): void {
   withIntPref("floorp.browser.user.interface", 99, () => {
     assertEquals(
       getOldInterfaceConfig(),
-      "lepton",
-      "invalid interface value should default to lepton",
+      "derp",
+      "invalid interface value should default to derp",
     );
   });
 }
@@ -253,14 +253,14 @@ function testTabbarPositionInvalidValueReturnsDefault(): void {
 
 export function runAllTests(): void {
   const tests: TestCase[] = [
-    { name: "interface default → lepton", fn: testInterfaceDefaultLepton },
+    { name: "interface default → derp", fn: testInterfaceDefaultDerp },
     {
       name: "interface 3+0 → lepton",
       fn: testInterfaceCase3DefaultLepton,
     },
-    { name: "interface 3+1 → photon", fn: testInterfaceCase3Photon },
-    { name: "interface 3+3 → protonfix", fn: testInterfaceCase3Protonfix },
-    { name: "interface 8 → fluerial", fn: testInterfaceCase8Fluerial },
+    { name: "interface 3+1 → lepton", fn: testInterfaceCase3PhotonNowLepton },
+    { name: "interface 3+3 → lepton", fn: testInterfaceCase3ProtonfixNowLepton },
+    { name: "interface 8 → lepton", fn: testInterfaceCase8FluerialNowLepton },
     { name: "tabbar style 0 → horizontal", fn: testTabbarStyleHorizontal },
     { name: "tabbar style 1 → multirow", fn: testTabbarStyleMultirow },
     { name: "tabbar style 2 → vertical", fn: testTabbarStyleVertical },
@@ -277,8 +277,8 @@ export function runAllTests(): void {
     },
     // Edge cases
     {
-      name: "interface invalid → lepton",
-      fn: testInterfaceInvalidValueReturnsLepton,
+      name: "interface invalid → derp",
+      fn: testInterfaceInvalidValueReturnsDerp,
     },
     {
       name: "interface 3+invalid → lepton",

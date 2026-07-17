@@ -106,7 +106,7 @@ export default function Page() {
   // Check if current design supports Lepton settings
   const isLeptonCompatible = watchAll &&
     watchAll.design &&
-    ["protonfix", "photon", "lepton"].includes(watchAll.design);
+    ["lepton", "derp"].includes(watchAll.design);
 
   return (
     <div className="p-6 space-y-3">

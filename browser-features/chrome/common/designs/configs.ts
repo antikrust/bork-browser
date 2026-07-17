@@ -197,7 +197,7 @@ export function createDefaultOldObjectConfigs(): TFloorpDesignConfigs {
     console.error("Failed to create default old object configs:", e);
     return {
       globalConfigs: {
-        userInterface: "proton",
+        userInterface: "derp",
         faviconColor: false,
         appliedUserJs: "",
       },
