@@ -4,6 +4,10 @@ import type { DesignFormData } from "@/types/pref.ts";
 const SPLIT_VIEW_DND_CREATE_PREF = "floorp.splitView.dragToSplitCreate.enabled";
 const DEFAULT_SPLIT_VIEW_DND_CREATE = true;
 
+const HOVER_RELOAD_PREF = "derp.tabs.hoverReload.enabled";
+// Off by default — hover-reload is a taste thing.
+const DEFAULT_HOVER_RELOAD = false;
+
 // Lepton Settings Interface
 export interface LeptonFormData {
   // Auto-hide settings
@@ -218,6 +222,7 @@ export async function saveDesignSettings(
     SPLIT_VIEW_DND_CREATE_PREF,
     settings.tabDragToSplitCreate,
   );
+  await rpc.setBoolPref(HOVER_RELOAD_PREF, settings.tabHoverReload);
 
   const { hasTabStyleChanged = false } = options;
 
@@ -240,6 +245,7 @@ export async function getDesignSettings(): Promise<DesignFormData | null> {
   const splitViewDndCreateEnabled = await rpc.getBoolPref(
     SPLIT_VIEW_DND_CREATE_PREF,
   );
+  const hoverReloadEnabled = await rpc.getBoolPref(HOVER_RELOAD_PREF);
   const formData: DesignFormData = {
     design: data.globalConfigs.userInterface,
     position: data.tabbar.tabbarPosition,
@@ -250,6 +256,7 @@ export async function getDesignSettings(): Promise<DesignFormData | null> {
     tabPinTitle: data.tab.tabPinTitle,
     tabDragToSplitCreate: splitViewDndCreateEnabled ??
       DEFAULT_SPLIT_VIEW_DND_CREATE,
+    tabHoverReload: hoverReloadEnabled ?? DEFAULT_HOVER_RELOAD,
     tabScrollReverse: data.tab.tabScroll.reverse,
     tabScrollWrap: data.tab.tabScroll.wrap,
     tabDubleClickToClose: data.tab.tabDubleClickToClose,

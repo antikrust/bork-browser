@@ -124,6 +124,17 @@ export function Tab() {
         </div>
 
         <div className="flex items-center justify-between gap-2">
+          <label htmlFor="hover-reload">
+            {t("design.tab.hoverReload")}
+          </label>
+          <Switch
+            id="hover-reload"
+            checked={!!getValues("tabHoverReload")}
+            onChange={(e) => setValue("tabHoverReload", e.target.checked)}
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
           <label htmlFor="double-click-close">
             {t("design.tab.doubleClickToClose")}
           </label>

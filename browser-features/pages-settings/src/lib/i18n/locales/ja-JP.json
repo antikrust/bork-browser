@@ -128,7 +128,8 @@
             "minWidth": "タブの最小幅",
             "minWidthError": "タブの幅は、 {{min}} から {{max}} ピクセルの間でなければなりません。",
             "minHeight": "タブの最小高さ",
-            "minHeightError": "タブの高さは、 {{min}} から {{max}} ピクセルの間でなければなりません。"
+            "minHeightError": "タブの高さは、 {{min}} から {{max}} ピクセルの間でなければなりません。",
+            "hoverReload": "タブにポインターを合わせると再読み込みボタンを表示する"
         },
         "lepton-preferences": {
             "title": "Lepton の設定",
