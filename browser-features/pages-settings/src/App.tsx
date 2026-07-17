@@ -26,14 +26,19 @@ export default function App() {
   const location = useLocation();
   useHashSync(location.pathname);
 
+  // h-screen + overflow-hidden pins the shell to the viewport and gives the
+  // content its OWN scroll container (the overflow-y-auto div below).
+  // Relying on body/viewport scroll did not scroll in the about:hub content
+  // context even though the document was tall — an explicit scroll region is
+  // the reliable target.
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex h-screen w-full flex-col overflow-hidden">
       <AppBackground />
-      <div className="z-1 flex min-w-0 flex-1">
+      <div className="z-1 flex min-w-0 flex-1 overflow-hidden">
         <AppSidebar />
-        <div className="min-w-0 flex-1 max-w-3xl">
+        <div className="min-w-0 flex-1 max-w-3xl flex flex-col overflow-hidden">
           <Header />
-          <div className="p-4">
+          <div className="flex-1 overflow-y-auto p-4">
             <Routes>
               <Route
                 path="/"
