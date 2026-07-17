@@ -388,6 +388,30 @@
   list-style-image: url("chrome://browser/skin/menu.svg");
 }
 
+/* Bottom-cluster icon colours: a warm, muted set (the SVGs are
+   context-fill, and .panel-sidebar-panel already fills currentColor, so
+   colour alone does it). Extensions and passwords were picked by hand;
+   the rest stay in the same family. */
+#derp-sidebar-reopen-icon {
+  color: #d98b6f; /* terracotta */
+}
+
+#derp-sidebar-account-icon {
+  color: #cf8f9e; /* dusty rose */
+}
+
+#panel-sidebar-addons-icon {
+  color: #e3c247; /* golden yellow */
+}
+
+#panel-sidebar-passwords-icon {
+  color: #d96a48; /* red clay */
+}
+
+#panel-sidebar-preferences-icon {
+  color: #d3ccc0; /* pale warm grey */
+}
+
 /* Child Windows */
 #browser[data-is-child] > #panel-sidebar-select-box,
 #browser[data-is-child] > #panel-sidebar-box,
