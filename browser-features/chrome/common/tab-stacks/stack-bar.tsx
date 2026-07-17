@@ -36,6 +36,7 @@ type TabBrowser = {
   removeTabs?: (tabs: StackTab[], opts?: Record<string, unknown>) => void;
   addTab: (url: string, opts: Record<string, unknown>) => StackTab;
   ungroupTab?: (tab: StackTab) => void;
+  reloadTab?: (tab: StackTab) => void;
   moveTabBefore?: (tab: StackTab, target: StackTab) => void;
 };
 
@@ -78,6 +79,13 @@ export const getGroupDisplayTitle = (group: StackGroup): string => {
     remembered && remembered.isConnected && remembered.group === group
       ? remembered
       : group.tabs.find((t) => t.selected) ?? group.tabs[0];
+  // Seed the memory with whatever we resolved: a stack restored with the
+  // selection already inside it has no remembered entry (no TabSelect
+  // ever fired in-group), so clicking OUT of the stack re-resolved the
+  // title to the first tab and the chip appeared to rename itself.
+  if (tab && tab !== remembered) {
+    lastSelectedInGroup.set(group, tab);
+  }
   const label = tab?.label ?? "";
   return label.length > 24 ? `${label.slice(0, 24)}…` : label;
 };
@@ -264,6 +272,19 @@ function StackTabProxy(props: { tab: StackTab }) {
         <xul:label class="derp-stack-tab-label" crop="end">
           {label()}
         </xul:label>
+        <xul:image
+          class="derp-stack-tab-refresh"
+          src="chrome://global/skin/icons/reload.svg"
+          tooltiptext="Reload tab"
+          onMouseDown={(event: MouseEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+          }}
+          onClick={(event: MouseEvent) => {
+            event.stopPropagation();
+            getGBrowser()?.reloadTab?.(props.tab);
+          }}
+        />
       </Show>
     </xul:hbox>
   );

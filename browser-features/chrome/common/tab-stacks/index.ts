@@ -314,6 +314,49 @@ export default class TabStacks extends NoraComponentBase {
       kindMenu = doc.createXULElement("menupopup") as typeof kindMenu &
         XULElement;
       kindMenu.id = KIND_MENU_ID;
+      const makeItem = (label: string, onCommand: () => void): XULElement => {
+        const item = doc.createXULElement("menuitem");
+        item.setAttribute("label", label);
+        item.addEventListener("command", onCommand);
+        kindMenu?.appendChild(item);
+        return item;
+      };
+      makeItem("Reload Stack", () => {
+        const gb = getGBrowser();
+        const group = menuGroup;
+        if (!group || !gb) return;
+        try {
+          for (const t of [...group.tabs]) gb.reloadTab?.(t);
+        } catch (e) {
+          console.error("[tab-stacks] reload stack failed:", e);
+        }
+      });
+      makeItem("New Tab in Stack", () => {
+        const gb = getGBrowser();
+        const group = menuGroup;
+        if (!group || !gb) return;
+        try {
+          const url = (globalThis as unknown as {
+            BROWSER_NEW_TAB_URL?: string;
+          }).BROWSER_NEW_TAB_URL ?? "about:newtab";
+          const tab = gb.addTab(url, {
+            triggeringPrincipal: Services.scriptSecurityManager
+              .getSystemPrincipal(),
+            skipAnimation: true,
+          });
+          group.addTabs([tab]);
+          gb.selectedTab = tab;
+        } catch (e) {
+          console.error("[tab-stacks] new tab in stack failed:", e);
+        }
+      });
+      makeItem("Rename Stack…", () => {
+        // Native group editor: rename + colour. Naming a stack pins the
+        // chip title (an unnamed chip tracks the stack's current tab).
+        const gb = getGBrowser();
+        if (menuGroup) gb?.tabGroupMenu?.openEditModal(menuGroup);
+      });
+      kindMenu.appendChild(doc.createXULElement("menuseparator"));
       kindItem = doc.createXULElement("menuitem");
       kindItem.addEventListener("command", () => {
         if (!menuGroup) return;
@@ -326,6 +369,32 @@ export default class TabStacks extends NoraComponentBase {
         bumpStacksVersion();
       });
       kindMenu.appendChild(kindItem);
+      makeItem("Ungroup Stack", () => {
+        // Dissolve the stack, keep every tab in the strip.
+        const gb = getGBrowser();
+        const group = menuGroup;
+        if (!group || !gb?.ungroupTab) return;
+        try {
+          for (const t of [...group.tabs]) gb.ungroupTab(t);
+        } catch (e) {
+          console.error("[tab-stacks] ungroup stack failed:", e);
+        }
+      });
+      kindMenu.appendChild(doc.createXULElement("menuseparator"));
+      makeItem("Close Stack", () => {
+        const gb = getGBrowser();
+        const group = menuGroup;
+        if (!group || !gb) return;
+        try {
+          if (gb.removeTabs) {
+            gb.removeTabs([...group.tabs]);
+          } else {
+            for (const t of [...group.tabs]) gb.removeTab(t, { animate: false });
+          }
+        } catch (e) {
+          console.error("[tab-stacks] close stack failed:", e);
+        }
+      });
       popupSet.appendChild(kindMenu);
     }
     const onLabelContextMenu = (event: MouseEvent) => {

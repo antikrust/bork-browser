@@ -444,3 +444,31 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   line-height: 1 !important;
   text-align: center !important;
 }
+
+/* ===== Hover-to-reload (stamped by the tab-refresh feature) ===== */
+/* Cell: reload glyph at the right edge, mirror of the left-side close. */
+.derp-stack-tab .derp-stack-tab-refresh {
+  display: none;
+  position: absolute;
+  inset-inline-end: 6px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  padding: 1px;
+  border-radius: 3px;
+  /* No painted background: the box shows whatever colour it sits over;
+     the backdrop frost alone blanks any lettering beneath. */
+  backdrop-filter: blur(8px);
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
+  z-index: 2;
+}
+
+.derp-stack-tab[derp-show-refresh] .derp-stack-tab-refresh {
+  display: revert;
+}
+
+.derp-stack-tab .derp-stack-tab-refresh:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}

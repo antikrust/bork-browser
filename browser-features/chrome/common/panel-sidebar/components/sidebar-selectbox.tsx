@@ -9,6 +9,10 @@ import { PanelSidebarButton } from "./sidebar-panel-button";
 import { showPanelSidebarAddModal } from "./panel-sidebar-modal";
 import type { CPanelSidebar } from "./panel-sidebar";
 import { WorkspacesPanels } from "../../workspaces/toolbar/workspaces-panels.tsx";
+import {
+  ExtensionTweaker,
+  toggleExtensionTweaker,
+} from "./extension-tweaker.tsx";
 
 export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
   return (
@@ -84,33 +88,12 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
             }
           }}
         />
+        {/* derp: inline extension tweaker — the icon column slides up out
+            of this box in place of the stock unified-extensions popup. */}
+        <ExtensionTweaker />
         <xul:toolbarbutton
           class="panel-sidebar-panel"
-          onCommand={() => {
-            // derp: pop the unified extensions panel (icon list, includes
-            // "Manage extensions") at this button instead of jumping
-            // straight to the addons admin page.
-            const anchor = document?.getElementById(
-              "panel-sidebar-addons-icon",
-            );
-            const panelUI = (globalThis as unknown as {
-              PanelUI?: {
-                showSubView: (viewId: string, anchor: Element) => void;
-              };
-            }).PanelUI;
-            try {
-              if (anchor && panelUI?.showSubView) {
-                panelUI.showSubView("unified-extensions-view", anchor);
-                return;
-              }
-            } catch (e) {
-              console.error(
-                "[panel-sidebar] Failed to open extensions panel:",
-                e,
-              );
-            }
-            globalThis.BrowserAddonUI.openAddonsMgr("addons://list/extension");
-          }}
+          onCommand={() => toggleExtensionTweaker()}
           id="panel-sidebar-addons-icon"
         />
         <xul:toolbarbutton

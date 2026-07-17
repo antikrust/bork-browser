@@ -273,6 +273,51 @@
   opacity: 0 !important;
 }
 
+/* ===== Hover-to-reload: glyph at the tab's right edge ===== */
+/* Shown via [derp-show-refresh], stamped by the tab-refresh feature after
+   a short hover. A JS timer rather than transition-delay: pointer-events
+   cannot be delayed in CSS, so the button would be invisibly clickable
+   during the wait and stray right-edge clicks would reload. */
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .derp-tab-refresh {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute !important;
+  inset-inline-end: 7px !important;
+  inset-block-start: 50% !important;
+  /* Geometric centre (15.0 in a 30px tab) — nudges were tried both
+     ways and the eye settled back here. */
+  transform: translateY(-50%) !important;
+  width: 14px !important;
+  height: 14px !important;
+  padding: 1px !important;
+  margin: 0 !important;
+  z-index: 2;
+  border-radius: 3px;
+  /* No painted background: the box shows whatever colour it sits over,
+     and the backdrop frost alone blanks any lettering beneath — so it
+     matches every surface (hovered, selected, cell) by construction. */
+  backdrop-filter: blur(8px);
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
+  transition: opacity 0.12s ease;
+}
+
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned])[derp-show-refresh] .derp-tab-refresh {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .derp-tab-refresh:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* A tab with no favicon collapses the icon slot, sliding the label left
+   under the hover close button (which sits at the icon's spot). Keep the
+   empty 14px slot so the X lands on blank space, never on the letters. */
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .tab-icon-image:not([src]) {
+  display: inline-flex !important;
+}
+
 /* ===== New-tab "+": square, fills the row (both rows match) ===== */
 /* #TabsToolbar prefix: lepton styles this button with id-level rules. */
 /* .toolbarbutton-icon IS the image element, so sizing it scales the glyph.
@@ -317,4 +362,30 @@
 
 #workspaces-toolbar-button .toolbarbutton-text {
   font-size: 11px !important;
+}
+
+/* ===== Inline address edit: double-click a tab (row 1) ===== */
+/* The input is an overlay in #TabsToolbar space, anchored at the tab and
+   easing from tab width to full width. The tab box itself cannot be
+   widened: its min/max-width are pinned by user/agent-origin !important
+   rules that outrank all author CSS, var feeding included. */
+/* The strip must be the input's containing block, or absolute offsets
+   resolve against the window and the overlay lands nowhere near its tab. */
+#TabsToolbar {
+  position: relative !important;
+}
+
+#TabsToolbar .derp-tab-url-input {
+  position: absolute;
+  z-index: 10;
+  box-sizing: border-box;
+  background: var(--lwt-accent-color, #282828);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  outline: none;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  padding: 0 8px;
+  border-radius: 3px;
+  transition: width 0.14s ease-out;
 }

@@ -64,6 +64,13 @@ Gotchas that cost real time:
 - **Verify the running code by a code-level marker**, not by prefs or boot log lines. A pref
   says what the profile holds; only something the new code uniquely produces proves the build
   carrying it is what you are looking at.
+- **Marionette rewrites prefs.** Launching with `--marionette` applies the remote agent's
+  RecommendedPreferences as user prefs — safe-browsing off, updates off, and dozens more.
+  A "wrong" pref read from the dev browser may be automation hygiene, not your config:
+  check `prefHasUserValue` and whether the name appears anywhere in the tree before chasing it.
+- **Hover/timer tests need one eval.** Each Marionette eval is an interaction (popups
+  auto-hide, hover retargets). Verify time-dependent UI inside a single eval with
+  `Services.tm.spinEventLoopUntil(...)`, not across two connections.
 
 ## Architecture (5 Layers)
 
