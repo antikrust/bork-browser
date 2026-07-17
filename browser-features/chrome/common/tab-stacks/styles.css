@@ -33,11 +33,18 @@ tab-group[data-derp-stack] .tab-group-label-container {
    flex weight and width envelope (an uncapped max-width made it grow to
    eat the free strip space while the centered label stayed small — the
    chip appeared to float in blank space). */
-tab-group[data-derp-stack] > .tab-group-label-container {
+/* #tabbrowser-tabs prefix is load-bearing: leptonChrome.css carries
+   `#tabbrowser-tabs[orient="horizontal"] .tab-group-label-container
+   { margin-inline-start: 4px !important }` — an id-level !important that
+   outranks a plain tab-group selector, so the chip sat 4px right of the
+   previous tab's background edge with a dead strip between them. */
+#tabbrowser-tabs tab-group[data-derp-stack] > .tab-group-label-container {
   flex: 100 100 auto !important;
   min-width: var(--tab-min-width, 76px) !important;
   max-width: 225px !important;
   align-items: stretch !important;
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
 }
 
 /* Close button (injected): absolute overlay at the chip's left edge —
