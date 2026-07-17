@@ -141,6 +141,43 @@ export default class TabStacks extends NoraComponentBase {
       hotCtx: import.meta.hot,
     });
 
+    // Stop the strip yanking back to a hidden stacked tab. Firefox re-runs
+    // _handleTabSelect -> ensureTabIsVisible(selectedTab) on EVERY tab-strip
+    // resize (tabs.js handleResize). When the selected tab is a stack member
+    // it is hidden (zero width) at the chip's spot, so this scrolled the row
+    // back to the chip during manual scrolling — and each scroll toggles the
+    // overflow buttons, resizing the strip, firing it again (a scroll/resize
+    // fight). A hidden zero-width element cannot be "made visible" anyway, so
+    // skip it; every other tab still scrolls into view normally.
+    const asb = (gb.tabContainer as unknown as {
+      arrowScrollbox?: XULElement & {
+        ensureElementIsVisible: (el: Element, instant?: boolean) => void;
+        __derpEnsureWrapped?: boolean;
+      };
+    }).arrowScrollbox;
+    if (asb && !asb.__derpEnsureWrapped) {
+      const orig = asb.ensureElementIsVisible.bind(asb);
+      asb.ensureElementIsVisible = (el: Element, instant?: boolean) => {
+        try {
+          if (
+            el &&
+            ((el as XULElement).hidden ||
+              el.getBoundingClientRect?.().width === 0)
+          ) {
+            return;
+          }
+        } catch {
+          // fall through to native
+        }
+        return orig(el, instant);
+      };
+      asb.__derpEnsureWrapped = true;
+      onCleanup(() => {
+        asb.ensureElementIsVisible = orig;
+        asb.__derpEnsureWrapped = false;
+      });
+    }
+
     const onTabEvent = (event: Event) => {
       if (event.type === "TabSelect") {
         rememberSelection();
@@ -446,6 +483,7 @@ export default class TabStacks extends NoraComponentBase {
     };
     const endTabDrag = () => {
       clearDropIndicators();
+      clearChipHighlight();
       // TabGrouped from a drop arrives before dragend; clear on a delay,
       // then reconcile the bar with wherever selection actually landed.
       setTimeout(() => {
@@ -517,7 +555,7 @@ export default class TabStacks extends NoraComponentBase {
           syncActiveGroup();
           bumpStacksVersion();
           // A busy bar scrolls the newcomer into view.
-          this.scrollProxyIntoView(src);
+          scrollProxyIntoView(src);
         } catch (e) {
           console.error("[tab-stacks] chip drop join failed:", e);
         }
@@ -533,6 +571,34 @@ export default class TabStacks extends NoraComponentBase {
       ) {
         el.removeAttribute("data-drop-side");
       }
+    };
+    const clearChipHighlight = () => {
+      for (const el of document.querySelectorAll("[data-derp-drop-into]")) {
+        el.removeAttribute("data-derp-drop-into");
+      }
+    };
+    // Dragging a row-1 tab over a stack chip lights the WHOLE chip cell
+    // (not a thin insertion underline): the gesture means "drop to join
+    // this stack", which is a cell-level action, not an insertion point.
+    // mozSourceNode is readable during dragover (unlike getData); a proxy's
+    // source is a .derp-stack-tab, not a .tabbrowser-tab, so this fires for
+    // native tab drags only — exactly the join case.
+    const onChipDragOverHighlight = (event: DragEvent) => {
+      const target = event.target as Element | null;
+      const chip = target?.closest?.(".tab-group-label-container")
+        ?.closest?.("tab-group[data-derp-stack]");
+      clearChipHighlight();
+      if (!chip) return;
+      const dt = event.dataTransfer as
+        | (DataTransfer & { mozSourceNode?: Node | null })
+        | null;
+      const src = (dt?.mozSourceNode as Element | null)?.closest?.(
+        ".tabbrowser-tab",
+      ) as StackTab | null;
+      if (!src || (src.group as unknown as Element) === chip) return;
+      event.preventDefault();
+      clearDropIndicators();
+      chip.setAttribute("data-derp-drop-into", "true");
     };
     const onProxyDragOver = (event: DragEvent) => {
       if (!event.dataTransfer?.types?.includes(PROXY_TYPE)) return;
@@ -623,10 +689,15 @@ export default class TabStacks extends NoraComponentBase {
             );
             if (other && other !== tab) gb.moveTabAfter?.(tab, other);
           }
-        } else if (target?.closest?.("#tabbrowser-tabs")) {
-          // Dropping onto its own chip is a no-op, not an exit.
-          const ownChip = target?.closest?.("tab-group[data-derp-stack]");
-          if (ownChip && ownChip === (tab.group as unknown as Element)) {
+        } else if (target?.closest?.("#TabsToolbar")) {
+          // The WHOLE strip row is a valid eject zone (not just the tab
+          // container) so the two dead spots work: the very start (over the
+          // workspace chooser / pre-tab spacer) and the gap right next to a
+          // stack chip at the end. Only releasing ON the tab's own chip
+          // label is a no-op — you did not drag anywhere.
+          const ownLabel = target?.closest?.(".tab-group-label-container");
+          const ownChip = ownLabel?.closest?.("tab-group[data-derp-stack]");
+          if (ownChip && (ownChip === (tab.group as unknown as Element))) {
             return;
           }
           // Resolve the drop target from CURRENT geometry, before any
@@ -654,7 +725,7 @@ export default class TabStacks extends NoraComponentBase {
         this.updateGroupChips();
         syncActiveGroup();
         bumpStacksVersion();
-        this.scrollProxyIntoView(tab);
+        scrollProxyIntoView(tab);
       } catch (e) {
         console.error("[tab-stacks] proxy drop failed:", e);
       }
@@ -665,6 +736,7 @@ export default class TabStacks extends NoraComponentBase {
     addEventListener("drop", onChipDrop, true);
     addEventListener("drop", onProxyDrop, true);
     addEventListener("dragover", onProxyDragOver, true);
+    addEventListener("dragover", onChipDragOverHighlight, true);
     addEventListener("dragend", endTabDrag, true);
     addEventListener("TabGrouped", onTabGroupedDuringDrag);
     onCleanup(() => {
@@ -673,6 +745,7 @@ export default class TabStacks extends NoraComponentBase {
       removeEventListener("drop", onChipDrop, true);
       removeEventListener("drop", onProxyDrop, true);
       removeEventListener("dragover", onProxyDragOver, true);
+      removeEventListener("dragover", onChipDragOverHighlight, true);
       removeEventListener("dragend", endTabDrag, true);
       removeEventListener("TabGrouped", onTabGroupedDuringDrag);
     });
@@ -718,27 +791,6 @@ export default class TabStacks extends NoraComponentBase {
    * must be left completely alone or the two features fight (runaway
    * revive/expand loop, mangled tabs, eventual crash).
    */
-  /** Scroll the bar so a just-moved tab's proxy is visible. */
-  private scrollProxyIntoView(tab: { linkedPanel: string | null }): void {
-    setTimeout(() => {
-      try {
-        const panel = tab.linkedPanel;
-        if (!panel) return;
-        const bar = document?.getElementById("derp-stack-bar") as
-          | (Element & { ensureElementIsVisible?: (el: Element) => void })
-          | null;
-        const proxy = bar?.querySelector(
-          `[data-derp-panel="${panel}"]`,
-        );
-        if (bar?.ensureElementIsVisible && proxy) {
-          bar.ensureElementIsVisible(proxy);
-        }
-      } catch {
-        // scroll is best-effort
-      }
-    }, 50);
-  }
-
   private isSplitViewGroup(group: StackGroup): boolean {
     try {
       return group.tabs.some(

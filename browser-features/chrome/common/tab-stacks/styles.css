@@ -491,3 +491,15 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 .derp-stack-tab .derp-stack-tab-refresh:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
+
+/* Drag-over-chip: light the whole cell ("drop to join this stack") — set
+   by onChipDragOverHighlight in index.ts. Replaces the thin insertion
+   underline for the join gesture. */
+#tabbrowser-tabs tab-group[data-derp-stack][data-derp-drop-into] .tab-group-label {
+  background-color: color-mix(
+    in srgb,
+    var(--focus-outline-color, #0a84ff) 35%,
+    transparent
+  ) !important;
+  border-color: var(--focus-outline-color, #0a84ff) !important;
+}
