@@ -42,9 +42,6 @@ export class ModalManager {
     const container = document?.getElementById(
       "modal-parent-container",
     ) as unknown as XULElement;
-    console.error(
-      `[derp-trace] modal.show container=${!!container}`,
-    );
     if (container) {
       setModalVisible(true);
       setModalSize({
@@ -57,7 +54,6 @@ export class ModalManager {
         "modal-child-browser",
       ) as unknown as XULElement & { browsingContext: BrowsingContextLike } | null;
 
-      console.error(`[derp-trace] modal.show browser=${!!browser}`);
       if (!browser) {
         // Never leave callers awaiting undefined — that used to flow an
         // undefined result into form handlers expecting null.
@@ -71,7 +67,6 @@ export class ModalManager {
 
       const safeForm = JSON.parse(JSON.stringify(form));
 
-      console.error("[derp-trace] modal.show sendQuery ->");
       return new Promise((resolve) => {
         let settled = false;
         const settle = (value: TFormResult | null) => {
@@ -92,11 +87,10 @@ export class ModalManager {
               if (ready !== true) {
                 throw new Error(`child page never mounted (${String(ready)})`);
               }
-              console.error("[derp-trace] modal child alive and rendered");
             })
             .catch((e: unknown) => {
               console.error(
-                "[derp-trace] modal child unresponsive; removing overlay:",
+                "[NRChromeModal] modal page unresponsive; removing overlay:",
                 e,
               );
               this.hide();
@@ -106,12 +100,11 @@ export class ModalManager {
         actor
           .sendQuery("NRChromeModal:show", safeForm)
           .then((response: unknown) => {
-            console.error("[derp-trace] modal.show response received");
             clearTimeout(watchdog);
             settle(response as TFormResult | null);
           })
           .catch((e: unknown) => {
-            console.error("[derp-trace] modal.show sendQuery failed:", e);
+            console.error("[NRChromeModal] show failed:", e);
             clearTimeout(watchdog);
             settle(null);
           });

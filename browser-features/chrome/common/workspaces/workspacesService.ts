@@ -321,11 +321,7 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
    */
   public async manageWorkspaceFromDialog(id?: TWorkspaceID) {
     const targetWorkspaceID = id ?? this.getSelectedWorkspaceID();
-    console.error("[derp-trace] manageWorkspaceFromDialog enter");
     const result = await this.modalCtx.showWorkspacesModal(targetWorkspaceID);
-    console.error(
-      `[derp-trace] manageWorkspaceFromDialog result=${result === null ? "null" : typeof result}`,
-    );
     // Loose check: a missing modal used to resolve undefined, which slid
     // past === null into a destructure crash.
     if (result == null) return;
