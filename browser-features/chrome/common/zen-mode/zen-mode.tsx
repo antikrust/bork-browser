@@ -324,8 +324,7 @@ export function initZenModeState() {
   // the toolbox (page top cut off) or under-pulls it (blank strip above
   // the content). Margins animate, heights don't, so the observer stays
   // quiet during zen's own retract/reveal transitions.
-  const toolbox = document!.getElementById("navigator-toolbox");
-  if (toolbox && typeof ResizeObserver !== "undefined") {
+  if (typeof ResizeObserver !== "undefined") {
     const observer = new ResizeObserver(() => {
       if (!zenModeEnabled()) return;
       // Snap to the new distance without playing the slide transition —
@@ -339,7 +338,22 @@ export function initZenModeState() {
         });
       });
     });
-    observer.observe(toolbox);
+    // The sidebar boxes are watched too: when zen activates at startup
+    // they may not have laid out yet, the rendered-only measurement
+    // skips them, and the CSS default distances (a few px off the real
+    // sizes) drive the slides until something re-measures — visible as
+    // a small hop on every toggle right after launch.
+    for (
+      const id of [
+        "navigator-toolbox",
+        "panel-sidebar-select-box",
+        "panel-sidebar-box",
+        "nora-statusbar",
+      ]
+    ) {
+      const el = document!.getElementById(id);
+      if (el) observer.observe(el);
+    }
     onCleanup(() => observer.disconnect());
   }
 
