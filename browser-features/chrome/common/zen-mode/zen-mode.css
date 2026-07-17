@@ -23,6 +23,13 @@
   z-index: 1 !important;
 }
 
+/* Re-basing the retract distance (the toolbox's natural height changed
+   while zen is active — address-bar toggle, stack bar mount) must snap,
+   not slide: the chrome is off-screen and nothing should visibly move. */
+:root[zenmode][zenmode-rebase] #navigator-toolbox {
+  transition: none !important;
+}
+
 /* URL bar is rendered in the top layer via the Popover API (popover="manual"),
    so ancestor opacity/transform do NOT affect it. Hide it directly. */
 :root[zenmode] #urlbar {

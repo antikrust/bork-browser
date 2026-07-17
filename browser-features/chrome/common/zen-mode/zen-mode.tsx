@@ -28,37 +28,26 @@ export const [zenModeEnabled, setZenModeEnabled] = createRootHMR(
 function measureAndSetCSSVariables() {
   const root = document!.documentElement as HTMLElement;
 
-  const toolbox = document!.getElementById("navigator-toolbox");
-  if (toolbox) {
-    root.style.setProperty(
-      "--zenmode-toolbox-height",
-      `${toolbox.getBoundingClientRect().height}px`,
-    );
-  }
+  // Only record elements that are actually rendered: a toggled-off
+  // sidebar (display:none) measures 0, and recording that poisons the
+  // retract/reveal distances — the side reveal then slides out an empty
+  // zero-based husk. Keeping the last known good value means a hidden
+  // element's vars simply stay as they were, which is correct: its
+  // retract math is moot while it has no box.
+  const setIfRendered = (id: string, prop: string, axis: "w" | "h") => {
+    const el = document!.getElementById(id);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const size = axis === "w" ? rect.width : rect.height;
+    if (size > 0) {
+      root.style.setProperty(prop, `${size}px`);
+    }
+  };
 
-  const sidebar = document!.getElementById("panel-sidebar-box");
-  if (sidebar) {
-    root.style.setProperty(
-      "--zenmode-sidebar-width",
-      `${sidebar.getBoundingClientRect().width}px`,
-    );
-  }
-
-  const selectBox = document!.getElementById("panel-sidebar-select-box");
-  if (selectBox) {
-    root.style.setProperty(
-      "--zenmode-selectbox-width",
-      `${selectBox.getBoundingClientRect().width}px`,
-    );
-  }
-
-  const statusbar = document!.getElementById("nora-statusbar");
-  if (statusbar) {
-    root.style.setProperty(
-      "--zenmode-statusbar-height",
-      `${statusbar.getBoundingClientRect().height}px`,
-    );
-  }
+  setIfRendered("navigator-toolbox", "--zenmode-toolbox-height", "h");
+  setIfRendered("panel-sidebar-box", "--zenmode-sidebar-width", "w");
+  setIfRendered("panel-sidebar-select-box", "--zenmode-selectbox-width", "w");
+  setIfRendered("nora-statusbar", "--zenmode-statusbar-height", "h");
 }
 
 function setupPrefSync() {
@@ -328,6 +317,31 @@ function setupHoverReveal() {
 export function initZenModeState() {
   setupPrefSync();
   setupHoverReveal();
+
+  // Keep the retract distance honest while zen is active: the toolbox's
+  // natural height changes under zen (address-bar hide/unhide, stack bar
+  // mounting), and a stale --zenmode-toolbox-height either over-pulls
+  // the toolbox (page top cut off) or under-pulls it (blank strip above
+  // the content). Margins animate, heights don't, so the observer stays
+  // quiet during zen's own retract/reveal transitions.
+  const toolbox = document!.getElementById("navigator-toolbox");
+  if (toolbox && typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(() => {
+      if (!zenModeEnabled()) return;
+      // Snap to the new distance without playing the slide transition —
+      // the chrome is off-screen and the toggle should be invisible.
+      const root = document!.documentElement!;
+      root.setAttribute("zenmode-rebase", "");
+      measureAndSetCSSVariables();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          root.removeAttribute("zenmode-rebase");
+        });
+      });
+    });
+    observer.observe(toolbox);
+    onCleanup(() => observer.disconnect());
+  }
 
   // Disable zen mode when entering toolbar customization
   const customizeObserver = new MutationObserver(() => {
