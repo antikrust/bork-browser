@@ -375,7 +375,7 @@ export function AboutDialog() {
             alt=""
             aria-hidden="true"
           />
-          <h1 class="ad-name">Floorp</h1>
+          <h1 class="ad-name">Derp</h1>
           <div class="ad-version">
             {t("aboutDialog.version")} {version || "…"}
             {channelBadge && (
@@ -397,52 +397,13 @@ export function AboutDialog() {
                 class="ad-community-item"
                 onClick={(e) => {
                   e.preventDefault();
-                  openExternalUrl("https://github.com/Floorp-Projects/Floorp");
+                  openExternalUrl("https://github.com/100mountains/derp");
                 }}
               >
                 <span class="ad-community-icon">
                   <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z" /></svg>
                 </span>
                 GitHub
-              </a>
-              <a
-                href="#"
-                class="ad-community-item"
-                onClick={(e) => {
-                  e.preventDefault();
-                  openExternalUrl("https://floorp.app/discord");
-                }}
-              >
-                <span class="ad-community-icon">
-                  <svg viewBox="0 0 16 16"><path d="M13.55 3.15A13.3 13.3 0 0010.23 2a9.5 9.5 0 00-.43.87 12.4 12.4 0 00-3.6 0A9.5 9.5 0 005.77 2a13.4 13.4 0 00-3.32 1.15C.35 6.4-.22 9.56.07 12.67A13.5 13.5 0 004.13 15a10 10 0 00.87-1.41 8.7 8.7 0 01-1.37-.66l.33-.26a9.6 9.6 0 008.08 0l.33.26c-.44.26-.9.48-1.37.66.25.5.54.97.87 1.41a13.4 13.4 0 004.06-2.33c.38-3.98-.65-7.1-2.98-10.52zM5.35 10.84c-.87 0-1.58-.82-1.58-1.82s.7-1.82 1.58-1.82 1.6.82 1.58 1.82c0 1-.7 1.82-1.58 1.82zm5.3 0c-.87 0-1.58-.82-1.58-1.82s.7-1.82 1.58-1.82 1.59.82 1.58 1.82c0 1-.7 1.82-1.58 1.82z" /></svg>
-                </span>
-                Discord
-              </a>
-              <a
-                href="#"
-                class="ad-community-item"
-                onClick={(e) => {
-                  e.preventDefault();
-                  openExternalUrl("https://x.com/Floorp_Browser");
-                }}
-              >
-                <span class="ad-community-icon">
-                  <svg viewBox="0 0 16 16"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z" /></svg>
-                </span>
-                X
-              </a>
-              <a
-                href="#"
-                class="ad-community-item"
-                onClick={(e) => {
-                  e.preventDefault();
-                  openExternalUrl("https://www.reddit.com/r/floorp/");
-                }}
-              >
-                <span class="ad-community-icon">
-                  <svg viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.828-1.165a1.09 1.09 0 0 0-1.086.025 1.09 1.09 0 0 0-.478.387c-.96-.6-2.12-.95-3.33-.99l.67-3.02 2.16.48a.77.77 0 1 0 .08-.39l-2.38-.53a.2.2 0 0 0-.24.15l-.74 3.34c-1.26.02-2.46.38-3.45 1a1.09 1.09 0 0 0-1.82.82 1.09 1.09 0 0 0 .43.87c-.03.15-.04.3-.04.46 0 2.27 2.65 4.12 5.92 4.12s5.92-1.85 5.92-4.12c0-.16-.01-.31-.04-.46a1.09 1.09 0 0 0 .36-1.14ZM5.35 9a.77.77 0 1 1 0 1.54.77.77 0 0 1 0-1.54Zm4.56 2.87c-.56.56-1.63.6-1.91.6s-1.35-.05-1.91-.6a.2.2 0 0 1 .28-.28c.35.35 1.1.48 1.63.48s1.28-.13 1.63-.48a.2.2 0 0 1 .28.28Zm-.15-1.33a.77.77 0 1 1 0-1.54.77.77 0 0 1 0 1.54Z" /></svg>
-                </span>
-                Reddit
               </a>
             </div>
           </section>
@@ -522,26 +483,6 @@ export function AboutDialog() {
           data-l10n-id="bottomLinks-license"
         >
           {t("aboutDialog.links.licensing")}
-        </a>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            openExternalUrl("https://ja.floorp.app/privacy");
-          }}
-          data-l10n-id="bottom-links-privacy"
-        >
-          {t("aboutDialog.links.privacy")}
-        </a>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            openExternalUrl("https://ja.floorp.app/terms");
-          }}
-          data-l10n-id="bottom-links-terms"
-        >
-          {t("aboutDialog.links.terms")}
         </a>
         <p class="ad-tm">{t("aboutDialog.trademark")}</p>
       </footer>

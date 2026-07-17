@@ -96,7 +96,7 @@
         "horizontal": "横向",
         "multirow": "多行",
         "vertical": "垂直",
-        "verticalTabIsRemovedFromBrowser": "Floorp 老版本内置垂直标签已从 {{productName}}中移除。请使用 Firefox 自带的垂直标签栏。",
+        "verticalTabIsRemovedFromBrowser": "Derp 老版本内置垂直标签已从 {{productName}}中移除。请使用 Firefox 自带的垂直标签栏。",
         "learnMore": "了解更多",
         "position": "位置",
         "positionDescription": "选择标签栏位置。",

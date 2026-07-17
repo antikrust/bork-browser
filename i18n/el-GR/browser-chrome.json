@@ -4,12 +4,12 @@
     "tooltiptext": "Άνοιγμα της τελευταίας κλεισμένης καρτέλας {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Η διαχείριση των ρυθμίσεων που αφορούν το Floorp, όπως η πλευρική γραμμή του πίνακα, οι χώροι εργασίας και οι κινήσεις του ποντικιού, γίνεται στο Floorp Hub.",
-    "openButton": "Άνοιγμα Floorp Hub"
+    "message": "Η διαχείριση των ρυθμίσεων που αφορούν το Derp, όπως η πλευρική γραμμή του πίνακα, οι χώροι εργασίας και οι κινήσεις του ποντικιού, γίνεται στο Derp Hub.",
+    "openButton": "Άνοιγμα Derp Hub"
   },
   "floorpStartWarning": {
-    "message": "Για να αλλάξετε τη ρύθμιση \"Αρχική σελίδα\", απενεργοποιήστε την Εκκίνηη Floorp από το Floorp Hub (σχετικά: hub#/features/design).",
-    "openButton": "Άνοιγμα Floorp Hub - Σχεδίαση"
+    "message": "Για να αλλάξετε τη ρύθμιση \"Αρχική σελίδα\", απενεργοποιήστε την Εκκίνηη Derp από το Derp Hub (σχετικά: hub#/features/design).",
+    "openButton": "Άνοιγμα Derp Hub - Σχεδίαση"
   },
   "workspaces": {
     "modal": {
@@ -211,7 +211,7 @@
       "floorp-toggle-zen-mode": "Toggle Zen Mode",
       "floorp-toggle-command-palette": "Toggle Command Palette",
       "floorp-open-settings": "Open Settings",
-      "floorp-open-hub": "Άνοιγμα Floorp Hub",
+      "floorp-open-hub": "Άνοιγμα Derp Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode",
       "floorp-copy-page-url-as-markdown": "Copy Page URL as Markdown",
       "floorp-split-view-open-left": "Split View Left",
@@ -240,8 +240,8 @@
       "gecko-restore-last-tab": "Άνοιγμα της τελευταίας κλεισμένης καρτέλας",
       "floorp-toggle-zen-mode": "Toggle Zen Mode to hide all UI elements for distraction-free browsing",
       "floorp-toggle-command-palette": "Open or close the command palette to search and execute commands",
-      "floorp-open-settings": "Opens the Floorp settings page",
-      "floorp-open-hub": "Opens the Floorp Hub page",
+      "floorp-open-settings": "Opens the Derp settings page",
+      "floorp-open-hub": "Opens the Derp Hub page",
       "floorp-toggle-share-mode": "Toggle Share Mode to minimize UI for screen sharing and presentations",
       "floorp-copy-page-url-as-markdown": "Copy the current page title and URL as Markdown link format: [Title](URL)",
       "floorp-split-view-open-left": "Open the current tab in a split view on the left side",
@@ -360,7 +360,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "Προσθήκη στο Floorp",
+      "addToFloorp": "Προσθήκη στο Derp",
       "installing": "Γίνεται εγκατάσταση...",
       "success": "Προστέθηκε!",
       "error": "Παρουσιάστηκε σφάλμα",
@@ -368,7 +368,7 @@
     },
     "error": {
       "title": "Σφάλμα εγκατάστασης",
-      "compatibilityNote": "Αυτή η επέκταση δεν είναι συμβατή με το Firefox/Floorp.",
+      "compatibilityNote": "Αυτή η επέκταση δεν είναι συμβατή με το Firefox/Derp.",
       "alreadyInstalled": "Αυτή η επέκταση είναι ήδη εγκατεστημένη ({{name}})",
       "downloadFailed": "Αποτυχία λήψης αρχείου CRX",
       "conversionFailed": "Αποτυχία μετατροπής επέκτασης: {{error}}",
@@ -390,7 +390,7 @@
       "downloadFailed": "Η λήψη απέτυχε",
       "signatureVerifyFailed": "Αποτυχία επαλήθευσης της υπογραφής επέκτασης",
       "corruptOrIncompatible": "Η επέκταση είναι κατεστραμμένη ή ασύμβατη",
-      "incompatible": "Αυτή η επέκταση δεν είναι συμβατή με το Floorp",
+      "incompatible": "Αυτή η επέκταση δεν είναι συμβατή με το Derp",
       "blocked": "Αυτή η επέκταση είναι μπλοκαρισμένη",
       "timeout": "Λήξη χρονικού ορίου εγκατάστασης",
       "installFailed": "Η εγκατάσταση της επέκτασης απέτυχε",
@@ -410,7 +410,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Floorp Hub"
+      "title": "Derp Hub"
     }
   },
   "splitView": {
@@ -459,7 +459,7 @@
       "tools": "Tools",
       "downloads": "Λήψεις",
       "workspace": "Χώροι εργασίας",
-      "floorp": "Floorp",
+      "floorp": "Derp",
       "media": "Media",
       "open-tabs": "Open Tabs",
       "switcher": "Switcher",

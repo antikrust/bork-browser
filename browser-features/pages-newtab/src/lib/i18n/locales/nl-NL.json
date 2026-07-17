@@ -1,5 +1,5 @@
 {
-    "title": "Floorp Start",
+    "title": "Derp Start",
     "topSites": {
         "addSite": "Site toevoegen",
         "addNewSite": "Nieuwe site toevoegen",
@@ -27,7 +27,7 @@
         "randomImage": "Willekeurige afbeelding",
         "customImage": "Eigen afbeelding",
         "folderImages": "Afbeeldingen uit een map",
-        "floorpImages": "Floorp Afbeeldingen",
+        "floorpImages": "Derp Afbeeldingen",
         "currentImage": "Huidige afbeelding:",
         "imageRecommendation": "Advies: gebruik afbeeldingen met een resolutie van 1920x1080 of hoger.",
         "currentFolder": "Huidige map:",
@@ -35,9 +35,9 @@
         "selected": "Geselecteerd",
         "enableSlideshow": "Diavoorstelling inschakelen",
         "slideshowInterval": "Interval (seconden)",
-        "floorpStart": "Floorp Start",
-        "disableFloorpStart": "Floorp Start uitschakelen (gebruik klassieke about:newtab)",
-        "disableFloorpStartDescription": "Indien ingeschakeld, zal Floorp Start worden vervangen door het klassieke nieuwe tabblad/startpagina van Firefox.",
+        "floorpStart": "Derp Start",
+        "disableFloorpStart": "Derp Start uitschakelen (gebruik klassieke about:newtab)",
+        "disableFloorpStartDescription": "Indien ingeschakeld, zal Derp Start worden vervangen door het klassieke nieuwe tabblad/startpagina van Firefox.",
         "restartRequired": "Vereist een herstart van de browser om volledig van kracht te worden.",
         "firefoxLayout": "Legacy lay-out gebruiken (zoals Firefox Home)"
     },

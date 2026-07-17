@@ -56,15 +56,16 @@ export default function Page() {
               </p>
             </div>
             <p>
-              Noraneko is a browser as testhead of Floorp 12. Floorp is based on
-              Firefox & Noraneko.
+              Derp is a fork of Floorp 12 (Noraneko), which is based on
+              Firefox. Compact theme, Vivaldi-style workspaces and tab
+              stacks, zen mode — and no AI.
             </p>
-            <p>Made by Noraneko Community with ❤</p>
+            <p>Built on the work of the Noraneko Community with ❤</p>
           </CardContent>
           <CardFooter>
             <Button asChild>
               <a
-                href="https://floorp.app"
+                href="https://github.com/100mountains/derp"
                 className="flex items-center gap-2"
               >
                 {t("about.releaseNotes")}
@@ -101,11 +102,11 @@ export default function Page() {
             </Button>
             <Button asChild className="w-full">
               <a
-                href="https://github.com/Floorp-Projects/Floorp"
+                href="https://github.com/100mountains/derp"
                 className="flex items-center gap-2"
               >
                 <SiGithub className="size-4" />
-                GitHub Repository: Floorp-Projects/Floorp
+                GitHub Repository: 100mountains/derp
                 <ExternalLink className="size-4" />
               </a>
             </Button>

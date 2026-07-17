@@ -73,7 +73,7 @@
         "browserSupport": {
             "title": "Guia do {{productName}}",
             "description": "Acesse o guia de suporte escrito por colaboradores do {{productName}}.",
-            "footerLinkText": "Guia do Floorp"
+            "footerLinkText": "Guia do Derp"
         }
     },
     "design": {
@@ -375,7 +375,7 @@
         "howToUseAndCustomize": "Como usar e personalizar a barra lateral",
         "enableOrDisable": "Ativar/Desativar",
         "enablePanelSidebar": "Ativar a barra lateral",
-        "enableDescription": "A barra lateral do Floorp é diferente da barra lateral do Firefox e não interfere nela. Ela pode exibir páginas da Web, ao contrário da barra lateral do Firefox. Você também pode gerenciar espaços de trabalho na barra lateral.",
+        "enableDescription": "A barra lateral do Derp é diferente da barra lateral do Firefox e não interfere nela. Ela pode exibir páginas da Web, ao contrário da barra lateral do Firefox. Você também pode gerenciar espaços de trabalho na barra lateral.",
         "otherSettings": "Outras configurações da barra lateral",
         "autoUnloadOnClose": "Descarregar ao fechar o painel",
         "position": "Posição da barra lateral",

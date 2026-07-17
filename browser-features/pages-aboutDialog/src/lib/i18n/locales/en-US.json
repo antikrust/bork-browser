@@ -1,6 +1,6 @@
 {
   "aboutDialog": {
-    "ariaLabel": "About Floorp",
+    "ariaLabel": "About Derp",
     "version": "Version",
     "channel": {
       "nightly": "Nightly",
@@ -35,7 +35,7 @@
     },
     "links": {
       "releaseNotes": "Release Notes",
-      "help": "Floorp Help",
+      "help": "Derp Help",
       "feedback": "Submit Feedback",
       "licensing": "License",
       "terms": "Terms of Service",

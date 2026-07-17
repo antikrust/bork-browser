@@ -4,12 +4,12 @@
     "tooltiptext": "Reabra a última aba fechada {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Configurações específicas do Floorp, como a barra lateral, espaços de trabalho e gestos do mouse, são gerenciadas no Floorp Hub.",
-    "openButton": "Abrir o Floorp Hub"
+    "message": "Configurações específicas do Derp, como a barra lateral, espaços de trabalho e gestos do mouse, são gerenciadas no Derp Hub.",
+    "openButton": "Abrir o Derp Hub"
   },
   "floorpStartWarning": {
-    "message": "Para alterar as configurações de \"Início\", desative o Floorp Start no Floorp Hub (about:hub#/features/design).",
-    "openButton": "Abrir Floorp Hub - Design"
+    "message": "Para alterar as configurações de \"Início\", desative o Derp Start no Derp Hub (about:hub#/features/design).",
+    "openButton": "Abrir Derp Hub - Design"
   },
   "workspaces": {
     "modal": {
@@ -211,7 +211,7 @@
       "floorp-toggle-zen-mode": "Ativar/Desativar Modo Zen",
       "floorp-toggle-command-palette": "Alternar a paleta de comandos",
       "floorp-open-settings": "Abrir configurações",
-      "floorp-open-hub": "Abrir o Floorp Hub",
+      "floorp-open-hub": "Abrir o Derp Hub",
       "floorp-toggle-share-mode": "Ativar/desativar modo compartilhamento",
       "floorp-copy-page-url-as-markdown": "Copiar URL da página como markdown",
       "floorp-split-view-open-left": "Visualização dividida à esquerda",
@@ -240,8 +240,8 @@
       "gecko-restore-last-tab": "Reabra a última aba fechada",
       "floorp-toggle-zen-mode": "Ativar/desativar o Modo Zen para ocultar todos os elementos de interface do usuário para uma navegação livre de distrações",
       "floorp-toggle-command-palette": "Abrir ou fechar a paleta de comandos para pesquisar e executar comandos",
-      "floorp-open-settings": "Abre a página de configurações do Floorp",
-      "floorp-open-hub": "Abre a página do Floorp Hub",
+      "floorp-open-settings": "Abre a página de configurações do Derp",
+      "floorp-open-hub": "Abre a página do Derp Hub",
       "floorp-toggle-share-mode": "Alterne o modo de compartilhamento para minimizar a interface do usuário para compartilhamento de tela e apresentações",
       "floorp-copy-page-url-as-markdown": "Copie o título da página atual e URL como formato de link markdown: [Title](URL)",
       "floorp-split-view-open-left": "Abra a aba atual em uma visualização dividida no lado esquerdo",
@@ -360,7 +360,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "Adicionar ao Floorp",
+      "addToFloorp": "Adicionar ao Derp",
       "installing": "Instalando...",
       "success": "Adicionado!",
       "error": "Ocorreu um erro",
@@ -368,7 +368,7 @@
     },
     "error": {
       "title": "Erro na instalação",
-      "compatibilityNote": "Esta extensão pode não ser compatível com o Firefox/Floorp.",
+      "compatibilityNote": "Esta extensão pode não ser compatível com o Firefox/Derp.",
       "alreadyInstalled": "Essa extensão já está instalada ({{name}})",
       "downloadFailed": "Falha ao fazer o download do arquivo CRX",
       "conversionFailed": "Falha ao converter a extensão: {{error}}",
@@ -390,7 +390,7 @@
       "downloadFailed": "Falha no download",
       "signatureVerifyFailed": "Falha ao verificar a assinatura da extensão",
       "corruptOrIncompatible": "A extensão está corrompida ou é incompatível",
-      "incompatible": "Essa extensão não é compatível com o Floorp",
+      "incompatible": "Essa extensão não é compatível com o Derp",
       "blocked": "Esta extensão está bloqueada",
       "timeout": "Tempo limite da instalação da extensão atingido",
       "installFailed": "Falha na instalação da extensão",
@@ -410,7 +410,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Floorp Hub"
+      "title": "Derp Hub"
     }
   },
   "splitView": {
@@ -459,7 +459,7 @@
       "tools": "Ferramentas",
       "downloads": "Downloads",
       "workspace": "Espaços de trabalho",
-      "floorp": "Floorp",
+      "floorp": "Derp",
       "media": "Mídia",
       "open-tabs": "Abrir abas",
       "switcher": "Console web",

@@ -4,12 +4,12 @@
     "tooltiptext": "重新開啟上次關閉的索引標籤 {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Floorp 特有的設定，例如面板側邊欄、工作區和滑鼠手勢，都在 Floorp Hub 中管理。",
-    "openButton": "開啟 Floorp Hub"
+    "message": "Derp 特有的設定，例如面板側邊欄、工作區和滑鼠手勢，都在 Derp Hub 中管理。",
+    "openButton": "開啟 Derp Hub"
   },
   "floorpStartWarning": {
-    "message": "要變更 「首頁」 設定，請從 Floorp Hub (about:hub#/features/design) 關閉 Floorp Start。",
-    "openButton": "開啟 Floorp Hub - 設計"
+    "message": "要變更 「首頁」 設定，請從 Derp Hub (about:hub#/features/design) 關閉 Derp Start。",
+    "openButton": "開啟 Derp Hub - 設計"
   },
   "workspaces": {
     "modal": {
@@ -211,7 +211,7 @@
       "floorp-toggle-zen-mode": "Toggle Zen Mode",
       "floorp-toggle-command-palette": "Toggle Command Palette",
       "floorp-open-settings": "Open Settings",
-      "floorp-open-hub": "開啟 Floorp Hub",
+      "floorp-open-hub": "開啟 Derp Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode",
       "floorp-copy-page-url-as-markdown": "Copy Page URL as Markdown",
       "floorp-split-view-open-left": "Split View Left",
@@ -240,8 +240,8 @@
       "gecko-restore-last-tab": "重新開啟上次關閉的分頁",
       "floorp-toggle-zen-mode": "Toggle Zen Mode to hide all UI elements for distraction-free browsing",
       "floorp-toggle-command-palette": "Open or close the command palette to search and execute commands",
-      "floorp-open-settings": "Opens the Floorp settings page",
-      "floorp-open-hub": "Opens the Floorp Hub page",
+      "floorp-open-settings": "Opens the Derp settings page",
+      "floorp-open-hub": "Opens the Derp Hub page",
       "floorp-toggle-share-mode": "Toggle Share Mode to minimize UI for screen sharing and presentations",
       "floorp-copy-page-url-as-markdown": "Copy the current page title and URL as Markdown link format: [Title](URL)",
       "floorp-split-view-open-left": "Open the current tab in a split view on the left side",
@@ -360,7 +360,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "增添至 Floorp",
+      "addToFloorp": "增添至 Derp",
       "installing": "正在安裝中...",
       "success": "增添成功！",
       "error": "發生錯誤",
@@ -368,7 +368,7 @@
     },
     "error": {
       "title": "安裝錯誤",
-      "compatibilityNote": "此擴充套件可能與 Firefox/Floorp 不相容。",
+      "compatibilityNote": "此擴充套件可能與 Firefox/Derp 不相容。",
       "alreadyInstalled": "已安裝此擴充套件 ({{name}})",
       "downloadFailed": "下載 CRX 檔案失敗",
       "conversionFailed": "擴充套件轉換失敗： {{error}}",
@@ -390,7 +390,7 @@
       "downloadFailed": "下載失敗",
       "signatureVerifyFailed": "驗證擴充套件簽章失敗",
       "corruptOrIncompatible": "擴充套件已損毀或不相容",
-      "incompatible": "此擴充套件與 Floorp 不相容",
+      "incompatible": "此擴充套件與 Derp 不相容",
       "blocked": "此擴充套件已被封鎖",
       "timeout": "擴充套件安裝逾時",
       "installFailed": "擴充套件安裝失敗",
@@ -410,7 +410,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Floorp Hub"
+      "title": "Derp Hub"
     }
   },
   "splitView": {
@@ -459,7 +459,7 @@
       "tools": "Tools",
       "downloads": "下載",
       "workspace": "工作空間",
-      "floorp": "Floorp",
+      "floorp": "Derp",
       "media": "Media",
       "open-tabs": "Open Tabs",
       "switcher": "Switcher",

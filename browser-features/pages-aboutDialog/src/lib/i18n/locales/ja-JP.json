@@ -1,6 +1,6 @@
 {
   "aboutDialog": {
-    "ariaLabel": "Floorp について",
+    "ariaLabel": "Derp について",
     "version": "バージョン",
     "channel": {
       "nightly": "Nightly",
@@ -35,7 +35,7 @@
     },
     "links": {
       "releaseNotes": "リリースノート",
-      "help": "Floorp ヘルプ",
+      "help": "Derp ヘルプ",
       "feedback": "フィードバックを送信",
       "licensing": "ライセンス",
       "terms": "利用規約",

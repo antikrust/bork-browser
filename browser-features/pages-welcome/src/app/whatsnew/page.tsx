@@ -534,7 +534,7 @@ export default function WhatsNewPage() {
               </h3>
               <div className="flex gap-4">
                 <a
-                  href="https://github.com/Floorp-Projects/Floorp"
+                  href="https://github.com/100mountains/derp"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
@@ -568,7 +568,7 @@ export default function WhatsNewPage() {
               <div className="flex items-center gap-2">
                 <img
                   src="chrome://branding/content/icon128.png"
-                  alt="Floorp"
+                  alt="Derp"
                   className="w-6 h-6"
                 />
                 <span className="text-white font-medium">Floorp</span>

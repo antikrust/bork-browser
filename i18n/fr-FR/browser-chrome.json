@@ -4,12 +4,12 @@
     "tooltiptext": "Rouvrir le dernier onglet fermé {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Les réglages spécifiques à Floorp comme la barre latérale, les espaces de travail, et les gestes de souris sont gérés dans la Plateforme de Floorp.",
-    "openButton": "Ouvrir la Plateforme de Floorp"
+    "message": "Les réglages spécifiques à Derp comme la barre latérale, les espaces de travail, et les gestes de souris sont gérés dans la Plateforme de Derp.",
+    "openButton": "Ouvrir la Plateforme de Derp"
   },
   "floorpStartWarning": {
-    "message": "Pour changer les réglages d'\"Accueil\", désactivez le démarrage de Floorp depuis la Plateforme de Floorp (about:hub#/features/design).",
-    "openButton": "Ouvrir la Plateforme de Floorp - Design"
+    "message": "Pour changer les réglages d'\"Accueil\", désactivez le démarrage de Derp depuis la Plateforme de Derp (about:hub#/features/design).",
+    "openButton": "Ouvrir la Plateforme de Derp - Design"
   },
   "workspaces": {
     "modal": {
@@ -211,7 +211,7 @@
       "floorp-toggle-zen-mode": "Permuter le mode Zen",
       "floorp-toggle-command-palette": "Activer/désactiver la palette de commandes",
       "floorp-open-settings": "Ouvrir les paramètres",
-      "floorp-open-hub": "Ouvrir la Plateforme de Floorp",
+      "floorp-open-hub": "Ouvrir la Plateforme de Derp",
       "floorp-toggle-share-mode": "Permuter le mode partage",
       "floorp-copy-page-url-as-markdown": "Copier l'URL de la page en tant que Markdown",
       "floorp-split-view-open-left": "Vue fractionnée à gauche",
@@ -240,8 +240,8 @@
       "gecko-restore-last-tab": "Rouvrir le dernier onglet fermé",
       "floorp-toggle-zen-mode": "Permuter le mode Zen masque tous les éléments de l'interface pour une navigation sans distraction",
       "floorp-toggle-command-palette": "Ouvrir ou fermer la palette de commandes pour rechercher et exécuter des commandes",
-      "floorp-open-settings": "Ouvre la page des paramètres de Floorp",
-      "floorp-open-hub": "Ouvre la page du Hub Floorp",
+      "floorp-open-settings": "Ouvre la page des paramètres de Derp",
+      "floorp-open-hub": "Ouvre la page du Hub Derp",
       "floorp-toggle-share-mode": "Basculer en mode partage en minimisant l'interface utilisateur pour le partage d'écran et les présentations",
       "floorp-copy-page-url-as-markdown": "Copier le titre de la page actuelle et URL au format de lien Markdown : [Titre](URL)",
       "floorp-split-view-open-left": "Ouvrez l'onglet actuel dans un affichage divisé sur le côté gauche",
@@ -360,7 +360,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "Ajouter à Floorp",
+      "addToFloorp": "Ajouter à Derp",
       "installing": "Installation...",
       "success": "Ajouté !",
       "error": "Une erreur s'est produite",
@@ -368,7 +368,7 @@
     },
     "error": {
       "title": "Erreur d'installation",
-      "compatibilityNote": "Cette extension peut ne pas être compatible avec Firefox/Floorp.",
+      "compatibilityNote": "Cette extension peut ne pas être compatible avec Firefox/Derp.",
       "alreadyInstalled": "Cette extension est déjà installée ({{name}})",
       "downloadFailed": "Échec du téléchargement du fichier CRX",
       "conversionFailed": "Échec de conversion de l'extension : {{error}}",
@@ -390,7 +390,7 @@
       "downloadFailed": "Échec du téléchargement",
       "signatureVerifyFailed": "Échec de vérification de la signature de l'extension",
       "corruptOrIncompatible": "L'extension est corrompue ou incompatible",
-      "incompatible": "Cette extension n'est pas compatible avec Floorp",
+      "incompatible": "Cette extension n'est pas compatible avec Derp",
       "blocked": "Cette extension est bloquée",
       "timeout": "Délai d'installation de l'extension dépassé",
       "installFailed": "Échec d'installation de l'extension",
@@ -410,7 +410,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Floorp Hub"
+      "title": "Derp Hub"
     }
   },
   "splitView": {
@@ -459,7 +459,7 @@
       "tools": "Outils",
       "downloads": "Téléchargements",
       "workspace": "Espaces de travail",
-      "floorp": "Floorp",
+      "floorp": "Derp",
       "media": "Média",
       "open-tabs": "Onglets ouverts",
       "switcher": "Commuter",

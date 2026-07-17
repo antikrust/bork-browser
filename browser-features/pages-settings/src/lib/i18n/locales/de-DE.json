@@ -452,7 +452,7 @@
         "uninstall": "Deinstallieren"
     },
     "floorpOS": {
-        "title": "Floorp OS",
+        "title": "Derp OS",
         "description": "Backend-Module und -Dienste von {{productName}} OS verwalten",
         "loading": "Wird geladen…",
         "statusCard": {

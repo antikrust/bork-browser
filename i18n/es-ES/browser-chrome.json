@@ -4,12 +4,12 @@
     "tooltiptext": "Reabrir última pestaña cerrada {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "La configuración específica de Floorp, como la barra lateral del panel, los espacios de trabajo y los gestos del ratón, se gestionan en Floorp Hub.",
-    "openButton": "Abrir Floorp Hub"
+    "message": "La configuración específica de Derp, como la barra lateral del panel, los espacios de trabajo y los gestos del ratón, se gestionan en Derp Hub.",
+    "openButton": "Abrir Derp Hub"
   },
   "floorpStartWarning": {
-    "message": "Para cambiar la configuración de \"Inicio\", desactiva Floorp Start desde Floorp Hub (about:hub#/features/design).",
-    "openButton": "Abrir Floorp Hub - Diseño"
+    "message": "Para cambiar la configuración de \"Inicio\", desactiva Derp Start desde Derp Hub (about:hub#/features/design).",
+    "openButton": "Abrir Derp Hub - Diseño"
   },
   "workspaces": {
     "modal": {
@@ -211,7 +211,7 @@
       "floorp-toggle-zen-mode": "Toggle Zen Mode",
       "floorp-toggle-command-palette": "Toggle Command Palette",
       "floorp-open-settings": "Open Settings",
-      "floorp-open-hub": "Abrir Floorp Hub",
+      "floorp-open-hub": "Abrir Derp Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode",
       "floorp-copy-page-url-as-markdown": "Copy Page URL as Markdown",
       "floorp-split-view-open-left": "Split View Left",
@@ -240,8 +240,8 @@
       "gecko-restore-last-tab": "Reabrir última pestaña cerrada",
       "floorp-toggle-zen-mode": "Toggle Zen Mode to hide all UI elements for distraction-free browsing",
       "floorp-toggle-command-palette": "Open or close the command palette to search and execute commands",
-      "floorp-open-settings": "Opens the Floorp settings page",
-      "floorp-open-hub": "Opens the Floorp Hub page",
+      "floorp-open-settings": "Opens the Derp settings page",
+      "floorp-open-hub": "Opens the Derp Hub page",
       "floorp-toggle-share-mode": "Toggle Share Mode to minimize UI for screen sharing and presentations",
       "floorp-copy-page-url-as-markdown": "Copy the current page title and URL as Markdown link format: [Title](URL)",
       "floorp-split-view-open-left": "Open the current tab in a split view on the left side",
@@ -360,7 +360,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "Añadir a Floorp",
+      "addToFloorp": "Añadir a Derp",
       "installing": "Instalando...",
       "success": "¡Añadido!",
       "error": "Se produjo un error",
@@ -368,7 +368,7 @@
     },
     "error": {
       "title": "Error de instalación",
-      "compatibilityNote": "Esta extensión podría no ser compatible con Firefox/Floorp.",
+      "compatibilityNote": "Esta extensión podría no ser compatible con Firefox/Derp.",
       "alreadyInstalled": "Esta extensión ya está instalada ({{name}})",
       "downloadFailed": "No se ha podido descargar el archivo CRX",
       "conversionFailed": "Error al convertir la extensión: {{error}}",
@@ -390,7 +390,7 @@
       "downloadFailed": "Descarga fallida",
       "signatureVerifyFailed": "No se ha podido verificar la firma de la extensión",
       "corruptOrIncompatible": "La extensión está dañada o es incompatible",
-      "incompatible": "Esta extensión no es compatible con Floorp",
+      "incompatible": "Esta extensión no es compatible con Derp",
       "blocked": "Esta extensión está bloqueada",
       "timeout": "Extension installation timed out",
       "installFailed": "Instalación de extensión fallida",
@@ -410,7 +410,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Floorp Hub"
+      "title": "Derp Hub"
     }
   },
   "splitView": {
@@ -459,7 +459,7 @@
       "tools": "Tools",
       "downloads": "Downloads",
       "workspace": "Espacios de trabajo",
-      "floorp": "Floorp",
+      "floorp": "Derp",
       "media": "Media",
       "open-tabs": "Open Tabs",
       "switcher": "Switcher",
