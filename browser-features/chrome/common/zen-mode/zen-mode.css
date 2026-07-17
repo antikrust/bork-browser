@@ -71,6 +71,14 @@
     opacity 0.25s ease !important;
 }
 
+/* The splitter exists only while a panel is open (translate, docs, …)
+   and was never part of the retract — its few grey pixels stayed at the
+   window edge when zen hid a sidebar with an open panel. No measured
+   margin needed: display removes its space outright. */
+:root[zenmode]:not([zenmode-reveal-side]) #panel-sidebar-splitter {
+  display: none !important;
+}
+
 /* Re-basing a measured sidebar distance (first layout after boot,
    splitter drag) must snap, not slide. */
 :root[zenmode][zenmode-rebase] #panel-sidebar-box,

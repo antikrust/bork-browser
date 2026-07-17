@@ -20,6 +20,10 @@ import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
 
 const HOVER_DELAY_MS = 700;
 const STAMP = "derp-show-refresh";
+/** Off by default — hover-reload is a taste thing, not for everyone. */
+const ENABLED_PREF = "derp.tabs.hoverReload.enabled";
+/** Root attribute the CSS keys off; kept in sync with the pref. */
+const ROOT_ATTR = "derp-hover-reload";
 const HOVER_SELECTOR = [
   "#tabbrowser-tabs .tabbrowser-tab:not([pinned])",
   ".derp-stack-tab",
@@ -85,6 +89,20 @@ export default class TabRefresh extends NoraComponentBase {
     const onTabOpen = (event: Event) => inject(event.target as TabLike);
     gb.tabContainer.addEventListener("TabOpen", onTabOpen);
 
+    // Pref gate: glyphs stay injected (cheap, invisible) so the option
+    // can flip live without a restart; the root attribute is what the
+    // CSS shows them under, and the hover timer is also gated.
+    const enabled = () => Services.prefs.getBoolPref(ENABLED_PREF, false);
+    const syncRootAttr = () => {
+      const root = doc.documentElement;
+      if (!root) return;
+      if (enabled()) root.setAttribute(ROOT_ATTR, "true");
+      else root.removeAttribute(ROOT_ATTR);
+    };
+    syncRootAttr();
+    const prefObserver = () => syncRootAttr();
+    Services.prefs.addObserver(ENABLED_PREF, prefObserver);
+
     // ---- shared hover timer for all three surfaces ----
     let hovered: Element | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -101,6 +119,7 @@ export default class TabRefresh extends NoraComponentBase {
     };
 
     const onMouseOver = (event: Event) => {
+      if (!enabled()) return;
       const target = event.target as Element | null;
       const el = target?.closest?.(HOVER_SELECTOR) ?? null;
       // Moving between children of the same element: keep the timer.

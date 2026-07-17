@@ -181,6 +181,16 @@
   margin-inline-end: 0 !important;
 }
 
+/* The strip-start separator is #tabbrowser-tabs::before — a zero-width
+   flex item whose 1px left border draws the line. It also carried ~4px
+   of spacing, holding the line (and the whole strip) off the chooser's
+   edge, so the chooser's open/hover box stopped short of the line. */
+#TabsToolbar #tabbrowser-tabs::before {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 0 !important;
+}
+
 /* ===== Slimmer address bar ===== */
 /* #urlbar-container's min-height is what actually sets the nav bar's
    height — every button stretches to it. Lepton computes it as
@@ -299,10 +309,12 @@
   backdrop-filter: blur(8px);
   -moz-context-properties: fill, fill-opacity;
   fill: currentColor;
-  transition: opacity 0.12s ease;
+  transition: opacity 0.18s ease;
 }
 
-#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned])[derp-show-refresh] .derp-tab-refresh {
+/* Shown only when the option is on (derp.tabs.hoverReload.enabled; the
+   tab-refresh feature mirrors the pref onto this root attribute). */
+:root[derp-hover-reload] #tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned])[derp-show-refresh] .derp-tab-refresh {
   opacity: 1;
   pointer-events: auto;
 }

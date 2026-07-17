@@ -448,7 +448,10 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 /* ===== Hover-to-reload (stamped by the tab-refresh feature) ===== */
 /* Cell: reload glyph at the right edge, mirror of the left-side close. */
 .derp-stack-tab .derp-stack-tab-refresh {
-  display: none;
+  /* Opacity, not display: it fades in like the row-1 glyph instead of
+     popping. */
+  opacity: 0;
+  pointer-events: none;
   position: absolute;
   inset-inline-end: 6px;
   inset-block-start: 50%;
@@ -463,10 +466,13 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   -moz-context-properties: fill, fill-opacity;
   fill: currentColor;
   z-index: 2;
+  transition: opacity 0.18s ease;
 }
 
-.derp-stack-tab[derp-show-refresh] .derp-stack-tab-refresh {
-  display: revert;
+/* Same option gate as row 1 (derp.tabs.hoverReload.enabled). */
+:root[derp-hover-reload] .derp-stack-tab[derp-show-refresh] .derp-stack-tab-refresh {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .derp-stack-tab .derp-stack-tab-refresh:hover {
