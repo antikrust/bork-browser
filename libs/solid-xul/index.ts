@@ -72,7 +72,10 @@ const {
         node.setAttribute(name, value);
       } else if (typeof value === "number" || typeof value === "boolean") {
         node.setAttribute(name, value.toString());
-      } else if (value === undefined) {
+      } else if (value === undefined || value === null) {
+        // null and undefined both mean "no attribute" — previously null
+        // fell through to the unreachable-throw below and took the whole
+        // component render down with it.
         node.removeAttribute(name);
       } else {
         throw Error(
