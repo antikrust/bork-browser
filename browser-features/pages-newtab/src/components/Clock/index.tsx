@@ -15,7 +15,7 @@ export function Clock() {
   const minutes = time.getMinutes().toString().padStart(2, "0");
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-sm p-3">
+    <div className="bg-black/25 rounded-lg p-3">
       <div className="flex items-center gap-3">
         <div className="text-2xl font-medium text-white tabular-nums tracking-wide">
           {hours}

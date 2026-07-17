@@ -26,7 +26,7 @@ export function SearchBar() {
 
   return (
     <div className="relative w-full">
-      <div className="group bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-sm flex items-center p-2 focus-within:bg-gray-700/50 hover:bg-gray-700/50 transition-colors">
+      <div className="group bg-black/35 rounded-lg flex items-center p-2 focus-within:bg-black/50 hover:bg-black/45 transition-colors">
         <div className="relative flex-1">
           <input
             type="text"

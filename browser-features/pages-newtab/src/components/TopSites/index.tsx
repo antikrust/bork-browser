@@ -339,7 +339,7 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
         />
       )}
       <div
-        className={`bg-gray-800/50 p-3 rounded-lg inline-block backdrop-blur-sm`}
+        className={`bg-black/40 p-3 rounded-lg inline-block`}
       >
         <div className="flex flex-wrap gap-x-0.5">
           {pinnedSites.map((site) => (

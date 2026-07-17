@@ -7,7 +7,7 @@ export function SettingsButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="fixed bottom-4 right-4 p-2 bg-gray-800/50 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200 group"
+      className="fixed bottom-4 right-4 p-2 bg-black/25 rounded-full hover:bg-black/40 transition-colors duration-200 group"
       aria-label={t("settingsButton.settings")}
     >
       <svg

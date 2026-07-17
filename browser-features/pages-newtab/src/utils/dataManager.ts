@@ -80,13 +80,7 @@ const DEFAULT_SETTINGS: NewTabSettings = {
     searchEngine: "default",
   },
   topSites: {
-    pinned: [
-      { url: "https://www.cube-soft.jp/", title: "Cubesoft (Sponsor)" },
-      {
-        url: "https://docs.floorp.app/docs/features/",
-        title: "Floorp Support",
-      },
-    ],
+    pinned: [],
     blocked: [],
   },
 };
