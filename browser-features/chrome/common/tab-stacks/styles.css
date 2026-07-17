@@ -238,12 +238,33 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   }
 }
 
-/* Same scroll-arrow containers as the tab strip. */
+/* Same scroll-arrow containers as the tab strip. When the bar is NOT
+   overflowing the buttons stay exactly as tuned (transparent spacers —
+   the + button's alignment was measured against them). */
 #derp-stack-bar::part(scrollbutton-up),
 #derp-stack-bar::part(scrollbutton-down) {
   padding-inline: 2px !important;
   margin-inline: 0 !important;
   border-inline: none !important;
+}
+
+/* Overflowing only: stock tabs.css gives the strip's arrows this
+   treatment keyed to #tabbrowser-arrowscrollbox, so this bar's id gets
+   none of it and fell back to bare toolkit chevrons with clipped pills
+   flush against the glyph. Scoped to [overflowing] so the tuned
+   not-overflowing spacing above is untouched. */
+#derp-stack-bar[overflowing]::part(scrollbutton-up),
+#derp-stack-bar[overflowing]::part(scrollbutton-down) {
+  --arrowscrollbox-scrollicon-border-radius: var(--tab-border-radius);
+  --arrowscrollbox-scrollicon-hover-background-color: var(
+    --toolbarbutton-background-color-hover
+  );
+  --arrowscrollbox-scrollicon-active-background-color: var(
+    --toolbarbutton-background-color-active
+  );
+  appearance: none;
+  fill: var(--toolbarbutton-icon-fill);
+  background-color: var(--toolbar-bgcolor);
 }
 
 /* Proxies size like top-row tabs: start wide, shrink to the tab floor,
