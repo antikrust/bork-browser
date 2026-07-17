@@ -205,8 +205,10 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   background: transparent;
   border-bottom: 1px solid var(--chrome-content-separator-color, rgba(0, 0, 0, 0.2));
   padding: 0 8px;
-  min-height: 30px;
-  max-height: 30px;
+  /* Match row 1 exactly: a 32px row whose cells are --derp-tab-height,
+     leaving the same 1px above/below the top row's tabs have. */
+  min-height: calc(var(--derp-tab-height, 30px) + 2px);
+  max-height: calc(var(--derp-tab-height, 30px) + 2px);
   position: relative;
   z-index: 1;
   animation: derp-stack-bar-in 0.1s ease-out;
@@ -272,7 +274,9 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   border-radius: 0;
   padding: 0 10px 0 6px;
   margin-inline-end: 0;
-  align-self: stretch;
+  /* Same box as a row-1 tab, centred in the row. */
+  align-self: center;
+  height: var(--derp-tab-height, 30px);
   cursor: default;
   position: relative;
 }

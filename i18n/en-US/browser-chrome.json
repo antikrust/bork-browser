@@ -64,6 +64,7 @@
     "context-menu": {
       "move-up": "Move this Workspace Up",
       "move-down": "Move this Workspace Down",
+      "rename": "Rename Workspace",
       "delete": "Delete Workspace",
       "manage": "Manage Workspace",
       "archive": "Archive Workspace"

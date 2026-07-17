@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { createMemo, createSignal, Show } from "solid-js";
+import { createMemo, createSignal, onCleanup, Show } from "solid-js";
 import type { TWorkspaceID } from "../utils/type.js";
 import type { WorkspacesService } from "../workspacesService";
 import { getContainerColorName } from "../utils/container-color";
@@ -14,6 +14,20 @@ import { LAYERS_ICON } from "./icons.ts";
 // A drop/drag-end can be followed by a stray click on the same row, which
 // would switch workspace and slam the popup shut mid-reorder.
 let suppressClickUntil = 0;
+
+/**
+ * Rows register their inline-rename starter here so the context menu's
+ * "Rename Workspace" opens the very same editor double-click does — one
+ * implementation, two entry points.
+ */
+const renameStarters = new Map<string, () => void>();
+
+export function startInlineRename(workspaceId: string): boolean {
+  const start = renameStarters.get(workspaceId);
+  if (!start) return false;
+  start();
+  return true;
+}
 
 export function PopupToolbarElement(props: {
   workspaceId: TWorkspaceID;
@@ -48,6 +62,9 @@ export function PopupToolbarElement(props: {
       input?.select();
     }, 0);
   };
+
+  renameStarters.set(props.workspaceId, () => startEditing());
+  onCleanup(() => renameStarters.delete(props.workspaceId));
 
   const commitEditing = () => {
     if (!editing()) return;

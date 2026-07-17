@@ -132,6 +132,15 @@
   display: none !important;
 }
 
+/* ===== Side panel: same surface as the tabs ===== */
+/* --lwt-accent-color is what paints the tab strip (--toolbar-bgcolor is a
+   lighter color-mix and does not match). */
+#panel-sidebar-box,
+#panel-sidebar-select-box,
+#panel-sidebar-splitter {
+  background-color: var(--lwt-accent-color) !important;
+}
+
 /* ===== No floating-sidebar mode ===== */
 /* The floating container can end up transparent and window-sized, hiding
    everything behind an invisible overlay (the recurring "everything

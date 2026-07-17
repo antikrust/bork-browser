@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { TWorkspaceID } from "../utils/type";
+import { startInlineRename } from "../toolbar/popup-block-element.tsx";
 import type { WorkspacesService } from "../workspacesService";
 import i18next from "i18next";
 import { createSignal } from "solid-js";
@@ -12,6 +13,7 @@ import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
 const translationKeys = {
   moveUp: "workspaces.context-menu.move-up",
   moveDown: "workspaces.context-menu.move-down",
+  rename: "workspaces.context-menu.rename",
   delete: "workspaces.context-menu.delete",
   manage: "workspaces.context-menu.manage",
   archive: "workspaces.context-menu.archive",
@@ -25,6 +27,7 @@ const translate = (
 const getTranslations = () => ({
   moveUp: translate(translationKeys.moveUp),
   moveDown: translate(translationKeys.moveDown),
+  rename: translate(translationKeys.rename),
   delete: translate(translationKeys.delete),
   manage: translate(translationKeys.manage),
   archive: translate(translationKeys.archive),
@@ -56,6 +59,19 @@ export function ContextMenu(props: {
           props.ctx.reorderWorkspaceDown(props.contextWorkspaceId)}
       />
       <xul:menuseparator class="workspaces-context-menu-separator" />
+      <xul:menuitem
+        label={texts().rename}
+        onCommand={() => {
+          // Same inline editor as double-click. The popup must survive the
+          // menu closing, so start on the next tick; if the row is gone
+          // (popup dismissed), fall back to the manage dialog.
+          setTimeout(() => {
+            if (!startInlineRename(props.contextWorkspaceId)) {
+              props.ctx.manageWorkspaceFromDialog(props.contextWorkspaceId);
+            }
+          }, 0);
+        }}
+      />
       <xul:menuitem
         label={texts().delete}
         onCommand={() => props.ctx.deleteWorkspace(props.contextWorkspaceId)}

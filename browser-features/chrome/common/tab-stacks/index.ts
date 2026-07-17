@@ -232,6 +232,30 @@ export default class TabStacks extends NoraComponentBase {
       removeEventListener("click", onChipPress, true);
     });
 
+    // After a drag lands, bring the moved tab into view — but ONLY then.
+    // Nothing here runs during ordinary left/right scrolling, so manual
+    // scrolling is never yanked back.
+    const scrollProxyIntoView = (tab: StackTab) => {
+      // Let the proxy for the new position render first.
+      setTimeout(() => {
+        try {
+          const bar = document?.getElementById("derp-stack-bar") as
+            | (XULElement & {
+              ensureElementIsVisible?: (el: Element, instant?: boolean) => void;
+            })
+            | null;
+          const proxy = bar?.querySelector(
+            `.derp-stack-tab[data-derp-drag-id="${
+              tab.getAttribute("data-derp-tab-id")
+            }"]`,
+          );
+          if (bar && proxy) bar.ensureElementIsVisible?.(proxy, true);
+        } catch (e) {
+          console.error("[tab-stacks] scroll-into-view failed:", e);
+        }
+      }, 30);
+    };
+
     // Row-2 proxies use the *native* tab context menu (reload, duplicate,
     // pin, close, move to…) rather than a parallel one. Firefox resolves
     // which tab the menu acts on as
