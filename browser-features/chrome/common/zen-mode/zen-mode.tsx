@@ -28,12 +28,14 @@ export const [zenModeEnabled, setZenModeEnabled] = createRootHMR(
 function measureAndSetCSSVariables() {
   const root = document!.documentElement as HTMLElement;
 
-  // Only record elements that are actually rendered: a toggled-off
-  // sidebar (display:none) measures 0, and recording that poisons the
-  // retract/reveal distances — the side reveal then slides out an empty
-  // zero-based husk. Keeping the last known good value means a hidden
-  // element's vars simply stay as they were, which is correct: its
-  // retract math is moot while it has no box.
+  // Only the panel sidebar still uses measured retract distances (its
+  // two boxes share one window edge, so the self-sizing transform trick
+  // the toolbox/statusbar use doesn't compose for them). Only record
+  // elements that are actually rendered: a toggled-off sidebar
+  // (display:none) measures 0, and recording that poisons the distances
+  // — the side reveal then slides out an empty zero-based husk. A hidden
+  // element's vars simply keep their last (or default) value, which is
+  // correct: its retract math is moot while it has no box.
   const setIfRendered = (id: string, prop: string, axis: "w" | "h") => {
     const el = document!.getElementById(id);
     if (!el) return;
@@ -44,10 +46,8 @@ function measureAndSetCSSVariables() {
     }
   };
 
-  setIfRendered("navigator-toolbox", "--zenmode-toolbox-height", "h");
   setIfRendered("panel-sidebar-box", "--zenmode-sidebar-width", "w");
   setIfRendered("panel-sidebar-select-box", "--zenmode-selectbox-width", "w");
-  setIfRendered("nora-statusbar", "--zenmode-statusbar-height", "h");
 }
 
 function setupPrefSync() {
@@ -142,9 +142,8 @@ function setupHoverReveal() {
       topHideTimer = setTimeout(tryHideTop, HIDE_DELAY_MS);
       return;
     }
-    // Re-measure right before retracting: the toolbox height changes while
-    // zen is active (stack bar mounting, nav bar toggling) and retracting
-    // by a stale height collapses the whole layout.
+    // Refresh the sidebar's measured distances opportunistically; the
+    // toolbox needs none (it retracts by its own height via transform).
     measureAndSetCSSVariables();
     document!.documentElement!.removeAttribute("zenmode-reveal-top");
     topHideTimer = null;
@@ -338,17 +337,15 @@ export function initZenModeState() {
         });
       });
     });
-    // The sidebar boxes are watched too: when zen activates at startup
-    // they may not have laid out yet, the rendered-only measurement
-    // skips them, and the CSS default distances (a few px off the real
-    // sizes) drive the slides until something re-measures — visible as
-    // a small hop on every toggle right after launch.
+    // Toolbox and statusbar retract by their own size now (translate
+    // -100%/100%) and need no observation. The sidebar boxes remain
+    // measured: watch them so their first real layout after boot (and
+    // splitter drags) true the variables up — the CSS defaults are a few
+    // px off the real sizes, visible as a small hop on early toggles.
     for (
       const id of [
-        "navigator-toolbox",
         "panel-sidebar-select-box",
         "panel-sidebar-box",
-        "nora-statusbar",
       ]
     ) {
       const el = document!.getElementById(id);
