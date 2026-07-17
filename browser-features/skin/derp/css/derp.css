@@ -68,6 +68,12 @@
   border-inline-end: none !important;
 }
 
+/* And no separator on the first visible tab's left edge — it doubled up
+   against the workspace chooser's boundary. */
+#tabbrowser-tabs .tabbrowser-tab:nth-child(1 of .tabbrowser-tab:not([hidden])) .tab-stack::before {
+  border-right: none !important;
+}
+
 #tabbrowser-tabs .tabbrowser-tab[visuallyselected] .tab-background {
   background-color: color-mix(in srgb, currentColor 22%, transparent) !important;
   box-shadow: none !important;
@@ -163,7 +169,7 @@
 }
 
 #workspaces-toolbar-button {
-  margin-inline-end: 2px !important;
+  margin-inline-end: 0 !important;
 }
 
 /* ===== Slimmer address bar ===== */
@@ -186,23 +192,32 @@
   }
 }
 
-/* ===== Vivaldi-style close button: hover the favicon itself to close ===== */
-/* The close button overlays the favicon exactly, and only when the pointer
-   is on the icon — clicking the tab body still selects. (A whole-tab hover
-   trigger made every near-icon click close the tab, which cascaded into
-   workspace switches when it was the last tab.) Pinned tabs keep icons. */
+/* ===== Vivaldi-style close button: the favicon's spot becomes the X ===== */
+/* The pointer entering the tab swaps icon for close in the exact same
+   14x14 box; clicking anywhere else on the tab still selects (the X only
+   occupies the icon's footprint, unlike the old whole-tab-hover attempt
+   that put it under stray clicks). Pinned tabs keep their icons. */
 .tabbrowser-tab:not([pinned]) .tab-content {
   position: relative;
 }
 
-.tabbrowser-tab:not([pinned]) .tab-close-button {
-  display: none !important;
+/* Close button occupies exactly the favicon's box (14x14 at the content
+   padding edge) and swaps in the moment the pointer enters the tab —
+   icon out, X in, same spot, same footprint. High-specificity + pinned
+   sizes: the design layer otherwise inflates the button (19x20, lopsided
+   padding) and shows it at rest on selected tabs. */
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .tab-close-button {
+  /* opacity, not display: the design base pins display at a stronger
+     cascade origin, but leaves these alone — and the icon↔X crossfade
+     looks better anyway. */
+  opacity: 0 !important;
+  pointer-events: none !important;
   position: absolute !important;
-  inset-inline-start: 6px;
-  inset-block-start: 50%;
-  transform: translateY(-50%);
-  width: 16px !important;
-  height: 16px !important;
+  inset-inline-start: 7px !important;
+  inset-block-start: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 14px !important;
+  height: 14px !important;
   padding: 1px !important;
   margin: 0 !important;
   z-index: 2;
@@ -210,13 +225,20 @@
   background-color: var(--tab-selected-bgcolor, rgba(128, 128, 128, 0.3));
 }
 
-.tabbrowser-tab:not([pinned]) .tab-icon-stack:hover ~ .tab-close-button,
-.tabbrowser-tab:not([pinned]) .tab-close-button:hover {
-  display: flex !important;
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]):hover .tab-close-button {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
-.tabbrowser-tab:not([pinned]) .tab-icon-stack:hover .tab-icon-image {
-  opacity: 0;
+/* Hovering the X itself lifts it — same treatment as the stack chip's
+   close (the design layer gives the button no hover of its own once we
+   have taken over its box). */
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .tab-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]):hover .tab-icon-image {
+  opacity: 0 !important;
 }
 
 /* ===== Workspaces chooser: compact ===== */

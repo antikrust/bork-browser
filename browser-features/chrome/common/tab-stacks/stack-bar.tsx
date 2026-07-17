@@ -13,6 +13,7 @@ export function StackStyleElement() {
 export type StackTab = XULElement & {
   label: string;
   selected: boolean;
+  linkedPanel: string;
   group: StackGroup | null;
 };
 
@@ -33,6 +34,8 @@ type TabBrowser = {
   removeTab: (tab: StackTab, opts?: Record<string, unknown>) => void;
   removeTabs?: (tabs: StackTab[], opts?: Record<string, unknown>) => void;
   addTab: (url: string, opts: Record<string, unknown>) => StackTab;
+  ungroupTab?: (tab: StackTab) => void;
+  moveTabBefore?: (tab: StackTab, target: StackTab) => void;
 };
 
 export const getGBrowser = (): TabBrowser | null =>
@@ -112,6 +115,32 @@ function StackTabProxy(props: { tab: StackTab }) {
       class="derp-stack-tab"
       align="center"
       data-selected={selected()}
+      data-derp-panel={props.tab.linkedPanel ?? ""}
+      draggable="true"
+      onDragStart={(event: DragEvent) => {
+        // Proxies drag with a private type: within the bar to reorder
+        // the stack, up into the tab row to leave it (the real member
+        // tabs are hidden in row 1, so this is the only drag handle).
+        event.dataTransfer?.setData(
+          "application/x-derp-stack-tab",
+          // Null for lazy tabs (no browser yet); the drop handler treats
+          // an empty panel id as a no-op.
+          props.tab.linkedPanel ?? "",
+        );
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = "move";
+          try {
+            const ghost = document!.createElement("div");
+            ghost.className = "derpStackDragGhost";
+            ghost.textContent = props.tab.label ?? "";
+            document!.documentElement?.appendChild(ghost);
+            event.dataTransfer.setDragImage(ghost, 12, 14);
+            setTimeout(() => ghost.remove(), 0);
+          } catch {
+            // default drag image
+          }
+        }
+      }}
       onClick={() => {
         const gb = getGBrowser();
         if (gb) {

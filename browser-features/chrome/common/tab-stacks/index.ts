@@ -22,6 +22,15 @@ import {
 } from "./stack-bar.tsx";
 
 const ENABLED_PREF = "floorp.tabstacks.enabled";
+
+/** Stacked-layers glyph: a chip's "favicon" at rest, so chips swap
+ * icon -> X on hover exactly like tabs do (they have no favicon of their
+ * own — the stack is many tabs, not one). */
+const STACK_ICON = `data:image/svg+xml;utf8,${
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="context-stroke" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>',
+  )
+}`;
 const GROUP_KINDS_PREF = "floorp.tabstacks.groupKinds";
 
 /**
@@ -136,7 +145,11 @@ export default class TabStacks extends NoraComponentBase {
       }
       // Classify/mark groups first so syncActiveGroup sees fresh marks.
       this.updateGroupChips();
-      syncActiveGroup();
+      // While a drag is in flight the bar must not unmount: pressing a
+      // top-row tab selects it on mousedown, and if that tore the bar
+      // down there would be nothing left to drop into. Reconciled at
+      // drag end.
+      if (!tabDragActive) syncActiveGroup();
       bumpStacksVersion();
     };
     for (const type of TAB_EVENTS) {
@@ -151,7 +164,6 @@ export default class TabStacks extends NoraComponentBase {
     // Chip interactions (native behavior would toggle collapse, which
     // fights our always-expanded model): single click activates the stack,
     // double click opens the native group editor (rename + color).
-    let pendingActivate: ReturnType<typeof setTimeout> | null = null;
     const onChipPress = (event: MouseEvent) => {
       if (event.button !== 0) return;
       const target = event.target as Element | null;
@@ -194,10 +206,8 @@ export default class TabStacks extends NoraComponentBase {
       event.stopImmediatePropagation();
 
       if (event.detail >= 2) {
-        if (pendingActivate) {
-          clearTimeout(pendingActivate);
-          pendingActivate = null;
-        }
+        // Second click of a double: the first already activated the
+        // stack (harmless), this one opens the editor.
         try {
           getGBrowser()?.tabGroupMenu?.openEditModal(group);
         } catch (e) {
@@ -206,19 +216,16 @@ export default class TabStacks extends NoraComponentBase {
         return;
       }
 
-      if (pendingActivate) clearTimeout(pendingActivate);
-      pendingActivate = setTimeout(() => {
-        pendingActivate = null;
-        activateGroup(group);
-        this.updateGroupChips();
-        syncActiveGroup();
-        bumpStacksVersion();
-      }, 230);
+      // Immediate: the old 230ms double-click disambiguation timer made
+      // every stack switch feel laggy.
+      activateGroup(group);
+      this.updateGroupChips();
+      syncActiveGroup();
+      bumpStacksVersion();
     };
     addEventListener("mousedown", onChipPress, true);
     addEventListener("click", onChipPress, true);
     onCleanup(() => {
-      if (pendingActivate) clearTimeout(pendingActivate);
       removeEventListener("mousedown", onChipPress, true);
       removeEventListener("click", onChipPress, true);
     });
@@ -281,6 +288,259 @@ export default class TabStacks extends NoraComponentBase {
       kindMenu?.remove();
     });
 
+    // A tab dragged PAST a stack chip must reorder, not join: the
+    // collapsed member tabs cluster at the chip's edge with zero width,
+    // so the native drop math counts the whole neighbourhood as "inside
+    // the group". Joining a stack deliberately stays possible by
+    // dropping ON the chip itself. Detection is post-hoc: if a TabGrouped
+    // lands on one of our stacks while a tab drag is in flight and the
+    // drop point was not on the chip, the tab is moved back out to the
+    // side of the stack it was dropped on.
+    let tabDragActive = false;
+    let lastDropPoint: { x: number; y: number } | null = null;
+    const onTabDragStart = (event: DragEvent) => {
+      const t = event.target as Element | null;
+      if (
+        t?.closest?.(".tabbrowser-tab") || t?.closest?.(".derp-stack-tab")
+      ) {
+        tabDragActive = true;
+      }
+    };
+    const onAnyDrop = (event: DragEvent) => {
+      if (tabDragActive) {
+        lastDropPoint = { x: event.clientX, y: event.clientY };
+      }
+    };
+    const endTabDrag = () => {
+      clearDropIndicators();
+      // TabGrouped from a drop arrives before dragend; clear on a delay,
+      // then reconcile the bar with wherever selection actually landed.
+      setTimeout(() => {
+        tabDragActive = false;
+        lastDropPoint = null;
+        this.updateGroupChips();
+        syncActiveGroup();
+        bumpStacksVersion();
+      }, 150);
+    };
+    const onTabGroupedDuringDrag = (event: Event) => {
+      if (!tabDragActive || !lastDropPoint) return;
+      const tab = event.target as StackTab;
+      const group = tab.group;
+      if (
+        !group ||
+        (group as unknown as Element).getAttribute?.("data-derp-stack") !==
+          "true"
+      ) {
+        return;
+      }
+      const lc = (group as unknown as Element).querySelector(
+        ".tab-group-label-container",
+      );
+      if (!lc) return;
+      const r = lc.getBoundingClientRect();
+      const p = lastDropPoint;
+      const onChip = p.x >= r.x && p.x <= r.x + r.width &&
+        p.y >= r.y && p.y <= r.y + r.height;
+      if (onChip) return;
+      try {
+        const gb = getGBrowser();
+        // Out of the group, landing right after it; left-side drops then
+        // hop before it.
+        gb?.ungroupTab?.(tab);
+        if (p.x < r.x) {
+          gb?.moveTabBefore?.(tab, group as unknown as StackTab);
+        }
+      } catch (e) {
+        console.error("[tab-stacks] drop-outside eject failed:", e);
+      }
+    };
+    // Deliberate join: dropping a row-1 tab ON the chip adds it to the
+    // stack. With the member tabs zero-width, the native drop math almost
+    // never resolves to "join" by itself, so the chip performs it.
+    const PROXY_TYPE = "application/x-derp-stack-tab";
+    const onChipDrop = (event: DragEvent) => {
+      if (event.dataTransfer?.types?.includes(PROXY_TYPE)) return;
+      const target = event.target as Element | null;
+      const lc = target?.closest?.(".tab-group-label-container");
+      const group = (lc?.closest?.("tab-group[data-derp-stack]") ??
+        null) as StackGroup | null;
+      if (!group) return;
+      const dt = event.dataTransfer as
+        | (DataTransfer & { mozSourceNode?: Node | null })
+        | null;
+      const src = ((dt?.mozSourceNode as Element | null)?.closest?.(
+        ".tabbrowser-tab",
+      ) ?? null) as StackTab | null;
+      if (!src || src.group === group) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      clearDropIndicators();
+      // Adopt after the native drag machinery settles.
+      setTimeout(() => {
+        try {
+          group.addTabs([src]);
+          this.updateGroupChips();
+          syncActiveGroup();
+          bumpStacksVersion();
+          // A busy bar scrolls the newcomer into view.
+          this.scrollProxyIntoView(src);
+        } catch (e) {
+          console.error("[tab-stacks] chip drop join failed:", e);
+        }
+      }, 0);
+    };
+
+    // Proxy drops: reorder inside the bar, or leave the stack by dropping
+    // into the tab row.
+    const findTabByPanel = (panel: string): StackTab | undefined =>
+      getGBrowser()?.tabs.find((t) => t.linkedPanel === panel);
+    const clearDropIndicators = () => {
+      for (
+        const el of document.querySelectorAll("[data-drop-side]")
+      ) {
+        el.removeAttribute("data-drop-side");
+      }
+    };
+    const onProxyDragOver = (event: DragEvent) => {
+      if (!event.dataTransfer?.types?.includes(PROXY_TYPE)) return;
+      const t = event.target as Element | null;
+      const inBar = t?.closest?.("#derp-stack-bar");
+      const inStrip = t?.closest?.("#tabbrowser-tabs");
+      if (!inBar && !inStrip) {
+        clearDropIndicators();
+        return;
+      }
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+      // Insertion indicator on the nearest cell edge, like the top row.
+      clearDropIndicators();
+      if (inBar) {
+        const proxies = [...inBar.querySelectorAll(".derp-stack-tab")];
+        for (const proxy of proxies) {
+          const r = proxy.getBoundingClientRect();
+          if (event.clientX < r.x + r.width / 2) {
+            proxy.setAttribute("data-drop-side", "before");
+            return;
+          }
+        }
+        proxies[proxies.length - 1]?.setAttribute("data-drop-side", "after");
+      } else if (inStrip) {
+        const gb = getGBrowser();
+        if (!gb) return;
+        let anchor: StackTab | undefined;
+        for (const tab of gb.tabs) {
+          if (tab.hidden || tab.group) continue;
+          const r = tab.getBoundingClientRect();
+          if (r.width === 0) continue;
+          if (event.clientX >= r.x + r.width / 2) anchor = tab;
+        }
+        if (anchor) {
+          (anchor as unknown as Element).setAttribute(
+            "data-drop-side",
+            "after",
+          );
+        } else {
+          const first = gb.tabs.find(
+            (tab) =>
+              !tab.hidden && !tab.group &&
+              tab.getBoundingClientRect().width > 0,
+          );
+          (first as unknown as Element | undefined)?.setAttribute(
+            "data-drop-side",
+            "before",
+          );
+        }
+      }
+    };
+    const onProxyDrop = (event: DragEvent) => {
+      clearDropIndicators();
+      const panel = event.dataTransfer?.getData(PROXY_TYPE);
+      if (!panel) return;
+      const gb = getGBrowser();
+      const tab = findTabByPanel(panel);
+      if (!gb || !tab) return;
+      const target = event.target as Element | null;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      try {
+        const inBar = target?.closest?.("#derp-stack-bar");
+        if (inBar) {
+          // Reorder within the stack: place before the first proxy whose
+          // midpoint lies right of the drop.
+          const bar = inBar as Element;
+          const proxies = [...bar.querySelectorAll(".derp-stack-tab")];
+          let placed = false;
+          for (const proxy of proxies) {
+            const r = proxy.getBoundingClientRect();
+            if (event.clientX < r.x + r.width / 2) {
+              const other = findTabByPanel(
+                proxy.getAttribute("data-derp-panel") ?? "",
+              );
+              if (other && other !== tab) {
+                gb.moveTabBefore?.(tab, other);
+              }
+              placed = true;
+              break;
+            }
+          }
+          if (!placed) {
+            const last = proxies[proxies.length - 1];
+            const other = findTabByPanel(
+              last?.getAttribute("data-derp-panel") ?? "",
+            );
+            if (other && other !== tab) gb.moveTabAfter?.(tab, other);
+          }
+        } else if (target?.closest?.("#tabbrowser-tabs")) {
+          // Dropping onto its own chip is a no-op, not an exit.
+          const ownChip = target?.closest?.("tab-group[data-derp-stack]");
+          if (ownChip && ownChip === (tab.group as unknown as Element)) {
+            return;
+          }
+          // Out of the stack, then to the drop position among row-1 tabs.
+          gb.ungroupTab?.(tab);
+          const visible = gb.tabs.filter(
+            (t) =>
+              !t.hidden && t !== tab && !t.group &&
+              t.getBoundingClientRect().width > 0,
+          );
+          let anchor: StackTab | undefined;
+          for (const t of visible) {
+            const r = t.getBoundingClientRect();
+            if (event.clientX >= r.x + r.width / 2) anchor = t;
+          }
+          if (anchor) {
+            gb.moveTabAfter?.(tab, anchor);
+          } else if (visible[0]) {
+            gb.moveTabBefore?.(tab, visible[0]);
+          }
+        }
+        this.updateGroupChips();
+        syncActiveGroup();
+        bumpStacksVersion();
+        this.scrollProxyIntoView(tab);
+      } catch (e) {
+        console.error("[tab-stacks] proxy drop failed:", e);
+      }
+    };
+
+    addEventListener("dragstart", onTabDragStart, true);
+    addEventListener("drop", onAnyDrop, true);
+    addEventListener("drop", onChipDrop, true);
+    addEventListener("drop", onProxyDrop, true);
+    addEventListener("dragover", onProxyDragOver, true);
+    addEventListener("dragend", endTabDrag, true);
+    addEventListener("TabGrouped", onTabGroupedDuringDrag);
+    onCleanup(() => {
+      removeEventListener("dragstart", onTabDragStart, true);
+      removeEventListener("drop", onAnyDrop, true);
+      removeEventListener("drop", onChipDrop, true);
+      removeEventListener("drop", onProxyDrop, true);
+      removeEventListener("dragover", onProxyDragOver, true);
+      removeEventListener("dragend", endTabDrag, true);
+      removeEventListener("TabGrouped", onTabGroupedDuringDrag);
+    });
+
     // Some group events don't bubble reliably; a debounced observer on the
     // tab strip catches every structural change (group created, tab joins,
     // titles) regardless of event plumbing.
@@ -322,6 +582,27 @@ export default class TabStacks extends NoraComponentBase {
    * must be left completely alone or the two features fight (runaway
    * revive/expand loop, mangled tabs, eventual crash).
    */
+  /** Scroll the bar so a just-moved tab's proxy is visible. */
+  private scrollProxyIntoView(tab: { linkedPanel: string | null }): void {
+    setTimeout(() => {
+      try {
+        const panel = tab.linkedPanel;
+        if (!panel) return;
+        const bar = document?.getElementById("derp-stack-bar") as
+          | (Element & { ensureElementIsVisible?: (el: Element) => void })
+          | null;
+        const proxy = bar?.querySelector(
+          `[data-derp-panel="${panel}"]`,
+        );
+        if (bar?.ensureElementIsVisible && proxy) {
+          bar.ensureElementIsVisible(proxy);
+        }
+      } catch {
+        // scroll is best-effort
+      }
+    }, 50);
+  }
+
   private isSplitViewGroup(group: StackGroup): boolean {
     try {
       return group.tabs.some(
@@ -343,6 +624,7 @@ export default class TabStacks extends NoraComponentBase {
         if (this.isSplitViewGroup(group)) {
           group.removeAttribute("data-derp-stack");
           group.querySelector(".derp-stack-close")?.remove();
+          group.querySelector(".derp-stack-icon")?.remove();
           continue;
         }
         if (getGroupKind(group.id) === "group") {
@@ -350,16 +632,25 @@ export default class TabStacks extends NoraComponentBase {
           // end. All stack CSS/behavior is scoped to [data-derp-stack].
           group.removeAttribute("data-derp-stack");
           group.querySelector(".derp-stack-close")?.remove();
+          group.querySelector(".derp-stack-icon")?.remove();
           continue;
         }
         group.setAttribute("data-derp-stack", "true");
         // Close button lives inside the label so it rides the chip's flex
         // row (order puts it after the count badge); shown on hover.
         const labelEl = group.querySelector(".tab-group-label");
-        if (labelEl && !labelEl.querySelector(".derp-stack-close")) {
-          const close = (document as Document & {
+        const makeImage = (): XULElement =>
+          (document as Document & {
             createXULElement: (tag: string) => XULElement;
           }).createXULElement("image");
+        if (labelEl && !labelEl.querySelector(".derp-stack-icon")) {
+          const icon = makeImage();
+          icon.classList.add("derp-stack-icon");
+          icon.setAttribute("src", STACK_ICON);
+          labelEl.appendChild(icon);
+        }
+        if (labelEl && !labelEl.querySelector(".derp-stack-close")) {
+          const close = makeImage();
           close.classList.add("derp-stack-close");
           close.setAttribute("src", "chrome://global/skin/icons/close.svg");
           close.setAttribute("tooltiptext", "Close stack");

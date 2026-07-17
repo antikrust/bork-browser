@@ -46,7 +46,8 @@ tab-group[data-derp-stack] > .tab-group-label-container {
 tab-group[data-derp-stack] .derp-stack-close {
   display: none;
   position: absolute;
-  inset-inline-start: 3px;
+  /* 6px + the chip's 1px border = the tabs' 7px favicon offset. */
+  inset-inline-start: 6px;
   inset-block-start: 50%;
   transform: translateY(-50%);
   width: 14px;
@@ -57,6 +58,28 @@ tab-group[data-derp-stack] .derp-stack-close {
   -moz-context-properties: fill;
   fill: currentColor;
   cursor: pointer;
+}
+
+/* Chip glyph occupies the X's exact box and yields to it on hover —
+   the same icon<->close swap tabs get. */
+tab-group[data-derp-stack] .derp-stack-icon {
+  position: absolute;
+  /* 6px + the chip's 1px border = the tabs' 7px favicon offset. */
+  inset-inline-start: 6px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  padding: 1px;
+  opacity: 0.75;
+  pointer-events: none;
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+tab-group[data-derp-stack] .tab-group-label-container:hover .derp-stack-icon {
+  display: none;
 }
 
 tab-group[data-derp-stack] .tab-group-label-container:hover .derp-stack-close {
@@ -102,10 +125,10 @@ tab-group[data-derp-stack] .tab-group-label {
   justify-content: flex-start !important;
   border-radius: 4px !important;
   /* Title clears the (hover-shown) close button at the left edge. */
-  padding: 0 9px 0 22px !important;
-  /* Bottom edge flush with the tabs; the top stays cut off above the row
-     ("looks like a folder" — deliberate). */
-  min-height: var(--derp-tab-height, 25px);
+  padding: 0 9px 0 25px !important;
+  /* Fills the row exactly like the tab backgrounds do (0 -> row height),
+     so chip and tabs share both edges. */
+  min-height: calc(var(--derp-tab-height, 30px) + 2px);
   /* Width comes from the group box (which flexes like a tab). */
   flex: 1 1 auto !important;
   min-width: 0;
@@ -119,11 +142,10 @@ tab-group[data-derp-stack] .tab-group-label {
   background-color: color-mix(in srgb, currentColor 8%, transparent) !important;
   color: inherit !important;
   border: 1px solid var(--tab-group-color-invert, currentColor) !important;
-  /* Top-align with the tab backgrounds: auto bottom margin wins over the
-     container's own centering (justify-content overrides did not take —
-     the vbox re-centers its label). */
-  margin-top: 1px !important;
-  margin-bottom: auto !important;
+  /* Full-bleed: no block margins, so the chip's edges land on the row's
+     edges (the vbox would otherwise centre a shorter box). */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 /* No native 2px group underline beneath the chip. */
@@ -160,12 +182,34 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 /* ===== Row 2: the stack bar ===== */
 /* Inside #navigator-toolbox the bar retracts and reveals with the rest of
    the top chrome in zen mode — no dedicated hide rule needed. */
+/* Transparent: the toolbox paints the background, so both rows share
+   the exact same colour by construction. The strip stacks above the bar
+   so the slide-in emerges from underneath it. */
+#TabsToolbar {
+  position: relative;
+  z-index: 2;
+}
+
 #derp-stack-bar {
-  background-color: var(--toolbar-bgcolor, var(--toolbar-background-color));
+  background: transparent;
   border-bottom: 1px solid var(--chrome-content-separator-color, rgba(0, 0, 0, 0.2));
-  padding: 3px 8px;
+  padding: 0 8px;
   min-height: 30px;
   max-height: 30px;
+  position: relative;
+  z-index: 1;
+  animation: derp-stack-bar-in 0.1s ease-out;
+}
+
+@keyframes derp-stack-bar-in {
+  from {
+    margin-top: -30px;
+    opacity: 0.4;
+  }
+  to {
+    margin-top: 0;
+    opacity: 1;
+  }
 }
 
 /* Same scroll-arrow containers as the tab strip. */
@@ -186,17 +230,78 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   max-width: 200px;
 }
 
+/* Rectangular cells like the top row: flush edges, no radius, full row
+   height; the hover paints the whole block. */
 .derp-stack-tab {
-  border-radius: 6px;
-  padding: 3px 10px 3px 6px;
-  margin-inline-end: 4px;
-  max-width: 200px;
-  min-width: 60px;
+  border-radius: 0;
+  padding: 0 10px 0 6px;
+  margin-inline-end: 0;
+  align-self: stretch;
   cursor: default;
+  position: relative;
 }
 
+/* The top row's hover grey, as a plain rectangle. */
 .derp-stack-tab:hover {
-  background: var(--toolbarbutton-hover-background, rgba(128, 128, 128, 0.2));
+  background: rgba(255, 255, 255, 0.09);
+}
+
+/* Separator lines between cells at the exact boundary, near full
+   height — same as the lines the top row draws between tabs. */
+.derp-stack-tab::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: 4px;
+  inset-block-end: 4px;
+  width: 1px;
+  background: rgba(251, 251, 254, 0.2);
+}
+
+/* No boundary line touching a filled (hovered/selected) cell — same as
+   the top row, where separators yield around the active tab. */
+.derp-stack-tab:hover::after,
+.derp-stack-tab[data-selected="true"]::after,
+.derp-stack-tab:has(+ .derp-stack-tab:hover)::after,
+.derp-stack-tab:has(+ .derp-stack-tab[data-selected="true"])::after {
+  background: transparent;
+}
+
+/* Drop-position indicator during proxy drags (box-shadow tracks the
+   rounded corners; ::before/::after are taken by the separators). */
+.derp-stack-tab[data-drop-side="before"] {
+  box-shadow: inset 2px 0 0 var(--focus-outline-color, #0a84ff);
+}
+
+.derp-stack-tab[data-drop-side="after"] {
+  box-shadow: inset -2px 0 0 var(--focus-outline-color, #0a84ff);
+}
+
+/* Same indicator on row-1 tabs when a proxy is dragged up to leave. */
+.tabbrowser-tab[data-drop-side="before"] .tab-background {
+  box-shadow: inset 2px 0 0 var(--focus-outline-color, #0a84ff) !important;
+}
+
+.tabbrowser-tab[data-drop-side="after"] .tab-background {
+  box-shadow: inset -2px 0 0 var(--focus-outline-color, #0a84ff) !important;
+}
+
+/* Drag ghost for proxy drags (HTML node: snapshotting live XUL inside
+   the strip is flaky — same trick as the workspaces rows). */
+.derpStackDragGhost {
+  position: fixed;
+  top: -1000px;
+  left: -1000px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--arrowpanel-background, #42414d);
+  color: var(--arrowpanel-color, #fff);
+  border: 1px solid var(--panel-separator-color, rgba(255, 255, 255, 0.2));
+  font-size: 12px;
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .derp-stack-tab[data-selected="true"] {
@@ -204,7 +309,6 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
     --tab-selected-bgcolor,
     var(--toolbarbutton-active-background, rgba(128, 128, 128, 0.3))
   );
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Favicon swaps to a close button on hover — same manner as row-1 tabs */
@@ -221,14 +325,32 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 
 .derp-stack-tab-close {
   display: none;
-  width: 16px;
-  height: 16px;
-  padding: 0 !important;
-  margin: 0 !important;
-  border-radius: 4px;
+  width: 14px;
+  height: 14px;
+  padding: 1px !important;
+  margin: 1px !important;
+
+  /* The inner toolbarbutton icon renders at its natural 16px unless
+     pinned — same 12px glyph as the top row's X. */
+  & > .toolbarbutton-icon {
+    width: 12px !important;
+    height: 12px !important;
+    padding: 0 !important;
+  }
+  border-radius: 3px;
   list-style-image: url("chrome://global/skin/icons/close.svg");
   -moz-context-properties: fill;
   fill: currentColor;
+  /* The native toolbarbutton hover paints a border/appearance; own the
+     whole thing so it matches the chip's X exactly. */
+  appearance: none !important;
+  border: none !important;
+  background-color: var(--tab-selected-bgcolor, rgba(70, 70, 75, 0.9));
+}
+
+.derp-stack-tab-close:hover {
+  border: none !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .derp-stack-tab:hover .derp-stack-tab-icon {
