@@ -27,6 +27,7 @@ export type StackGroup = XULElement & {
 
 type TabBrowser = {
   tabs: StackTab[];
+  selectedBrowser?: { currentURI?: { spec?: string } };
   tabGroups: StackGroup[];
   selectedTab: StackTab;
   tabContainer: XULElement;
@@ -96,7 +97,82 @@ export const activateGroup = (group: StackGroup) => {
 
 const DEFAULT_FAVICON = "chrome://global/skin/icons/defaultFavicon.svg";
 
+/**
+ * Stable per-tab drag identity. NOT linkedPanel: that is null until a tab
+ * has a browser attached (lazy/session-restored tabs), so a first drag of
+ * an unloaded tab carried an empty id and the drop silently no-opped —
+ * "only works the second try". Stamped on demand and good for the tab's
+ * whole life.
+ */
+let dragIdCounter = 0;
+export const getTabDragId = (tab: StackTab): string => {
+  let id = tab.getAttribute("data-derp-tab-id");
+  if (!id) {
+    id = `dt${++dragIdCounter}`;
+    tab.setAttribute("data-derp-tab-id", id);
+  }
+  return id;
+};
+
+export const findTabByDragId = (id: string): StackTab | undefined =>
+  getGBrowser()?.tabs.find((t) => t.getAttribute("data-derp-tab-id") === id);
+
 function StackTabProxy(props: { tab: StackTab }) {
+  // Inline address edit: double-click widens the cell into a text input,
+  // Enter navigates that tab, Escape/blur closes. Editing a tab in place
+  // beats selecting it, reaching for the address bar and coming back.
+  const [editing, setEditing] = createSignal(false);
+
+  const currentUrl = (): string => {
+    try {
+      const b = props.tab.linkedBrowser as
+        | { currentURI?: { spec?: string } }
+        | undefined;
+      const spec = b?.currentURI?.spec ?? "";
+      return spec === "about:newtab" || spec === "about:blank" ? "" : spec;
+    } catch {
+      return "";
+    }
+  };
+
+  const startEditing = () => {
+    setEditing(true);
+    // Focus once solid-xul has swapped the row for the input (the
+    // universal renderer gives us no `ref` helper, hence the id lookup).
+    setTimeout(() => {
+      const input = document?.getElementById(
+        `derp-stack-url-${getTabDragId(props.tab)}`,
+      ) as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
+    }, 0);
+  };
+
+  const commit = (value: string) => {
+    setEditing(false);
+    const url = value.trim();
+    if (!url) return;
+    try {
+      const uri = Services.uriFixup.getFixupURIInfo(
+        url,
+        Ci.nsIURIFixup.FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP |
+          Ci.nsIURIFixup.FIXUP_FLAG_FIX_SCHEME_TYPOS,
+      ).preferredURI;
+      if (!uri) return;
+      // Typed input must never run script or spoof a document.
+      if (uri.schemeIs("javascript") || uri.schemeIs("data")) return;
+      const b = props.tab.linkedBrowser as
+        | { fixupAndLoadURIString?: (u: string, o: unknown) => void }
+        | undefined;
+      b?.fixupAndLoadURIString?.(uri.spec, {
+        triggeringPrincipal: Services.scriptSecurityManager
+          .getSystemPrincipal(),
+      });
+    } catch (e) {
+      console.error("[tab-stacks] inline address load failed:", e);
+    }
+  };
+
   const label = () => {
     version();
     return props.tab.label;
@@ -115,7 +191,8 @@ function StackTabProxy(props: { tab: StackTab }) {
       class="derp-stack-tab"
       align="center"
       data-selected={selected()}
-      data-derp-panel={props.tab.linkedPanel ?? ""}
+      data-derp-drag-id={getTabDragId(props.tab)}
+      context="tabContextMenu"
       draggable="true"
       onDragStart={(event: DragEvent) => {
         // Proxies drag with a private type: within the bar to reorder
@@ -123,9 +200,7 @@ function StackTabProxy(props: { tab: StackTab }) {
         // tabs are hidden in row 1, so this is the only drag handle).
         event.dataTransfer?.setData(
           "application/x-derp-stack-tab",
-          // Null for lazy tabs (no browser yet); the drop handler treats
-          // an empty panel id as a no-op.
-          props.tab.linkedPanel ?? "",
+          getTabDragId(props.tab),
         );
         if (event.dataTransfer) {
           event.dataTransfer.effectAllowed = "move";
@@ -141,27 +216,55 @@ function StackTabProxy(props: { tab: StackTab }) {
           }
         }
       }}
+      data-editing={editing() ? "true" : "false"}
       onClick={() => {
+        if (editing()) return;
         const gb = getGBrowser();
         if (gb) {
           gb.selectedTab = props.tab;
         }
       }}
+      onDblClick={(event: MouseEvent) => {
+        event.stopPropagation();
+        startEditing();
+      }}
     >
-      <xul:hbox class="derp-stack-tab-iconbox" align="center">
-        <xul:image class="derp-stack-tab-icon" src={icon()} />
-        <xul:toolbarbutton
-          class="derp-stack-tab-close"
-          tooltiptext="Close tab"
-          onClick={(event: MouseEvent) => {
-            event.stopPropagation();
-            getGBrowser()?.removeTab(props.tab, { animate: false });
-          }}
-        />
-      </xul:hbox>
-      <xul:label class="derp-stack-tab-label" crop="end">
-        {label()}
-      </xul:label>
+      <Show
+        when={!editing()}
+        fallback={
+          <input
+            id={`derp-stack-url-${getTabDragId(props.tab)}`}
+            class="derp-stack-url-input"
+            value={currentUrl()}
+            placeholder="Enter address"
+            onKeyDown={(e: KeyboardEvent) => {
+              if (e.key === "Enter") {
+                commit((e.currentTarget as HTMLInputElement).value);
+              } else if (e.key === "Escape") {
+                setEditing(false);
+              }
+              // The strip's own key handling must not see this typing.
+              e.stopPropagation();
+            }}
+            onBlur={() => setEditing(false)}
+          />
+        }
+      >
+        <xul:hbox class="derp-stack-tab-iconbox" align="center">
+          <xul:image class="derp-stack-tab-icon" src={icon()} />
+          <xul:toolbarbutton
+            class="derp-stack-tab-close"
+            tooltiptext="Close tab"
+            onClick={(event: MouseEvent) => {
+              event.stopPropagation();
+              getGBrowser()?.removeTab(props.tab, { animate: false });
+            }}
+          />
+        </xul:hbox>
+        <xul:label class="derp-stack-tab-label" crop="end">
+          {label()}
+        </xul:label>
+      </Show>
     </xul:hbox>
   );
 }

@@ -173,16 +173,39 @@
 }
 
 /* ===== Slimmer address bar ===== */
+/* #urlbar-container's min-height is what actually sets the nav bar's
+   height — every button stretches to it. Lepton computes it as
+   min-height straight from `--urlbar-container-height`, so drive that
+   variable rather than fighting id-level !important rules: 32px bar,
+   ~a quarter off the 42px default, with compact density
+   (browser.uidensity=1) doing the button/urlbar shrink underneath. */
+:root {
+  --urlbar-min-height: 26px !important;
+}
+
+/* --urlbar-container-height must be set ON #urlbar-container: Firefox
+   defines it there as a calc (urlbar min-height + its padding), so a
+   :root value never reaches it — the element's own definition wins over
+   anything inherited. min-height reads straight from it, and every
+   toolbar button stretches to match, so this one number is the nav bar's
+   height: 32px, ~a quarter off the 42px default. */
+#urlbar-container {
+  --urlbar-container-height: 32px !important;
+  padding-block: 1px !important;
+}
+
 #urlbar {
   min-height: 26px !important;
 }
 
-#urlbar-container {
-  padding-block: 1px !important;
-}
-
 #nav-bar {
-  padding-block: 1px !important;
+  /* 0, not 1px: with compact density (browser.uidensity=1, set in
+     override.ini) this lands the nav bar at ~32px — a quarter off the
+     42px default. Compact is the lever lepton itself is built for; its
+     [uidensity="compact"] branches shrink the toolbar buttons and urlbar
+     without a specificity fight. The tab strip is unaffected: it is
+     pinned by --derp-tab-height. */
+  padding-block: 0 !important;
 }
 
 /* ===== macOS: first tab starts closer to the traffic lights ===== */
@@ -239,6 +262,37 @@
 
 #tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]):hover .tab-icon-image {
   opacity: 0 !important;
+}
+
+/* ===== New-tab "+": square, fills the row (both rows match) ===== */
+/* #TabsToolbar prefix: lepton styles this button with id-level rules. */
+/* .toolbarbutton-icon IS the image element, so sizing it scales the glyph.
+   The square fill and hover go on the BUTTON; the icon keeps its natural
+   16px. */
+#TabsToolbar #tabs-newtab-button,
+#TabsToolbar #new-tab-button {
+  border-radius: 0 !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+  align-self: stretch !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#TabsToolbar #tabs-newtab-button:hover,
+#TabsToolbar #new-tab-button:hover {
+  background-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+#TabsToolbar #tabs-newtab-button > .toolbarbutton-icon,
+#TabsToolbar #new-tab-button > .toolbarbutton-icon {
+  border-radius: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: transparent !important;
 }
 
 /* ===== Workspaces chooser: compact ===== */

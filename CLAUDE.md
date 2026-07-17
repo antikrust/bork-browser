@@ -267,6 +267,13 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   a line from `override.ini` does *not* undo it. Write the explicit opposite value instead.
 
 **Firefox chrome (FF152)**
+- `.toolbarbutton-icon` **is** the image element, not a container around it —
+  sizing it scales the glyph. Put fills/hovers on the button instead.
+- `#urlbar-container` defines `--urlbar-container-height` **on itself** (a calc
+  from the urlbar's height + padding), so a `:root` value never reaches it; an
+  element's own custom-property definition beats anything inherited. Its
+  `min-height` is what sets the nav bar's height — every toolbar button
+  stretches to match.
 - `SessionStore.persistTabAttribute` **no longer exists**. Feature-detect it;
   `setCustomTabValue`/`getCustomTabValue` is the working path (split-view's session-restore
   patch shows the pattern).
@@ -280,6 +287,15 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   mid-animation raced that machinery and left windows composited as an empty frame (the
   "vanishing window" hunt). `widget.macos.window-transforms.disabled = true` switches it off —
   do not remove without re-testing. Position panels on `popupshowing`, before first paint.
+
+**XUL layout attributes beat CSS — always**
+- `pack`, `align`, `flex`, `orient` on XUL boxes are mapped by Gecko as
+  *presentation hints*. Author CSS cannot override them at any specificity —
+  not `!important`, not an inline style. `pack="center"` on the tab-group label
+  container centred stack chips 1px low and no CSS could move them; setting
+  `pack="start"` on the element fixed it instantly.
+- **The diagnostic**: if an inline `!important` does not change the computed
+  value, stop escalating specificity — look for a XUL attribute.
 
 **The design layer fights the theme**
 - It re-sets `--tab-min-height` (32px) with equal-importance rules that win by load order.

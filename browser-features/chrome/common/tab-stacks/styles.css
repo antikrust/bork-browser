@@ -43,6 +43,8 @@ tab-group[data-derp-stack] .tab-group-label-container {
   min-width: var(--tab-min-width, 76px) !important;
   max-width: 225px !important;
   align-items: stretch !important;
+  /* Vertical seat comes from pack="start" (set in index.ts): XUL layout
+     attributes are presentation hints that author CSS cannot override. */
   margin-inline: 0 !important;
   padding-inline: 0 !important;
 }
@@ -133,9 +135,11 @@ tab-group[data-derp-stack] .tab-group-label {
   border-radius: 4px !important;
   /* Title clears the (hover-shown) close button at the left edge. */
   padding: 0 9px 0 25px !important;
-  /* Fills the row exactly like the tab backgrounds do (0 -> row height),
-     so chip and tabs share both edges. */
-  min-height: calc(var(--derp-tab-height, 30px) + 2px);
+  /* Exactly the tab's selection box: --derp-tab-height, top-aligned. The
+     row is 2px taller than that box, so filling the row made the chip a
+     hair taller than its neighbours. */
+  min-height: var(--derp-tab-height, 30px);
+  max-height: var(--derp-tab-height, 30px);
   /* Width comes from the group box (which flexes like a tab). */
   flex: 1 1 auto !important;
   min-width: 0;
@@ -149,8 +153,8 @@ tab-group[data-derp-stack] .tab-group-label {
   background-color: color-mix(in srgb, currentColor 8%, transparent) !important;
   color: inherit !important;
   border: 1px solid var(--tab-group-color-invert, currentColor) !important;
-  /* Full-bleed: no block margins, so the chip's edges land on the row's
-     edges (the vbox would otherwise centre a shorter box). */
+  /* Top-aligned with the tab backgrounds; the container's
+     justify-content: flex-start (above) does the work. */
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
@@ -237,6 +241,31 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   max-width: 200px;
 }
 
+/* Inline address edit: the cell eases wider and hands its space to a
+   text input; width is transitioned so it opens and closes smoothly. */
+.derp-stack-tab {
+  transition: flex-basis 0.14s ease-out, max-width 0.14s ease-out;
+}
+
+.derp-stack-tab[data-editing="true"] {
+  flex: 0 0 340px !important;
+  max-width: 340px !important;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.derp-stack-url-input {
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--tab-text-color, #fbfbfe);
+  font: inherit;
+  font-size: 12px;
+  padding: 0;
+}
+
 /* Rectangular cells like the top row: flush edges, no radius, full row
    height; the hover paints the whole block. */
 .derp-stack-tab {
@@ -295,15 +324,20 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 
 /* Drag ghost for proxy drags (HTML node: snapshotting live XUL inside
    the strip is flaky — same trick as the workspaces rows). */
+/* Ghost mirrors a row-2 cell: same rectangle, height, padding and type —
+   it is a tab being dragged, so it should look like one. */
 .derpStackDragGhost {
   position: fixed;
   top: -1000px;
   left: -1000px;
-  padding: 5px 12px;
-  border-radius: 6px;
-  background: var(--arrowpanel-background, #42414d);
-  color: var(--arrowpanel-color, #fff);
-  border: 1px solid var(--panel-separator-color, rgba(255, 255, 255, 0.2));
+  box-sizing: border-box;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px 0 6px;
+  border: none;
+  border-radius: 0;
+  background: var(--tab-selected-bgcolor, rgba(70, 70, 75, 0.95));
+  color: var(--tab-text-color, #fbfbfe);
   font-size: 12px;
   max-width: 200px;
   overflow: hidden;
@@ -376,9 +410,33 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   font-size: 12px;
 }
 
+/* Row-2 "+": square and full-height like the cells, no border/appearance
+   (the native toolbarbutton draws both). The label's own line box sat the
+   glyph ~2px low — line-height 1 + centring fixes that. */
 #derp-stack-newtab {
-  border-radius: 6px;
+  appearance: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
   padding: 2px 8px !important;
+  margin: 0 !important;
+  align-self: stretch !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  /* Unchanged from the original — only the glyph's vertical seat was off. */
   font-size: 14px;
   font-weight: 600;
+}
+
+#derp-stack-newtab:hover {
+  background-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+#derp-stack-newtab .toolbarbutton-text,
+#derp-stack-newtab label {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
 }

@@ -12,11 +12,13 @@ import {
 import {
   activateGroup,
   bumpStacksVersion,
+  findTabByDragId,
   getGBrowser,
   getGroupDisplayTitle,
   rememberSelection,
   StackBar,
   type StackGroup,
+  type StackTab,
   StackStyleElement,
   syncActiveGroup,
 } from "./stack-bar.tsx";
@@ -230,6 +232,44 @@ export default class TabStacks extends NoraComponentBase {
       removeEventListener("click", onChipPress, true);
     });
 
+    // Row-2 proxies use the *native* tab context menu (reload, duplicate,
+    // pin, close, move to…) rather than a parallel one. Firefox resolves
+    // which tab the menu acts on as
+    //   triggerNode.tab || triggerNode.closest("tab") || selectedTab
+    // — so stamping `.tab` on the trigger node is the supported hook. It
+    // must land before TabContextMenu.updateContextMenu reads it, hence
+    // the capture-phase listener on document: capture runs before the
+    // popup's own target-phase handler. Without this the menu would
+    // silently act on the *selected* tab instead of the one clicked.
+    const onTabContextShowing = (event: Event) => {
+      const popup = event.target as Element & { triggerNode?: Node | null };
+      if (!(popup instanceof Element) || popup.id !== "tabContextMenu") return;
+      const trigger = popup.triggerNode as
+        | (Element & { tab?: StackTab | null })
+        | null;
+      const proxy = trigger?.closest?.(".derp-stack-tab");
+      if (!trigger || !proxy) return;
+      const tab = findTabByDragId(
+        proxy.getAttribute("data-derp-drag-id") ?? "",
+      );
+      if (tab) trigger.tab = tab;
+    };
+    const onTabContextHidden = (event: Event) => {
+      const popup = event.target as Element & { triggerNode?: Node | null };
+      if (!(popup instanceof Element) || popup.id !== "tabContextMenu") return;
+      const trigger = popup.triggerNode as
+        | (Element & { tab?: StackTab | null })
+        | null;
+      // Don't leave a tab reference on the node once the menu is gone.
+      if (trigger && trigger.closest?.(".derp-stack-tab")) trigger.tab = null;
+    };
+    document.addEventListener("popupshowing", onTabContextShowing, true);
+    document.addEventListener("popuphidden", onTabContextHidden, true);
+    onCleanup(() => {
+      document?.removeEventListener("popupshowing", onTabContextShowing, true);
+      document?.removeEventListener("popuphidden", onTabContextHidden, true);
+    });
+
     // Stack ⇄ plain-group conversion. This build wires no context menu to
     // group labels (no context= attribute on the label chain), so the
     // feature owns one: right-click on any group label/chip opens it.
@@ -393,8 +433,7 @@ export default class TabStacks extends NoraComponentBase {
 
     // Proxy drops: reorder inside the bar, or leave the stack by dropping
     // into the tab row.
-    const findTabByPanel = (panel: string): StackTab | undefined =>
-      getGBrowser()?.tabs.find((t) => t.linkedPanel === panel);
+
     const clearDropIndicators = () => {
       for (
         const el of document.querySelectorAll("[data-drop-side]")
@@ -455,10 +494,10 @@ export default class TabStacks extends NoraComponentBase {
     };
     const onProxyDrop = (event: DragEvent) => {
       clearDropIndicators();
-      const panel = event.dataTransfer?.getData(PROXY_TYPE);
-      if (!panel) return;
+      const dragId = event.dataTransfer?.getData(PROXY_TYPE);
+      if (!dragId) return;
       const gb = getGBrowser();
-      const tab = findTabByPanel(panel);
+      const tab = findTabByDragId(dragId);
       if (!gb || !tab) return;
       const target = event.target as Element | null;
       event.preventDefault();
@@ -474,8 +513,8 @@ export default class TabStacks extends NoraComponentBase {
           for (const proxy of proxies) {
             const r = proxy.getBoundingClientRect();
             if (event.clientX < r.x + r.width / 2) {
-              const other = findTabByPanel(
-                proxy.getAttribute("data-derp-panel") ?? "",
+              const other = findTabByDragId(
+                proxy.getAttribute("data-derp-drag-id") ?? "",
               );
               if (other && other !== tab) {
                 gb.moveTabBefore?.(tab, other);
@@ -486,8 +525,8 @@ export default class TabStacks extends NoraComponentBase {
           }
           if (!placed) {
             const last = proxies[proxies.length - 1];
-            const other = findTabByPanel(
-              last?.getAttribute("data-derp-panel") ?? "",
+            const other = findTabByDragId(
+              last?.getAttribute("data-derp-drag-id") ?? "",
             );
             if (other && other !== tab) gb.moveTabAfter?.(tab, other);
           }
@@ -497,8 +536,10 @@ export default class TabStacks extends NoraComponentBase {
           if (ownChip && ownChip === (tab.group as unknown as Element)) {
             return;
           }
-          // Out of the stack, then to the drop position among row-1 tabs.
-          gb.ungroupTab?.(tab);
+          // Resolve the drop target from CURRENT geometry, before any
+          // mutation: ungroupTab() inserts the tab into the strip and
+          // shifts every tab right of the group, so measuring afterwards
+          // resolved against moved boxes and landed a slot early.
           const visible = gb.tabs.filter(
             (t) =>
               !t.hidden && t !== tab && !t.group &&
@@ -506,13 +547,15 @@ export default class TabStacks extends NoraComponentBase {
           );
           let anchor: StackTab | undefined;
           for (const t of visible) {
-            const r = t.getBoundingClientRect();
-            if (event.clientX >= r.x + r.width / 2) anchor = t;
+            const rect = t.getBoundingClientRect();
+            if (event.clientX >= rect.x + rect.width / 2) anchor = t;
           }
+          const first = visible[0];
+          gb.ungroupTab?.(tab);
           if (anchor) {
             gb.moveTabAfter?.(tab, anchor);
-          } else if (visible[0]) {
-            gb.moveTabBefore?.(tab, visible[0]);
+          } else if (first) {
+            gb.moveTabBefore?.(tab, first);
           }
         }
         this.updateGroupChips();
@@ -625,6 +668,14 @@ export default class TabStacks extends NoraComponentBase {
           group.removeAttribute("data-derp-stack");
           group.querySelector(".derp-stack-close")?.remove();
           group.querySelector(".derp-stack-icon")?.remove();
+          for (
+            const sel of [
+              ".tab-group-label-container",
+              ".tab-group-label-hover-highlight",
+            ]
+          ) {
+            group.querySelector(sel)?.setAttribute("pack", "center");
+          }
           continue;
         }
         if (getGroupKind(group.id) === "group") {
@@ -633,9 +684,30 @@ export default class TabStacks extends NoraComponentBase {
           group.removeAttribute("data-derp-stack");
           group.querySelector(".derp-stack-close")?.remove();
           group.querySelector(".derp-stack-icon")?.remove();
+          for (
+            const sel of [
+              ".tab-group-label-container",
+              ".tab-group-label-hover-highlight",
+            ]
+          ) {
+            group.querySelector(sel)?.setAttribute("pack", "center");
+          }
           continue;
         }
         group.setAttribute("data-derp-stack", "true");
+        // pack="center" is a XUL layout attribute mapped to
+        // justify-content: center as a presentation hint — author CSS
+        // cannot beat it at any specificity, not even inline !important.
+        // It centred the chip in the 2px-taller row, leaving it 1px below
+        // the tab selection boxes. The attribute is the only lever.
+        for (
+          const sel of [
+            ".tab-group-label-container",
+            ".tab-group-label-hover-highlight",
+          ]
+        ) {
+          group.querySelector(sel)?.setAttribute("pack", "start");
+        }
         // Close button lives inside the label so it rides the chip's flex
         // row (order puts it after the count badge); shown on hover.
         const labelEl = group.querySelector(".tab-group-label");
