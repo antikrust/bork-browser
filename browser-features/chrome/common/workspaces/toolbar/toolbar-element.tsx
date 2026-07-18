@@ -102,16 +102,32 @@ export class WorkspacesToolbarButton {
 
   private getButtonNode(): Element | null {
     if (!document) return null;
-    // CustomizableUI rebuilds the widget node on area/placement changes,
-    // and the startup re-pin can race that rebuild, stranding a second
-    // bare 18px button beside the real one (the "phantom box" — clicks
-    // still opened the popup because both nodes carry the widget wiring).
-    // Keep the first (enhanced, visible) node and sweep any duplicates;
-    // this runs on the existing 500ms update tick, so a re-spawned
-    // duplicate never survives long enough to be seen.
     const all = document.querySelectorAll("#workspaces-toolbar-button");
-    for (let i = 1; i < all.length; i++) all[i].remove();
-    return all[0] ?? null;
+    if (all.length <= 1) return all[0] ?? null;
+
+    // CustomizableUI rebuilds the widget node on area/placement changes, and
+    // the startup re-pin can race that rebuild, stranding a second bare 18px
+    // button beside the real one (the "phantom box" — clicks still opened the
+    // popup because both nodes carry the widget wiring).
+    //
+    // Document order is NOT safe to sweep by: mid-rebuild the replacement is
+    // inserted before the outgoing node is unhooked, so the first node can be
+    // the one on its way out — removing "the rest" then deletes the live
+    // button and the chooser vanishes until the next rebuild. Ask
+    // CustomizableUI which node it owns and only ever remove the others.
+    let owned: Element | null = null;
+    try {
+      owned = CustomizableUI.getWidget("workspaces-toolbar-button")
+        ?.forWindow(globalThis as unknown as Window)?.node ?? null;
+    } catch (e) {
+      console.error("[workspaces] Failed to resolve owned button node:", e);
+    }
+    if (!owned?.isConnected) return all[0] ?? null;
+
+    for (const node of all) {
+      if (node !== owned) node.remove();
+    }
+    return owned;
   }
 
   private updateButtonIfNeeded(force = false) {
