@@ -119,10 +119,37 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
 }
 
 /* Native label pill on plain groups sat ~4px low, like the chip used
-   to — same seat as the tabs. */
+   to — same seat as the tabs. Sized so an unnamed group is a tidy square
+   around the glyph rather than a bare colour swatch. */
 #tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label {
   margin-top: 1px !important;
   margin-bottom: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px;
+  min-height: 20px;
+  padding: 2px 5px !important;
+  box-sizing: border-box;
+  /* Native collapsed/active labels grow a bright 1px outline ring that
+     reads as a misshapen border on the icon square — the member tabs
+     already show selection, so the ring adds nothing here. */
+  outline: none !important;
+}
+
+/* Same layers glyph as the stack chips, so both group kinds read as tab
+   containers at a glance. Mask + currentColor keeps it legible on any
+   group colour. */
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label::before {
+  content: "";
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  background-color: currentColor;
+  mask-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/%3E%3Cpath d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/%3E%3Cpath d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/%3E%3C/svg%3E');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 
 tab-group[data-derp-stack] .tab-group-label {

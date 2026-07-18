@@ -1,4 +1,5 @@
 /dist/
+/build/
 **/_dist/
 **/node_modules/
 **/.turbo

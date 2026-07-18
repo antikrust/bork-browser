@@ -102,7 +102,16 @@ export class WorkspacesToolbarButton {
 
   private getButtonNode(): Element | null {
     if (!document) return null;
-    return document.querySelector("#workspaces-toolbar-button");
+    // CustomizableUI rebuilds the widget node on area/placement changes,
+    // and the startup re-pin can race that rebuild, stranding a second
+    // bare 18px button beside the real one (the "phantom box" — clicks
+    // still opened the popup because both nodes carry the widget wiring).
+    // Keep the first (enhanced, visible) node and sweep any duplicates;
+    // this runs on the existing 500ms update tick, so a re-spawned
+    // duplicate never survives long enough to be seen.
+    const all = document.querySelectorAll("#workspaces-toolbar-button");
+    for (let i = 1; i < all.length; i++) all[i].remove();
+    return all[0] ?? null;
   }
 
   private updateButtonIfNeeded(force = false) {
