@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>derp browser</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: #16181d; color: #d6d9de;
+    font: 16px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif;
+    max-width: 720px; margin: 0 auto; padding: 48px 20px 80px;
+  }
+  h1 { font-size: 2.4rem; letter-spacing: -0.02em; color: #fff; }
+  h1 span { color: #6fb3d2; }
+  .tag { color: #8a919c; margin: 6px 0 36px; }
+  .dl { display: block; background: #1e2129; border: 1px solid #2c313c;
+        border-radius: 10px; padding: 18px 20px; margin: 14px 0;
+        text-decoration: none; color: inherit; transition: border-color .15s; }
+  .dl:hover { border-color: #6fb3d2; }
+  .dl b { color: #fff; font-size: 1.05rem; }
+  .dl small { float: right; color: #8a919c; }
+  .dl code { display: block; margin-top: 6px; font-size: .72rem;
+             color: #5c6470; word-break: break-all; }
+  h2 { font-size: 1.05rem; color: #aeb4bd; margin: 40px 0 10px; }
+  p, li { color: #a7adb6; font-size: .95rem; }
+  ul { padding-left: 20px; }
+  code.inline { background: #22262f; padding: 1px 6px; border-radius: 4px;
+                font-size: .85em; }
+  a { color: #6fb3d2; }
+  footer { margin-top: 48px; font-size: .8rem; color: #5c6470; }
+</style>
+</head>
+<body>
+  <h1>derp <span>browser</span></h1>
+  <p class="tag">a compact fork of Floorp 12 (Firefox 152) — Vivaldi-style
+  workspaces and tab stacks, zen mode, lean UI, no AI.</p>
+
+  <a class="dl" href="downloads/Derp-macOS-universal.dmg">
+    <b>macOS</b> <small>universal (Apple silicon + Intel) · 242 MB</small>
+    <code>sha256 779327138466b215a9e6dba74a346354d1804756b313feccbfc7347745bef923</code>
+  </a>
+  <a class="dl" href="downloads/Derp-linux-x86_64.tar.gz">
+    <b>Linux</b> <small>x86_64 · 116 MB</small>
+    <code>sha256 d745ce395f030028dc7fdbf0ebbf95ad0f69a584241467f4f9a2ff61eb1261c1</code>
+  </a>
+  <a class="dl" href="downloads/Derp-windows-x86_64.zip">
+    <b>Windows</b> <small>x86_64 · 131 MB</small>
+    <code>sha256 02a63c64fd3c511b36ca6a6cabc1303dc07c4d9225a0fbcb066126faaf0980a2</code>
+  </a>
+
+  <h2>installing</h2>
+  <ul>
+    <li><b>macOS:</b> open the DMG, drag Derp to Applications. These builds
+      are self-signed — first launch is right-click → Open.</li>
+    <li><b>Linux:</b> <code class="inline">tar -xzf Derp-linux-x86_64.tar.gz
+      &amp;&amp; ./floorp/floorp</code></li>
+    <li><b>Windows:</b> unzip anywhere, run
+      <code class="inline">floorp.exe</code>. SmartScreen will grumble —
+      More info → Run anyway.</li>
+  </ul>
+
+  <h2>notes</h2>
+  <ul>
+    <li>The engine binary keeps its upstream name (<code
+      class="inline">floorp</code>) — derp is the feature layer on top.</li>
+    <li>Profiles live in the standard Floorp location, so derp and Floorp
+      share profile storage — back up before switching between them.</li>
+    <li>Source, issues and the full story:
+      <a href="https://github.com/100mountains/derp">github.com/100mountains/derp</a></li>
+  </ul>
+
+  <footer>built on Floorp (Ablaze) and Firefox (Mozilla). the name Floorp is
+  a trademark in Japan. derp is not affiliated with either — it just stands
+  on their shoulders, slightly hunched.</footer>
+</body>
+</html>
