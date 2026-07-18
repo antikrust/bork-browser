@@ -26,6 +26,22 @@ RUNTIME_URL="https://github.com/Floorp-Projects/Floorp-runtime/releases/download
 log() { printf '\033[34m[derp-release]\033[0m %s\n' "$*"; }
 fail() { printf '\033[31m[derp-release] %s\033[0m\n' "$*" >&2; exit 1; }
 
+# Empty a staging directory and recreate it.
+#
+# Plain `rm -rf X && mkdir X` loses a race that happens routinely here: if the
+# directory is open in Finder, Finder writes .DS_Store back the moment rm
+# empties it, and rm then fails the final rmdir with "Directory not empty".
+# Retry rather than make the caller close a window to run a build.
+reset_dir() {
+  local dir="$1" attempt
+  for attempt in 1 2 3; do
+    rm -rf "$dir" 2>/dev/null && break
+    sleep 1
+  done
+  rm -rf "$dir" || fail "could not clear $dir"
+  mkdir -p "$dir"
+}
+
 # Overlay the production noraneko layer onto a runtime app root (the dir
 # holding browser/ and chrome.manifest).
 overlay() {
@@ -87,7 +103,7 @@ build_linux() {
   local file="floorp-linux-x86_64-moz-artifact.tar.xz"
   fetch_runtime "$file"
   log "linux: extracting"
-  rm -rf build/release/linux && mkdir -p build/release/linux
+  reset_dir build/release/linux
   tar -xJf "build/runtimes/$file" -C build/release/linux
   local approot
   approot="$(dirname "$(find build/release/linux -path '*browser/chrome/browser/content/browser/browser.xhtml' | head -1)")"
@@ -105,7 +121,7 @@ build_windows() {
   local file="floorp-windows-x86_64-moz-artifact.zip"
   fetch_runtime "$file"
   log "windows: extracting"
-  rm -rf build/release/windows && mkdir -p build/release/windows
+  reset_dir build/release/windows
   unzip -q "build/runtimes/$file" -d build/release/windows
   # moz artifact zips can nest the payload one zip deeper
   local nested
@@ -133,7 +149,7 @@ build_mac() {
   log "mac: assembling from local runtime"
   local app="build/release/mac/Derp.app"
   local res="$app/Contents/Resources"
-  rm -rf build/release/mac && mkdir -p build/release/mac
+  reset_dir build/release/mac
   cp -R _dist/bin/floorp/Floorp.app "$app"
   rm -rf "$res/noraneko-devdir" && mkdir "$res/noraneko-devdir"
   cp -RL _dist/noraneko/ "$res/noraneko-devdir/"
@@ -143,6 +159,10 @@ build_mac() {
 
   log "mac: branding"
   bash tools/release/brand-mac-bundle.sh "$app"
+  # Explicit, even though the dev tree usually carries them already: relying on
+  # that meant a regenerated icon set only reached the package if someone had
+  # remembered to install it into _dist/bin first.
+  bash tools/release/brand-icons.sh "$res"
 
   log "mac: signing (ad-hoc) and packing"
   codesign --force --deep -s - "$app"

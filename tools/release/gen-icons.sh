@@ -3,15 +3,16 @@
 #
 # Build derp's icon set from browser-features/branding/logo.png.
 #
-# The logo is a wordmark, and "derp" is an illegible smudge below about 64px —
-# which is exactly where taskbar, alt-tab and tab favicons live. So the small
-# sizes use the face from the 'p' instead, which stays readable at 16px, and
-# the wordmark takes over once there is room for it. A .icns is a container of
-# per-size images, so one file carries both.
+# The app icon is the face from the 'p' at every size, and only the face. The
+# eyes are the part that reads at a glance; "derp" set across 64px of Dock is
+# a smudge. The wordmark still gets used where there is room for it — the
+# welcome page, the help topbar and the About dialog — just not here.
 #
-# Artwork choice follows the *logical* size, not the pixel count: icon_32x32@2x
-# is 64 physical pixels shown at 32 points, so it gets the same artwork as
-# icon_32x32.
+# Caveat worth knowing before someone "fixes" the blur: the face is a small
+# region of a raster source (about 128px inside 1024), so the 512 and 1024
+# entries are upscaled and soft. Everything up to 256 is native or a
+# downscale, which covers the Dock, alt-tab and Finder. Only Get Info and
+# Quick Look show the soft ones. Vector art would fix it; there is none.
 #
 # macOS only (sips and iconutil). Run from the repo root:
 #   bash tools/release/gen-icons.sh
@@ -24,40 +25,39 @@ OUT="browser-features/branding"
 [ -f "$SRC" ] || { echo "missing $SRC" >&2; exit 1; }
 
 # Face crop, measured against the 1024x1024 source: the disc on the 'p' bowl.
-FACE_SIZE=160
-FACE_Y=425
-FACE_X=712
+# Tight to the disc on purpose. A wider box reaches into the arc of the bowl's
+# own outline, which nothing shows at 16px and everything shows once the same
+# artwork is scaled up to fill a 512 slot.
+FACE_SIZE=128
+FACE_Y=442
+FACE_X=731
 FACE="$(mktemp -t derp-face).png"
 trap 'rm -f "$FACE"' EXIT
 sips -c "$FACE_SIZE" "$FACE_SIZE" --cropOffset "$FACE_Y" "$FACE_X" \
   "$SRC" --out "$FACE" >/dev/null
 
-# Below this logical size the wordmark stops being readable.
-SMALL_MAX=48
-pick() { [ "$1" -le "$SMALL_MAX" ] && echo "$FACE" || echo "$SRC"; }
-
 echo "building icns"
 ISET="$(mktemp -d -t derp-iconset)/derp.iconset"
 mkdir -p "$ISET"
-# name:logical:pixels
 for spec in \
-  icon_16x16:16:16 icon_16x16@2x:16:32 \
-  icon_32x32:32:32 icon_32x32@2x:32:64 \
-  icon_128x128:128:128 icon_128x128@2x:128:256 \
-  icon_256x256:256:256 icon_256x256@2x:256:512 \
-  icon_512x512:512:512 icon_512x512@2x:512:1024
+  icon_16x16:16 icon_16x16@2x:32 \
+  icon_32x32:32 icon_32x32@2x:64 \
+  icon_128x128:128 icon_128x128@2x:256 \
+  icon_256x256:256 icon_256x256@2x:512 \
+  icon_512x512:512 icon_512x512@2x:1024
 do
-  name="${spec%%:*}"; rest="${spec#*:}"
-  logical="${rest%%:*}"; pixels="${rest##*:}"
-  sips -s format png -z "$pixels" "$pixels" "$(pick "$logical")" \
+  name="${spec%%:*}"; pixels="${spec##*:}"
+  sips -s format png -z "$pixels" "$pixels" "$FACE" \
     --out "$ISET/$name.png" >/dev/null
 done
 iconutil -c icns "$ISET" -o "$OUT/firefox.icns"
 rm -rf "$(dirname "$ISET")"
 
+# Window and taskbar icons — the app icon on Linux and Windows, so the face
+# there too.
 echo "building in-app png set"
 for size in 16 32 48 64 128; do
-  sips -s format png -z "$size" "$size" "$(pick "$size")" \
+  sips -s format png -z "$size" "$size" "$FACE" \
     --out "$OUT/icon${size}.png" >/dev/null
 done
 
