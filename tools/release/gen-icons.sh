@@ -61,6 +61,14 @@ for size in 16 32 48 64 128; do
     --out "$OUT/icon${size}.png" >/dev/null
 done
 
+# A tightly-cropped wordmark. The source centres the mark in a square with a
+# lot of transparent padding — measured, it fills only 37% of the canvas
+# vertically — so anywhere the logo is placed by width (page headers, the help
+# topbar) the square version renders it small inside a mostly empty box.
+# Margin is generous enough to keep the soft shadow.
+echo "building cropped wordmark"
+sips -c 429 795 --cropOffset 295 119 "$SRC" --out "$OUT/wordmark.png" >/dev/null
+
 # The About dialog has room for the wordmark whatever the size.
 sips -s format png -z 192 192 "$SRC" --out "$OUT/about-logo.png" >/dev/null
 sips -s format png -z 384 384 "$SRC" --out "$OUT/about-logo@2x.png" >/dev/null
