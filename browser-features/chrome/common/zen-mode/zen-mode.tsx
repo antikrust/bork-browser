@@ -67,16 +67,13 @@ function setupPrefSync() {
     }
   });
 
-  const observer = () => {
-    const prefValue = Services.prefs.getBoolPref(ZENMODE_PREF, false);
-    if (prefValue !== zenModeEnabled()) {
-      setZenModeEnabled(prefValue);
-    }
-  };
-  Services.prefs.addObserver(ZENMODE_PREF, observer);
-  onCleanup(() => {
-    Services.prefs.removeObserver(ZENMODE_PREF, observer);
-  });
+  // Deliberately no pref observer. Zen mode is per-window: every window runs
+  // its own copy of this feature, so an observer here made each of them mirror
+  // the pref and one window entering zen dragged all the others in with it.
+  //
+  // The pref is still written above, but only as persistence — it seeds the
+  // signal when a window is created, so a new window (and the next launch)
+  // opens in the state last chosen, without linking live windows together.
 }
 
 /**
