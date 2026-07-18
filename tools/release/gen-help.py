@@ -228,7 +228,7 @@ def shell(title, current, breadcrumb, body, toc=None):
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
          stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
-  <a class="brand" href="index.html">{icon("layers", "icon brand-mark")}<span>derp help</span></a>
+  <a class="brand" href="index.html"><img class="brand-mark" src="logo.png" alt="" aria-hidden="true"><span>help</span></a>
 </header>
 <div class="layout">
   {nav_html(current)}

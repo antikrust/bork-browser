@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import Navigation from "../../components/Navigation.tsx";
 import { Settings } from "lucide-react";
-import gearImage from "./Floorp_Icon_Gear_Gradient.png";
+import derpLogo from "../../assets/logo.png";
 
 export default function HubIntroPage() {
   const { t } = useTranslation();
@@ -21,7 +21,7 @@ export default function HubIntroPage() {
               <div className="text-center">
                 <div className="relative mb-6">
                   <img
-                    src={gearImage}
+                    src={derpLogo}
                     alt="Derp Hub"
                     className="w-32 h-32 lg:w-40 lg:h-40 mx-auto"
                   />

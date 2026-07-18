@@ -42,7 +42,8 @@ body {
   font-weight: 650; font-size: 1rem;
   color: var(--text-strong); text-decoration: none;
 }
-.brand-mark { color: var(--accent); }
+/* The logo is a wordmark, so it needs width rather than an icon-sized box. */
+.brand-mark { width: 74px; height: auto; flex: 0 0 auto; }
 
 .menu-toggle {
   display: none;

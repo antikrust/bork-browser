@@ -4,7 +4,7 @@ import panelSidebarSvg from "../features/assets/panelsidebar.svg";
 import workspacesSvg from "../features/assets/workspaces.svg";
 import pwaSvg from "../features/assets/pwa.svg";
 import mouseGestureSvg from "../features/assets/mousegesture.svg";
-import gearImage from "../hub/Floorp_Icon_Gear_Gradient.png";
+import derpLogo from "../../assets/logo.png";
 import headerCover from "./header-cover.webp";
 import {
   ArrowRight,
@@ -450,7 +450,7 @@ export default function WhatsNewPage() {
             tag={t("whatsNew.tags.settings")}
             title={t("hubPage.sectionTitle")}
             description={t("hubPage.description")}
-            image={gearImage}
+            image={derpLogo}
             bullets={[
               t("hubPage.features.dedicated"),
               t("hubPage.features.accessible"),
