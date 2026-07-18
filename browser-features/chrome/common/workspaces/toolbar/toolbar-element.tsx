@@ -19,6 +19,7 @@ import { configStore, enabled } from "../data/config.ts";
 import Workspaces from "../index.ts";
 import { selectedWorkspaceID, workspacesDataStore } from "../data/data.ts";
 import { getContainerColorName } from "../utils/container-color.ts";
+import { registerVivaldiImportBridge } from "../vivaldi-import.ts";
 
 const { CustomizableUI } = ChromeUtils.importESModule(
   "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
@@ -34,6 +35,9 @@ export class WorkspacesToolbarButton {
   };
 
   constructor(ctx: WorkspacesService) {
+    // Answer import requests coming from the onboarding page, which lives in
+    // content and has no way to reach the workspaces service itself.
+    registerVivaldiImportBridge(ctx);
     const owner = getOwner();
     BrowserActionUtils.createMenuToolbarButton(
       "workspaces-toolbar-button",

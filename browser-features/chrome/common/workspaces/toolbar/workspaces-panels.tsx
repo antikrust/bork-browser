@@ -18,15 +18,21 @@ import { selectedWorkspaceID, workspacesDataStore } from "../data/data.ts";
 import type { TWorkspaceID } from "../utils/type.ts";
 import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
 import i18next from "i18next";
+import {
+  hasVivaldiWorkspaces,
+  importVivaldiWorkspaces,
+} from "../vivaldi-import.ts";
 
 const translationKeys = {
   createNew: "workspaces.popup.create-new" as const,
   manage: "workspaces.popup.manage" as const,
+  importVivaldi: "workspaces.popup.import-vivaldi" as const,
 };
 
 const getTranslations = () => ({
   createNew: i18next.t(translationKeys.createNew),
   manage: i18next.t(translationKeys.manage),
+  importVivaldi: i18next.t(translationKeys.importVivaldi),
 });
 
 const DEFAULT_ICON = "chrome://branding/content/icon32.png";
@@ -242,6 +248,32 @@ export function WorkspacesPanels(props: { ctx?: WorkspacesService } = {}) {
   });
 
   const handleCreateWorkspace = () => ctx()?.createNoNameWorkspace();
+
+  // Only offer the import when there is actually a Vivaldi profile to read.
+  const [canImportVivaldi, setCanImportVivaldi] = createSignal(false);
+  createEffect(() => {
+    if (!shouldShow()) return;
+    hasVivaldiWorkspaces()
+      .then(setCanImportVivaldi)
+      .catch(() => setCanImportVivaldi(false));
+  });
+
+  const handleImportVivaldi = () => {
+    const service = ctx();
+    if (!service) return;
+    importVivaldiWorkspaces(service)
+      .then((result) => {
+        console.log(
+          `[workspaces] Imported ${result.workspacesCreated} Vivaldi workspaces, ${result.tabsRestored} tabs` +
+            (result.skipped.length
+              ? ` (already present: ${result.skipped.join(", ")})`
+              : ""),
+        );
+        // Nothing new to offer once everything has come across.
+        setCanImportVivaldi(false);
+      })
+      .catch((e) => console.error("[workspaces] Vivaldi import failed", e));
+  };
   return (
     <Show when={shouldShow() ? ctx() : null} keyed>
       {(service) => (
@@ -262,6 +294,14 @@ export function WorkspacesPanels(props: { ctx?: WorkspacesService } = {}) {
               label={texts().createNew}
               onActivate={handleCreateWorkspace}
             />
+            <Show when={canImportVivaldi()}>
+              <ControlButton
+                id="workspaces-panel-import-vivaldi"
+                icon="chrome://global/skin/icons/import.svg"
+                label={texts().importVivaldi}
+                onActivate={handleImportVivaldi}
+              />
+            </Show>
           </xul:vbox>
           <xul:spacer flex="1" />
         </>
