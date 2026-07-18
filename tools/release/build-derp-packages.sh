@@ -67,6 +67,9 @@ overlay() {
   mkdir -p "$approot/distribution"
   cp "$policies" "$approot/distribution/policies.json"
 
+  log "installing icons"
+  bash tools/release/brand-icons.sh "$approot"
+
   find "$approot/noraneko-devdir" -name "*.map" -delete
 }
 

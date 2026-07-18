@@ -169,6 +169,21 @@ function brandMacBundle(): void {
   }
 }
 
+/**
+ * Icons are binary, so the patch mechanism cannot carry them — copy them in
+ * after each extract instead. Platform-independent: the script skips whatever
+ * a given tree does not have.
+ */
+function brandIcons(): void {
+  const approot = BIN_DIR;
+  if (!exists(approot)) return;
+  try {
+    runCommand("bash", ["tools/release/brand-icons.sh", approot]);
+  } catch (e) {
+    logger.warn(`Icon branding skipped: ${(e as Error).message}`);
+  }
+}
+
 export async function run(): Promise<void> {
   const hasVersion = exists(BIN_VERSION);
   const hasBin = exists(BIN_PATH_EXE);
@@ -208,6 +223,7 @@ export async function run(): Promise<void> {
     Deno.mkdirSync(BIN_ROOT_DIR, { recursive: true });
     await decompressBin();
     brandMacBundle();
+    brandIcons();
     logger.success("Initialization complete.");
   }
 
