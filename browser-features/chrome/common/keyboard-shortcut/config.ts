@@ -19,6 +19,20 @@ import {
 import { clearLegacyConfig, migrateLegacyConfig } from "./migration.ts";
 import { isRight } from "fp-ts/Either";
 
+/**
+ * derp's chrome controls sit on the platform's "with Alt" chord: Cmd+Alt on
+ * macOS, Ctrl+Alt everywhere else. Matching window-drag, which has always
+ * branched this way - meta on Windows is the Windows key, which is not a
+ * shortcut anyone wants to press.
+ */
+const IS_MAC = /mac/i.test(navigator.platform ?? "");
+const CHROME_CHORD = {
+  alt: true,
+  ctrl: !IS_MAC,
+  meta: IS_MAC,
+  shift: false,
+} as const;
+
 export const KEYBOARD_SHORTCUT_ENABLED_PREF = "floorp.keyboardshortcut.enabled";
 export const KEYBOARD_SHORTCUT_CONFIG_PREF = "floorp.keyboardshortcut.config";
 export const KEYBOARD_SHORTCUT_SAFE_ERROR_HANDLING_PREF =
@@ -45,17 +59,17 @@ const createDefaultShortcuts = (): Record<string, ShortcutConfig> => {
     // and plain Cmd+Z/A/S are undo / select-all / save.
     "floorp-toggle-zen-mode": {
       key: "Z",
-      modifiers: { alt: true, ctrl: false, meta: true, shift: false },
+      modifiers: { ...CHROME_CHORD },
       action: "floorp-toggle-zen-mode",
     },
     "derp-toggle-urlbar": {
       key: "A",
-      modifiers: { alt: true, ctrl: false, meta: true, shift: false },
+      modifiers: { ...CHROME_CHORD },
       action: "derp-toggle-urlbar",
     },
     "derp-toggle-panel-sidebar": {
       key: "S",
-      modifiers: { alt: true, ctrl: false, meta: true, shift: false },
+      modifiers: { ...CHROME_CHORD },
       action: "derp-toggle-panel-sidebar",
     },
   };
@@ -91,6 +105,28 @@ const migrateBareDerpKeys = (
   return result;
 };
 
+/**
+ * The chrome chords shipped as Cmd+Alt on every platform, so a Windows or
+ * Linux profile that has run derp before holds meta+alt - the Windows key.
+ * Rewrite those to the platform chord, but only where the entry still matches
+ * the shipped chord exactly, so a shortcut the user rebound is left alone.
+ */
+const migrateChromeChordPlatform = (
+  shortcuts: Record<string, ShortcutConfig>,
+): Record<string, ShortcutConfig> => {
+  if (IS_MAC) return shortcuts;
+  const result = { ...shortcuts };
+  for (const id of Object.keys(createDefaultShortcuts())) {
+    const entry = result[id];
+    const m = entry?.modifiers;
+    const shipped = m && m.alt && m.meta && !m.ctrl && !m.shift;
+    if (entry && shipped) {
+      result[id] = { ...entry, modifiers: { ...CHROME_CHORD } };
+    }
+  }
+  return result;
+};
+
 export const defaultConfig: KeyboardShortcutConfig = {
   enabled: true,
   shortcuts: createDefaultShortcuts(),
@@ -104,14 +140,14 @@ const normalizeConfig = (
   return {
     ...defaultConfig,
     ...config,
-    shortcuts: migrateBareDerpKeys({
+    shortcuts: migrateChromeChordPlatform(migrateBareDerpKeys({
       // Merge so new default shortcuts reach profiles that saved an older
       // config. Caveat: a default the user deleted (rather than rebound)
       // comes back — acceptable until configs carry a schema version.
       ...defaultConfig.shortcuts,
       ...((config?.shortcuts as Record<string, ShortcutConfig> | undefined) ??
         {}),
-    }),
+    })),
   } as KeyboardShortcutConfig;
 };
 
