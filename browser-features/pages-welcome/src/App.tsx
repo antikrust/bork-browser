@@ -34,7 +34,11 @@ function App() {
   return (
     <I18nProvider>
       <MemoryRouter>
-        <div className="min-h-screen bg-base-100 text-base-content flex flex-col relative overflow-hidden">
+        {/* No overflow-hidden here: it clips the page content whenever the
+            height is constrained, which leaves the flow unscrollable. The
+            decorative layer below does its own clipping, so the backdrop
+            stays contained without the outer wrapper cutting off the steps. */}
+        <div className="min-h-screen bg-base-100 text-base-content flex flex-col relative">
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div
               className="absolute inset-0 opacity-[0.03]"

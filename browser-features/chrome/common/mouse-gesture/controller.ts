@@ -65,6 +65,11 @@ export class MouseGestureController {
     this.targetWindow.addEventListener("wheel", this.handleMouseWheel, {
       passive: false,
     });
+    this.targetWindow.addEventListener(
+      "popupshown",
+      this.handlePopupShown,
+      true,
+    );
     this.eventListenersAttached = true;
   }
 
@@ -79,6 +84,11 @@ export class MouseGestureController {
         true,
       );
       this.targetWindow.removeEventListener("wheel", this.handleMouseWheel);
+      this.targetWindow.removeEventListener(
+        "popupshown",
+        this.handlePopupShown,
+        true,
+      );
       this.eventListenersAttached = false;
     }
 
@@ -417,6 +427,26 @@ export class MouseGestureController {
         this.preventionTimeoutId = null;
       }, getConfig().contextMenu.preventionTimeout);
     }
+  };
+
+  /**
+   * A context menu opens on mouse-down and swallows the matching mouse-up, so
+   * a plain right-click can leave isGestureActive stuck true with no further
+   * event to clear it. While it is stuck every wheel event is claimed as a
+   * tab-switch gesture and preventDefault'd, so scrolling stops working — but
+   * only on derp's own pages, because those load in-process and their wheel
+   * events reach this window listener while ordinary web content, being
+   * out-of-process, never does. That asymmetry is why the symptom looks like
+   * it belongs to the internal pages rather than to the gesture handler.
+   *
+   * A popup opening means the press is no longer ours to track. Only bail out
+   * of gestures that never travelled far enough to count as one, so a real
+   * gesture that happens to raise a panel still completes.
+   */
+  private handlePopupShown = (): void => {
+    if (!this.isGestureActive) return;
+    if (this.getTotalMovement() >= this.getActivationDistance()) return;
+    this.resetGestureState();
   };
 
   private handleContextMenu = (event: MouseEvent): void => {
