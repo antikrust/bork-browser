@@ -58,6 +58,15 @@ overlay() {
   bash static/gecko/pref/override.sh \
     "$approot/browser/defaults/preferences/firefox.js"
 
+  # Default extension pack: written at build time by the injector into the
+  # dev tree only (installDistributionPolicies targets _dist/bin), so clean
+  # runtime trees need it copied in or fresh installs get no extensions.
+  log "installing distribution policies"
+  local policies="_dist/bin/floorp/Floorp.app/Contents/Resources/distribution/policies.json"
+  [ -f "$policies" ] || fail "policies.json missing from dev tree — run stage once"
+  mkdir -p "$approot/distribution"
+  cp "$policies" "$approot/distribution/policies.json"
+
   find "$approot/noraneko-devdir" -name "*.map" -delete
 }
 
