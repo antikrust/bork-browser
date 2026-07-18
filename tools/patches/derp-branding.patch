@@ -1,0 +1,71 @@
+Rename the product in the runtime's own resources.
+
+Everything the UI shows - the macOS application menu ("About Derp", "Hide
+Derp", "Quit Derp"), "Set Derp as Default Browser", the app-menu button, the
+updater dialog - resolves from these plain-text files, so no rebuild of the
+engine is needed to rename the browser.
+
+Deliberately NOT here: application.ini. Its own header says it is not used,
+and that is accurate - Name/Vendor are compiled into the binary, so
+`--version` and Services.appinfo.name keep saying Ablaze Floorp until the
+runtime itself is rebuilt. Patching the file changes nothing; it only looks
+like it does.
+
+Also unchanged: -vendor-short-name and trademarkInfo. Floorp is Ablaze's
+trademark and derp is a derivative, so the attribution stays accurate.
+
+Caveat that outlives this patch: an installed Firefox language pack ships its
+own branding and wins for its locale, so on a non-en-US profile the browser
+takes the langpack's name instead of this one.
+
+diff --git a/updater.ini b/updater.ini
+--- ./updater.ini
++++ ./updater.ini
+@@ -4,6 +4,6 @@
+ 
+ ; This file is in the UTF-8 encoding
+ [Strings]
+-Title=Floorp Update
+-Info=Floorp is installing your updates and will start in a few moments…
++Title=Derp Update
++Info=Derp is installing your updates and will start in a few moments…
+ MozillaMaintenanceDescription=The Mozilla Maintenance Service ensures that you have the latest and most secure version of Mozilla Firefox on your computer. Keeping Firefox up to date is very important for your online security, and Mozilla strongly recommends that you keep this service enabled.
+diff --git a/browser/localization/en-US/branding/brand.ftl b/browser/localization/en-US/branding/brand.ftl
+--- ./browser/localization/en-US/branding/brand.ftl
++++ ./browser/localization/en-US/branding/brand.ftl
+@@ -1,9 +1,9 @@
+ 
+ 
+--brand-shorter-name = Floorp
+--brand-short-name = Floorp
+--brand-shortcut-name = Floorp
+--brand-full-name = Ablaze Floorp
+--brand-product-name = Floorp
++-brand-shorter-name = Derp
++-brand-short-name = Derp
++-brand-shortcut-name = Derp
++-brand-full-name = Derp Browser
++-brand-product-name = Derp
+ -vendor-short-name = Ablaze
+ trademarkInfo = Floorp and the Floorp logos are trademarks of Ablaze.
+diff --git a/browser/chrome/en-US/locale/branding/brand.properties b/browser/chrome/en-US/locale/branding/brand.properties
+--- ./browser/chrome/en-US/locale/branding/brand.properties
++++ ./browser/chrome/en-US/locale/branding/brand.properties
+@@ -1,5 +1,5 @@
+ 
+-brandShorterName=Floorp
+-brandShortName=Floorp
+-brandFullName=Ablaze Floorp
++brandShorterName=Derp
++brandShortName=Derp
++brandFullName=Derp Browser
+ vendorShortName=Ablaze
+diff --git a/browser/chrome/en-US/locale/branding/brand.dtd b/browser/chrome/en-US/locale/branding/brand.dtd
+--- ./browser/chrome/en-US/locale/branding/brand.dtd
++++ ./browser/chrome/en-US/locale/branding/brand.dtd
+@@ -2,4 +2,4 @@
+    - License, v. 2.0. If a copy of the MPL was not distributed with this
+    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+ 
+-<!ENTITY  brandShortName        "Floorp">
++<!ENTITY  brandShortName        "Derp">

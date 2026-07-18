@@ -148,6 +148,27 @@ const fetchRuntimeIndex = async (): Promise<RuntimeDeployIndex> => {
 /**
  * Entry point: ensure binary is present and preferences saved.
  */
+/**
+ * The macOS menu-bar and Dock name live in the bundle plists, which the
+ * runtime brand-string patch cannot reach — a fresh extract restores Floorp's.
+ * Rename them here so the development browser is labelled like the packaged
+ * one. No-op off darwin.
+ */
+function brandMacBundle(): void {
+  if (PLATFORM !== "darwin") return;
+  const app = path.join(
+    BIN_ROOT_DIR,
+    BRANDING.base_name,
+    `${BRANDING.display_name}.app`,
+  );
+  if (!exists(app)) return;
+  try {
+    runCommand("bash", ["tools/release/brand-mac-bundle.sh", app]);
+  } catch (e) {
+    logger.warn(`Bundle branding skipped: ${(e as Error).message}`);
+  }
+}
+
 export async function run(): Promise<void> {
   const hasVersion = exists(BIN_VERSION);
   const hasBin = exists(BIN_PATH_EXE);
@@ -186,6 +207,7 @@ export async function run(): Promise<void> {
   if (needInit) {
     Deno.mkdirSync(BIN_ROOT_DIR, { recursive: true });
     await decompressBin();
+    brandMacBundle();
     logger.success("Initialization complete.");
   }
 

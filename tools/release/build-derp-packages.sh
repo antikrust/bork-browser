@@ -139,16 +139,7 @@ build_mac() {
   find "$app" -name "*.map" -delete
 
   log "mac: branding"
-  /usr/libexec/PlistBuddy -c "Set :CFBundleName Derp" "$app/Contents/Info.plist"
-  /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Derp" \
-    "$app/Contents/Info.plist" 2>/dev/null \
-    || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Derp" \
-      "$app/Contents/Info.plist"
-  local f
-  for f in "$res"/*.lproj/InfoPlist.strings; do
-    iconv -f UTF-16LE -t UTF-8 "$f" | sed 's/"Floorp"/"Derp"/g' \
-      | iconv -f UTF-8 -t UTF-16LE > "$f.new" && mv "$f.new" "$f"
-  done
+  bash tools/release/brand-mac-bundle.sh "$app"
 
   log "mac: signing (ad-hoc) and packing"
   codesign --force --deep -s - "$app"
