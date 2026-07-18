@@ -1,5 +1,5 @@
 import Navigation from "../../components/Navigation";
-import derpLogo from "../../assets/logo.png";
+import derpWordmark from "../../assets/wordmark.png";
 import { useTranslation } from "react-i18next";
 import { Shield, Zap, Palette, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -18,11 +18,14 @@ export default function WelcomePage() {
                 <div className="hero-content text-center">
                     <div className="max-w-xl">
                         {/* Not a daisyUI avatar: that crops to a circle, and a
-                            wordmark loses its ends when you do that. */}
+                            wordmark loses its ends when you do that. Sized by
+                            width with the height left to follow — the square
+                            source centres the mark in transparent padding, so a
+                            fixed square box drew it small inside empty space. */}
                         <img
-                            src={derpLogo}
+                            src={derpWordmark}
                             alt="derp"
-                            className="w-40 h-40 mx-auto mb-6"
+                            className="w-72 h-auto mx-auto mb-6"
                         />
                         <h1 className="text-5xl font-bold mb-6">{t('welcomePage.welcome')}</h1>
 

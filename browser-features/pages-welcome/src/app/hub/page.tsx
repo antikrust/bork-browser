@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import Navigation from "../../components/Navigation.tsx";
 import { Settings } from "lucide-react";
-import derpLogo from "../../assets/logo.png";
+import derpWordmark from "../../assets/wordmark.png";
 
 export default function HubIntroPage() {
   const { t } = useTranslation();
@@ -20,10 +20,12 @@ export default function HubIntroPage() {
             <div className="p-8 flex items-center justify-center">
               <div className="text-center">
                 <div className="relative mb-6">
+                  {/* Width-sized like the welcome step: a square box would
+                      letterbox the wordmark inside its own padding. */}
                   <img
-                    src={derpLogo}
+                    src={derpWordmark}
                     alt="Derp Hub"
-                    className="w-32 h-32 lg:w-40 lg:h-40 mx-auto"
+                    className="w-52 lg:w-64 h-auto mx-auto"
                   />
                 </div>
                 <h2 className="text-2xl lg:text-3xl font-bold mb-2">

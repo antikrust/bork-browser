@@ -12,8 +12,25 @@ const { CustomizableUI } = ChromeUtils.importESModule(
   "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
 );
 
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs",
+);
+
 const SEARCH_APPLIED_PREF = "derp.search.defaultApplied";
 const DEFAULT_ENGINE = "DuckDuckGo";
+
+/** Our name, as it should read wherever a product name is shown. */
+const BRAND_NAME = "Derp";
+
+/**
+ * The macOS application menu items that embed the product name. nsMenuBarX
+ * hides these XUL nodes and builds the native menu from them.
+ */
+const MAC_APP_MENU_IDS = [
+  "aboutName",
+  "menu_mac_hide_app",
+  "menu_FileQuitItem",
+];
 
 
 /**
@@ -29,6 +46,63 @@ export default class DerpDefaults extends NoraComponentBase {
     this.rescueOffscreenWindow();
     void this.applyDefaultSearch();
     this.relocateExtensionButtons();
+    this.brandMacAppMenu();
+  }
+
+  /**
+   * Put our name in the macOS application menu ("About Derp", "Hide Derp",
+   * "Quit Derp").
+   *
+   * These labels come from menubar.ftl via `-brand-shorter-name`, which the
+   * branding patch sets to Derp — but only for en-US, the one locale whose
+   * files ship in the runtime. Under any other negotiated locale (en-GB here,
+   * with or without a language pack installed) that lookup does not land and
+   * Gecko falls back to the app name compiled into the runtime binary, which
+   * is still Floorp and cannot be changed without building Gecko. A language
+   * pack makes it worse rather than better: Mozilla's carries its own
+   * branding, so the same items come out saying Firefox.
+   *
+   * So rather than translate, substitute — keep whatever wording the active
+   * locale produced and correct only the product name inside it. Re-asserted
+   * through a MutationObserver because Gecko writes these labels late and
+   * again on locale changes.
+   */
+  private brandMacAppMenu(): void {
+    if (AppConstants.platform !== "macosx") return;
+    try {
+      const doc = (globalThis as unknown as Window).document;
+      // Floorp from the compiled-in app name, Firefox from a language pack.
+      const wrongNames = [Services.appinfo.name, "Firefox"]
+        .filter((n) => n && n !== BRAND_NAME);
+
+      const correct = () => {
+        for (const id of MAC_APP_MENU_IDS) {
+          const el = doc.getElementById(id);
+          const label = el?.getAttribute("label");
+          if (!el || !label) continue;
+          const fixed = wrongNames.reduce(
+            (acc, name) => acc.split(name).join(BRAND_NAME),
+            label,
+          );
+          // Only write on a real change, so our own mutation settles.
+          if (fixed !== label) el.setAttribute("label", fixed);
+        }
+      };
+
+      correct();
+      const observer = new MutationObserver(correct);
+      for (const id of MAC_APP_MENU_IDS) {
+        const el = doc.getElementById(id);
+        if (el) {
+          observer.observe(el, {
+            attributes: true,
+            attributeFilter: ["label"],
+          });
+        }
+      }
+    } catch (e) {
+      console.error("[derp-defaults] Failed to brand the app menu:", e);
+    }
   }
 
   /**
