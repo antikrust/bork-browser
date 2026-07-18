@@ -152,6 +152,15 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   mask-position: center;
 }
 
+/* Unnamed group: with no text to balance the glyph the pill reads lopsided,
+   wider than it is tall. Square it off so it matches the stack chips. */
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label:empty {
+  min-width: 20px;
+  padding: 2px !important;
+  gap: 0;
+  justify-content: center;
+}
+
 tab-group[data-derp-stack] .tab-group-label {
   /* Hide the native group-name text; our ::before shows name/tab title. */
   font-size: 0 !important;
