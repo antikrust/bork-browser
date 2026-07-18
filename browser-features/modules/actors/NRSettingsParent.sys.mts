@@ -61,6 +61,97 @@ export class NRSettingsParent extends JSWindowActorParent {
         }
         break;
       }
+      case "listImportSources": {
+        // Everything the onboarding box needs to populate itself: which
+        // browsers are actually installed with data, and what each can give.
+        const { MigrationUtils } = ChromeUtils.importESModule(
+          "resource:///modules/MigrationUtils.sys.mjs",
+        );
+        const wanted = ["PASSWORDS", "BOOKMARKS", "HISTORY", "COOKIES"];
+        const sources: {
+          key: string;
+          offers: string[];
+        }[] = [];
+        for (const key of MigrationUtils.availableMigratorKeys) {
+          // A test-only migrator ships with the engine; never offer it.
+          if (key.startsWith("internal-testing")) continue;
+          try {
+            const migrator = await MigrationUtils.getMigrator(key);
+            if (!migrator) continue;
+            const profiles = await migrator.getSourceProfiles();
+            const profile = Array.isArray(profiles) ? profiles[0] : null;
+            const available = await migrator.getMigrateData(profile);
+            const offers = wanted.filter(
+              (name) => available & MigrationUtils.resourceTypes[name],
+            ).map((name) => name.toLowerCase());
+            if (offers.length) sources.push({ key, offers });
+          } catch {
+            // A migrator that throws while being inspected is one we cannot
+            // offer; the rest of the list is still worth showing.
+          }
+        }
+        return sources;
+      }
+      case "runImport": {
+        const key = data && typeof data.key === "string" ? data.key : null;
+        const items = Array.isArray(data?.items) ? data.items as string[] : [];
+        if (!key || !items.length) return { ok: false, error: "nothing to do" };
+        try {
+          const { MigrationUtils } = ChromeUtils.importESModule(
+            "resource:///modules/MigrationUtils.sys.mjs",
+          );
+          const migrator = await MigrationUtils.getMigrator(key);
+          if (!migrator) return { ok: false, error: "source unavailable" };
+          const profiles = await migrator.getSourceProfiles();
+          const profile = Array.isArray(profiles) ? profiles[0] : null;
+          let mask = 0;
+          for (const item of items) {
+            mask |= MigrationUtils.resourceTypes[item.toUpperCase()] ?? 0;
+          }
+          await migrator.migrate(mask, false, profile);
+          return { ok: true };
+        } catch (e) {
+          console.error("[NRSettingsParent] import failed", e);
+          return { ok: false, error: String(e) };
+        }
+      }
+      case "importVivaldiWorkspaces": {
+        // The workspaces service lives in the chrome layer, not here, so ask
+        // the browser window to do it and report back.
+        try {
+          const win = Services.wm.getMostRecentWindow("navigator:browser");
+          if (!win) return { ok: false, error: "no browser window" };
+          const done = new Promise((resolve) => {
+            win.addEventListener(
+              "derp-vivaldi-import-done",
+              (e: CustomEvent) => resolve(e.detail),
+              { once: true },
+            );
+          });
+          win.dispatchEvent(new win.CustomEvent("derp-vivaldi-import"));
+          return { ok: true, result: await done };
+        } catch (e) {
+          console.error("[NRSettingsParent] workspace import failed", e);
+          return { ok: false, error: String(e) };
+        }
+      }
+      case "openMigrationWizard": {
+        try {
+          const { MigrationUtils } = ChromeUtils.importESModule(
+            "resource:///modules/MigrationUtils.sys.mjs",
+          );
+          // Vivaldi, Chrome, Edge and Safari migrators all ship with the
+          // engine, passwords included, so onboarding only has to open the
+          // wizard rather than reimplement any of it.
+          MigrationUtils.showMigrationWizard(
+            Services.wm.getMostRecentWindow("navigator:browser"),
+            { entrypoint: MigrationUtils.MIGRATION_ENTRYPOINTS.FIRSTRUN },
+          );
+        } catch (e) {
+          console.error("[NRSettingsParent] migration wizard failed", e);
+        }
+        break;
+      }
     }
   }
 }

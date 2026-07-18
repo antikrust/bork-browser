@@ -71,6 +71,7 @@
     "popup": {
       "create-new": "新しいワークスペースを作成...",
       "manage": "ワークスペースを管理",
+      "import-vivaldi": "Vivaldi からインポート",
       "restore": "アーカイブされたワークスペースを表示",
       "restore-cancel": "復元モードを終了",
       "restore-title": "アーカイブされたワークスペース",

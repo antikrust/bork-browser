@@ -73,6 +73,14 @@ export class NRSettingsChild extends JSWindowActorChild {
         setStringPref: (prefName: string, prefValue: string): Promise<void> => {
           return this.NRSPrefSet({ prefName, prefValue, prefType: "string" });
         },
+        openMigrationWizard: async (): Promise<void> => {
+          await this.sendQuery("openMigrationWizard", {});
+        },
+        listImportSources: () => this.sendQuery("listImportSources", {}),
+        runImport: (key: string, items: string[]) =>
+          this.sendQuery("runImport", { key, items }),
+        importVivaldiWorkspaces: () =>
+          this.sendQuery("importVivaldiWorkspaces", {}),
       },
       {
         post: (data) => callback(data),

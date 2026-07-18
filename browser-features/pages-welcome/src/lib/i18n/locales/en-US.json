@@ -11,7 +11,46 @@
         "initialSettings": "Initial Settings",
         "complete": "Complete",
         "previous": "Previous",
-        "next": "Next"
+        "next": "Next",
+        "import": "Import",
+        "importData": "Import Data"
+    },
+    "importPage": {
+        "title": "Bring your data across",
+        "subtitle": "Import from another browser so you start where you left off.",
+        "description": "Derp can copy your saved passwords, bookmarks, history and cookies from Vivaldi, Chrome, Edge, Safari and other browsers you have installed.",
+        "items": {
+            "passwords": {
+                "label": "Passwords",
+                "description": "Saved logins, ready to use"
+            },
+            "bookmarks": {
+                "label": "Bookmarks",
+                "description": "The whole tree, folders and all"
+            },
+            "history": {
+                "label": "History",
+                "description": "So the address bar knows your habits"
+            },
+            "cookies": {
+                "label": "Cookies",
+                "description": "Stay signed in where you already were"
+            },
+            "workspaces": {
+                "label": "Workspaces and their tabs"
+            }
+        },
+        "openWizard": "Choose what to import",
+        "opened": "The import window is open — finish there, then come back.",
+        "passwordNote": "Importing passwords asks your operating system for permission to unlock the other browser’s password store. That prompt comes from macOS or Windows, not from Derp.",
+        "skipNote": "You can skip this and import later from the menu at any time.",
+        "looking": "Looking for browsers you already use…",
+        "noneFound": "No other browsers with data to import were found on this computer.",
+        "run": "Import",
+        "doneData": "Imported {{count}} kind(s) of data from {{browser}}.",
+        "doneWorkspaces": "Created {{workspaces}} workspaces with {{tabs}} tabs.",
+        "nothingSelected": "Nothing was selected.",
+        "failed": "That import did not finish. Nothing was changed."
     },
     "hubPage": {
         "title": "About Derp Hub",

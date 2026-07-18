@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 const navigationItems = [
   { path: "/", labelKey: "navigation.welcome" },
   { path: "/localization", labelKey: "navigation.languageSupport" },
+  { path: "/import", labelKey: "navigation.importData" },
   { path: "/features", labelKey: "navigation.featureIntroduction" },
   { path: "/hub", labelKey: "navigation.hub" },
   { path: "/customize", labelKey: "navigation.initialSettings" },

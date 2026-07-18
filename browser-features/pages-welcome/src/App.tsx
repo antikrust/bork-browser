@@ -7,6 +7,7 @@ import { I18nProvider } from "./components/I18nProvider.tsx";
 
 const WelcomePage = lazy(() => import("./app/welcome/page.tsx"));
 const LocalizationPage = lazy(() => import("./app/localization/page.tsx"));
+const ImportPage = lazy(() => import("./app/import/page.tsx"));
 const HubIntroPage = lazy(() => import("./app/hub/page.tsx"));
 const FeaturesPage = lazy(() => import("./app/features/page.tsx"));
 const CustomizePage = lazy(() => import("./app/customize/page.tsx"));
@@ -168,6 +169,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<WelcomePage />} />
                 <Route path="/localization" element={<LocalizationPage />} />
+                <Route path="/import" element={<ImportPage />} />
                 <Route path="/features" element={<FeaturesPage />} />
                 <Route path="/hub" element={<HubIntroPage />} />
                 <Route path="/customize" element={<CustomizePage />} />

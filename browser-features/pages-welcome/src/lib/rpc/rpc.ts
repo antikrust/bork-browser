@@ -3,6 +3,8 @@ import { createBirpc } from "birpc";
 
 // deno-lint-ignore no-explicit-any
 declare const Services: any;
+// deno-lint-ignore no-explicit-any
+declare const ChromeUtils: any;
 declare global {
   interface Window {
     NRSettingsSend: (data: string) => void;
@@ -43,6 +45,75 @@ const directServicesFunctions: NRSettingsParentFunctions = {
   },
   setStringPref: (prefName, value) => {
     Services.prefs.setStringPref(prefName, value);
+    return Promise.resolve();
+  },
+  listImportSources: async () => {
+    const { MigrationUtils } = ChromeUtils.importESModule(
+      "resource:///modules/MigrationUtils.sys.mjs",
+    );
+    const wanted = ["PASSWORDS", "BOOKMARKS", "HISTORY", "COOKIES"];
+    const sources: { key: string; offers: string[] }[] = [];
+    for (const key of MigrationUtils.availableMigratorKeys) {
+      // A test-only migrator ships with the engine; never offer it.
+      if (key.startsWith("internal-testing")) continue;
+      try {
+        const migrator = await MigrationUtils.getMigrator(key);
+        if (!migrator) continue;
+        const profiles = await migrator.getSourceProfiles();
+        const profile = Array.isArray(profiles) ? profiles[0] : null;
+        const available = await migrator.getMigrateData(profile);
+        const offers = wanted
+          .filter((name) => available & MigrationUtils.resourceTypes[name])
+          .map((name) => name.toLowerCase());
+        if (offers.length) sources.push({ key, offers });
+      } catch {
+        // Skip a migrator that cannot be inspected; show the rest.
+      }
+    }
+    return sources;
+  },
+  runImport: async (key: string, items: string[]) => {
+    try {
+      const { MigrationUtils } = ChromeUtils.importESModule(
+        "resource:///modules/MigrationUtils.sys.mjs",
+      );
+      const migrator = await MigrationUtils.getMigrator(key);
+      if (!migrator) return { ok: false, error: "source unavailable" };
+      const profiles = await migrator.getSourceProfiles();
+      const profile = Array.isArray(profiles) ? profiles[0] : null;
+      let mask = 0;
+      for (const item of items) {
+        mask |= MigrationUtils.resourceTypes[item.toUpperCase()] ?? 0;
+      }
+      await migrator.migrate(mask, false, profile);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: String(e) };
+    }
+  },
+  importVivaldiWorkspaces: async () => {
+    const win = Services.wm.getMostRecentWindow("navigator:browser");
+    if (!win) return { ok: false, error: "no browser window" };
+    const done = new Promise((resolve) => {
+      win.addEventListener(
+        "derp-vivaldi-import-done",
+        (e: CustomEvent) => resolve(e.detail),
+        { once: true },
+      );
+    });
+    win.dispatchEvent(new win.CustomEvent("derp-vivaldi-import"));
+    return { ok: true, result: await done };
+  },
+  openMigrationWizard: () => {
+    // Production path: this page is chrome-privileged, so it can reach the
+    // wizard itself - but only via a browser window, never its own.
+    const { MigrationUtils } = ChromeUtils.importESModule(
+      "resource:///modules/MigrationUtils.sys.mjs",
+    );
+    MigrationUtils.showMigrationWizard(
+      Services.wm.getMostRecentWindow("navigator:browser"),
+      { entrypoint: MigrationUtils.MIGRATION_ENTRYPOINTS.FIRSTRUN },
+    );
     return Promise.resolve();
   },
 };

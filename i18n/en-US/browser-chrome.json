@@ -72,6 +72,7 @@
     "popup": {
       "create-new": "New Workspace",
       "manage": "Manage Workspaces",
+      "import-vivaldi": "Import from Vivaldi",
       "restore": "Show Archived Workspaces",
       "restore-cancel": "Exit Restore Mode",
       "restore-title": "Archived Workspaces",

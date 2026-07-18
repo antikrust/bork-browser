@@ -11,7 +11,46 @@
         "initialSettings": "初期設定",
         "complete": "完了",
         "previous": "前へ",
-        "next": "次へ"
+        "next": "次へ",
+        "import": "インポート",
+        "importData": "データのインポート"
+    },
+    "importPage": {
+        "title": "データを引き継ぐ",
+        "subtitle": "他のブラウザーからインポートして、続きから始めましょう。",
+        "description": "Derp は Vivaldi、Chrome、Edge、Safari など、インストール済みのブラウザーから保存されたパスワード、ブックマーク、履歴、Cookie をコピーできます。",
+        "items": {
+            "passwords": {
+                "label": "パスワード",
+                "description": "保存されたログイン情報"
+            },
+            "bookmarks": {
+                "label": "ブックマーク",
+                "description": "フォルダー構造もそのまま"
+            },
+            "history": {
+                "label": "履歴",
+                "description": "アドレスバーの候補に反映されます"
+            },
+            "cookies": {
+                "label": "Cookie",
+                "description": "ログイン状態を維持できます"
+            },
+            "workspaces": {
+                "label": "ワークスペースとそのタブ"
+            }
+        },
+        "openWizard": "インポートする項目を選ぶ",
+        "opened": "インポート画面を開きました。完了したらこの画面に戻ってください。",
+        "passwordNote": "パスワードのインポートでは、他のブラウザーのパスワードストアを解除するために OS の許可を求められます。この確認は Derp ではなく macOS または Windows によるものです。",
+        "skipNote": "この手順は後からメニューでいつでも実行できます。",
+        "looking": "使用中のブラウザーを検出しています…",
+        "noneFound": "インポートできるデータを持つ他のブラウザーは見つかりませんでした。",
+        "run": "インポート",
+        "doneData": "{{browser}} から {{count}} 種類のデータをインポートしました。",
+        "doneWorkspaces": "{{workspaces}} 個のワークスペースと {{tabs}} 個のタブを作成しました。",
+        "nothingSelected": "何も選択されていません。",
+        "failed": "インポートは完了しませんでした。変更は行われていません。"
     },
     "hubPage": {
         "title": "Derp Hub について",

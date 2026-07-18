@@ -73,7 +73,7 @@ export default function FinishPage() {
                             <div className="divider text-xs opacity-70 my-1">{t('finishPage.resourcesLabel') || 'リソース'}</div>
 
                             <div className="flex flex-wrap gap-2 justify-center">
-                                <a href="https://github.com/100mountains/derp" target="_blank" className="btn btn-outline btn-sm">
+                                <a href="chrome://noraneko-help/content/index.html" target="_blank" className="btn btn-outline btn-sm">
                                     <Github className="mr-1" size={14} />
                                     GitHub
                                 </a>
@@ -81,7 +81,7 @@ export default function FinishPage() {
                                     <Twitter className="mr-1" size={14} />
                                     X（Twitter）
                                 </a>
-                                <a href="https://docs.floorp.app/docs/features/" target="_blank" className="btn btn-outline btn-sm">
+                                <a href="https://github.com/100mountains/derp" target="_blank" className="btn btn-outline btn-sm">
                                     <HelpCircle className="mr-1" size={14} />
                                     {t('finishPage.support')}
                                 </a>
