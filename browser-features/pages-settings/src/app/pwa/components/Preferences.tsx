@@ -83,7 +83,7 @@ export function Preferences() {
 
           <div>
             <a
-              href="https://docs.floorp.app/docs/features/webapps"
+              href="chrome://noraneko-help/content/web-apps.html"
               target="_blank"
               className="text-[var(--link-text-color)] hover:underline inline-flex items-center gap-2"
             >

@@ -27,7 +27,8 @@
     },
     "help": {
       "title": "Help & Support",
-      "support": "Support"
+      "support": "Support",
+      "repository": "Source & issues"
     },
     "sponsor": {
       "title": "Support the Project",

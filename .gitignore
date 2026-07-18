@@ -19,3 +19,7 @@ logs/
 .serena/
 .env
 .DS_Store
+
+# Upstream CI signing-key template. Untracked so a filled-in copy can never
+# be committed to what is now a public repo.
+.secrets

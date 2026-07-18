@@ -27,7 +27,8 @@
     },
     "help": {
       "title": "ヘルプ & サポート",
-      "support": "サポート"
+      "support": "サポート",
+      "repository": "ソースと課題"
     },
     "sponsor": {
       "title": "プロジェクトを支援",

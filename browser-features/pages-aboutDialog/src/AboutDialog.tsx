@@ -429,26 +429,12 @@ export function AboutDialog() {
                 class="ad-help-link"
                 onClick={(e) => {
                   e.preventDefault();
-                  openExternalUrl("https://docs.floorp.app/docs/features/");
+                  openExternalUrl("https://github.com/100mountains/derp");
                 }}
               >
-                {t("aboutDialog.help.support")}
+                {t("aboutDialog.help.repository")}
               </a>
             </div>
-          </section>
-
-          <section>
-            <h2 class="ad-section-title">{t("aboutDialog.sponsor.title")}</h2>
-            <a
-              href="#"
-              class="ad-btn ad-btn-outline"
-              onClick={(e) => {
-                e.preventDefault();
-                openExternalUrl("https://github.com/sponsors/Ryosuke-Asano");
-              }}
-            >
-              {t("aboutDialog.sponsor.button")}
-            </a>
           </section>
         </div>
       </div>

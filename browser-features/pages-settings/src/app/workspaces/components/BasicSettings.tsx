@@ -73,7 +73,7 @@ export function BasicSettings() {
           </CardTitle>
           <CardDescription>
             <a
-              href="https://docs.floorp.app/docs/features/how-to-use-workspaces"
+              href="chrome://noraneko-help/content/workspaces.html"
               className="text-[var(--link-text-color)] hover:underline inline-flex items-center gap-2"
             >
               {t("workspaces.howToUseAndCustomize")}
