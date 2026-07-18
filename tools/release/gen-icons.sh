@@ -14,7 +14,7 @@
 # downscale, which covers the Dock, alt-tab and Finder. Only Get Info and
 # Quick Look show the soft ones. Vector art would fix it; there is none.
 #
-# macOS only (sips and iconutil). Run from the repo root:
+# macOS only (sips, iconutil and the Swift toolchain). Run from the repo root:
 #   bash tools/release/gen-icons.sh
 
 set -euo pipefail
@@ -35,6 +35,10 @@ FACE="$(mktemp -t derp-face).png"
 trap 'rm -f "$FACE"' EXIT
 sips -c "$FACE_SIZE" "$FACE_SIZE" --cropOffset "$FACE_Y" "$FACE_X" \
   "$SRC" --out "$FACE" >/dev/null
+
+# The paper around the disc goes transparent (flood fill from the border —
+# see face-alpha.swift for why a plain white->alpha key would blind him).
+swift tools/release/face-alpha.swift "$FACE" >/dev/null
 
 echo "building icns"
 ISET="$(mktemp -d -t derp-iconset)/derp.iconset"
