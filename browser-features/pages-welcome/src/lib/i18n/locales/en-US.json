@@ -51,7 +51,11 @@
         "doneData": "Imported {{count}} kind(s) of data from {{browser}}.",
         "doneWorkspaces": "Created {{workspaces}} workspaces with {{tabs}} tabs.",
         "nothingSelected": "Nothing was selected.",
-        "failed": "That import did not finish. Nothing was changed."
+        "failed": "That import did not finish. Nothing was changed.",
+        "allBrowsers": "All browsers",
+        "doneAll": "Imported from {{browsers}}.",
+        "someFailed": "Could not import from {{browsers}}.",
+        "passwordNoteAll": "With every browser selected you will get one of those prompts per browser."
     },
     "hubPage": {
         "title": "About Derp Hub",

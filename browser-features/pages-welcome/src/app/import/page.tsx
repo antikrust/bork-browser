@@ -29,6 +29,9 @@ const SOURCE_NAMES: Record<string, string> = {
 
 const sourceName = (key: string) => SOURCE_NAMES[key] ?? key;
 
+/** Stands for every browser found, rather than any one migrator key. */
+const ALL_SOURCES = "__all__";
+
 export default function ImportPage() {
   const { t } = useTranslation();
   const [sources, setSources] = useState<ImportSource[] | null>(null);
@@ -59,6 +62,15 @@ export default function ImportPage() {
     };
   }, []);
 
+  // Everything found, offering the union of what they offer between them.
+  // Each browser is still only asked for the items it actually has.
+  const everySource: ImportSource | null = sources?.length
+    ? {
+      key: ALL_SOURCES,
+      offers: [...new Set(sources.flatMap((s) => s.offers))],
+    }
+    : null;
+
   const chooseSource = (source: ImportSource) => {
     setSelected(source.key);
     setItems(new Set(source.offers));
@@ -74,8 +86,13 @@ export default function ImportPage() {
     });
   };
 
-  const current = sources?.find((s) => s.key === selected) ?? null;
-  const isVivaldi = selected === "vivaldi";
+  const importingAll = selected === ALL_SOURCES;
+  const current = importingAll
+    ? everySource
+    : sources?.find((s) => s.key === selected) ?? null;
+  // Workspaces are Vivaldi's, so they ride along whenever Vivaldi is in scope.
+  const isVivaldi = selected === "vivaldi" ||
+    (importingAll && !!sources?.some((s) => s.key === "vivaldi"));
 
   // "Everything" covers the browser's own data plus, for Vivaldi, the
   // workspaces - which is the whole point of picking Vivaldi.
@@ -100,13 +117,45 @@ export default function ImportPage() {
     setStatus(null);
     const done: string[] = [];
     try {
-      if (items.size) {
-        const result = await rpc.runImport(current.key, [...items]);
-        if (!result.ok) throw new Error(result.error ?? "import failed");
+      const targets = importingAll ? (sources ?? []) : [current];
+      const imported: { name: string; count: number }[] = [];
+      const failed: string[] = [];
+
+      for (const source of targets) {
+        // Ask each browser only for what it actually offers: Safari has no
+        // cookies to give, and requesting them fails the whole call.
+        const wanted = source.offers.filter((offer) => items.has(offer));
+        if (!wanted.length) continue;
+        try {
+          const result = await rpc.runImport(source.key, wanted);
+          if (!result.ok) throw new Error(result.error ?? "import failed");
+          imported.push({ name: sourceName(source.key), count: wanted.length });
+        } catch (e) {
+          // A locked password store in one browser should not cost you the
+          // other four.
+          console.error("[ImportPage] Import failed for", source.key, e);
+          failed.push(sourceName(source.key));
+        }
+      }
+
+      if (imported.length === 1) {
         done.push(
-          t("importPage.doneData", { count: items.size, browser: sourceName(current.key) }),
+          t("importPage.doneData", {
+            count: imported[0].count,
+            browser: imported[0].name,
+          }),
+        );
+      } else if (imported.length > 1) {
+        done.push(
+          t("importPage.doneAll", {
+            browsers: imported.map((i) => i.name).join(", "),
+          }),
         );
       }
+      if (failed.length) {
+        done.push(t("importPage.someFailed", { browsers: failed.join(", ") }));
+      }
+
       if (isVivaldi && withWorkspaces) {
         const ws = await rpc.importVivaldiWorkspaces();
         const r = ws.result;
@@ -155,6 +204,19 @@ export default function ImportPage() {
               </p>
 
               <div className="flex flex-wrap gap-2 mb-4">
+                {/* Pointless with one browser installed, so it earns its place
+                    only when there is actually more than one to sweep. */}
+                {sources.length > 1 && everySource && (
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${
+                      importingAll ? "btn-primary" : "btn-outline"
+                    }`}
+                    onClick={() => chooseSource(everySource)}
+                  >
+                    {t("importPage.allBrowsers")}
+                  </button>
+                )}
                 {sources.map((source) => (
                   <button
                     key={source.key}
@@ -240,6 +302,9 @@ export default function ImportPage() {
 
               <p className="text-sm text-base-content/60 mt-4">
                 {t("importPage.passwordNote")}
+                {importingAll && items.has("passwords")
+                  ? ` ${t("importPage.passwordNoteAll")}`
+                  : ""}
               </p>
             </>
           )}

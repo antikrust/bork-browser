@@ -51,7 +51,11 @@
         "doneData": "{{browser}} から {{count}} 種類のデータをインポートしました。",
         "doneWorkspaces": "{{workspaces}} 個のワークスペースと {{tabs}} 個のタブを作成しました。",
         "nothingSelected": "何も選択されていません。",
-        "failed": "インポートは完了しませんでした。変更は行われていません。"
+        "failed": "インポートは完了しませんでした。変更は行われていません。",
+        "allBrowsers": "すべてのブラウザー",
+        "doneAll": "{{browsers}} からインポートしました。",
+        "someFailed": "{{browsers}} からはインポートできませんでした。",
+        "passwordNoteAll": "すべてのブラウザーを選択した場合、この確認はブラウザーごとに表示されます。"
     },
     "hubPage": {
         "title": "Derp Hub について",
