@@ -1,13 +1,11 @@
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import {
-  DEFAULT_SUGGESTED_SITES,
   getNewTabSettings,
   type NewTabSettings,
   type PinnedSite as PinnedSiteType,
   saveNewTabSettings,
 } from "@/utils/dataManager.ts";
 import { useTranslation } from "react-i18next";
-import { callNRWithRetry } from "@/utils/nrRetry.ts";
 import { TopSiteTile } from "./TopSiteTile.tsx";
 
 export interface TopSite {
@@ -22,35 +20,6 @@ export type PinnedSite = PinnedSiteType;
 
 declare global {
   interface Window {
-    NRGetCurrentTopSites: (callback: (data: string) => void) => void;
-  }
-}
-
-async function getTopSites(): Promise<TopSite[]> {
-  try {
-    const parsed = await callNRWithRetry<{ topsites?: TopSite[] | undefined }>(
-      (cb) => (globalThis as unknown as Window).NRGetCurrentTopSites(cb),
-      (sites) => JSON.parse(sites),
-      {
-        retries: 3,
-        timeoutMs: 1200,
-        delayMs: 300,
-        shouldRetry: (res) => {
-          const shouldRetry = !res || !Array.isArray(res.topsites);
-          return shouldRetry;
-        },
-      },
-    );
-
-    const list = (parsed.topsites ?? []).map((site: TopSite) => ({
-      ...site,
-      title: site.title || site.label || site.url,
-      smallFavicon: site.smallFavicon || "",
-    }));
-
-    return list;
-  } catch {
-    return [];
   }
 }
 
@@ -187,7 +156,6 @@ function AddSiteModal({
 
 export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean }) {
   const { t } = useTranslation();
-  const [sites, setSites] = useState<TopSite[]>([]);
   const [pinnedSites, setPinnedSites] = useState<PinnedSite[]>([]);
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<
@@ -209,26 +177,6 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
     setPinnedSites(settings.topSites.pinned);
     setBlockedSites(settings.topSites.blocked);
 
-    const topSites = await getTopSites();
-
-    const filteredSites = topSites.filter(
-      (site) => {
-        const isBlocked = settings.topSites.blocked.includes(site.url);
-        const isPinned = settings.topSites.pinned.some((p) =>
-          p.url === site.url
-        );
-        return !isBlocked && !isPinned;
-      },
-    );
-
-    if (filteredSites.length <= 3) {
-      const unblockedSuggestedSites = DEFAULT_SUGGESTED_SITES.filter(
-        (site) => !settings.topSites.blocked.includes(site.url),
-      );
-      setSites(unblockedSuggestedSites);
-    } else {
-      setSites(filteredSites);
-    }
   };
 
   useEffect(() => {
@@ -276,7 +224,6 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
     // 重複確認
     if (
       pinnedSites.some((p) => p.url === url) ||
-      sites.some((s) => s.url === url) ||
       blockedSites.includes(url)
     ) {
       // 既に存在する場合はピン済み扱いとして閉じる
@@ -288,6 +235,18 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
       topSites: { pinned: newPinnedSites, blocked: blockedSites },
     });
     setShowAddModal(false);
+  };
+
+  /**
+   * Take a tile off the page and forget it, without adding the URL to the
+   * blocked list - the page only shows sites you added, so there is no
+   * frecency ranking waiting to put it back.
+   */
+  const dismissSite = async (site: TopSite | PinnedSite) => {
+    const newPinnedSites = pinnedSites.filter((p) => p.url !== site.url);
+    await handleSaveSettings({
+      topSites: { pinned: newPinnedSites, blocked: blockedSites },
+    });
   };
 
   const unpinSite = async (site: PinnedSite) => {
@@ -351,15 +310,6 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
               onContextMenu={handleContextMenu}
             />
           ))}
-          {sites.map((site) => (
-            <TopSiteTile
-              key={site.url}
-              site={site}
-              isPinned={false}
-              isFirefoxMode={isFirefoxMode}
-              onContextMenu={handleContextMenu}
-            />
-          ))}
           {/* Add new site tile */}
           <button
             type="button"
@@ -406,6 +356,9 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
                   <a>{t("topSites.pin")}</a>
                 </li>
               )}
+            <li onClick={() => dismissSite(contextMenu.site)}>
+              <a>{t("topSites.dismiss")}</a>
+            </li>
             <li onClick={() => handleBlockRequest(contextMenu.site)}>
               <a>{t("topSites.block")}</a>
             </li>
