@@ -36,20 +36,20 @@ function App() {
   return (
     <I18nProvider>
       <MemoryRouter>
-        {/* The wallpaper sits behind everything as a fixed layer with a scrim
-            over it, so the steps stay readable whichever image comes up and the
-            picture does not scroll away under the content. No overflow-hidden
-            on the wrapper: it clips the page flow whenever the height is
-            constrained, which leaves the steps unscrollable. */}
+        {/* The wallpaper is a fixed layer so it does not scroll away, held at
+            60% so the steps stay readable whichever image comes up — the page
+            background shows through it rather than a second element sitting on
+            top. No overflow-hidden on the wrapper: it clips the page flow
+            whenever the height is constrained, leaving the steps
+            unscrollable. */}
         <div className="min-h-screen text-base-content flex flex-col relative">
           <div
-            className="fixed inset-0 -z-10 bg-base-100 bg-cover bg-center"
+            className="fixed inset-0 -z-10 bg-cover bg-center opacity-60"
             style={onboardingWallpaper
               ? { backgroundImage: `url("${onboardingWallpaper}")` }
               : undefined}
             aria-hidden="true"
           />
-          <div className="fixed inset-0 -z-10 bg-base-100/40" aria-hidden="true" />
 
           <header className="container mx-auto px-4 pt-8 relative z-10">
             <ProgressBar />
