@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>derp browser</title>
+<title>derp browser — a Firefox fork with Manifest V2 and Vivaldi workspace import</title>
+<meta name="description" content="derp is a compact Firefox 152 fork. Keeps Manifest V2 so the full uBlock Origin still works, imports your Vivaldi workspaces and their tabs, Vivaldi-style tab stacks, zen mode, and no AI features.">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
@@ -38,6 +39,21 @@
   <p class="sub">derp based on floorp</p>
   <p class="tag">a compact fork of Floorp 12 (Firefox 152) — Vivaldi-style
   workspaces and tab stacks, zen mode, lean UI, no AI.</p>
+
+  <h2>why this exists</h2>
+  <p>Chrome's move to <b>Manifest V3</b> deliberately broke full-strength
+  content blocking. derp is built on Firefox, which still runs
+  <b>Manifest V2 extensions</b>, so the complete <b>uBlock Origin</b> — not
+  the declawed Lite version — keeps working exactly as it always did. No
+  filter-list cap, no crippled request blocking.</p>
+  <p>Everything else follows from the same instinct: no AI assistant, no
+  sponsored tiles, no telemetry, no engagement features nobody asked for.</p>
+
+  <h2>coming from Vivaldi?</h2>
+  <p>derp <b>imports your Vivaldi workspaces</b>, including which tabs live in
+  which workspace — it reads Vivaldi's own session data, so a workspace with
+  twenty tabs arrives as a workspace with twenty tabs. Passwords, bookmarks,
+  history and cookies import too, from Vivaldi, Chrome, Edge or Safari.</p>
 
   <a class="dl" href="downloads/Derp-macOS-universal.dmg">
     <b>macOS</b> <small>universal (Apple silicon + Intel) · 242 MB</small>
