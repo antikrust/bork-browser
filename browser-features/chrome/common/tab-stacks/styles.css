@@ -152,13 +152,80 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   mask-position: center;
 }
 
-/* Unnamed group: with no text to balance the glyph the pill reads lopsided,
-   wider than it is tall. Square it off so it matches the stack chips. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label:empty {
+/* Unnamed group: the label holds a zero-width space rather than nothing, so
+   :empty never matches it and the 4px flex gap still reserves room for that
+   invisible character — which is what made the chip wider than it is tall.
+   index.ts marks these with data-derp-unnamed; here it becomes a true square
+   with the glyph centred in it. */
+#tabbrowser-tabs tab-group[data-derp-unnamed]:not([data-derp-stack])
+  .tab-group-label {
   min-width: 20px;
   padding: 2px !important;
   gap: 0;
   justify-content: center;
+}
+
+/* A collapsed group holding the active tab shows a "+N" badge for the tabs you
+   cannot see. Stock leaves it on the bar background with a coloured underline,
+   which reads as a stray mark beside the chip. Paint it in the group colour so
+   the label and the count are one continuous cell. */
+/* Colour the whole cell rather than a pill floating inside it. The label and
+   the count each sit in their own container, so paint those the full height of
+   the row and let the label itself go transparent. Both use the same
+   light-dark() expression stock uses for the label — hardcoding
+   --tab-group-color made the count noticeably darker than the chip in dark
+   mode, where that expression resolves to the inverted variant instead. */
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label-container,
+#tabbrowser-tabs tab-group:not([data-derp-stack])
+  .tab-group-overflow-count-container {
+  background-color: light-dark(
+    var(--tab-group-color),
+    var(--tab-group-color-invert)
+  );
+  align-items: center;
+  justify-content: center;
+  min-height: var(--derp-tab-height, 30px);
+  padding: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* The container carries the colour now, so the label must not paint its own —
+   two stacked backgrounds is what made the icon box read as a separate tile. */
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label {
+  background-color: transparent !important;
+  margin: 0 !important;
+  min-height: 0;
+}
+
+/* The label and the count sit in sibling containers, and each resolved
+   light-dark() in its own context — the same expression gave them opposite
+   answers, leaving pale text and a pale icon on the pale cell while only the
+   count went dark. Resolve it once on the group they share and have both
+   inherit, so the two halves cannot drift apart again. The icon is painted
+   with currentColor, so it follows the label for free. */
+#tabbrowser-tabs tab-group:not([data-derp-stack]) {
+  color: light-dark(
+    var(--tab-group-color-pale),
+    var(--tab-group-label-text-dark)
+  );
+}
+
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label,
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-overflow-count {
+  color: inherit !important;
+}
+
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-overflow-count {
+  padding: 0 6px 0 2px !important;
+  margin: 0 !important;
+}
+
+/* The underline is stock's group-line indicator. With the whole cell coloured
+   it has nothing left to distinguish, and just looks like an artefact. */
+#tabbrowser-tabs tab-group:not([data-derp-stack])
+  .tab-group-overflow-count-container::after {
+  content: none !important;
 }
 
 tab-group[data-derp-stack] .tab-group-label {

@@ -195,6 +195,9 @@ panel:has(#workspacesToolbarButtonPanel) {
   width: 8px;
   height: 8px;
   margin-inline-start: 3px;
+  /* The chevron is the button's last child, so this is what holds it off the
+     separator to its right. */
+  margin-inline-end: 2px;
   opacity: 0.6;
   pointer-events: none;
   -moz-context-properties: fill, stroke;

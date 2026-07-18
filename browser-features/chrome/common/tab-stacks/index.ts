@@ -102,7 +102,7 @@ const TAB_EVENTS = [
  * from row 1 (the chip represents the stack) and the active group's tabs
  * render as proxies in a second bar under the tab strip.
  *
- * Groups come in two user-selectable kinds ("Turn into tab group/stack"
+ * Groups come in two user-selectable kinds ("Change to Tab Group/Stack"
  * in the label context menu): stacks as above, or plain native groups
  * that keep Firefox's inline presentation. Split-view groups are always
  * left native regardless of kind.
@@ -447,8 +447,8 @@ export default class TabStacks extends NoraComponentBase {
       kindItem.setAttribute(
         "label",
         getGroupKind(group.id) === "stack"
-          ? "Turn into tab group"
-          : "Turn into tab stack",
+          ? "Change to Tab Group"
+          : "Change to Tab Stack",
       );
       kindMenu.openPopupAtScreen(event.screenX, event.screenY, true);
     };
@@ -829,6 +829,35 @@ export default class TabStacks extends NoraComponentBase {
           group.removeAttribute("data-derp-stack");
           group.querySelector(".derp-stack-close")?.remove();
           group.querySelector(".derp-stack-icon")?.remove();
+          // An unnamed group's label holds a zero-width space rather than
+          // nothing at all, so :empty never matches it and the flex gap
+          // still reserves room for that invisible character — which is
+          // exactly what made the icon chip wider than it is tall. Mark it
+          // so the stylesheet can square it off.
+          const plainLabel = group.querySelector(".tab-group-label");
+          const visibleName = plainLabel?.textContent
+            ?.replace(/[\s\u200B-\u200D\uFEFF]/g, "") ?? "";
+          group.toggleAttribute("data-derp-unnamed", !visibleName);
+
+          // Stock's "+N" badge counts every tab in the group, which assumes
+          // they are all on the strip. Workspaces breaks that assumption: a
+          // group's tabs can be parked in other workspaces and hidden, so the
+          // badge promised more tabs than existed here (six-tab group, two in
+          // another workspace, four on screen, badge saying five). Count only
+          // what this workspace can actually reach. Stock rewrites the label
+          // from an async Fluent lookup, so this re-corrects on the same tick
+          // that everything else here runs on.
+          // Stock shows "+N" meaning "N other tabs besides the active one", so
+          // a three-tab group read as 2. Beside a bare icon that just looks
+          // like a miscount — show how many tabs are in there, and drop the
+          // plus that promised more on top.
+          const reachable =
+            Array.from(group.tabs ?? []).filter((t) => !t.hidden).length;
+          group.toggleAttribute("hasmultipletabs", reachable > 1);
+          const countLabel = group.querySelector(".tab-group-overflow-count");
+          if (countLabel && countLabel.textContent !== String(reachable)) {
+            countLabel.textContent = String(reachable);
+          }
           for (
             const sel of [
               ".tab-group-label-container",
