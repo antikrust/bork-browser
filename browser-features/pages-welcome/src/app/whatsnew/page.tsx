@@ -12,8 +12,6 @@ import {
   Github,
   Globe,
   Languages,
-  MessageCircle,
-  Twitter,
 } from "lucide-react";
 import {
   getLocaleData,
@@ -58,7 +56,7 @@ export default function WhatsNewPage() {
     const previousTitle = globalThis.document.title;
     const nextTitle = t("whatsNew.documentTitle", {
       version,
-      defaultValue: `Floorp – What's New`,
+      defaultValue: `Derp – What's New`,
     });
     globalThis.document.title = nextTitle;
 
@@ -543,22 +541,13 @@ export default function WhatsNewPage() {
                   <Github size={24} />
                 </a>
                 <a
-                  href="https://twitter.com/floorp_browser"
+                  href="https://therob.lol/derp/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
-                  aria-label="X (Twitter)"
+                  aria-label="Downloads"
                 >
-                  <Twitter size={24} />
-                </a>
-                <a
-                  href="https://floorp.app/discord"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
-                  aria-label="Discord"
-                >
-                  <MessageCircle size={24} />
+                  <Globe size={24} />
                 </a>
               </div>
             </div>
@@ -571,20 +560,12 @@ export default function WhatsNewPage() {
                   alt="Derp"
                   className="w-6 h-6"
                 />
-                <span className="text-white font-medium">Floorp</span>
+                <span className="text-white font-medium">Derp</span>
               </div>
 
               <div className="flex flex-wrap gap-6 text-sm">
                 <a
-                  href="https://floorp.app/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors"
-                >
-                  {t("whatsNew.footer.privacy")}
-                </a>
-                <a
-                  href="https://docs.floorp.app"
+                  href="https://github.com/100mountains/derp"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
