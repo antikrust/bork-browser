@@ -77,6 +77,23 @@ export default function ImportPage() {
   const current = sources?.find((s) => s.key === selected) ?? null;
   const isVivaldi = selected === "vivaldi";
 
+  // "Everything" covers the browser's own data plus, for Vivaldi, the
+  // workspaces - which is the whole point of picking Vivaldi.
+  const allSelected = !!current &&
+    current.offers.every((offer) => items.has(offer)) &&
+    (!isVivaldi || withWorkspaces);
+  const noneSelected = items.size === 0 && !(isVivaldi && withWorkspaces);
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setItems(new Set());
+      setWithWorkspaces(false);
+    } else {
+      setItems(new Set(current?.offers ?? []));
+      setWithWorkspaces(true);
+    }
+  };
+
   const runImport = async () => {
     if (!current) return;
     setBusy(true);
@@ -151,6 +168,23 @@ export default function ImportPage() {
                   </button>
                 ))}
               </div>
+
+              {current && (
+                <label className="flex items-center gap-3 rounded-lg bg-base-100 p-3 mb-2 cursor-pointer font-medium">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary checkbox-sm"
+                    checked={allSelected}
+                    ref={(el) => {
+                      // Partly ticked reads as "some of this", which a plain
+                      // checked/unchecked box cannot express.
+                      if (el) el.indeterminate = !allSelected && !noneSelected;
+                    }}
+                    onChange={toggleAll}
+                  />
+                  <span>{t("importPage.selectAll")}</span>
+                </label>
+              )}
 
               {current && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

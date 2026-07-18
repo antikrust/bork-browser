@@ -19,6 +19,7 @@
         "title": "データを引き継ぐ",
         "subtitle": "他のブラウザーからインポートして、続きから始めましょう。",
         "description": "Derp は Vivaldi、Chrome、Edge、Safari など、インストール済みのブラウザーから保存されたパスワード、ブックマーク、履歴、Cookie をコピーできます。",
+        "selectAll": "すべて",
         "items": {
             "passwords": {
                 "label": "パスワード",

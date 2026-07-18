@@ -19,6 +19,7 @@
         "title": "Bring your data across",
         "subtitle": "Import from another browser so you start where you left off.",
         "description": "Derp can copy your saved passwords, bookmarks, history and cookies from Vivaldi, Chrome, Edge, Safari and other browsers you have installed.",
+        "selectAll": "Everything",
         "items": {
             "passwords": {
                 "label": "Passwords",
