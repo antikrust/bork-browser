@@ -40,7 +40,8 @@ SECTIONS = [
            ["derp is the only Firefox fork that can recreate Vivaldi's workspaces. It reads Vivaldi's own session data, so a workspace holding twenty tabs arrives here as a workspace holding twenty tabs, with their titles.",
             "Tabs are restored without loading, so importing a large profile does not start a hundred page loads at once. Workspaces whose name you already use are skipped, which means running the import twice tops up rather than duplicating."]),
           ("Where to find it",
-           ["The import step appears during first-run setup. You can also run it any time from the workspaces panel, which offers the Vivaldi import whenever a Vivaldi profile is present."])]),
+           ["The import step appears during first-run setup, as one of the pages you walk through the first time derp opens.",
+            "Afterwards, open the workspace chooser at the far left of the tab strip: an Import from Vivaldi button sits at the bottom of that popup whenever a Vivaldi profile is present on the computer. It disappears once there is nothing left to bring over."])]),
     ]),
     ("Tabs", [
         ("tab-stacks", "Tab stacks", "layers",
