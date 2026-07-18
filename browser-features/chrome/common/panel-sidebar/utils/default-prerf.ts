@@ -73,8 +73,8 @@ const defaultData: PanelSidebarData = {
       type: "web",
     },
     {
-      id: "default-panel-docs-floorp-app",
-      url: "https://docs.floorp.app/docs/features/",
+      id: "default-panel-derp-help",
+      url: "chrome://noraneko-help/content/index.html",
       width: 0,
       icon: undefined,
       userContextId: undefined,

@@ -136,6 +136,7 @@ export function createManifest(mode: string, dirPath: string) {
     "content noraneko content/ contentaccessible=yes",
     "content noraneko-startup startup/ contentaccessible=yes",
     "content noraneko-skin skin/ contentaccessible=yes",
+    "content noraneko-help help/ contentaccessible=yes",
     "resource noraneko resource/ contentaccessible=yes",
     "content noraneko-pages-aboutdialog pages-aboutDialog/ contentaccessible=yes",
     "override chrome://browser/content/aboutDialog.xhtml chrome://noraneko-pages-aboutdialog/content/aboutDialog.html",
@@ -200,6 +201,8 @@ export function run(mode: string, dirName = "noraneko-devdir"): void {
     ["content", "bridge/loader-features/_dist"],
     ["startup", "bridge/startup/_dist"],
     ["skin", "browser-features/skin"],
+    // Static HTML help pages, served straight from source like the skin.
+    ["help", "browser-features/help"],
     ["resource", "bridge/loader-modules/_dist"],
     ["pages-newtab", "browser-features/pages-newtab/_dist"],
     ["pages-settings", "browser-features/pages-settings/_dist"],

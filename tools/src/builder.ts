@@ -275,6 +275,8 @@ export async function run(mode = "dev", buildid2: string): Promise<void> {
       ["content", "bridge/loader-features/_dist"],
       ["startup", "bridge/startup/_dist"],
       ["skin", "browser-features/skin"],
+      // Static HTML help pages, served straight from source like the skin.
+      ["help", "browser-features/help"],
       ["resource", "bridge/loader-modules/_dist"],
       ["pages-newtab", "browser-features/pages-newtab/_dist"],
       ["pages-settings", "browser-features/pages-settings/_dist"],
