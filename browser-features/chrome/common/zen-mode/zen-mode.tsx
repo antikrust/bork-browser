@@ -15,13 +15,12 @@ const ZENMODE_PREF = "floorp.zenmode.enabled";
 const EDGE_THRESHOLD = 10;
 const HIDE_DELAY_MS = 500;
 
+// Windows always open out of zen. Seeding from the pref meant a new window
+// inherited whichever window happened to toggle last, which is not a state
+// anyone asked for — and a window that opens with its chrome retracted is
+// disorienting when you did not choose it for that window.
 export const [zenModeEnabled, setZenModeEnabled] = createRootHMR(
-  () =>
-    createSignal(
-      typeof Services !== "undefined"
-        ? Services.prefs.getBoolPref(ZENMODE_PREF, false)
-        : false,
-    ),
+  () => createSignal(false),
   import.meta.hot,
 );
 

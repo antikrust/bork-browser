@@ -1,5 +1,6 @@
 import type { GestureActionRegistration } from "./gestures.ts";
 import { setShareModeEnabled } from "#features-chrome/common/browser-share-mode/browser-share-mode.tsx";
+import { setZenModeEnabled } from "#features-chrome/common/zen-mode/zen-mode.tsx";
 import {
   setPersistedGroupLayout,
   getSplitViewGroupIdForTabs,
@@ -507,12 +508,10 @@ export const actions: GestureActionRegistration[] = [
   },
   {
     name: "floorp-toggle-zen-mode",
-    fn: (_win) => {
-      Services.prefs.setBoolPref(
-        "floorp.zenmode.enabled",
-        !Services.prefs.getBoolPref("floorp.zenmode.enabled", false),
-      );
-    },
+    // Zen mode is per-window state held in a signal, the way share mode is.
+    // Flipping the pref used to work because every window observed it — which
+    // is exactly why one window entering zen dragged the rest in.
+    fn: (_win) => setZenModeEnabled((prev) => !prev),
   },
   {
     name: "floorp-open-settings",
