@@ -49,7 +49,7 @@ function App() {
               : undefined}
             aria-hidden="true"
           />
-          <div className="fixed inset-0 -z-10 bg-base-100/80" aria-hidden="true" />
+          <div className="fixed inset-0 -z-10 bg-base-100/40" aria-hidden="true" />
 
           <header className="container mx-auto px-4 pt-8 relative z-10">
             <ProgressBar />
