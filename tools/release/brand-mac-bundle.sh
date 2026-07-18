@@ -21,6 +21,16 @@ app="${1:?usage: brand-mac-bundle.sh /path/to/Something.app}"
 [ -d "$app/Contents" ] || { echo "not an app bundle: $app" >&2; exit 1; }
 
 /usr/libexec/PlistBuddy -c "Set :CFBundleName Derp" "$app/Contents/Info.plist"
+
+# macOS resolves the app icon from CFBundleIconName — an entry in the bundle's
+# asset catalog — in preference to CFBundleIconFile, and the runtime ships an
+# Assets.car whose AppIcon is still Floorp's purple F. So replacing
+# firefox.icns changed nothing anyone could see: Finder and the Dock never
+# read it. Dropping the key falls resolution back to CFBundleIconFile, which
+# brand-icons.sh has already replaced. Leaves Assets.car alone, since the rest
+# of it is still the runtime's own artwork.
+/usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" \
+  "$app/Contents/Info.plist" 2>/dev/null || true
 /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Derp" \
   "$app/Contents/Info.plist" 2>/dev/null \
   || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Derp" \
