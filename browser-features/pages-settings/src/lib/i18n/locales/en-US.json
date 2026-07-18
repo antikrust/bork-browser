@@ -272,7 +272,14 @@
         "initializeConfirmTitle": "Initialize Workspaces",
         "initializeConfirmDescription": "This removes all workspace data and recreates a single default workspace. Do you want to continue?",
         "initializeConfirmAction": "Initialize",
-        "initializeConfirmCancel": "Cancel"
+        "initializeConfirmCancel": "Cancel",
+        "import": {
+            "title": "Import from Vivaldi",
+            "button": "Import workspaces",
+            "description": "Recreate your Vivaldi workspaces here, along with the tabs inside them. Workspaces you already have are skipped, so this tops up rather than duplicating.",
+            "done": "Created {{workspaces}} workspaces with {{tabs}} tabs.",
+            "failed": "That import did not finish. Nothing was changed."
+        }
     },
     "accounts": {
         "profileAndAccount": "Profile and Account",

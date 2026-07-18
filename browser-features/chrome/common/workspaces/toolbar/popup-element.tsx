@@ -11,15 +11,10 @@ import { selectedWorkspaceID, workspacesDataStore } from "../data/data.ts";
 import i18next from "i18next";
 import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
 import type { WorkspaceArchiveSummary } from "../utils/archive-types.ts";
-import {
-  hasVivaldiWorkspaces,
-  importVivaldiWorkspaces,
-} from "../vivaldi-import.ts";
 
 const translationKeys = {
   createNew: "workspaces.popup.create-new",
   manage: "workspaces.popup.manage",
-  importVivaldi: "workspaces.popup.import-vivaldi",
   restore: "workspaces.popup.restore",
   restoreCancel: "workspaces.popup.restore-cancel",
   restoreTitle: "workspaces.popup.restore-title",
@@ -44,7 +39,6 @@ const translate = (
 const getTranslations = () => ({
   createNew: translate(translationKeys.createNew),
   manage: translate(translationKeys.manage),
-  importVivaldi: translate(translationKeys.importVivaldi),
   restore: translate(translationKeys.restore),
   restoreCancel: translate(translationKeys.restoreCancel),
   restoreTitle: translate(translationKeys.restoreTitle),
@@ -68,28 +62,6 @@ const getTranslations = () => ({
 
 export function PopupElement(props: { ctx: WorkspacesService }) {
   const [texts, setTexts] = createSignal(getTranslations());
-
-  // Only offered when there is actually a Vivaldi profile to read. Onboarding
-  // is the other entry point, but an existing profile never sees it again.
-  const [canImportVivaldi, setCanImportVivaldi] = createSignal(false);
-  const [importing, setImporting] = createSignal(false);
-  hasVivaldiWorkspaces()
-    .then(setCanImportVivaldi)
-    .catch(() => setCanImportVivaldi(false));
-
-  const runVivaldiImport = () => {
-    if (importing()) return;
-    setImporting(true);
-    importVivaldiWorkspaces(props.ctx)
-      .then((result) => {
-        console.log(
-          `[workspaces] Imported ${result.workspacesCreated} Vivaldi workspaces, ${result.tabsRestored} tabs`,
-        );
-        setCanImportVivaldi(false);
-      })
-      .catch((e) => console.error("[workspaces] Vivaldi import failed", e))
-      .finally(() => setImporting(false));
-  };
   // Bumped on every popupshowing so rows recompute live data (tab counts).
   const [refreshTick, setRefreshTick] = createSignal(0);
   const isOurPanel = (node: EventTarget | null): node is HTMLElement =>
@@ -416,16 +388,6 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
             onCommand={() => props.ctx.createNoNameWorkspace()}
             flex="1"
           />
-          <Show when={canImportVivaldi()}>
-            <xul:toolbarbutton
-              id="workspacesImportVivaldiButton"
-              class="toolbarbutton-1 chromeclass-toolbar-additional"
-              label={texts().importVivaldi}
-              disabled={importing() ? "true" : undefined}
-              closemenu="none"
-              onCommand={runVivaldiImport}
-            />
-          </Show>
           <xul:hbox align="center" class="workspaceFooterButtons">
             <xul:toolbarbutton
               id="workspacesRestoreWorkspaceButton"

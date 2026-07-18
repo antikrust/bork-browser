@@ -271,7 +271,14 @@
         "initializeConfirmTitle": "ワークスペースを初期化",
         "initializeConfirmDescription": "これにより、すべてのワークスペースのデータが削除され、既定のワークスペースひとつに集約されます。よろしいですか？",
         "initializeConfirmAction": "初期化",
-        "initializeConfirmCancel": "キャンセル"
+        "initializeConfirmCancel": "キャンセル",
+        "import": {
+            "title": "Vivaldi からインポート",
+            "button": "ワークスペースをインポート",
+            "description": "Vivaldi のワークスペースとその中のタブをここに再現します。既にあるワークスペースはスキップされるため、重複せずに追加されます。",
+            "done": "{{workspaces}} 個のワークスペースと {{tabs}} 個のタブを作成しました。",
+            "failed": "インポートは完了しませんでした。変更は行われていません。"
+        }
     },
     "accounts": {
         "profileAndAccount": "プロファイルとアカウント",

@@ -2,6 +2,7 @@ import React from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { BasicSettings } from "./components/BasicSettings.tsx";
+import { ImportSettings } from "./components/ImportSettings.tsx";
 import { getWorkspaceSettings, saveWorkspaceSettings } from "./dataManager.ts";
 import type { WorkspacesFormData } from "@/types/pref.ts";
 
@@ -55,6 +56,7 @@ export default function Page() {
           className="space-y-3 pl-6"
           onSubmit={(e) => e.preventDefault()}
         >
+          <ImportSettings />
           <BasicSettings />
           {/* <BackupSettings /> */}
         </form>
