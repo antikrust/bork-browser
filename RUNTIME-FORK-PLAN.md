@@ -66,10 +66,14 @@ RAM:   31 GB total, 17 GB available
 **Verdict: viable, at the floor.** RAM is genuinely fine — that's the spec that would have
 blocked us. Cores are the constraint.
 
-**Revised build estimate: 2–4 h per target, non-PGO.** The earlier "1–2 h" assumed a fast
-16-core; a 2018 8-core without hyperthreading is roughly half that throughput. A build is an
-overnight job. Plan the rhythm around that — it argues even more strongly for **PGO off** until
-the pipeline is routine.
+**Measured 2026-07-19: `mach build` took ~23 min, not the 2–4 h estimated.** The estimate was
+badly pessimistic for a plain non-PGO, non-packaging build; the 9700K coped fine. Add time for
+`mach package`, and roughly 3× if PGO is ever turned on. But the working assumption "a build is
+an overnight job" was wrong — clean incremental rebuilds will be minutes with ccache warm.
+
+**The real constraint was memory, not CPU.** See M1 — the `gkrust` LTO step OOM-killed rustc
+(17 GB peak) until a 32 GB swapfile was added. **Swap is a hard prerequisite on this box**, not
+an optimisation.
 
 **Two disk actions required before M0:**
 
@@ -108,17 +112,41 @@ internal disk.
 
 **Exit:** `./mach build` starts without configure errors on Linux.
 
-### M1 — First self-built Linux runtime, pinned to 152
-- [ ] Branch from `nora-0.2.0` as it stands. Its tip is already the `upstream-152.0.6` merge
-      (`cc0c8e744c9`), so this *is* the 152 line — no need to branch off a sync branch. `153.0`
-      exists upstream but is **not** merged; taking it is deliberately deferred to M6.
-- [ ] Set `MOZBUILD_STATE_PATH=/mnt/terra/.mozbuild` **before** `./mach bootstrap` (see Hardware)
-- [ ] Copy `linux-x86_64.mozconfig`, PGO off
-- [ ] Full build → produce `*-moz-artifact.tar.xz` in upstream's layout
-- [ ] Verify: launch it, confirm it is Firefox 152 and runs
+### M1 — First self-built Linux runtime, pinned to 152 ✅ DONE (2026-07-19)
 
-**Exit:** a runtime tarball we built, byte-for-byte usable by `feles-build`.
-**Estimate:** the riskiest milestone. Budget 2–4 days, mostly toolchain fights.
+Built a working **Mozilla Floorp 152.0.7** on `sentience`, verified by a headless launch
+(rendered `about:buildconfig`, wrote a screenshot, exit 0, no crashes) — not just `--version`.
+
+- [x] Clone `nora-0.2.0` (tip `cc0c8e744c9`, the `152.0.6` merge) to `/mnt/terra`. This *is* the
+      152 line; `153.0` is unmerged and deferred to M6.
+- [x] All build state off the full root disk via `/mnt/terra/derp-runtime-build/buildenv.sh`
+      (`MOZBUILD_STATE_PATH`, `RUSTUP_HOME`, `CARGO_HOME`, `CCACHE_DIR`, `TMPDIR`)
+- [x] Rust 1.90.0, `./mach bootstrap --application-choice browser`
+- [x] `mozconfig-linux-x86_64` (PGO off, ccache on, `MOZ_OBJDIR` on `/mnt/terra`)
+- [x] `./mach build` → working binary at `obj-linux-x86_64/dist/bin/floorp`
+
+**What actually happened vs the estimate:**
+
+| Expected | Actual |
+| --- | --- |
+| 2–4 days, "riskiest milestone" | One afternoon; one real failure, understood and fixed |
+| 2–4 h build | **~23 min** wall (`mach build`, no packaging) |
+| 30–40 GB objdir | **15 GB** (packaging into a tarball will add more) |
+
+**The one failure — and it was not the fork's fault.** First build compiled cleanly for 22 min,
+then the `gkrust` LTO step (fat LTO, `codegen-units=1`, `debuginfo=2`) was **OOM-killed**: rustc
+wanted 17 GB, the box has 31 GB, a QEMU VM (`bob-winbuild`) held 10–12 GB, and swap was 2 GB.
+`dmesg` confirmed `oom-kill … task=rustc`. This is a known Firefox build pressure point —
+upstream ships `allocate-swap.sh` for exactly it. **Fix: a 32 GB swapfile on `/mnt/terra`**
+(`bob-winbuild` autostart also disabled — it is now on-demand per the owner's call). Rebuild
+passed in 23 min.
+
+**Not yet done in M1** (rolls into M2/M5):
+- [ ] Package into `*-moz-artifact.tar.xz` in upstream's layout (`./mach package` +
+      upstream's `build_artifact.sh` for reference). Only needed when M5 consumes it.
+
+**Exit:** ✅ a runtime we built, launches, reports FF 152.0.7. Packaging is the remaining step
+before `feles-build` can consume it.
 
 ### M2 — Branding moves in-tree, `derp-branding.patch` dies
 - [ ] Create `browser/branding/derp/` in the fork (copy `noraneko-unofficial`, swap assets)
@@ -137,12 +165,43 @@ pack currently overrides the name on non-en-US profiles, which no post-build pat
 
 **This is the milestone that makes the rename cheap.** Do the rename here, or immediately after.
 
-### M3 — Windows and macOS cross-builds
-- [ ] Windows target from the Linux host (`mach bootstrap` fetches the MSVC toolchain)
-- [ ] macOS target using the M0 SDK tarball
-- [ ] Verify each launches on its platform
+### M3 — Windows (macOS deferred)
+- [ ] Windows target. **Two routes — evaluate both:**
+      (a) cross-compile from Linux, as upstream does (`--target=x86_64-pc-windows-msvc`);
+      (b) build natively in the existing `bob-winbuild` KVM VM on `sentience`.
+      Route (b) may well be less painful than the MSVC cross-toolchain, and the VM already
+      exists and is provisioned.
+- [ ] Verify it launches on Windows
 
-**Estimate:** 2–3 days. Windows cross-compilation is the fiddly one.
+**Estimate:** 2–3 days.
+
+#### macOS is deferred — blocked on the SDK, not on disk
+
+**Gecko in this tree requires macOS SDK 26.4**, hard-coded:
+
+```python
+# build/moz.configure/toolchain.configure:254
+def mac_sdk_min_version():
+    return "26.4"
+```
+
+Configure fails below that with *"SDK version is too old"*. This is Firefox's own requirement,
+not upstream's preference — which is why `wrapper-mac-build.yml` extracts the SDK from a
+`macos-26` runner rather than letting `--enable-bootstrap` fetch it.
+
+Our Mac has **Xcode 16.4 → `MacOSX15.5.sdk`**, on macOS 15.5 (Darwin 24.5). Closing the gap
+means Xcode 26.x (~30 GB — installable to `/Volumes/Instruments`, so disk is solvable) and
+likely a macOS upgrade first.
+
+**Decision: keep consuming upstream's macOS `.dmg` for now.** A hybrid — our runtime on Linux
+and Windows, upstream's on macOS — still removes the `dev-assets` dependency on the platforms we
+build, and still gives us the compiled branding tier there. Revisit when the Mac is on macOS 26
+for unrelated reasons. **Do not let this gate M1/M2.**
+
+Consequence for M2: the branding milestone lands on Linux/Windows first. macOS keeps needing
+`derp-branding.patch` plus `tools/release/brand-mac-bundle.sh` until its runtime is ours, so
+**the patch cannot be deleted outright** — it becomes macOS-only. Revisit its scope at M2 rather
+than removing it.
 
 ### M4 — Self-hosted CI
 - [ ] Register the Linux box as a self-hosted runner (or a plain cron + script — CI here is a
