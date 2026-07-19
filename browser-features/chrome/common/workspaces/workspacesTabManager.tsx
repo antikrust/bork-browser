@@ -162,18 +162,34 @@ export class WorkspacesTabManager {
       );
     }
 
-    let maybeSelectedWorkspace = this.getWorkspaceIdFromAttribute(
-      globalThis.gBrowser.selectedTab as XULElement,
-    );
+    const startupTab = globalThis.gBrowser.selectedTab as XULElement | null;
+    let maybeSelectedWorkspace = startupTab
+      ? this.getWorkspaceIdFromAttribute(startupTab)
+      : null;
+
+    // A selected tab carrying no workspace attribute did not come from session
+    // restore (restored tabs keep theirs) — it is a link the OS handed us while
+    // the browser was still starting. Adopt it into whichever workspace we are
+    // about to open, so changeWorkspace's "selection already belongs here" path
+    // keeps it. Without this, changeWorkspace restores that workspace's
+    // last-shown tab — or its first tab — over the top of the link the user
+    // just clicked.
+    const tabToAdopt = maybeSelectedWorkspace ? null : startupTab;
 
     if (!maybeSelectedWorkspace) {
       maybeSelectedWorkspace = this.getMaybeSelectedWorkspacebyVisibleTabs();
     }
     if (maybeSelectedWorkspace) {
+      if (tabToAdopt) {
+        this.setWorkspaceIdToAttribute(tabToAdopt, maybeSelectedWorkspace);
+      }
       this.changeWorkspace(maybeSelectedWorkspace);
     } else {
       try {
         const defaultWorkspaceId = this.dataManagerCtx.getDefaultWorkspaceID();
+        if (tabToAdopt) {
+          this.setWorkspaceIdToAttribute(tabToAdopt, defaultWorkspaceId);
+        }
         this.changeWorkspace(defaultWorkspaceId);
       } catch (e) {
         console.error("Failed to change workspace:", e);
