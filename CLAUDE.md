@@ -281,9 +281,17 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   element's own custom-property definition beats anything inherited. Its
   `min-height` is what sets the nav bar's height — every toolbar button
   stretches to match.
-- `SessionStore.persistTabAttribute` **no longer exists**. Feature-detect it;
-  `setCustomTabValue`/`getCustomTabValue` is the working path (split-view's session-restore
-  patch shows the pattern).
+- `SessionStore.persistTabAttribute` **no longer exists** (and `TabAttributes.sys.mjs`
+  hard-codes its list to `["customizemode"]`, so nothing can register a new name).
+  Feature-detect before calling it. **Do not "fix" this by porting to
+  `setCustomTabValue`** — tab attributes that need to survive a restart are carried by the
+  Noraneko runtime patches, not by SessionStore's attribute machinery:
+  `tools/patches/browser-modules-sessionstore-TabState.sys.patch` writes them onto `tabData`
+  on collect (`floorpWorkspaceId`, `floorpWorkspaceLastShowId`, `floorp-disablehistory`,
+  `floorpSplitViewGroupId`) and the tabbrowser patch sets them back on restore. A new
+  attribute needing persistence belongs in **that pair**. `setCustomTabValue` is a second,
+  independent route — split-view's session-restore code uses it as a fallback — but adding it
+  where the patches already carry the attribute just gives you two sources of truth.
 - `tab-group` is **`display: contents`** — it has no box. Sizing rules on it do nothing; its
   children participate directly in the strip's flexbox. Style `.tab-group-label-container`.
 - `visibility: collapse` **only removes width in XUL box layout**. The tab strip is flexbox,
