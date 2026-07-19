@@ -18,19 +18,24 @@ Assessed 2026-07-19 against upstream through PR #2567.
 
 ---
 
-## Present in derp — fix exists upstream, port available
+## Fixed in derp
 
 ### Web-panel findbar does nothing (Ctrl+F in a sidebar web panel)
 - **Upstream:** [#2560](https://github.com/Floorp-Projects/Floorp/pull/2560) (merged)
-- **derp status:** present. No `web-panel-find-controller.ts` under
-  `browser-features/chrome/common/panel-sidebar/utils/`; derp ships the
-  panel-sidebar web-panel feature. Find commands fall through to
-  browser.xhtml's `gBrowser`-dependent handler, which the web-panel window
-  does not satisfy.
-- **Fix:** a lazy XUL findbar bound to the panel content browser, intercepting
-  find/find-again/find-previous/find-selection in the capture phase. Three
-  files in the PR.
-- **Confidence:** high (fix file absent, feature present). Functional, not cosmetic.
+- **derp status:** **fixed 2026-07-19 (`4b707fae42`)** — ported verbatim from
+  upstream. Was real: derp had no find handling in panel-sidebar at all, so
+  find commands fell through to browser.xhtml's `gBrowser`-dependent handler,
+  which a web-panel window does not satisfy.
+- **Fix:** `WebPanelFindController` owns a lazy XUL findbar bound to the panel
+  content browser, intercepting find/find-again/find-previous/find-selection in
+  the capture phase; wired into `WebsitePanelWindowChild`.
+- **Verified:** three files type-check clean in isolation; served bundle in a
+  staged build carries the controller; no boot errors. Final visible
+  confirmation (findbar appears on Cmd+F in a live web panel) left to a
+  manual eyeball — driving the reactive sidebar to mount a web-panel window
+  blind via Marionette was impractical.
+
+## Present in derp — fix exists upstream, port available
 
 ### PWA install/launch follows the selected tab, not the invoking browser
 - **Upstream:** [#2562](https://github.com/Floorp-Projects/Floorp/pull/2562) (merged)
@@ -101,11 +106,23 @@ derp — each needs a runtime repro.
   derp's own tabbar/tab-stacks work and is worth a close look.
 
 ### Moving a tab stack in Split View to a new window leaves the last tab unloaded
-- **Upstream:** [#2567](https://github.com/Floorp-Projects/Floorp/issues/2567) (open)
-- **derp status:** unverified. tab-stacks + split-view + window-move — all derp
-  features. The "unloaded last tab" smells like a lazy-tab / linkedPanel-null
-  path, an area derp has already been bitten by.
-- **Confidence:** plausible; needs repro.
+- **Upstream:** [#2567](https://github.com/Floorp-Projects/Floorp/issues/2567) (open, no fix)
+- **derp status:** **not confirmed in derp** — investigated 2026-07-19, left
+  as-is. The repro needs a specific multi-window state (per the reporter, it
+  *only* happens when the original window already holds another Split View),
+  then a stack dragged/moved to a new window, then the last tab checked for
+  loaded vs lazy. derp's split-view has no clean programmatic activation entry
+  point (it is driven through selection / drag / context menu), so the state
+  cannot be reliably assembled blind via Marionette, and derp's split-view is
+  heavily diverged from upstream, so upstream reproducing does not imply derp
+  does. `gBrowser.replaceTabWithWindow(tab)` is the move primitive; the likely
+  locus if it is real here is tab adoption across windows interacting with
+  split-view session-restore (`split-view/patches/session-restore.ts`) and the
+  `floorpSplitViewGroupId` persistence patch.
+- **Next step:** a **visual** repro (loaded vs lazy is obvious on screen). No
+  fix should be written until the bug is confirmed present in derp. Reporter is
+  on Fedora Linux; behaviour may differ on macOS.
+- **Confidence:** real upstream; unconfirmed in derp.
 
 ---
 
