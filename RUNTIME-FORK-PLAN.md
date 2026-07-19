@@ -141,12 +141,27 @@ upstream ships `allocate-swap.sh` for exactly it. **Fix: a 32 GB swapfile on `/m
 (`bob-winbuild` autostart also disabled — it is now on-demand per the owner's call). Rebuild
 passed in 23 min.
 
-**Not yet done in M1** (rolls into M2/M5):
-- [ ] Package into `*-moz-artifact.tar.xz` in upstream's layout (`./mach package` +
-      upstream's `build_artifact.sh` for reference). Only needed when M5 consumes it.
+**Packaging + derp-compatibility — DONE and PROVEN (2026-07-19):**
+- [x] Package into flat `floorp-linux-x86_64-moz-artifact.tar.xz` (8,545 entries, matches
+      upstream's 8,543). **Required `--enable-chrome-format=flat`** — the base mozconfig lacks
+      it; CI adds it via `setup-floorp.sh`. Without it you get omni.ja and derp's patcher can't
+      apply. Staged at `sentience:/mnt/terra/derp-runtime-build/artifacts/` with a `.sha256`.
+- [x] **Proved derp-compatible by dry-run:** `git apply --check` (derp's exact invocation) for
+      all 13 patches → **12/13 apply clean**. The 13th, `derp-branding.patch`, fails *as
+      expected* — our build used default (nightly) branding, so `updater.ini` says "Nightly
+      Update" not the "Floorp Update" the patch targets. That failure **is** the M2 proof: the
+      branding tier is a build-time choice, so building with derp branding retires the patch
+      rather than requiring it to apply.
 
-**Exit:** ✅ a runtime we built, launches, reports FF 152.0.7. Packaging is the remaining step
-before `feles-build` can consume it.
+**Exit:** ✅ a runtime we built, launches as FF 152.0.7, and takes 12/13 of derp's patches
+unchanged. The 13th is branding, addressed by M2.
+
+**This changes M2:** don't just "set branding in-tree" abstractly — build with
+`--with-branding=browser/branding/derp` (a dir we create from the existing derp assets in
+`browser-features/branding/` + `skin/derp/`), matching how upstream copies `floorp-official`
+in via `.github/assets/branding`. That makes updater.ini/brand.* say "Derp" at build time and
+lets `derp-branding.patch` be deleted for Linux/Windows (stays macOS-only while macOS is
+deferred).
 
 ### M2 — Branding moves in-tree, `derp-branding.patch` dies
 - [ ] Create `browser/branding/derp/` in the fork (copy `noraneko-unofficial`, swap assets)
@@ -214,6 +229,23 @@ than removing it.
 the *feature* repo; decide explicitly whether it extends to the runtime fork.
 
 ### M5 — Point derp at our runtime
+
+**Design notes (from reading `initializer.ts`, 2026-07-19):**
+
+- `decompressBin()` looks for a **local** `*.tar.xz` in the working dir *before* downloading
+  (line ~351). So the fastest proof needs no code change: drop our
+  `floorp-linux-x86_64-moz-artifact.tar.xz` where feles-build looks and it uses ours. The
+  `RUNTIME_BASE_URL` edit is the durable fix so *fresh* checkouts and other machines fetch ours.
+- `run()` gates on `BIN_VERSION` vs the `VERSION` constant; to swap a runtime under an existing
+  `_dist/bin`, remove `_dist/bin` (or the version file) to force re-extraction.
+- **Platform reality:** feles-build runs on the *host* platform. Our runtime is Linux, so it can
+  only be exercised by derp running **on `sentience`** — not on the darwin dev Mac, which wants a
+  macOS runtime. The natural end-to-end test is: clone derp on `sentience`, `deno install`, drop
+  our artifact, `feles-build stage`, confirm the feature layer loads on our own runtime. That is
+  a real environment stand-up, so it is its own step.
+
+---
+
 Single integration point — `tools/src/initializer.ts:20`:
 
 ```ts
