@@ -23,6 +23,14 @@ cd "$ROOT"
 RUNTIME_TAG="${DERP_RUNTIME_TAG:-daily-977}"
 RUNTIME_URL="https://github.com/Floorp-Projects/Floorp-runtime/releases/download/${RUNTIME_TAG}"
 
+# Runtimes we build ourselves live in a private repo and are fetched with an
+# authenticated `gh` download. Any file NOT listed in OWN_RUNTIME_FILES falls
+# back to the upstream Floorp-runtime release above. As more platforms get
+# built by us, add their artifact filenames to OWN_RUNTIME_FILES.
+OWN_RUNTIME_REPO="${DERP_OWN_RUNTIME_REPO:-100mountains/derp-runtime}"
+OWN_RUNTIME_TAG="${DERP_OWN_RUNTIME_TAG:-derp-runtime-152.0.7-1}"
+OWN_RUNTIME_FILES="${DERP_OWN_RUNTIME_FILES:-floorp-linux-x86_64-moz-artifact.tar.xz}"
+
 log() { printf '\033[34m[derp-release]\033[0m %s\n' "$*"; }
 fail() { printf '\033[31m[derp-release] %s\033[0m\n' "$*" >&2; exit 1; }
 
@@ -92,8 +100,15 @@ overlay() {
 fetch_runtime() {
   local file="$1"
   mkdir -p build/runtimes
-  if [ ! -f "build/runtimes/$file" ]; then
-    log "downloading $file (${RUNTIME_TAG})"
+  [ -f "build/runtimes/$file" ] && return
+
+  if printf '%s\n' $OWN_RUNTIME_FILES | grep -qxF "$file"; then
+    log "downloading $file from our runtime (${OWN_RUNTIME_REPO}@${OWN_RUNTIME_TAG})"
+    gh release download "$OWN_RUNTIME_TAG" --repo "$OWN_RUNTIME_REPO" \
+      --pattern "$file" --dir build/runtimes \
+      || fail "gh runtime download failed: $file (is gh authed for ${OWN_RUNTIME_REPO}?)"
+  else
+    log "downloading $file (upstream ${RUNTIME_TAG})"
     curl -sL -o "build/runtimes/$file" "${RUNTIME_URL}/${file}" \
       || fail "download failed: $file"
   fi

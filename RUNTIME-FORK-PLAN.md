@@ -255,10 +255,25 @@ and the patch is retired, not fixed.
 Linux — derp builds and runs on our own runtime with zero code change (local-artifact pickup via
 `decompressBin`'s cwd scan).
 
-**Still "productionization", not yet done** (deferred until wanted):
-- [ ] Repoint `RUNTIME_BASE_URL` (`initializer.ts:20`) + host our artifacts, so *fresh* checkouts
-      and the Mac/other machines fetch ours rather than relying on a local drop-in
-- [ ] Add the in-tree version pin (audit §7.2)
+**Productionization — shipping path DONE (2026-07-19):**
+- [x] Published the Linux runtime as a GitHub release: `100mountains/derp-runtime` tag
+      `derp-runtime-152.0.7-1` (private; `floorp-linux-x86_64-moz-artifact.tar.xz` + `.sha256`).
+- [x] **Repointed the release/shipping pipeline** (`tools/release/build-derp-packages.sh`).
+      `fetch_runtime` is now a hybrid: files in `OWN_RUNTIME_FILES` (currently the Linux artifact)
+      download from our private repo via authenticated `gh`; everything else falls back to the
+      upstream Floorp-runtime release. Verified: `gh release download` pulls our artifact and its
+      published `.sha256` checks `OK`. **Shipped Linux derp packages now ride our runtime.**
+
+**TWO runtime dependencies, not one** (correcting the audit's "single integration point"):
+1. `RUNTIME_BASE_URL` — `initializer.ts:20` — dev/stage. Still upstream by default.
+2. `build-derp-packages.sh` — shipping. **Now hybrid → ours for Linux.** ✅
+
+**Dev/stage global repoint — intentionally deferred, and why:** `RUNTIME_BASE_URL` is shared
+across all platforms and its download uses an anonymous index-JSON fetch (awkward against our
+private repo). We only build Linux, so flipping the global default would break mac/windows dev
+builds. The Linux dev story already works via `decompressBin`'s local-artifact pickup (proven).
+Flip it — as a per-platform hybrid, ours where we build, upstream where we don't — once M3
+(Windows) lands and ideally macOS too. Add the in-tree version pin (audit §7.2) at the same time.
 
 **Environment left on `sentience`:** Deno at `/mnt/terra/.deno`, derp clone at `/mnt/terra/derp`
 (branding patch disabled), artifact staged at `/mnt/terra/derp-runtime-build/artifacts/`.
