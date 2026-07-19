@@ -228,7 +228,43 @@ than removing it.
 **Note:** Actions are disabled on `100mountains/derp` by project policy. That policy is about
 the *feature* repo; decide explicitly whether it extends to the runtime fork.
 
-### M5 — Point derp at our runtime
+### M5 — Point derp at our runtime — ✅ PROVEN for Linux (2026-07-19)
+
+derp's full feature layer runs on a Gecko runtime **we compiled**. Demonstrated end-to-end on
+`sentience`:
+
+- Installed Deno 2.9.3, cloned derp, `deno install`, dropped our
+  `floorp-linux-x86_64-moz-artifact.tar.xz` in the repo root
+- `feles-build stage --marionette` under `xvfb-run`: extracted **our** artifact, applied
+  **12/13 patches clean**, injected the chrome manifest + XHTML, built the feature layer, launched
+- Verified by code-level marker (dev-tool eval), not a log line:
+  ```json
+  {"version":"152.0.7","buildID":"20260719200341","appBase":"Floorp",
+   "derp_workspaces_pref":true,"derp_startup_module":true}
+  ```
+  `buildID 20260719200341` = our compile (not upstream's daily). `derp_startup_module:true` =
+  `NoranekoStartup.sys.mjs` loaded via `resource://noraneko/`. Live `nora@split-view` console
+  logs = derp features executing.
+
+**The 13th patch (`derp-branding.patch`) was disabled for this proof** — it can't apply to our
+default-(nightly)-branded runtime, and it's cosmetic + destined for M2/deletion. `git mv`'d to
+`.disabled` on the sentience clone only. This is exactly the M2 signal: build with derp branding
+and the patch is retired, not fixed.
+
+**What this proves:** the `dev-assets.floorp.app` dependency is functionally eliminated for
+Linux — derp builds and runs on our own runtime with zero code change (local-artifact pickup via
+`decompressBin`'s cwd scan).
+
+**Still "productionization", not yet done** (deferred until wanted):
+- [ ] Repoint `RUNTIME_BASE_URL` (`initializer.ts:20`) + host our artifacts, so *fresh* checkouts
+      and the Mac/other machines fetch ours rather than relying on a local drop-in
+- [ ] Add the in-tree version pin (audit §7.2)
+
+**Environment left on `sentience`:** Deno at `/mnt/terra/.deno`, derp clone at `/mnt/terra/derp`
+(branding patch disabled), artifact staged at `/mnt/terra/derp-runtime-build/artifacts/`.
+
+---
+#### Original M5 design notes
 
 **Design notes (from reading `initializer.ts`, 2026-07-19):**
 
