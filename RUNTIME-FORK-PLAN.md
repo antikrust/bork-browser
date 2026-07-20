@@ -228,7 +228,23 @@ after the copy released its disk lock.
 `/mnt/terra/derp-winbuild/derp-winbuild.qcow2` (the 916 GB drive, thin — 42 GB actual, 150 cap).
 WinRM runner: `sentience:/mnt/terra/derp-winbuild/winps95.py`.
 
-#### macOS is deferred — blocked on the SDK, not on disk
+#### macOS — ✅ DONE (2026-07-20), built natively on the M4
+
+Once the Mac had Xcode 26.4 (SDK 26.4, on the Instruments drive) the cross-compile plan was
+dropped — built **natively on the Apple-Silicon Mac** instead, far simpler. Firefox 152.0.7,
+aarch64, flat chrome, `floorp-macos-aarch64-moz-artifact.dmg` (97 MB, verified mountable, loose
+BrowserGlue, no omni.ja). Published to `derp-runtime-152.0.7-1`.
+
+Two mac-native gotchas: (1) `mach bootstrap` 403s trying to download the macOS SDK from Mozilla
+(Apple licensing — they can't serve it) → fixed with `--with-macos-sdk=$(xcrun --show-sdk-path)`
+pointing at the local Xcode SDK; (2) `rustup which rustc` failed in the detached build shell (no
+default toolchain resolvable) → fixed by exporting explicit `RUSTC`/`CARGO` paths. Both encoded
+in `build-all-runtimes.sh`.
+
+Still aarch64-only (not universal). x86_64 + `lipo` is a future enhancement if Intel-Mac users
+matter.
+
+<details><summary>original "deferred" note</summary>
 
 **Gecko in this tree requires macOS SDK 26.4**, hard-coded:
 
@@ -255,6 +271,12 @@ Consequence for M2: the branding milestone lands on Linux/Windows first. macOS k
 `derp-branding.patch` plus `tools/release/brand-mac-bundle.sh` until its runtime is ours, so
 **the patch cannot be deleted outright** — it becomes macOS-only. Revisit its scope at M2 rather
 than removing it.
+
+</details>
+
+**UPDATE 2026-07-20:** macOS is no longer deferred — built natively (see above). All three
+platforms now build on runtimes we compiled, published to `derp-runtime-152.0.7-1`. So M2 can now
+retire `derp-branding.patch` on **all** platforms once each is built with a derp branding dir.
 
 ### M4 — Self-hosted CI
 - [ ] Register the Linux box as a self-hosted runner (or a plain cron + script — CI here is a
