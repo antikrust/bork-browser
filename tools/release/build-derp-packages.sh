@@ -29,7 +29,7 @@ RUNTIME_URL="https://github.com/Floorp-Projects/Floorp-runtime/releases/download
 # built by us, add their artifact filenames to OWN_RUNTIME_FILES.
 OWN_RUNTIME_REPO="${DERP_OWN_RUNTIME_REPO:-100mountains/derp-runtime}"
 OWN_RUNTIME_TAG="${DERP_OWN_RUNTIME_TAG:-derp-runtime-152.0.7-1}"
-OWN_RUNTIME_FILES="${DERP_OWN_RUNTIME_FILES:-floorp-linux-x86_64-moz-artifact.tar.xz}"
+OWN_RUNTIME_FILES="${DERP_OWN_RUNTIME_FILES:-floorp-linux-x86_64-moz-artifact.tar.xz floorp-windows-x86_64-moz-artifact.zip}"
 
 log() { printf '\033[34m[derp-release]\033[0m %s\n' "$*"; }
 fail() { printf '\033[31m[derp-release] %s\033[0m\n' "$*" >&2; exit 1; }
