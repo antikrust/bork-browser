@@ -71,8 +71,13 @@ export default class DerpDefaults extends NoraComponentBase {
     if (AppConstants.platform !== "macosx") return;
     try {
       const doc = (globalThis as unknown as Window).document;
-      // Floorp from the compiled-in app name, Firefox from a language pack.
-      const wrongNames = [Services.appinfo.name, "Firefox"]
+      // With --with-app-basename=Derp the compiled name is now Derp, so these
+      // items are native "About Derp" — EXCEPT under a non-en-US locale whose
+      // language pack ships its own branding. A Floorp-repackaged Mozilla
+      // langpack (e.g. en-GB, carried over from a Floorp profile) reinjects
+      // "Floorp"; a stock Mozilla one injects "Firefox". Strip both plus the
+      // compiled name defensively.
+      const wrongNames = [Services.appinfo.name, "Floorp", "Firefox", "Nightly"]
         .filter((n) => n && n !== BRAND_NAME);
 
       const correct = () => {
@@ -91,13 +96,46 @@ export default class DerpDefaults extends NoraComponentBase {
 
       correct();
       const observer = new MutationObserver(correct);
+      const attachTo = (el: Element) =>
+        observer.observe(el, { attributes: true, attributeFilter: ["label"] });
+
+      let attached = 0;
       for (const id of MAC_APP_MENU_IDS) {
         const el = doc.getElementById(id);
         if (el) {
-          observer.observe(el, {
-            attributes: true,
-            attributeFilter: ["label"],
-          });
+          attachTo(el);
+          attached++;
+        }
+      }
+
+      // The macOS app-menu items are frequently created AFTER this feature
+      // inits (Gecko builds the native menu late, and later still under a
+      // non-en-US locale whose langpack labels arrive with a delay). If they
+      // were not present yet, per-element observers above caught nothing and
+      // the late "Floorp"/"Firefox" labels would never be corrected. Watch the
+      // menubar for the items appearing, and re-assert on a short schedule as a
+      // backstop, until every item exists and has been observed.
+      if (attached < MAC_APP_MENU_IDS.length) {
+        const menubar = doc.getElementById("main-menubar") ?? doc.documentElement;
+        const settle = new MutationObserver(() => {
+          correct();
+          let now = 0;
+          for (const id of MAC_APP_MENU_IDS) {
+            if (doc.getElementById(id)) now++;
+          }
+          if (now === MAC_APP_MENU_IDS.length) {
+            for (const id of MAC_APP_MENU_IDS) {
+              const el = doc.getElementById(id);
+              if (el) attachTo(el);
+            }
+            settle.disconnect();
+          }
+        });
+        if (menubar) settle.observe(menubar, { childList: true, subtree: true });
+        // Timed backstop in case the labels are written without a DOM mutation
+        // this observer sees.
+        for (const delay of [250, 750, 1500, 3000]) {
+          (globalThis as unknown as Window).setTimeout(correct, delay);
         }
       }
     } catch (e) {
