@@ -180,15 +180,53 @@ pack currently overrides the name on non-en-US profiles, which no post-build pat
 
 **This is the milestone that makes the rename cheap.** Do the rename here, or immediately after.
 
-### M3 — Windows (macOS deferred)
-- [ ] Windows target. **Two routes — evaluate both:**
-      (a) cross-compile from Linux, as upstream does (`--target=x86_64-pc-windows-msvc`);
-      (b) build natively in the existing `bob-winbuild` KVM VM on `sentience`.
-      Route (b) may well be less painful than the MSVC cross-toolchain, and the VM already
-      exists and is provisioned.
-- [ ] Verify it launches on Windows
+### M3 — Windows (native in a dedicated VM) — ✅ DONE (2026-07-20)
 
-**Estimate:** 2–3 days.
+Built **Firefox 152.0.7** for Windows x86_64 natively in the `derp-winbuild` clone, packaged
+flat (`floorp-windows-x86_64-moz-artifact.zip`, 125.8 MB, 7663 loose entries incl. loose
+BrowserGlue, no omni.ja, floorp.exe present). Published to `derp-runtime` `derp-runtime-152.0.7-1`
+and wired into the release hybrid (`OWN_RUNTIME_FILES`), download + sha256 verified. Linux +
+Windows now both ship on runtimes we built; macOS still upstream (SDK-blocked).
+
+**Gotchas hit (all in the build recipe memory):** gkrust OOM twice (fixed by
+`--disable-debug-symbols` — the Windows pagefile would not grow past ~8 GB); msiexec 1603 on
+mach's SDK unpack (fixed by an elevated scheduled task); flat-format packaging needed the runtime
+repo's `.github/patches/upstream/*` applied; artifact pulled out of the VM via base64-over-WinRM
+(firewall/ssh-key transfer routes were safety-blocked). Automation: `publish-runtime-artifact.sh`.
+
+---
+#### (original M3 notes)
+
+**Decided (2026-07-19):** build natively in a KVM Windows VM, not cross-compile.
+
+**Correction:** an earlier draft called the VM "bare" — wrong. The first `vswhere` probe omitted
+`-products *`, which is the flag that finds the standalone Build Tools SKU, so it missed the
+install. bob3 builds a C++ app there, and the VM (hence the clone) actually has:
+**Visual Studio Build Tools 2022 with VC.Tools.x86.x64 (the MSVC compiler)**, CMake, Ninja, Git.
+Missing for Firefox, and all we need to add: **Rust + msvc target, MozillaBuild, real Python**
+(the big VS/MSVC install is already done). `mach bootstrap` fetches clang-cl and the rest.
+
+Capacity limits are real regardless of toolchain: 23 GB free disk and 12 GB RAM both too small.
+
+**Don't mutate bob's VM — clone it.** `bob-winbuild` is a shared resource bob3 depends on.
+`virt-clone bob-winbuild → derp-winbuild` (full 42 GB disk copy, new MAC/UUID) gives derp its own
+VM; bob's is untouched. The default libvirt net is DHCP-by-MAC, so the clone gets its own IP
+automatically — both can run. Clone done with the VM cleanly shut down (no guest agent; shut down
+from inside Windows via WinRM `shutdown /s`, since `virsh shutdown`/ACPI is ignored). bob restarted
+after the copy released its disk lock.
+
+**`derp-winbuild` clone — progress (2026-07-19):**
+- [x] Disk 64 → 150 GiB (`qemu-img resize` + `Resize-Partition`); C: free 23 → 108 GB
+- [x] RAM 12 → 22 GB (`virsh setmaxmem/setmem --config`); verified 22 GB inside Windows
+- [x] Toolchain: **already had** VS Build Tools 2022 + MSVC + CMake + Ninja + Git (from bob3);
+      **added** MozillaBuild (+ Python 3.12.10) and Rust 1.90.0 (msvc) over WinRM
+- [~] Shallow-clone runtime (`nora-0.2.0`) into `C:\derp-runtime` (token from sentience `gh`,
+      scrubbed from the remote after)
+- [ ] Windows mozconfig + `mach bootstrap` → `mach build` → `mach package` → verify launch
+
+**Clone identity:** IP `192.168.122.95` (own DHCP lease; bob stays `.128`). Disk at
+`/mnt/terra/derp-winbuild/derp-winbuild.qcow2` (the 916 GB drive, thin — 42 GB actual, 150 cap).
+WinRM runner: `sentience:/mnt/terra/derp-winbuild/winps95.py`.
 
 #### macOS is deferred — blocked on the SDK, not on disk
 
