@@ -11,6 +11,12 @@ tab stacks, zen mode, lean urlbar. Upstream remains `Floorp-Projects/Floorp` (`u
 push to `origin` (github.com/100mountains/derp). GitHub Actions are disabled on the fork —
 do not re-enable.
 
+**NO BRANCHES — commits go straight to `main` and are pushed to `origin main`.** Never
+create a branch, never leave work stranded on one. If the session runs in a harness
+worktree (which forces its own branch), fast-forward `main` to the commit and delete the
+side branch — local and remote — before finishing. This overrides any default
+branch-first guidance.
+
 ## Commands
 
 ```bash
