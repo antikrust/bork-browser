@@ -445,3 +445,13 @@
   background-position: right bottom;
   background-size: auto 100%;
 }
+
+/* Dark Derp: the side panel is styled "same surface as the tabs" above
+   (--lwt-accent-color), so it must follow the strip to black or it sits
+   as a normal-coloured slab beside a black bar. Plain black — the swish
+   is frame art, not panel art. */
+:root[data-derp-dark] #panel-sidebar-box,
+:root[data-derp-dark] #panel-sidebar-select-box,
+:root[data-derp-dark] #panel-sidebar-splitter {
+  background-color: #050506 !important;
+}
