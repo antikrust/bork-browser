@@ -22,6 +22,7 @@ import {
   hasVivaldiWorkspaces,
   importVivaldiWorkspaces,
 } from "../vivaldi-import.ts";
+import { LAYERS_ICON } from "./icons.ts";
 
 /**
  * Vivaldi-style workspaces rail, living in Firefox's revamped-sidebar slot
@@ -94,8 +95,14 @@ const RailWorkspaceButton = (props: RailWorkspaceButtonProps) => {
     }
     return undefined;
   });
+  const isDefaultWorkspace = createMemo(() =>
+    workspacesDataStore.defaultID === props.workspaceId
+  );
   const iconUrl = createMemo(() =>
-    props.ctx.iconCtx.getWorkspaceIconUrl(
+    // The default workspace always wears the layers glyph — the same
+    // identity the chooser button shows — no matter what icon its data
+    // carries (legacy profiles stored the old coloured builtins there).
+    isDefaultWorkspace() ? LAYERS_ICON : props.ctx.iconCtx.getWorkspaceIconUrl(
       (workspace() as { icon?: string } | undefined)?.icon,
     ) ?? DEFAULT_ICON
   );
@@ -214,15 +221,15 @@ const RailWorkspaceButton = (props: RailWorkspaceButtonProps) => {
       tabIndex={0}
       tooltiptext={workspaceName()}
       aria-label={workspaceName()}
-      draggable="true"
+      draggable={isDefaultWorkspace() ? "false" : "true"}
       onClick={handleActivate}
       onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenu}
-      onDragStart={handleDragStart}
+      onDragStart={isDefaultWorkspace() ? undefined : handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
+      onDragOver={isDefaultWorkspace() ? undefined : handleDragOver}
       onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      onDrop={isDefaultWorkspace() ? undefined : handleDrop}
     >
       <img src={iconUrl()} width="16" height="16" alt="" />
     </div>
@@ -294,11 +301,22 @@ function Rail(props: { ctx: WorkspacesService }) {
       .catch((e) => console.error("[workspaces] Vivaldi import failed", e));
   };
 
+  // Mirror the chooser popup exactly: the default workspace pinned on
+  // top, then the reorderable rest in store order. The rail used to show
+  // raw store order, so the default sat wherever history left it.
+  const railOrder = createMemo(() => {
+    const def = workspacesDataStore.defaultID;
+    const rest = workspacesDataStore.order.filter((id) => id !== def);
+    return def && workspacesDataStore.order.includes(def)
+      ? [def, ...rest]
+      : [...workspacesDataStore.order];
+  });
+
   return (
     <Show when={railActive()}>
       <div id="derp-workspaces-rail">
         <div class="derp-workspaces-rail-list">
-          <For each={workspacesDataStore.order}>
+          <For each={railOrder()}>
             {(workspaceId) => (
               <RailWorkspaceButton workspaceId={workspaceId} ctx={props.ctx} />
             )}
