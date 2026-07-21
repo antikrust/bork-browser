@@ -17,13 +17,13 @@
         "title": "Về Derp Hub",
         "subtitle": "Trung tâm cho các cài đặt Derp",
         "sectionTitle": "Trung tâm Derp",
-        "description": "Derp Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:hub\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
-        "openHub": "Mở about:hub",
+        "description": "Derp Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:preferences\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
+        "openHub": "Mở about:preferences",
         "openPreferences": "Mở cài đặt (about:preferences)",
         "tip": "Mẹo nè: Trung tâm Derp cũng có thể được mở từ thanh bên của cài đặt Firefox",
         "features": {
             "dedicated": "Trung tâm cài đặt riêng cho Derp",
-            "accessible": "Có thể truy cập từ about:hub hoặc cài đặt của Firefox",
+            "accessible": "Có thể truy cập từ about:preferences hoặc cài đặt của Firefox",
             "centralized": "Mọi cài đặt Derp trong 1 chỗ"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Trung tâm Derp",
-            "description": "Derp Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:hub\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
-            "openHub": "Mở about:hub",
+            "description": "Derp Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:preferences\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
+            "openHub": "Mở about:preferences",
             "openPreferences": "Mở cài đặt (about:preferences)"
         }
     },

@@ -194,7 +194,7 @@ deno install
 import { foo } from "#i18n/utils";           // i18n/
 import { bar } from "#chrome/common/tab";    // chrome/
 import { baz } from "#libs/shared";          // libs/
-import { qux } from "#modules/experiments";  // browser-features/modules/
+import { qux } from "#modules/i18n";         // browser-features/modules/
 ```
 
 ## よくある問題

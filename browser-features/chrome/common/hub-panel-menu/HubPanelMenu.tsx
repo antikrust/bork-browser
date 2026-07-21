@@ -74,7 +74,7 @@ export class HubPanelMenu {
 
   private static handleOpenHub() {
     const win = window;
-    win.gBrowser.selectedTab = win.gBrowser.addTab("about:hub", {
+    win.gBrowser.selectedTab = win.gBrowser.addTab("about:preferences", {
       relatedToCurrent: true,
       triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
     } as Parameters<typeof win.gBrowser.addTab>[1]);

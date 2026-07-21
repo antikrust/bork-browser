@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Statusleiste{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Web-Apps",
-      "install-current": "Aktuelle Seite als Progressive Web App installieren",
-      "open-installed": "Installierte Apps öffnen"
-    },
-    "page-action": {
-      "title": "Anwendung öffnen",
-      "install": "Anwendung installieren",
-      "open": "Anwendung öffnen",
-      "cancel": "Abbrechen",
-      "site-icon": "Webseitensymbol"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "In privatem Container öffnen",
     "reopenInPrivateContainer": "In privatem Container erneut öffnen",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Lesezeichen-Seitenleiste anzeigen",
       "gecko-show-history-sidebar": "Verlauf-Seitenleiste anzeigen",
       "gecko-show-synced-tabs-sidebar": "Synchronisierte-Tabs-Seitenleiste anzeigen",
-      "gecko-reverse-sidebar": "Seitenleistenposition wechseln",
       "gecko-hide-sidebar": "Seitenleiste ausblenden",
       "gecko-toggle-sidebar": "Seitenleiste umschalten",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Im abgesicherten Modus neu starten",
       "restart-profile-manager": "Mit Profilverwaltung neu starten"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} arbeitet",
-    "panelDefaultMessage": "{{action}} wird ausgeführt …",
-    "panelProgressSummary": "Betrifft {{count}} Element(e)",
-    "formSummary": "Formular wird ausgefüllt: {{count}} Feld(er)",
-    "formFieldProgress": "Feld {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Eingabewert gesetzt: \"{{value}}\"",
-    "clickElementWithText": "Klick auf {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "{{tag}}-Element wird angeklickt",
-    "inspectPageHtml": "Vollständiges Seiten-HTML abgerufen",
-    "inspectGetElement": "Element abgerufen: {{selector}}",
-    "inspectGetElements": "{{count}} Element(e) gefunden: {{selector}}",
-    "inspectGetElementByText": "Element mit passendem Text abgerufen: \"{{text}}\"",
-    "inspectGetElementText": "Text abgerufen von: {{selector}}",
-    "inspectGetValue": "Wert abgerufen: {{selector}}",
-    "submitForm": "Formular wird abgesendet: {{name}}",
-    "actionLabelHighlight": "Hervorheben",
-    "actionLabelInspect": "Untersuchen",
-    "actionLabelFill": "Ausfüllen",
-    "actionLabelInput": "Eingabe",
-    "actionLabelClick": "Klick",
-    "actionLabelSubmit": "Absenden"
   },
   "externalBrowser": {
     "menu": {

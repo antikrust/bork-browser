@@ -17,13 +17,13 @@
         "title": "Про Derp Hub",
         "subtitle": "Основне місце для специфічних налаштувань Derp.",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub — це спеціальний центр налаштувань для опцій, характерних для Derp. Ви можете відкрити його, перейшовши за посиланням \"about:hub\". Він також доступний з лівої бічної панелі сторінки налаштувань Firefox за посиланням «about:preferences».",
-        "openHub": "Відкрити about:hub",
+        "description": "Derp Hub — це спеціальний центр налаштувань для опцій, характерних для Derp. Ви можете відкрити його, перейшовши за посиланням \"about:preferences\". Він також доступний з лівої бічної панелі сторінки налаштувань Firefox за посиланням «about:preferences».",
+        "openHub": "Відкрити about:preferences",
         "openPreferences": "Відкрити налаштування (about:preferences)",
         "tip": "Підказка: Ви також можете отримати доступ до Derp Hub з бічної панелі налаштувань Firefox.",
         "features": {
             "dedicated": "Спеціальний центр налаштувань Derp",
-            "accessible": "Доступно в about:hub або налаштуваннях Firefox",
+            "accessible": "Доступно в about:preferences або налаштуваннях Firefox",
             "centralized": "Всі налаштування, специфічні для Derp, в одному місці"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Derp Hub — це спеціальний центр налаштувань для опцій, характерних суто для Derp. Його можна відкрити, перейшовши за адресою «about:hub». Доступ до нього також можна отримати з лівої бічної панелі сторінки налаштувань Firefox за адресою «about:preferences».",
-            "openHub": "Відкрити about:hub",
+            "description": "Derp Hub — це спеціальний центр налаштувань для опцій, характерних суто для Derp. Його можна відкрити, перейшовши за адресою «about:preferences». Доступ до нього також можна отримати з лівої бічної панелі сторінки налаштувань Firefox за адресою «about:preferences».",
+            "openHub": "Відкрити about:preferences",
             "openPreferences": "Відкрити налаштування (about:preferences)"
         }
     },

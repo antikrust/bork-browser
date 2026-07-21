@@ -3,23 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-function svgToDataUrl(svgContent: string): string {
-  const svgBytes = new TextEncoder().encode(svgContent);
-  let binString = "";
-  svgBytes.forEach((byte) => {
-    binString += String.fromCharCode(byte);
-  });
-  return `data:image/svg+xml;base64,${btoa(binString)}`;
-}
-
-const osIconRaw = import.meta.glob("../icons/os.svg", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-}) as { [key: string]: string };
-
-const osIcon = svgToDataUrl(Object.values(osIconRaw)[0]);
-
 export type StaticPanelConfig = {
   url: string;
   icon: string;
@@ -72,45 +55,8 @@ const BASE_STATIC_PANEL_DATA: StaticPanelData = {
 };
 
 /**
- * 条件に応じて追加のパネルを返す関数
- * ここで条件をチェックして、必要に応じてパネルを追加できます
- *
- * 例:
- * - 実験機能の有効状態をチェック
- * - 環境変数や設定をチェック
- * - 拡張機能の有無をチェック
- *
- * @returns 追加するパネルのオブジェクト（空の場合は空オブジェクト）
- */
-function getConditionalPanels(): StaticPanelData {
-  const conditionalPanels: StaticPanelData = {};
-
-  // Floorp OS が有効な場合にパネルを追加
-  try {
-    const floorpOSEnabled = Services.prefs.getBoolPref(
-      "floorp.os.enabled",
-      false,
-    );
-    if (floorpOSEnabled) {
-      conditionalPanels["floorp//floorp-os"] = {
-        url: `http://localhost:8081`,
-        icon: osIcon,
-        l10n: "floorp-os-sidebar",
-        defaultWidth: 600,
-      };
-    }
-  } catch (_e) {
-    console.error("Failed to get conditional panels:", _e);
-  }
-
-  return conditionalPanels;
-}
-
-/**
  * 静的パネルデータを取得します
- * 条件に応じて追加のパネルが含まれます
  */
 export const STATIC_PANEL_DATA: StaticPanelData = {
   ...BASE_STATIC_PANEL_DATA,
-  ...getConditionalPanels(),
 };

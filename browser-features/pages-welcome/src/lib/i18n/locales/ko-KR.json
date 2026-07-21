@@ -17,13 +17,13 @@
         "title": "Derp Hub에 대해",
         "subtitle": "Derp별 설정을 위한 집중 공간입니다.",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub는 플로어별 옵션을 위한 전용 설정 센터입니다. 'about:hub'로 이동하여 열 수 있습니다. Firefox 설정 페이지의 왼쪽 사이드바에 있는 'about:환경설정'에서도 액세스할 수 있습니다.",
-        "openHub": "about:hub 열기",
+        "description": "Derp Hub는 플로어별 옵션을 위한 전용 설정 센터입니다. 'about:preferences'로 이동하여 열 수 있습니다. Firefox 설정 페이지의 왼쪽 사이드바에 있는 'about:환경설정'에서도 액세스할 수 있습니다.",
+        "openHub": "about:preferences 열기",
         "openPreferences": "설정(about:preferences)을 열기",
         "tip": "팁: Firefox 설정 사이드바에서 Derp Hub에 액세스할 수도 있습니다.",
         "features": {
             "dedicated": "Derp 전용 설정 센터",
-            "accessible": "about:hub 또는 Firefox 설정에서 사용가능",
+            "accessible": "about:preferences 또는 Firefox 설정에서 사용가능",
             "centralized": "모든 Derp 옵션을 한 곳에서 확인하세요"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Derp Hub는 Derp 옵션을 위한 전용 설정 센터입니다. 'about:hub'로 이동하여 열 수 있습니다. Firefox 설정 페이지의 왼쪽 사이드바에 있는 'about:preferences'에서도 액세스할 수 있습니다.",
-            "openHub": "about:hub 열기",
+            "description": "Derp Hub는 Derp 옵션을 위한 전용 설정 센터입니다. 'about:preferences'로 이동하여 열 수 있습니다. Firefox 설정 페이지의 왼쪽 사이드바에 있는 'about:preferences'에서도 액세스할 수 있습니다.",
+            "openHub": "about:preferences 열기",
             "openPreferences": "설정(about:preferences)을 열기"
         }
     },

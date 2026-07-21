@@ -5,7 +5,6 @@
 declare module "@nora/skin" {
   export const lepton: string;
   export const photon: string;
-  export const protonfix: string;
 }
 
 declare module "@nora/skin/lepton/userjs/lepton.js?raw" {
@@ -14,11 +13,6 @@ declare module "@nora/skin/lepton/userjs/lepton.js?raw" {
 }
 
 declare module "@nora/skin/lepton/userjs/photon.js?raw" {
-  const content: string;
-  export default content;
-}
-
-declare module "@nora/skin/lepton/userjs/protonfix.js?raw" {
   const content: string;
   export default content;
 }

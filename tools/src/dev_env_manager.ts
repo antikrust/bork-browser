@@ -32,7 +32,6 @@ user_pref("network.dns.disableIPv6", true);
 user_pref("security.sandbox.content.level", 1);
 user_pref("remote.active-protocols", 1);
 user_pref("browser.newtabpage.enabled", true);
-user_pref("floorp.mcp.enabled", true);
 user_pref("browser.sessionstore.resume_from_crash", false);
 user_pref("nora.dev.allow_http_loader", true);
 `;

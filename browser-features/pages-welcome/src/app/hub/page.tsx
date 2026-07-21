@@ -58,7 +58,7 @@ export default function HubIntroPage() {
                   type="button"
                   className="btn btn-primary btn-lg w-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-sm"
                   onClick={() => {
-                    globalThis.open("about:hub", "_blank");
+                    globalThis.open("about:preferences", "_blank");
                   }}
                 >
                   <Settings size={20} className="mr-2" />

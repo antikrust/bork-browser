@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Statuslinje{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Webapps",
-      "install-current": "Installer nuværende side som progressiv webapp",
-      "open-installed": "Åbn installerede apps"
-    },
-    "page-action": {
-      "title": "Åbn applikation",
-      "install": "Installer applikation",
-      "open": "Åbn applikation",
-      "cancel": "Annuller",
-      "site-icon": "Webstedsikon"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Åbn i privat beholder",
     "reopenInPrivateContainer": "Reopen in Private Container",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Vis Bogmærker-sidepanel",
       "gecko-show-history-sidebar": "Vis Historik-sidepanel",
       "gecko-show-synced-tabs-sidebar": "Vis Synkroniserede Faner-sidepanel",
-      "gecko-reverse-sidebar": "Omvendt position af sidepanel",
       "gecko-hide-sidebar": "Skjul sidepanel",
       "gecko-toggle-sidebar": "Vis/skjul sidepanel",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Restart in Safe Mode",
       "restart-profile-manager": "Restart with Profile Manager"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} is operating",
-    "panelDefaultMessage": "{{action}} in progress...",
-    "panelProgressSummary": "Affects {{count}} element(s)",
-    "formSummary": "Filling form: {{count}} field(s)",
-    "formFieldProgress": "Field {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Set input value: \"{{value}}\"",
-    "clickElementWithText": "Click {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicking {{tag}} element",
-    "inspectPageHtml": "Retrieved full page HTML",
-    "inspectGetElement": "Retrieved element: {{selector}}",
-    "inspectGetElements": "{{count}} element(s) matched: {{selector}}",
-    "inspectGetElementByText": "Retrieved element matching text: \"{{text}}\"",
-    "inspectGetElementText": "Retrieved text from: {{selector}}",
-    "inspectGetValue": "Retrieved value: {{selector}}",
-    "submitForm": "Submitting form: {{name}}",
-    "actionLabelHighlight": "Highlight",
-    "actionLabelInspect": "Inspect",
-    "actionLabelFill": "Fill",
-    "actionLabelInput": "Input",
-    "actionLabelClick": "Click",
-    "actionLabelSubmit": "Submit"
   },
   "externalBrowser": {
     "menu": {

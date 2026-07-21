@@ -44,7 +44,6 @@
     "libs/vite-plugin-disable-csp/**/*",
     "tools/build/tasks/inject/mixins/**/*",
     "browser-features/skin/lepton/userjs/**/*",
-    "browser-features/modules/modules/os-server/_os-plugin/**/*",
     "browser-features/chrome/experiment/csk/**/*",
     "browser-features/chrome/common/reverse-sidebar-position/**/*",
     "bridge/loader-features/vite.config.ts",
@@ -74,12 +73,7 @@
     "test:host": "deno test --allow-read --allow-write tools/src/",
     "test:docs-pipeline": "deno test --allow-read --allow-write --allow-net=127.0.0.1 tools/docs-pipeline/",
     "test:smoke": "deno run -A tools/src/smoke_runner.ts",
-    "test:os-api": "deno run -A tools/os-test/verify_os_server_full.ts",
-    "test:os-api:wrapper": "deno run -A tools/os-test/run_verify_os_server_full_wrapper.ts",
-    "test:os-api:network-idle": "deno run -A tools/os-test/verify_network_idle_rigorous.ts",
-    "test:os-api:local-page": "deno run -A tools/os-test/test-with-local-page.ts",
-    "test:os-api:effects": "deno run -A tools/os-test/test-enhanced-effects.ts",
-    "test:integration": "deno task test && deno task test:os-api --quick"
+    "test:integration": "deno task test"
   },
   "nodeModulesDir": "manual"
 }

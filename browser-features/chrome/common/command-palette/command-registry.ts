@@ -80,7 +80,6 @@ const ACTION_CATEGORY_MAP: Record<string, string> = {
   "gecko-show-bookmark-sidebar": "sidebar",
   "gecko-show-history-sidebar": "sidebar",
   "gecko-show-synced-tabs-sidebar": "sidebar",
-  "gecko-reverse-sidebar": "sidebar",
   "gecko-hide-sidebar": "sidebar",
   "gecko-toggle-sidebar": "sidebar",
 

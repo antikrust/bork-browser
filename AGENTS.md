@@ -2,6 +2,33 @@
 
 Floorp is a Firefox-based web browser ("Noraneko") built on top of the Gecko engine. This repo contains the custom browser features that overlay Firefox — not the Firefox source itself.
 
+## Agent Roles and Routing
+
+The role instructions under `agents/` complement this repository guide. Choose
+the smallest suitable role and read its document before beginning work:
+
+- [Project Lead](agents/project-lead.md) coordinates work that genuinely spans
+  multiple roles or the Derp feature layer and its runtime.
+- [Software Architect](agents/software-architect.md) owns feature boundaries,
+  state and lifecycle design, runtime contracts, and architecture notes.
+- [Research Architect](agents/research-architect.md) owns exploratory
+  research, comparisons, validation plans, and research handoffs.
+- [UI Specialist](agents/ui-specialist.md) owns browser-chrome visual design,
+  layout, interaction, accessibility, usability, and product consistency.
+
+Do only the requested task and preserve unrelated work in the checkout. Do not
+run, launch, quit, kill, or stop a browser or development process unless the
+project owner explicitly asks. Significant architectural, behavioural,
+security, visual-identity, or release changes require project-owner approval
+before implementation.
+
+Derp owns product features, including tab stacks, feature UI, feature state,
+and feature-specific preferences and migration. The companion `derp-build`
+repository owns the Firefox-derived runtime, its build, packaging, signing,
+and upstream synchronization. Do not patch Firefox internals directly for a
+feature-layer concern. When a feature needs runtime support, agree a minimal,
+explicit contract between the repositories before implementation.
+
 ## Commands
 
 ```bash

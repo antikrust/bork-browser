@@ -17,13 +17,13 @@
         "title": "Derp Hub について",
         "subtitle": "Derp 固有の設定を集約した場所です。",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub は、Derp 固有のオプションを扱う専用の設定センターです。アドレスバーに 'about:hub' と入力するか、Firefox の設定ページ 'about:preferences' の左サイドバーからアクセスできます。",
-        "openHub": "about:hub を開く",
+        "description": "Derp Hub は、Derp 固有のオプションを扱う専用の設定センターです。アドレスバーに 'about:preferences' と入力するか、Firefox の設定ページ 'about:preferences' の左サイドバーからアクセスできます。",
+        "openHub": "about:preferences を開く",
         "openPreferences": "設定を開く (about:preferences)",
         "tip": "ヒント: Firefox の設定のサイドバーからも Derp Hub にアクセスできます。",
         "features": {
             "dedicated": "Derp 専用の設定センター",
-            "accessible": "about:hub または Firefox の設定からアクセス可能",
+            "accessible": "about:preferences または Firefox の設定からアクセス可能",
             "centralized": "Derp 専用のオプションが一堂に"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Derp Hub は、Derp 固有のオプションを扱う専用の設定センターです。アドレスバーに 'about:hub' と入力するか、Firefox の設定ページ 'about:preferences' の左サイドバーからアクセスできます。",
-            "openHub": "about:hub を開く",
+            "description": "Derp Hub は、Derp 固有のオプションを扱う専用の設定センターです。アドレスバーに 'about:preferences' と入力するか、Firefox の設定ページ 'about:preferences' の左サイドバーからアクセスできます。",
+            "openHub": "about:preferences を開く",
             "openPreferences": "設定を開く (about:preferences)"
         }
     },

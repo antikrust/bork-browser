@@ -448,10 +448,6 @@ export const actions: GestureActionRegistration[] = [
     fn: (win) => win.SidebarController.show("viewTabsSidebar"),
   },
   {
-    name: "gecko-reverse-sidebar",
-    fn: (win) => win.SidebarController.reversePosition(),
-  },
-  {
     name: "gecko-hide-sidebar",
     fn: (win) => win.SidebarController.hide(),
   },
@@ -522,7 +518,7 @@ export const actions: GestureActionRegistration[] = [
   {
     name: "floorp-open-hub",
     fn: (win) => {
-      win.switchToTabHavingURI(Services.io.newURI("about:hub"), true);
+      win.switchToTabHavingURI(Services.io.newURI("about:preferences"), true);
     },
   },
   {

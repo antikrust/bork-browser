@@ -50,22 +50,6 @@ const JS_WINDOW_ACTORS: {
     //https://searchfox.org/mozilla-central/rev/3966e5534ddf922b186af4777051d579fd052bad/dom/chrome-webidl/MatchPattern.webidl#17
     matches: ["*://localhost/*", "chrome://noraneko-settings/*", "about:*"],
   },
-  NRExperimemmt: {
-    parent: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRExperimemmtParent.sys.mts",
-      ),
-    },
-    child: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRExperimemmtChild.sys.mts",
-      ),
-      events: {
-        DOMDocElementInserted: {},
-      },
-    },
-    matches: ["*://localhost/*", "chrome://noraneko-settings/*", "about:*"],
-  },
   NRPanelSidebar: {
     parent: {
       esModuleURI: localPathToResourceURI(
@@ -162,38 +146,6 @@ const JS_WINDOW_ACTORS: {
     },
     matches: ["*://localhost/*", "chrome://noraneko-settings/*", "about:*"],
   },
-  NRProgressiveWebApp: {
-    parent: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRProgressiveWebAppParent.sys.mts",
-      ),
-    },
-    child: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRProgressiveWebAppChild.sys.mts",
-      ),
-      events: {
-        pageshow: {},
-      },
-    },
-    allFrames: true,
-  },
-  NRPwaManager: {
-    parent: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRPwaManagerParent.sys.mts",
-      ),
-    },
-    child: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRPwaManagerChild.sys.mts",
-      ),
-      events: {
-        DOMDocElementInserted: {},
-      },
-    },
-    matches: ["*://localhost/*", "chrome://noraneko-settings/*", "about:hub*"],
-  },
   NRChromeModal: {
     child: {
       esModuleURI: localPathToResourceURI(
@@ -283,41 +235,6 @@ const JS_WINDOW_ACTORS: {
     ],
   },
 
-  NRWebScraper: {
-    parent: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRWebScraperParent.sys.mts",
-      ),
-    },
-    child: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRWebScraperChild.sys.mts",
-      ),
-      events: {
-        DOMContentLoaded: {},
-        DOMDocElementInserted: {},
-      },
-    },
-    matches: ["http://*/*", "https://*/*", "file:///*", "about:*"],
-    allFrames: true,
-  },
-  NROSAutomotor: {
-    parent: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NROSAutomotorParent.sys.mts",
-      ),
-    },
-    child: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NROSAutomotorChild.sys.mts",
-      ),
-      events: {
-        DOMContentLoaded: {},
-        DOMDocElementInserted: {},
-      },
-    },
-    matches: ["*://localhost/*", "chrome://noraneko-settings/*", "about:*"],
-  },
   NRI18n: {
     parent: {
       esModuleURI: localPathToResourceURI("../actors/NRI18nParent.sys.mts"),
@@ -354,29 +271,6 @@ const JS_WINDOW_ACTORS: {
       "https://chrome.google.com/webstore/*",
     ],
     allFrames: true,
-  },
-  NRPluginStore: {
-    parent: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRPluginStoreParent.sys.mts",
-      ),
-    },
-    child: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRPluginStoreChild.sys.mts",
-      ),
-      events: {
-        DOMContentLoaded: {},
-      },
-    },
-    matches: [
-      // Floorp OS Plugin Store domains
-      "https://plugins.floorp.app/*",
-      "https://store.floorp.app/*",
-      // Development domains - port is not supported in matches, use wildcard
-      "*://localhost/*",
-      "*://127.0.0.1/*",
-    ],
   },
   NRMouseGestureScroll: {
     parent: {

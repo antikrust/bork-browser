@@ -17,13 +17,13 @@
         "title": "Σχετικά με το Derp Hub",
         "subtitle": "Ένα κεντρικό μέρος για τις αποκλειστικές ρυθμίσεις του Derp.",
         "sectionTitle": "Derp Hub",
-        "description": "Το Derp Hub είναι ένα ειδικό κέντρο ρυθμίσεων για επιλογές που αφορούν το Derp. Μπορείτε να το ανοίξετε με πλοήγηση στο 'about:hub'. Μπορείτε επίσης να έχετε πρόσβαση από την αριστερή πλευρική γραμμή της σελίδας ρυθμίσεων του Firefox στο 'about:preferences'.",
-        "openHub": "Άνοιγμα about:hub",
+        "description": "Το Derp Hub είναι ένα ειδικό κέντρο ρυθμίσεων για επιλογές που αφορούν το Derp. Μπορείτε να το ανοίξετε με πλοήγηση στο 'about:preferences'. Μπορείτε επίσης να έχετε πρόσβαση από την αριστερή πλευρική γραμμή της σελίδας ρυθμίσεων του Firefox στο 'about:preferences'.",
+        "openHub": "Άνοιγμα about:preferences",
         "openPreferences": "Άνοιγμα ρυθμίσεων (about:preferences)",
         "tip": "Συμβουλή: Μπορείτε επίσης να αποκτήσετε πρόσβαση στο Derp Hub από την πλευρική γραμμή ρυθμίσεων του Firefox.",
         "features": {
             "dedicated": "Κέντρο εξειδικευμένων ρυθμίσεων του Derp",
-            "accessible": "Προσβάσιμο από το about:hub ή τις ρυθμίσεις του Firefox",
+            "accessible": "Προσβάσιμο από το about:preferences ή τις ρυθμίσεις του Firefox",
             "centralized": "Όλες οι εξειδικευμένες επιλογές του Derp σε ένα μέρος"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Το Derp Hub είναι ένα ειδικό κέντρο ρυθμίσεων για επιλογές που αφορούν το Derp. Μπορείτε να το ανοίξετε με πλοήγηση στο 'about:hub'. Μπορείτε επίσης να έχετε πρόσβαση από την αριστερή πλευρική γραμμή της σελίδας ρυθμίσεων του Firefox στο 'about:preferences'.",
-            "openHub": "Άνοιγμα about:hub",
+            "description": "Το Derp Hub είναι ένα ειδικό κέντρο ρυθμίσεων για επιλογές που αφορούν το Derp. Μπορείτε να το ανοίξετε με πλοήγηση στο 'about:preferences'. Μπορείτε επίσης να έχετε πρόσβαση από την αριστερή πλευρική γραμμή της σελίδας ρυθμίσεων του Firefox στο 'about:preferences'.",
+            "openHub": "Άνοιγμα about:preferences",
             "openPreferences": "Άνοιγμα ρυθμίσεων (about:preferences)"
         }
     },

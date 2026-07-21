@@ -17,13 +17,13 @@
         "title": "О Derp Hub",
         "subtitle": "Центральное место для настроек Derp.",
         "sectionTitle": "Центр Derp",
-        "description": "Центр Derp — это специальный центр настроек Derp. Вы можете открыть его, перейдя по ссылке «about:hub». Доступ к нему также можно получить из левой боковой панели страницы настроек Firefox по ссылке «about:preferences».",
-        "openHub": "Открыть about:hub",
+        "description": "Центр Derp — это специальный центр настроек Derp. Вы можете открыть его, перейдя по ссылке «about:preferences». Доступ к нему также можно получить из левой боковой панели страницы настроек Firefox по ссылке «about:preferences».",
+        "openHub": "Открыть about:preferences",
         "openPreferences": "Открыть настройки (about:preferences)",
         "tip": "Совет: Вы также можете получить доступ к центру Derp из боковой панели настроек Firefox.",
         "features": {
             "dedicated": "Выделенный центр настройки Derp",
-            "accessible": "Доступно в about:hub или настройках Firefox",
+            "accessible": "Доступно в about:preferences или настройках Firefox",
             "centralized": "Все настройки Derp в одном месте"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Центр Derp",
-            "description": "Центр Derp — это специальный центр настроек Derp. Вы можете открыть его, перейдя по ссылке «about:hub». Доступ к нему также можно получить из левой боковой панели страницы настроек Firefox по ссылке «about:preferences».",
-            "openHub": "Открыть about:hub",
+            "description": "Центр Derp — это специальный центр настроек Derp. Вы можете открыть его, перейдя по ссылке «about:preferences». Доступ к нему также можно получить из левой боковой панели страницы настроек Firefox по ссылке «about:preferences».",
+            "openHub": "Открыть about:preferences",
             "openPreferences": "Открыть настройки (about:preferences)"
         }
     },

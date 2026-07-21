@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Állapotsor{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Web Apps",
-      "install-current": "Install Current Page as Progressive Web App",
-      "open-installed": "Open Installed Apps"
-    },
-    "page-action": {
-      "title": "Open Application",
-      "install": "Install Application",
-      "open": "Open Application",
-      "cancel": "Cancel",
-      "site-icon": "Site icon"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Open in Private Container",
     "reopenInPrivateContainer": "Reopen in Private Container",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Könyvjelzők Oldalsáv Megjelenítése",
       "gecko-show-history-sidebar": "Előzmények Oldalsáv Megjelenítése",
       "gecko-show-synced-tabs-sidebar": "Szinkronizált Lapok Oldalsáv Megjelenítése",
-      "gecko-reverse-sidebar": "Oldalsáv Megfordítása",
       "gecko-hide-sidebar": "Oldalsáv Elrejtése",
       "gecko-toggle-sidebar": "Oldalsáv ki/be",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Restart in Safe Mode",
       "restart-profile-manager": "Restart with Profile Manager"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} is operating",
-    "panelDefaultMessage": "{{action}} in progress...",
-    "panelProgressSummary": "Affects {{count}} element(s)",
-    "formSummary": "Filling form: {{count}} field(s)",
-    "formFieldProgress": "Field {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Set input value: \"{{value}}\"",
-    "clickElementWithText": "Click {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicking {{tag}} element",
-    "inspectPageHtml": "Retrieved full page HTML",
-    "inspectGetElement": "Retrieved element: {{selector}}",
-    "inspectGetElements": "{{count}} element(s) matched: {{selector}}",
-    "inspectGetElementByText": "Retrieved element matching text: \"{{text}}\"",
-    "inspectGetElementText": "Retrieved text from: {{selector}}",
-    "inspectGetValue": "Retrieved value: {{selector}}",
-    "submitForm": "Submitting form: {{name}}",
-    "actionLabelHighlight": "Highlight",
-    "actionLabelInspect": "Inspect",
-    "actionLabelFill": "Fill",
-    "actionLabelInput": "Input",
-    "actionLabelClick": "Click",
-    "actionLabelSubmit": "Submit"
   },
   "externalBrowser": {
     "menu": {

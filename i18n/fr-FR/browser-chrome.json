@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Barre d'état{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Applications Web",
-      "install-current": "Installer la page actuelle en tant que Progressive Web App",
-      "open-installed": "Afficher les applications installées"
-    },
-    "page-action": {
-      "title": "Ouvrir l'application",
-      "install": "Installer l'application",
-      "open": "Ouvrir l'application",
-      "cancel": "Annuler",
-      "site-icon": "Icône du site"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Ouvrir dans un conteneur privé",
     "reopenInPrivateContainer": "Réouvrir dans un conteneur privé",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Afficher la barre latérale des marque-pages",
       "gecko-show-history-sidebar": "Afficher la barre latérale de l'historique",
       "gecko-show-synced-tabs-sidebar": "Afficher la barre latérale des onglets synchronisés",
-      "gecko-reverse-sidebar": "Inverser la position de la barre latérale",
       "gecko-hide-sidebar": "Masquer la barre latérale",
       "gecko-toggle-sidebar": "Afficher/masquer la barre latérale",
       "gecko-scroll-up": "Haut de page",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Redémarrer en mode sans échec",
       "restart-profile-manager": "Redémarrer avec le gestionnaire de profil"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} fonctionne",
-    "panelDefaultMessage": "{{action}} en cours...",
-    "panelProgressSummary": "Affecte {{count}} élément(s)",
-    "formSummary": "Remplissage du formulaire : {{count}} champ(s)",
-    "formFieldProgress": "Champ {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Définir la valeur d'entrée : \"{{value}}\"",
-    "clickElementWithText": "Cliquez sur le {{tag}} : \"{{text}}\"",
-    "clickElementNoText": "Cliquez sur l'element {{tag}}",
-    "inspectPageHtml": "Page HTML complète récupérée",
-    "inspectGetElement": "Élément récupéré : {{selector}}",
-    "inspectGetElements": "{{count}} élément(s) correspondant(s) : {{selector}}",
-    "inspectGetElementByText": "Élément récupéré correspondant au texte : \"{{text}}\"",
-    "inspectGetElementText": "Texte retrouvé depuis : {{selector}}",
-    "inspectGetValue": "Valeur retrouvée : {{selector}}",
-    "submitForm": "Envoi du formulaire : {{name}}",
-    "actionLabelHighlight": "Surligner",
-    "actionLabelInspect": "Inspecter",
-    "actionLabelFill": "Remplir",
-    "actionLabelInput": "Saisir",
-    "actionLabelClick": "Cliquer",
-    "actionLabelSubmit": "Envoyer"
   },
   "externalBrowser": {
     "menu": {

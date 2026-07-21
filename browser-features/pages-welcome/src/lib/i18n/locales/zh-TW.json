@@ -17,13 +17,13 @@
         "title": "關於 Derp Hub",
         "subtitle": "集合 Derp 專有設定的中心。",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub 是一個集合 Derp 專有設定選項的設定中心。您可以通過在位址欄上鍵入 'about:hub' 開啟。您也可以從 Firefox 設定頁面 'about:preferences' 內左側點選進入。",
-        "openHub": "開啟 about:hub",
+        "description": "Derp Hub 是一個集合 Derp 專有設定選項的設定中心。您可以通過在位址欄上鍵入 'about:preferences' 開啟。您也可以從 Firefox 設定頁面 'about:preferences' 內左側點選進入。",
+        "openHub": "開啟 about:preferences",
         "openPreferences": "開啟設定 (about:preferences)",
         "tip": "提示：你也可以從 Firefox 設定側邊欄存取 Derp Hub。",
         "features": {
             "dedicated": "Derp 專用設定中心",
-            "accessible": "可從 about:hub 或 Firefox 設定存取",
+            "accessible": "可從 about:preferences 或 Firefox 設定存取",
             "centralized": "將所有 Derp 專用設定集中於一處"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Derp Hub 是一個集合 Derp 專有設定選項的設定中心。您可以通過在位址欄上鍵入 'about:hub' 開啟。您也可以從 Firefox 設定頁面 'about:preferences' 內左側點選進入。",
-            "openHub": "開啟 about:hub",
+            "description": "Derp Hub 是一個集合 Derp 專有設定選項的設定中心。您可以通過在位址欄上鍵入 'about:preferences' 開啟。您也可以從 Firefox 設定頁面 'about:preferences' 內左側點選進入。",
+            "openHub": "開啟 about:preferences",
             "openPreferences": "開啟設定 (about:preferences)"
         }
     },

@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "狀態列{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "PWA 應用程式",
-      "install-current": "將目前頁面安裝為 PWA 應用程式",
-      "open-installed": "開啟已安裝的 PWA 應用程式"
-    },
-    "page-action": {
-      "title": "開啟應用程式",
-      "install": "安裝應用程式",
-      "open": "開啟應用程式",
-      "cancel": "取消",
-      "site-icon": "網站圖示"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "在私隱容器中開啟",
     "reopenInPrivateContainer": "在私隱容器中重新開啟",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "顯示書籤側邊欄",
       "gecko-show-history-sidebar": "顯示歷史側邊欄",
       "gecko-show-synced-tabs-sidebar": "顯示已同步分頁側邊欄",
-      "gecko-reverse-sidebar": "反轉側邊欄位置",
       "gecko-hide-sidebar": "隱藏側邊欄",
       "gecko-toggle-sidebar": "切換側邊欄",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "在安全模式下重新啟動",
       "restart-profile-manager": "重新啟動並開啟設定檔管理員"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} 正在運作",
-    "panelDefaultMessage": "{{action}} 進行中...",
-    "panelProgressSummary": "影響 {{count}} 個元件",
-    "formSummary": "填寫：{{count}} 個字段",
-    "formFieldProgress": "字段 {{current}}/{{total}}：“{{value}}”",
-    "inputValueSet": "設定輸入值：\"{{value}}\"",
-    "clickElementWithText": "點選 {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "點擊一下 {{tag}} 元素",
-    "inspectPageHtml": "已獲取完整的 HTML 頁面",
-    "inspectGetElement": "已獲取的元素：{{selector}}",
-    "inspectGetElements": "{{count}} 個匹配的元素: {{selector}}",
-    "inspectGetElementByText": "已獲取匹配元素的文字：\"{{text}}\"",
-    "inspectGetElementText": "已獲取的文字：{{selector}}",
-    "inspectGetValue": "已獲取的值數：{{selector}}",
-    "submitForm": "提交表格： {{name}}",
-    "actionLabelHighlight": "焦點",
-    "actionLabelInspect": "檢查",
-    "actionLabelFill": "填入",
-    "actionLabelInput": "輸入",
-    "actionLabelClick": "點選",
-    "actionLabelSubmit": "提交"
   },
   "externalBrowser": {
     "menu": {

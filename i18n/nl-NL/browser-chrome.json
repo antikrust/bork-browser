@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Statusbalk{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Web Apps",
-      "install-current": "Huidige pagina installeren als Progressive Web App",
-      "open-installed": "Geïnstalleerde apps openen"
-    },
-    "page-action": {
-      "title": "Open applicatie",
-      "install": "Installeer applicatie",
-      "open": "Open applicatie",
-      "cancel": "Annuleren",
-      "site-icon": "Sitepictogram"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Openen in Privécontainer",
     "reopenInPrivateContainer": "Heropenen in Privécontainer",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Bladwijzerzijbalk weergeven",
       "gecko-show-history-sidebar": "Geschiedeniszijbalk weergeven",
       "gecko-show-synced-tabs-sidebar": "Zijbalk met gesynchroniseerde tabbladen weergeven",
-      "gecko-reverse-sidebar": "Positie zijbalk omkeren",
       "gecko-hide-sidebar": "Zijbalk verbergen",
       "gecko-toggle-sidebar": "Zijbalk in-/uitschakelen",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Herstarten in veilige modus",
       "restart-profile-manager": "Herstarten met Profielbeheerder"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} is actief",
-    "panelDefaultMessage": "{{action}} wordt uitgevoerd...",
-    "panelProgressSummary": "Beïnvloedt {{count}} element(en)",
-    "formSummary": "Invulformulier: {{count}} veld(en)",
-    "formFieldProgress": "Veld {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Invoerwaarde instellen: \"{{value}}\"",
-    "clickElementWithText": "Klik op {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Klikken op {{tag}} element",
-    "inspectPageHtml": "Volledige pagina HTML opgehaald",
-    "inspectGetElement": "Opgehaald element: {{selector}}",
-    "inspectGetElements": "{{count}} element(en) komen overeen: {{selector}}",
-    "inspectGetElementByText": "Element met overeenkomende tekst opgehaald: \"{{text}}\"",
-    "inspectGetElementText": "Tekst opgehaald van: {{selector}}",
-    "inspectGetValue": "Opgehaalde waarde: {{selector}}",
-    "submitForm": "Formulier versturen: {{name}}",
-    "actionLabelHighlight": "Markeren",
-    "actionLabelInspect": "Inspecteren",
-    "actionLabelFill": "Vullen",
-    "actionLabelInput": "Invoer",
-    "actionLabelClick": "Klik",
-    "actionLabelSubmit": "Versturen"
   },
   "externalBrowser": {
     "menu": {

@@ -17,13 +17,13 @@
         "title": "Tentang Derp Hub",
         "subtitle": "Pusat pengaturan khusus Derp.",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub adalah pusat pengaturan khusus untuk opsi spesifik Derp. Anda dapat membukanya dengan menavigasi ke 'about:hub'. Hub ini juga dapat diakses dari bilah sisi kiri di halaman pengaturan Firefox di 'about:preferences'.",
-        "openHub": "Buka about:hub",
+        "description": "Derp Hub adalah pusat pengaturan khusus untuk opsi spesifik Derp. Anda dapat membukanya dengan menavigasi ke 'about:preferences'. Hub ini juga dapat diakses dari bilah sisi kiri di halaman pengaturan Firefox di 'about:preferences'.",
+        "openHub": "Buka about:preferences",
         "openPreferences": "Buka Pengaturan (about:preferences)",
         "tip": "Tip: Anda juga dapat mengakses Derp Hub dari bilah samping pengaturan Firefox.",
         "features": {
             "dedicated": "Pusat pengaturan Derp khusus",
-            "accessible": "Dapat diakses dari about:hub atau pengaturan Firefox",
+            "accessible": "Dapat diakses dari about:preferences atau pengaturan Firefox",
             "centralized": "Semua setelan khusus Derp di satu tempat"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Derp Hub adalah pusat pengaturan khusus untuk opsi spesifik Derp. Anda dapat membukanya dengan menavigasi ke 'about:hub'. Hub ini juga dapat diakses dari bilah sisi kiri di halaman pengaturan Firefox di 'about:preferences'.",
-            "openHub": "Buka about:hub",
+            "description": "Derp Hub adalah pusat pengaturan khusus untuk opsi spesifik Derp. Anda dapat membukanya dengan menavigasi ke 'about:preferences'. Hub ini juga dapat diakses dari bilah sisi kiri di halaman pengaturan Firefox di 'about:preferences'.",
+            "openHub": "Buka about:preferences",
             "openPreferences": "Buka Pengaturan (about:preferences)"
         }
     },

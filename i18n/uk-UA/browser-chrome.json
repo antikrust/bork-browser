@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Рядок стану{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Вебзастосунок",
-      "install-current": "Встановити поточну сторінку як прогресивний вебзастосунок",
-      "open-installed": "Відкрити встановлені застосунки"
-    },
-    "page-action": {
-      "title": "Відкрити застосунок",
-      "install": "Встановити застосунок",
-      "open": "Відкрити застосунок",
-      "cancel": "Скасувати",
-      "site-icon": "Іконка сайту"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Відкрити в приватному контейнері",
     "reopenInPrivateContainer": "Reopen in Private Container",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Показати бічну панель закладок",
       "gecko-show-history-sidebar": "Показати бічну панель історії",
       "gecko-show-synced-tabs-sidebar": "Показати бічну панель синхронізованих вкладок",
-      "gecko-reverse-sidebar": "Зворотне положення бічної панелі",
       "gecko-hide-sidebar": "Приховати бічну панель",
       "gecko-toggle-sidebar": "Toggle Sidebar",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Перезавантажити в безпечному режимі",
       "restart-profile-manager": "Restart with Profile Manager"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} is operating",
-    "panelDefaultMessage": "{{action}} in progress...",
-    "panelProgressSummary": "Affects {{count}} element(s)",
-    "formSummary": "Filling form: {{count}} field(s)",
-    "formFieldProgress": "Field {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Set input value: \"{{value}}\"",
-    "clickElementWithText": "Click {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicking {{tag}} element",
-    "inspectPageHtml": "Retrieved full page HTML",
-    "inspectGetElement": "Retrieved element: {{selector}}",
-    "inspectGetElements": "{{count}} element(s) matched: {{selector}}",
-    "inspectGetElementByText": "Retrieved element matching text: \"{{text}}\"",
-    "inspectGetElementText": "Retrieved text from: {{selector}}",
-    "inspectGetValue": "Retrieved value: {{selector}}",
-    "submitForm": "Submitting form: {{name}}",
-    "actionLabelHighlight": "Highlight",
-    "actionLabelInspect": "Inspect",
-    "actionLabelFill": "Fill",
-    "actionLabelInput": "Input",
-    "actionLabelClick": "Click",
-    "actionLabelSubmit": "Submit"
   },
   "externalBrowser": {
     "menu": {

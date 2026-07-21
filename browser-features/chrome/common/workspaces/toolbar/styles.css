@@ -229,9 +229,13 @@ panel:has(#workspacesToolbarButtonPanel) {
   opacity: 0.5;
 }
 
-.workspaceRow[drag-over="true"] {
-  outline: 2px solid var(--focus-outline-color, #0a84ff);
-  outline-offset: -2px;
+/* Reorder affordance: a line at the insertion point, not a drop-onto
+   highlight — the line sits above or below the row under the pointer. */
+.workspaceRow[drag-over="before"] {
+  box-shadow: 0 -2px 0 var(--focus-outline-color, #0a84ff);
+}
+.workspaceRow[drag-over="after"] {
+  box-shadow: 0 2px 0 var(--focus-outline-color, #0a84ff);
 }
 
 .workspaceRowIcon {
@@ -448,14 +452,11 @@ panel:has(#workspacesToolbarButtonPanel) {
     cursor: grabbing !important;
   }
 
-  &[drag-over="true"] {
-    background-color: color-mix(
-      in srgb,
-      var(--toolbarbutton-hover-background, rgba(0, 0, 0, 0.1)) 50%,
-      transparent
-    ) !important;
-    border-top: 2px solid
-      var(--toolbarbutton-active-background, rgba(0, 0, 0, 0.2));
+  &[drag-over="before"] {
+    box-shadow: 0 -2px 0 var(--focus-outline-color, #0a84ff);
+  }
+  &[drag-over="after"] {
+    box-shadow: 0 2px 0 var(--focus-outline-color, #0a84ff);
   }
 }
 
@@ -645,12 +646,10 @@ panel:has(#workspacesToolbarButtonPanel) {
     cursor: grabbing !important;
   }
 
-  &[drag-over="true"] {
-    background-color: color-mix(
-      in srgb,
-      var(--tab-selected-bgcolor, rgba(0, 0, 0, 0.1)) 50%,
-      transparent
-    ) !important;
-    border: 2px solid var(--toolbarbutton-active-background, rgba(0, 0, 0, 0.2));
+  &[drag-over="before"] {
+    box-shadow: 0 -2px 0 var(--focus-outline-color, #0a84ff);
+  }
+  &[drag-over="after"] {
+    box-shadow: 0 2px 0 var(--focus-outline-color, #0a84ff);
   }
 }

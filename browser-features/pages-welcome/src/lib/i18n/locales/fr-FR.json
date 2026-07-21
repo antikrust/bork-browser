@@ -17,13 +17,13 @@
         "title": "À propos de Derp Hub",
         "subtitle": "Un endroit central pour les paramètres spécifiques à Derp.",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub est un centre de paramétrage dédié aux options spécifiques à Derp. Vous pouvez l'ouvrir en naviguant vers 'about:hub'. Il est également accessible depuis la barre latérale gauche de la page des paramètres de Firefox à 'about:preferences'.",
-        "openHub": "Ouvrir about:hub",
+        "description": "Derp Hub est un centre de paramétrage dédié aux options spécifiques à Derp. Vous pouvez l'ouvrir en naviguant vers 'about:preferences'. Il est également accessible depuis la barre latérale gauche de la page des paramètres de Firefox à 'about:preferences'.",
+        "openHub": "Ouvrir about:preferences",
         "openPreferences": "Ouvrir les paramètres (about:preferences)",
         "tip": "Astuce : Vous pouvez également accéder à Derp Hub à partir de la barre latérale des paramètres de Firefox.",
         "features": {
             "dedicated": "Centre de paramétrage dédié à Derp",
-            "accessible": "Accessible à partir de about:hub ou des paramètres de Firefox",
+            "accessible": "Accessible à partir de about:preferences ou des paramètres de Firefox",
             "centralized": "Toutes les options spécifiques à Derp en un seul endroit"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Hub Derp",
-            "description": "Derp Hub est un centre de paramétrage dédié aux options spécifiques à Derp. Vous pouvez l'ouvrir en naviguant vers 'about:hub'. Il est également accessible depuis la barre latérale gauche de la page des paramètres de Firefox à 'about:preferences'.",
-            "openHub": "Ouvrir about:hub",
+            "description": "Derp Hub est un centre de paramétrage dédié aux options spécifiques à Derp. Vous pouvez l'ouvrir en naviguant vers 'about:preferences'. Il est également accessible depuis la barre latérale gauche de la page des paramètres de Firefox à 'about:preferences'.",
+            "openHub": "Ouvrir about:preferences",
             "openPreferences": "Ouvrir les Paramètres (about:preferences)"
         }
     },

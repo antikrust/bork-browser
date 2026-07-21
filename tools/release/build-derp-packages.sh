@@ -168,36 +168,57 @@ build_windows() {
 }
 
 build_mac() {
-  # Assembled from the local dev-validated runtime tree (_dist/bin), which
-  # already carries the applied patches and injected xhtml from the dev
-  # workflow — overlay refreshes content, manifest and prefs on the copy.
-  log "mac: assembling from local runtime"
   local app="build/release/mac/Derp.app"
   local res="$app/Contents/Resources"
   reset_dir build/release/mac
-  cp -R _dist/bin/floorp/Floorp.app "$app"
-  rm -rf "$res/noraneko-devdir" && mkdir "$res/noraneko-devdir"
-  cp -RL _dist/noraneko/ "$res/noraneko-devdir/"
-  deno run -A --config deno.json tools/release/gen-noraneko-manifest.ts \
-    "$res/noraneko-devdir"
-  find "$app" -name "*.map" -delete
 
-  log "mac: branding"
-  bash tools/release/brand-mac-bundle.sh "$app"
-  # Explicit, even though the dev tree usually carries them already: relying on
-  # that meant a regenerated icon set only reached the package if someone had
-  # remembered to install it into _dist/bin first.
-  bash tools/release/brand-icons.sh "$res"
+  if [ -n "${DERP_MAC_RUNTIME_APP:-}" ]; then
+    # Ship a runtime WE just compiled: copy the raw runtime app and run the same
+    # overlay() the linux/windows lanes use (patches + noraneko + xhtml + prefs +
+    # policies + icons + vendor). A freshly built runtime is already derp-branded
+    # with the correct compiled vendor, so no loose-file vendor patch is needed.
+    [ -d "$DERP_MAC_RUNTIME_APP" ] || fail "DERP_MAC_RUNTIME_APP not found: $DERP_MAC_RUNTIME_APP"
+    log "mac: assembling from fresh runtime ($DERP_MAC_RUNTIME_APP)"
+    cp -R "$DERP_MAC_RUNTIME_APP" "$app"
+    [ -f "$res/chrome.manifest" ] || fail "mac: no chrome.manifest under $res (unexpected runtime layout)"
+    overlay "$res"
+    find "$app" -name "*.map" -delete
+    log "mac: branding"
+    bash tools/release/brand-mac-bundle.sh "$app"
+  else
+    # Assembled from the local dev-validated runtime tree (_dist/bin), which
+    # already carries the applied patches and injected xhtml from the dev
+    # workflow — overlay refreshes content, manifest and prefs on the copy.
+    log "mac: assembling from local runtime"
+    cp -R _dist/bin/floorp/Floorp.app "$app"
+    rm -rf "$res/noraneko-devdir" && mkdir "$res/noraneko-devdir"
+    cp -RL _dist/noraneko/ "$res/noraneko-devdir/"
+    deno run -A --config deno.json tools/release/gen-noraneko-manifest.ts \
+      "$res/noraneko-devdir"
+    find "$app" -name "*.map" -delete
 
-  # This lane assembles from the local runtime tree and never routes through
-  # overlay(), so apply the same loose-file vendor correction here: the tree's
-  # brand.ftl still says "Ablaze" ("Derp is designed by Ablaze" in About) until
-  # the mac runtime is rebuilt from the fixed source.
-  log "mac: correcting vendor name (Ablaze -> Derp)"
-  find "$res/browser" \( -name brand.ftl -o -name brand.properties \) \
-    -exec perl -i -pe 's/Ablaze/Derp/g' {} +
+    log "mac: branding"
+    bash tools/release/brand-mac-bundle.sh "$app"
+    # Explicit, even though the dev tree usually carries them already: relying on
+    # that meant a regenerated icon set only reached the package if someone had
+    # remembered to install it into _dist/bin first.
+    bash tools/release/brand-icons.sh "$res"
+
+    # This lane assembles from the local runtime tree and never routes through
+    # overlay(), so apply the same loose-file vendor correction here: the tree's
+    # brand.ftl still says "Ablaze" ("Derp is designed by Ablaze" in About) until
+    # the mac runtime is rebuilt from the fixed source.
+    log "mac: correcting vendor name (Ablaze -> Derp)"
+    find "$res/browser" \( -name brand.ftl -o -name brand.properties \) \
+      -exec perl -i -pe 's/Ablaze/Derp/g' {} +
+  fi
 
   log "mac: signing (ad-hoc) and packing"
+  # Strip resource forks / Finder info / quarantine xattrs first — codesign
+  # rejects them ("resource fork, Finder information, or similar detritus not
+  # allowed"). A dmg-sourced runtime carries them; the _dist/bin path is already
+  # cleaned by the dev initializer, but doing it here is harmless and idempotent.
+  xattr -cr "$app"
   codesign --force --deep -s - "$app"
   mkdir -p dist/macos
   hdiutil create -volname "Derp" -srcfolder "$app" -ov -format UDZO \

@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Barra de estado{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Aplicaciones web",
-      "install-current": "Instalar página actual como aplicación web progresiva",
-      "open-installed": "Abrir aplicaciones instaladas"
-    },
-    "page-action": {
-      "title": "Abrir aplicación",
-      "install": "Instalar aplicación",
-      "open": "Abrir aplicación",
-      "cancel": "Cancelar",
-      "site-icon": "Icono de sitio"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Abrir en contenedor privado",
     "reopenInPrivateContainer": "Reabrir en contenedor privado",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Show Bookmark Sidebar",
       "gecko-show-history-sidebar": "Show History Sidebar",
       "gecko-show-synced-tabs-sidebar": "Show Synced Tabs Sidebar",
-      "gecko-reverse-sidebar": "Reverse Sidebar Position",
       "gecko-hide-sidebar": "Ocultar barra lateral",
       "gecko-toggle-sidebar": "Alternar barra lateral",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Reiniciar en modo seguro",
       "restart-profile-manager": "Reiniciar con el gestor de perfiles"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} está operando",
-    "panelDefaultMessage": "{{action}} en progreso...",
-    "panelProgressSummary": "Affects {{count}} element(s)",
-    "formSummary": "Filling form: {{count}} field(s)",
-    "formFieldProgress": "Field {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Establecer valor de entrada: \"{{value}}\"",
-    "clickElementWithText": "Click {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicking {{tag}} element",
-    "inspectPageHtml": "Retrieved full page HTML",
-    "inspectGetElement": "Retrieved element: {{selector}}",
-    "inspectGetElements": "{{count}} element(s) matched: {{selector}}",
-    "inspectGetElementByText": "Retrieved element matching text: \"{{text}}\"",
-    "inspectGetElementText": "Texto extraído de: {{selector}}",
-    "inspectGetValue": "Valor obtenido: {{selector}}",
-    "submitForm": "Enviando formulario: {{name}}",
-    "actionLabelHighlight": "Resaltar",
-    "actionLabelInspect": "Inspeccionar",
-    "actionLabelFill": "Rellenar",
-    "actionLabelInput": "Entrada",
-    "actionLabelClick": "Clic",
-    "actionLabelSubmit": "Enviar"
   },
   "externalBrowser": {
     "menu": {

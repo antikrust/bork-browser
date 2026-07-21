@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Thanh trạng thái {{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Ứng dụng Web",
-      "install-current": "Cài đặt trang hiện tại như một ứng dụng Web",
-      "open-installed": "Mở các ứng dụng đã cài"
-    },
-    "page-action": {
-      "title": "Mở ứng dụng",
-      "install": "Cài đặt ứng dụng",
-      "open": "Mở ứng dụng",
-      "cancel": "Hủy",
-      "site-icon": "Site icon"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Mở trong ngăn chứa riêng tư",
     "reopenInPrivateContainer": "Reopen in Private Container",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Hiển thị thanh dấu trang bên",
       "gecko-show-history-sidebar": "Hiển thị thanh lịch sử bên",
       "gecko-show-synced-tabs-sidebar": "Hiển thị thanh thẻ đồng bộ bên",
-      "gecko-reverse-sidebar": "Reverse Sidebar Position",
       "gecko-hide-sidebar": "Ẩn thanh bên",
       "gecko-toggle-sidebar": "Đóng mở thanh bên",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Restart in Safe Mode",
       "restart-profile-manager": "Khởi động lại với trình quản lí hồ sơ"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} is operating",
-    "panelDefaultMessage": "{{action}} in progress...",
-    "panelProgressSummary": "Affects {{count}} element(s)",
-    "formSummary": "Filling form: {{count}} field(s)",
-    "formFieldProgress": "Field {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Set input value: \"{{value}}\"",
-    "clickElementWithText": "Click {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicking {{tag}} element",
-    "inspectPageHtml": "Retrieved full page HTML",
-    "inspectGetElement": "Retrieved element: {{selector}}",
-    "inspectGetElements": "{{count}} element(s) matched: {{selector}}",
-    "inspectGetElementByText": "Retrieved element matching text: \"{{text}}\"",
-    "inspectGetElementText": "Retrieved text from: {{selector}}",
-    "inspectGetValue": "Retrieved value: {{selector}}",
-    "submitForm": "Submitting form: {{name}}",
-    "actionLabelHighlight": "Highlight",
-    "actionLabelInspect": "Inspect",
-    "actionLabelFill": "Fill",
-    "actionLabelInput": "Input",
-    "actionLabelClick": "Click",
-    "actionLabelSubmit": "Submit"
   },
   "externalBrowser": {
     "menu": {

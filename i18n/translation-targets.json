@@ -9,13 +9,6 @@
       "f18n_path": "main/"
     },
     {
-      "name": "settings",
-      "type": "file",
-      "source_path": "browser-features/pages-settings/src/lib/i18n/locales",
-      "source_file": "en-US.json",
-      "f18n_path": "settings/"
-    },
-    {
       "name": "newtab",
       "type": "file",
       "source_path": "browser-features/pages-newtab/src/lib/i18n/locales",

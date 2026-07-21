@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Bilah Status{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Aplikasi Web",
-      "install-current": "Pasang Halaman Saat Ini sebagai Aplikasi Web Progresif",
-      "open-installed": "Buka Aplikasi Terpasang"
-    },
-    "page-action": {
-      "title": "Buka Aplikasi",
-      "install": "Pasang Aplikasi",
-      "open": "Buka Aplikasi",
-      "cancel": "Batal",
-      "site-icon": "Ikon situs"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Buka di Kontainer Pribadi",
     "reopenInPrivateContainer": "Reopen in Private Container",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Show Bookmark Sidebar",
       "gecko-show-history-sidebar": "Show History Sidebar",
       "gecko-show-synced-tabs-sidebar": "Show Synced Tabs Sidebar",
-      "gecko-reverse-sidebar": "Reverse Sidebar Position",
       "gecko-hide-sidebar": "Hide Sidebar",
       "gecko-toggle-sidebar": "Toggle Sidebar",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Mulai Ulang dalam Mode Aman",
       "restart-profile-manager": "Mulai Ulang dengan Manajer Profil"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} is operating",
-    "panelDefaultMessage": "{{action}} in progress...",
-    "panelProgressSummary": "Affects {{count}} element(s)",
-    "formSummary": "Filling form: {{count}} field(s)",
-    "formFieldProgress": "Field {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Set input value: \"{{value}}\"",
-    "clickElementWithText": "Click {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicking {{tag}} element",
-    "inspectPageHtml": "Retrieved full page HTML",
-    "inspectGetElement": "Retrieved element: {{selector}}",
-    "inspectGetElements": "{{count}} element(s) matched: {{selector}}",
-    "inspectGetElementByText": "Retrieved element matching text: \"{{text}}\"",
-    "inspectGetElementText": "Retrieved text from: {{selector}}",
-    "inspectGetValue": "Retrieved value: {{selector}}",
-    "submitForm": "Submitting form: {{name}}",
-    "actionLabelHighlight": "Highlight",
-    "actionLabelInspect": "Inspect",
-    "actionLabelFill": "Fill",
-    "actionLabelInput": "Input",
-    "actionLabelClick": "Click",
-    "actionLabelSubmit": "Submit"
   },
   "externalBrowser": {
     "menu": {

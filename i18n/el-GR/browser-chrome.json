@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Γραμμή κατάστασης{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Εφαρμογές Web",
-      "install-current": "Εγκατάσταση της τρέχουσας σελίδας ως προοδευτική εφαρμογή ιστού",
-      "open-installed": "Άνοιγμα εγκατεστημένων εφαρμογών"
-    },
-    "page-action": {
-      "title": "Άνοιγμα εφαρμογής",
-      "install": "Εγκατάσταση εφαρμογής",
-      "open": "Άνοιγμα εφαρμογής",
-      "cancel": "Ακύρωση",
-      "site-icon": "Εικονίδιο ιστότοπου"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Άνοιγμα σε ιδιωτικό περιέκτη",
     "reopenInPrivateContainer": "Επανάνοιγμα σε ιδιωτικό περιέκτη",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Εμφάνιση πλευρικής γραμμής σελιδοδεικτών",
       "gecko-show-history-sidebar": "Εμφάνιση πλευρικής γραμμής ιστορικού",
       "gecko-show-synced-tabs-sidebar": "Εμφάνιση πλευρικής γραμμής συγχρονισμένων καρτελών",
-      "gecko-reverse-sidebar": "Αντίστροφη θέση πλευρικής γραμμής",
       "gecko-hide-sidebar": "Απόκρυψη πλευρικής γραμμής",
       "gecko-toggle-sidebar": "Εναλλαγή πλευρικής γραμμής",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Επανεκκίνηση σε ασφαλή λειτουργία",
       "restart-profile-manager": "Επανεκκίνηση με διαχειριστή προφίλ"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "Το {{productName}} λειτουργεί",
-    "panelDefaultMessage": "{{action}} σε εξέλιξη...",
-    "panelProgressSummary": "Επηρεάζει στοιχείο(α) {{count}}",
-    "formSummary": "Φόρμα συμπλήρωσης: {{count}} πεδίο(α)",
-    "formFieldProgress": "Πεδίο {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Ρύθμιση τιμής εισόδου: \"{{value}}\"",
-    "clickElementWithText": "Κάντε κλικ στο {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Κλικ στο στοιχείο {{tag}}",
-    "inspectPageHtml": "Ανακτήθηκε πλήρης σελίδα HTML",
-    "inspectGetElement": "Ανακτήθηκε το στοιχείο: {{selector}}",
-    "inspectGetElements": "{{count}} Στοιχείο(-α) που ταιριάζει(-ουν): {{selector}}",
-    "inspectGetElementByText": "Ανακτήθηκε το κείμενο που ταιριάζει με το στοιχείο: \"{{text}}\"",
-    "inspectGetElementText": "Ανάκτηση κειμένου από: {{selector}}",
-    "inspectGetValue": "Ανακτηθείσα τιμή: {{selector}}",
-    "submitForm": "Έντυπο υποβολής: {{name}}",
-    "actionLabelHighlight": "Επισήμανση",
-    "actionLabelInspect": "Επιθεώρηση",
-    "actionLabelFill": "Συμπλήρωση",
-    "actionLabelInput": "Εισαγωγή",
-    "actionLabelClick": "Κάντε κλικ",
-    "actionLabelSubmit": "Υποβολή"
   },
   "externalBrowser": {
     "menu": {

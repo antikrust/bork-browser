@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "상태 표시줄{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "웹 앱",
-      "install-current": "현재 페이지를 프로그레시브 웹 앱으로서 설치",
-      "open-installed": "설치된 웹 앱 열기"
-    },
-    "page-action": {
-      "title": "애플리케이션 열기",
-      "install": "애플리케이션 설치",
-      "open": "애플리케이션 열기",
-      "cancel": "취소",
-      "site-icon": "사이트 아이콘"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "사생활 보호 컨테이너으로 열기",
     "reopenInPrivateContainer": "비공개 컨테이너 다시 열기",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "북마크 사이드바 보기",
       "gecko-show-history-sidebar": "기록 사이드바 열기",
       "gecko-show-synced-tabs-sidebar": "동기화된 탭 사이드바 보기",
-      "gecko-reverse-sidebar": "사이드바 위치 반전",
       "gecko-hide-sidebar": "사이드바 숨기기",
       "gecko-toggle-sidebar": "사이드바 전환",
       "gecko-scroll-up": "페이지 위로",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "안전 모드로 다시 시작",
       "restart-profile-manager": "프로필 관리자와 함께 다시 시작"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} 이 실행 중입니다",
-    "panelDefaultMessage": "{{action}} 진행 중...",
-    "panelProgressSummary": "{{count}}개에 영향을 줍니다.",
-    "formSummary": "작성 양식: {{count}} 필드",
-    "formFieldProgress": "필드 {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "입력 값을 설정합니다: \"{{value}}\"",
-    "clickElementWithText": "클릭 {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "{{tag}} 클릭",
-    "inspectPageHtml": "전체 페이지 HTML 검색",
-    "inspectGetElement": "검색된 요소: {{selector}}",
-    "inspectGetElements": "{{count}}개 일치함: {{selector}}",
-    "inspectGetElementByText": "텍스트와 일치하는 요소 검색됨: \"{{text}}\"",
-    "inspectGetElementText": "검색된 텍스트 출처: {{selector}}",
-    "inspectGetValue": "검색된 값: {{selector}}",
-    "submitForm": "양식 제출하기: {{name}}",
-    "actionLabelHighlight": "강조",
-    "actionLabelInspect": "검사",
-    "actionLabelFill": "채우기",
-    "actionLabelInput": "입력",
-    "actionLabelClick": "클릭",
-    "actionLabelSubmit": "제출"
   },
   "externalBrowser": {
     "menu": {

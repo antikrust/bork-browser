@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Būsenos juosta{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Internetinės programos",
-      "install-current": "Diegti dabartinį puslapį kaip progresyvųjį internetinę programą",
-      "open-installed": "Atverti įdiegtas programas"
-    },
-    "page-action": {
-      "title": "Atverti programą",
-      "install": "Diegti programą",
-      "open": "Atverti programą",
-      "cancel": "Atšaukti",
-      "site-icon": "Svetainės piktograma"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Atverti privačiame konteineryje",
     "reopenInPrivateContainer": "Reopen in Private Container",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Show Bookmark Sidebar",
       "gecko-show-history-sidebar": "Show History Sidebar",
       "gecko-show-synced-tabs-sidebar": "Show Synced Tabs Sidebar",
-      "gecko-reverse-sidebar": "Reverse Sidebar Position",
       "gecko-hide-sidebar": "Hide Sidebar",
       "gecko-toggle-sidebar": "Toggle Sidebar",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Restart in Safe Mode",
       "restart-profile-manager": "Restart with Profile Manager"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} is operating",
-    "panelDefaultMessage": "{{action}} in progress...",
-    "panelProgressSummary": "Affects {{count}} element(s)",
-    "formSummary": "Filling form: {{count}} field(s)",
-    "formFieldProgress": "Field {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Set input value: \"{{value}}\"",
-    "clickElementWithText": "Click {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicking {{tag}} element",
-    "inspectPageHtml": "Retrieved full page HTML",
-    "inspectGetElement": "Retrieved element: {{selector}}",
-    "inspectGetElements": "{{count}} element(s) matched: {{selector}}",
-    "inspectGetElementByText": "Retrieved element matching text: \"{{text}}\"",
-    "inspectGetElementText": "Retrieved text from: {{selector}}",
-    "inspectGetValue": "Retrieved value: {{selector}}",
-    "submitForm": "Submitting form: {{name}}",
-    "actionLabelHighlight": "Highlight",
-    "actionLabelInspect": "Inspect",
-    "actionLabelFill": "Fill",
-    "actionLabelInput": "Input",
-    "actionLabelClick": "Click",
-    "actionLabelSubmit": "Submit"
   },
   "externalBrowser": {
     "menu": {

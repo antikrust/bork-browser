@@ -109,8 +109,12 @@ const WorkspacePanelButton = (props: WorkspacePanelButtonProps) => {
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "move";
     }
+    // Insertion-point affordance, not a drop-onto highlight (see
+    // popup-block-element.tsx — same treatment in the popup list).
     const target = event.currentTarget as HTMLElement;
-    target.setAttribute("drag-over", "true");
+    const rect = target.getBoundingClientRect();
+    const before = event.clientY < rect.top + rect.height / 2;
+    target.setAttribute("drag-over", before ? "before" : "after");
   };
 
   const handleDragLeave = (event: DragEvent) => {
@@ -144,7 +148,15 @@ const WorkspacePanelButton = (props: WorkspacePanelButtonProps) => {
       return;
     }
 
-    props.ctx.reorderWorkspaceTo(draggedWorkspaceId, targetIndex);
+    // Insert before/after to match the indicator line (see
+    // popup-block-element.tsx for the index math).
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const after = event.clientY >= rect.top + rect.height / 2;
+    const draggedIndex = order.indexOf(draggedWorkspaceId);
+    let insertion = targetIndex + (after ? 1 : 0);
+    if (draggedIndex !== -1 && draggedIndex < insertion) insertion -= 1;
+
+    props.ctx.reorderWorkspaceTo(draggedWorkspaceId, insertion);
   };
 
   return (

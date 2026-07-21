@@ -5093,47 +5093,6 @@
           ]
         }
       },
-      "browser-features/pages-settings": {
-        "dependencies": [
-          "npm:vite@^7.3.0"
-        ],
-        "packageJson": {
-          "dependencies": [
-            "npm:@dnd-kit/core@^6.3.1",
-            "npm:@dnd-kit/modifiers@9",
-            "npm:@dnd-kit/sortable@10",
-            "npm:@dnd-kit/utilities@^3.2.2",
-            "npm:@icons-pack/react-simple-icons@^13.8.0",
-            "npm:@tailwindcss/vite@^4.1.18",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.7",
-            "npm:@vitejs/plugin-react-swc@^4.2.2",
-            "npm:autoprefixer@^10.4.23",
-            "npm:birpc@4",
-            "npm:clsx@^2.1.1",
-            "npm:cmdk@^1.1.1",
-            "npm:daisyui@^5.5.14",
-            "npm:floating-ui@^5.2.8",
-            "npm:framer-motion@^12.23.26",
-            "npm:i18next-browser-languagedetector@^8.2.0",
-            "npm:i18next@^25.7.3",
-            "npm:lucide-react@0.562",
-            "npm:next-themes@~0.4.6",
-            "npm:postcss@^8.5.6",
-            "npm:react-dom@^19.2.3",
-            "npm:react-hook-form@^7.69.0",
-            "npm:react-i18next@^16.5.0",
-            "npm:react-refresh@0.18",
-            "npm:react-router-dom@^7.11.0",
-            "npm:react@^19.2.3",
-            "npm:recharts@^3.6.0",
-            "npm:tailwind-merge@^3.4.0",
-            "npm:tailwindcss@^4.1.18",
-            "npm:vite-tsconfig-paths@^6.0.3",
-            "npm:vite@^7.3.0"
-          ]
-        }
-      },
       "browser-features/pages-welcome": {
         "packageJson": {
           "dependencies": [

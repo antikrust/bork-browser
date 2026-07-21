@@ -17,13 +17,13 @@
         "title": "Om Derp Hub",
         "subtitle": "En central plats för Derp-specifika inställningar.",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub är ett dedikerat inställningscenter för Derp-specifika alternativ. Du kan öppna det genom att navigera till 'about:hub'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
-        "openHub": "Öppna about:hub",
+        "description": "Derp Hub är ett dedikerat inställningscenter för Derp-specifika alternativ. Du kan öppna det genom att navigera till 'about:preferences'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
+        "openHub": "Öppna about:preferences",
         "openPreferences": "Öppna inställningar (about:preferences)",
         "tip": "Tips: du kan också komma åt Derp Hub från sidofältet för inställningar i Firefox.",
         "features": {
             "dedicated": "Dedikerat Derp-inställningscenter",
-            "accessible": "Tillgängligt från about:hub eller Firefox inställningar",
+            "accessible": "Tillgängligt från about:preferences eller Firefox inställningar",
             "centralized": "Alla Derp-specifika alternativ på ett ställe"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Derp Hub är ett dedikerat inställningscenter för Derp-specifika alternativ. Du kan öppna det genom att navigera till 'about:hub'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
-            "openHub": "Öppna about:hub",
+            "description": "Derp Hub är ett dedikerat inställningscenter för Derp-specifika alternativ. Du kan öppna det genom att navigera till 'about:preferences'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
+            "openHub": "Öppna about:preferences",
             "openPreferences": "Öppna inställningar (about:preferences)"
         }
     },

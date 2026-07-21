@@ -17,13 +17,13 @@
         "title": "Sobre o Derp Hub",
         "subtitle": "Uma página para todas as configurações específicas do Derp.",
         "sectionTitle": "Derp Hub",
-        "description": "O Derp Hub é uma página dedicada às configurações específicas do Derp. Você pode acessá-la no endereço 'about:hub'. Acesse também pela barra lateral à esquerda na página de configurações do Firefox em 'about:preferences'.",
-        "openHub": "Abrir about:hub",
+        "description": "O Derp Hub é uma página dedicada às configurações específicas do Derp. Você pode acessá-la no endereço 'about:preferences'. Acesse também pela barra lateral à esquerda na página de configurações do Firefox em 'about:preferences'.",
+        "openHub": "Abrir about:preferences",
         "openPreferences": "Abrir Configurações (about:preferences)",
         "tip": "Dica: você também pode acessar o Derp Hub na barra lateral de configurações do Firefox.",
         "features": {
             "dedicated": "Centro de configurações específicas do Derp",
-            "accessible": "Acessível pelo about:hub ou pelas configurações do Firefox",
+            "accessible": "Acessível pelo about:preferences ou pelas configurações do Firefox",
             "centralized": "Todas as configurações específicas do Derp em um só lugar"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "O Derp Hub é uma página dedicada às configurações específicas do Derp. Você pode acessá-la no endereço 'about:hub'. Acesse também pela barra lateral à esquerda na página de configurações do Firefox em 'about:preferences'.",
-            "openHub": "Abrir about:hub",
+            "description": "O Derp Hub é uma página dedicada às configurações específicas do Derp. Você pode acessá-la no endereço 'about:preferences'. Acesse também pela barra lateral à esquerda na página de configurações do Firefox em 'about:preferences'.",
+            "openHub": "Abrir about:preferences",
             "openPreferences": "Abrir Configurações (about:preferences)"
         }
     },

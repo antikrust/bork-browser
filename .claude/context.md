@@ -203,7 +203,6 @@ export class MyFeatureChild extends JSWindowActorChild {
 | 機能 | ディレクトリ | 説明 |
 |------|------------|------|
 | **Workspaces** | `workspaces/` | タブをワークスペースに整理する機能 |
-| **PWA サポート** | `pwa/` | Progressive Web App のインストールと管理 |
 | **Panel Sidebar** | `panel-sidebar/` | カスタマイズ可能なサイドパネルシステム |
 | **マウスジェスチャー** | `mouse-gesture/` | ジェスチャー認識システム |
 | **キーボードショートカット** | `keyboard-shortcut/` | カスタムキーボードショートカット |
@@ -228,11 +227,7 @@ export class MyFeatureChild extends JSWindowActorChild {
 
 ### システムモジュール (browser-features/modules/)
 
-- **Experiments** (`modules/experiments/`) - A/B テストフレームワーク
 - **i18n** (`modules/i18n/`) - 国際化ユーティリティ
-- **os-apis** (`modules/os-apis/`) - OS 統合 API
-- **os-server** (`modules/os-server/`) - ローカル API サーバー
-- **pwa** (`modules/pwa/`) - PWA バックエンドサービス
 
 ### ページ (browser-features/pages-*)
 

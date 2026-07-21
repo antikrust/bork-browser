@@ -45,10 +45,6 @@ export async function run(writer: any): Promise<void> {
       path: path.join(PROJECT_ROOT, "browser-features/pages-notes"),
     },
     {
-      name: "settings",
-      path: path.join(PROJECT_ROOT, "browser-features/pages-settings"),
-    },
-    {
       name: "welcome",
       path: path.join(PROJECT_ROOT, "browser-features/pages-welcome"),
     },
@@ -206,8 +202,6 @@ export function getPortFor(serverName: string): number {
       return 5186;
     case "notes":
       return 5188;
-    case "settings":
-      return 5183;
     case "welcome":
       return 5187;
     case "profile-manager":

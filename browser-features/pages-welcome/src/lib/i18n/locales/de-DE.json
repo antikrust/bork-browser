@@ -17,13 +17,13 @@
         "title": "Über Derp-Hub",
         "subtitle": "Ein zentraler Platz für alle Derp-spezifischen Einstellungen.",
         "sectionTitle": "Derp-Hub",
-        "description": "Derp-Hub ist ein zentraler Platz für alle Derp-spezifischen Einstellungen. Du kannst es über 'about:hub' oder über die Seitenleiste in den Firefox-Einstellungen öffnen.",
+        "description": "Derp-Hub ist ein zentraler Platz für alle Derp-spezifischen Einstellungen. Du kannst es über 'about:preferences' oder über die Seitenleiste in den Firefox-Einstellungen öffnen.",
         "openHub": "Derp-Hub öffnen",
         "openPreferences": "Firefox-Einstellungen öffnen",
         "tip": "Tipp: Derp-Hub ist auch über die Firefox-Einstellungen erreichbar.",
         "features": {
             "dedicated": "Zentrales Einstellungshub",
-            "accessible": "Aufrufbar von about:hub oder den Firefox-Einstellungen",
+            "accessible": "Aufrufbar von about:preferences oder den Firefox-Einstellungen",
             "centralized": "Alle Derp-spezifischen Optionen an einem Platz"
         }
     },
@@ -52,7 +52,7 @@
         },
         "floorpHub": {
             "title": "Derp-Hub",
-            "description": "Derp-Hub ist ein zentraler Platz für alle Derp-spezifischen Einstellungen. Du kannst es über 'about:hub' oder über die Seitenleiste in den Firefox-Einstellungen öffnen.",
+            "description": "Derp-Hub ist ein zentraler Platz für alle Derp-spezifischen Einstellungen. Du kannst es über 'about:preferences' oder über die Seitenleiste in den Firefox-Einstellungen öffnen.",
             "openHub": "Derp-Hub öffnen",
             "openPreferences": "Firefox-Einstellungen öffnen"
         }

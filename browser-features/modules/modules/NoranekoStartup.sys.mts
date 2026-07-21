@@ -117,14 +117,6 @@ export function onFinalUIStartup(): void {
 
   openReleaseNotesInRecentWindow();
 
-  // int OS Modules
-  ChromeUtils.importESModule(
-    "resource://noraneko/modules/os-apis/OSGlue.sys.mjs",
-  );
-  // Localhost OS server (self-controlled by prefs)
-  ChromeUtils.importESModule(
-    "resource://noraneko/modules/os-server/server.sys.mjs",
-  );
   // init i18n
   ChromeUtils.importESModule(
     "resource://noraneko/modules/i18n/I18n-Utils.sys.mjs",
@@ -351,15 +343,14 @@ async function checkNewtabUserPreference(): Promise<boolean> {
  */
 
 const getCustomAboutPages = async (): Promise<Record<string, string>> => {
+  // about:hub is gone: derp settings live as native panes inside
+  // about:preferences (bridge/startup/src/panes/), so the separate React
+  // settings app is no longer registered.
   const customAboutPages: Record<string, string> = {
-    hub: "chrome://noraneko-settings/content/index.html",
     welcome: "chrome://noraneko-welcome/content/index.html",
   };
 
   // Check and fallback for Dev Mode
-  if (!(await isResourceAvailable(customAboutPages.hub))) {
-    customAboutPages.hub = "http://localhost:5183/";
-  }
   if (!(await isResourceAvailable(customAboutPages.welcome))) {
     customAboutPages.welcome = "http://localhost:5187/";
   }
@@ -445,60 +436,11 @@ async function registerCustomAboutPages(): Promise<void> {
   }
 }
 
-async function setupBrowserOSComponents(): Promise<void> {
-  await ChromeUtils.importESModule(
-    "resource://noraneko/modules/os-automotor/OSAutomotor-manager.sys.mjs",
-  );
-}
-
-function registerSsbCommandLineHandler(): void {
-  executeOnce("register-ssb-command-line-handler", () => {
-    const { SSBCommandLineHandler } = ChromeUtils.importESModule(
-      "resource://noraneko/modules/pwa/SsbCommandLineHandler.sys.mjs",
-    );
-    const contractId = "@noraneko.org/commandlinehandler/general-start-ssb;1";
-    const factory: nsIFactory = {
-      createInstance<T extends nsIID>(iid: T): nsQIResult<T> {
-        return new SSBCommandLineHandler().QueryInterface(iid);
-      },
-    };
-
-    const registrar = getComponentRegistrar();
-    if (!registrar) {
-      console.error("[NoranekoStartup] Failed to get nsIComponentRegistrar for SSB handler");
-      return;
-    }
-    registrar.registerFactory(
-      Services.uuid.generateUUID(),
-      "Floorp SSB command line handler",
-      contractId,
-      factory,
-    );
-    Services.catMan.addCategoryEntry(
-      "command-line-handler",
-      "m-floorp-ssb",
-      contractId,
-      false,
-      true,
-    );
-  });
-}
-
-async function initializeExperiments() {
-  const { Experiments } = await ChromeUtils.importESModule(
-    "resource://noraneko/modules/experiments/Experiments.sys.mjs",
-  );
-  await Experiments.init();
-}
-
 (async () => {
   enforceVerticalTabsRemoved();
-  registerSsbCommandLineHandler();
   await registerCustomAboutPages();
   initializeVersionInfo();
-  await initializeExperiments();
   await setupNoranekoNewTab();
-  await setupBrowserOSComponents();
 })().catch(console.error);
 
 if (isMainBrowser) {

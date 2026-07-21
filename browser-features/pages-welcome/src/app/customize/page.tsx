@@ -345,7 +345,7 @@ export default function CustomizePage() {
               type="button"
               className="btn btn-primary"
               onClick={() => {
-                globalThis.open("about:hub", "_blank");
+                globalThis.open("about:preferences", "_blank");
               }}
             >
               {t("customize.floorpHub.openHub")}

@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Barra de status{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Aplicativos Web",
-      "install-current": "Instalar a página atual como um aplicativo da Web progressivo",
-      "open-installed": "Abrir Aplicativos Web instalados"
-    },
-    "page-action": {
-      "title": "Abrir aplicativo",
-      "install": "Instalar aplicativo",
-      "open": "Abrir aplicativo",
-      "cancel": "Cancelar",
-      "site-icon": "Ícone do site"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Abrir em um contêiner privado",
     "reopenInPrivateContainer": "Reabrir em um contêiner privado",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Exibir barra lateral dos favoritos",
       "gecko-show-history-sidebar": "Mostrar barra lateral do histórico",
       "gecko-show-synced-tabs-sidebar": "Mostrar barra lateral de abas sincronizadas",
-      "gecko-reverse-sidebar": "Inverter posição da barra lateral",
       "gecko-hide-sidebar": "Ocultar barra lateral",
       "gecko-toggle-sidebar": "Mostrar/ocultar barra lateral",
       "gecko-scroll-up": "Subir página",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Reiniciar no modo de segurança",
       "restart-profile-manager": "Reiniciar com o Gerenciador de perfis"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} está funcionando",
-    "panelDefaultMessage": "{{action}} em andamento...",
-    "panelProgressSummary": "Afeta {{count}} elemento(s)",
-    "formSummary": "Preenchimento de formulário: {{count}} campo(s)",
-    "formFieldProgress": "Campo {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Definir valor de entrada: \"{{value}}\"",
-    "clickElementWithText": "Clique em {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Clicando no elemento {{tag}}",
-    "inspectPageHtml": "Página HTML completa recuperada",
-    "inspectGetElement": "Elemento recuperado: {{selector}}",
-    "inspectGetElements": "{{count}} elemento(s) correspondente(s): {{selector}}",
-    "inspectGetElementByText": "Texto correspondente ao elemento recuperado: \"{{text}}\"",
-    "inspectGetElementText": "Texto recuperado de: {{selector}}",
-    "inspectGetValue": "Valor recuperado: {{selector}}",
-    "submitForm": "Formulário de envio: {{name}}",
-    "actionLabelHighlight": "Destacar",
-    "actionLabelInspect": "Inspecionar",
-    "actionLabelFill": "Preencher",
-    "actionLabelInput": "Entrada/input",
-    "actionLabelClick": "Clicar",
-    "actionLabelSubmit": "Enviar"
   },
   "externalBrowser": {
     "menu": {

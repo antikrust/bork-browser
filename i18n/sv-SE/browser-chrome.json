@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Statusfält{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Webbappar",
-      "install-current": "Installera nuvarande sida som progressiv webbapp",
-      "open-installed": "Öppna installerade appar"
-    },
-    "page-action": {
-      "title": "Öppna program",
-      "install": "Installera program",
-      "open": "Öppna program",
-      "cancel": "Avbryt",
-      "site-icon": "Webbplatsikon"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Öppna i privat behållare",
     "reopenInPrivateContainer": "Återöppna i privat behållare",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Visa bokmärkessidofält",
       "gecko-show-history-sidebar": "Visa historik sidofält",
       "gecko-show-synced-tabs-sidebar": "Visa sidofältet för synkroniserade flikar",
-      "gecko-reverse-sidebar": "Omvänd sidofältets position",
       "gecko-hide-sidebar": "Dölj sidofält",
       "gecko-toggle-sidebar": "Växla sidofält",
       "gecko-scroll-up": "Sida upp",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Starta om i felsäkert läge",
       "restart-profile-manager": "Starta om med profilhanterare"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} är i drift",
-    "panelDefaultMessage": "{{action}} pågår...",
-    "panelProgressSummary": "Påverkar {{count}} element(er)",
-    "formSummary": "Fyll i formulär: {{count}} fält(er)",
-    "formFieldProgress": "Fält {{current}}/{{total}}: \"{{value}}\"",
-    "inputValueSet": "Ställ in ingångsvärde: \"{{value}}\"",
-    "clickElementWithText": "Klicka {{tag}}: \"{{text}}\"",
-    "clickElementNoText": "Klicka på {{tag}} element",
-    "inspectPageHtml": "Hämta HTML-kod för hela sidan",
-    "inspectGetElement": "Hämtat element: {{selector}}",
-    "inspectGetElements": "{{count}} element(en) matchade: {{selector}}",
-    "inspectGetElementByText": "Hämtat element som matchar text: \"{{text}}\"",
-    "inspectGetElementText": "Hämtade text från: {{selector}}",
-    "inspectGetValue": "Hämtade värde: {{selector}}",
-    "submitForm": "Skickar formulär: {{name}}",
-    "actionLabelHighlight": "Höjdpunkt",
-    "actionLabelInspect": "Inspektera",
-    "actionLabelFill": "Fyll",
-    "actionLabelInput": "Indata",
-    "actionLabelClick": "Klick",
-    "actionLabelSubmit": "Skicka"
   },
   "externalBrowser": {
     "menu": {

@@ -106,20 +106,6 @@
   "statusbar": {
     "toggle": "Строка состояния{{mark}}"
   },
-  "ssb": {
-    "menu": {
-      "webapps": "Веб-приложения",
-      "install-current": "Установить текущую страницу как прогрессивное веб-приложение",
-      "open-installed": "Открыть установленные приложения"
-    },
-    "page-action": {
-      "title": "Открыть приложение",
-      "install": "Установить приложение",
-      "open": "Открыть приложение",
-      "cancel": "Отменить",
-      "site-icon": "Значок сайта"
-    }
-  },
   "privateContainer": {
     "openInPrivateContainer": "Открыть в приватном контейнере",
     "reopenInPrivateContainer": "Переоткрыть в приватном контейнере",
@@ -195,7 +181,6 @@
       "gecko-show-bookmark-sidebar": "Показать боковую панель закладок",
       "gecko-show-history-sidebar": "Показать боковую панель истории",
       "gecko-show-synced-tabs-sidebar": "Показать боковую панель облачных вкладок",
-      "gecko-reverse-sidebar": "Переставить положение боковой панели",
       "gecko-hide-sidebar": "Скрыть боковую панель",
       "gecko-toggle-sidebar": "Переключить боковую панель",
       "gecko-scroll-up": "Page Up",
@@ -325,29 +310,6 @@
       "restart-safe-mode": "Перезапустить в безопасном режиме",
       "restart-profile-manager": "Перезапуск через менеджер профилей"
     }
-  },
-  "nr-webscraper": {
-    "panelTitle": "{{productName}} работает",
-    "panelDefaultMessage": "{{action}} в процессе...",
-    "panelProgressSummary": "Влияет на {{count}} элем.",
-    "formSummary": "Полей формы заполнения: {{count}}",
-    "formFieldProgress": "Поле {{current}}/{{total}}: «{{value}}»",
-    "inputValueSet": "Установка входного значения: «{{value}}»",
-    "clickElementWithText": "Нажмите {{tag}}: «{{text}}»",
-    "clickElementNoText": "Щелчок по элементу {{tag}}",
-    "inspectPageHtml": "Получена полная страница HTML",
-    "inspectGetElement": "Полученный элемент: {{selector}}",
-    "inspectGetElements": "{{count}} элем. подходит: {{selector}}",
-    "inspectGetElementByText": "Полученный элемент соответствует тексту: «{{text}}»",
-    "inspectGetElementText": "Полученный текст от: {{selector}}",
-    "inspectGetValue": "Полученное значение: {{selector}}",
-    "submitForm": "Отправка формы: {{name}}",
-    "actionLabelHighlight": "Выделить",
-    "actionLabelInspect": "Исследовать",
-    "actionLabelFill": "Заполнить",
-    "actionLabelInput": "Ввод",
-    "actionLabelClick": "Нажать",
-    "actionLabelSubmit": "Отправить"
   },
   "externalBrowser": {
     "menu": {

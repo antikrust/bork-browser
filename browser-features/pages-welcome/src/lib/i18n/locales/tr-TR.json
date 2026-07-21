@@ -17,13 +17,13 @@
         "title": "Derp Hub Hakkında",
         "subtitle": "Derp'a özgü ayarlar için merkezi bir yer.",
         "sectionTitle": "Derp Hub",
-        "description": "Derp Hub, Derp’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:hub’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
-        "openHub": "Aç about:hub",
+        "description": "Derp Hub, Derp’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:preferences’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
+        "openHub": "Aç about:preferences",
         "openPreferences": "Ayarlar'ı aç (about:preferences)",
         "tip": "İpucu: Derp Hub'a Firefox ayarları kenar çubuğundan da erişebilirsiniz.",
         "features": {
             "dedicated": "Özel Derp ayar merkezi",
-            "accessible": "about:hub veya Firefox ayarlarından ulaşılabilir",
+            "accessible": "about:preferences veya Firefox ayarlarından ulaşılabilir",
             "centralized": "Derp'a özgü tüm seçenekler tek bir yerde"
         }
     },
@@ -52,8 +52,8 @@
         },
         "floorpHub": {
             "title": "Derp Hub",
-            "description": "Derp Hub, Derp’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:hub’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
-            "openHub": "Aç about:hub",
+            "description": "Derp Hub, Derp’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:preferences’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
+            "openHub": "Aç about:preferences",
             "openPreferences": "Ayarlar'ı aç (about:preferences)"
         }
     },

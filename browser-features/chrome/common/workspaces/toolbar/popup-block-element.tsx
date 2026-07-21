@@ -149,8 +149,13 @@ export function PopupToolbarElement(props: {
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "move";
     }
+    // Insertion-point affordance, not a drop-onto highlight: the line renders
+    // above or below this row depending on which half the pointer is in,
+    // showing where the dragged workspace will land.
     const target = event.currentTarget as XULElement;
-    target.setAttribute("drag-over", "true");
+    const rect = target.getBoundingClientRect();
+    const before = event.clientY < rect.top + rect.height / 2;
+    target.setAttribute("drag-over", before ? "before" : "after");
   };
 
   const handleDragLeave = (event: DragEvent) => {
@@ -187,7 +192,16 @@ export function PopupToolbarElement(props: {
       return;
     }
 
-    props.ctx.reorderWorkspaceTo(draggedWorkspaceId, targetIndex);
+    // Insert before or after this row, matching the line the user saw.
+    // reorderWorkspaceTo splices after removal, so when the dragged item sat
+    // above the insertion point the index shifts down by one.
+    const rect = (event.currentTarget as XULElement).getBoundingClientRect();
+    const after = event.clientY >= rect.top + rect.height / 2;
+    const draggedIndex = order.indexOf(draggedWorkspaceId);
+    let insertion = targetIndex + (after ? 1 : 0);
+    if (draggedIndex !== -1 && draggedIndex < insertion) insertion -= 1;
+
+    props.ctx.reorderWorkspaceTo(draggedWorkspaceId, insertion);
   };
 
   return (
