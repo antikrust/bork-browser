@@ -61,9 +61,9 @@
             "description": "{{productName}} melindungi data dan privasi Anda dari awal, tetapi Anda juga dapat mengelola pengaturan ini secara manual."
         },
         "ablazeAccount": {
-            "title": "Akun Ablaze (Segera Hadir)",
-            "footerLinkText": "Akun Ablaze",
-            "description": "Gunakan Akun Mozilla untuk menyinkronkan data dengan perangkat lain. Akun Ablaze dapat menyinkronkan data yang tidak dapat disinkronkan dengan Akun Mozilla."
+            "title": "Akun Derp (Segera Hadir)",
+            "footerLinkText": "Akun Derp",
+            "description": "Gunakan Akun Mozilla untuk menyinkronkan data dengan perangkat lain. Akun Derp dapat menyinkronkan data yang tidak dapat disinkronkan dengan Akun Mozilla."
         },
         "manageExtensions": {
             "title": "Kelola Ekstensi",
@@ -293,7 +293,7 @@
         "releaseNotes": "Catatan Rilis dan Informasi Tambahan",
         "browserVersion": "Versi {{productName}}: {{browserVersion}} | Versi Firefox: {{firefoxVersion}}",
         "isOfficialBuild": "(Build Resmi)",
-        "browserDescription": "{{productName}} adalah peramban yang dibuat di Jepang. Peramban ini berdasar Firefos dan dikembangkan oleh Ablaze untuk meningkatkan web.",
+        "browserDescription": "{{productName}} adalah peramban yang dibuat di Jepang. Peramban ini berdasar Firefos dan dikembangkan oleh Derp untuk meningkatkan web.",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Project. Semua hak cipta dilindungi undang-undang.",
         "openSourceLicense": "{{productName}} adalah perangkat lunak sumber terbuka di bawah Lisensi Publik Mozilla 2.0, yang dimungkinkan oleh proyek sumber terbuka Firefox dan perangkat lunak sumber terbuka lainnya.",

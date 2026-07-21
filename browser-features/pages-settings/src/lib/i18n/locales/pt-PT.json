@@ -61,9 +61,9 @@
             "description": "{{productName}} protege os seus dados e a sua privacidade por predefinição, mas também pode gerir estas definições manualmente."
         },
         "ablazeAccount": {
-            "title": "Conta Ablaze (brevemente)",
-            "footerLinkText": "Conta Ablaze",
-            "description": "Utilize uma Conta Mozilla para sincronizar alguns dados com outros dispositivos. A Conta Ablaze sincroniza dados que não podem ser sincronizados com uma Conta Mozilla."
+            "title": "Conta Derp (brevemente)",
+            "footerLinkText": "Conta Derp",
+            "description": "Utilize uma Conta Mozilla para sincronizar alguns dados com outros dispositivos. A Conta Derp sincroniza dados que não podem ser sincronizados com uma Conta Mozilla."
         },
         "manageExtensions": {
             "title": "Gerir Extensões",
@@ -293,7 +293,7 @@
         "releaseNotes": "Notas de Lançamento e Mais Informações",
         "browserVersion": "{{productName}} versão: {{browserVersion}} | Versão do Firefox: {{firefoxVersion}}",
         "isOfficialBuild": "(Construção Oficial)",
-        "browserDescription": "{{productName}} é um browser desenvolvido no Japão. Foi construído com base no Firefox e no Ablaze para melhorar a Web.",
+        "browserDescription": "{{productName}} é um browser desenvolvido no Japão. Foi construído com base no Firefox e no Derp para melhorar a Web.",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Project. Todos os direitos reservados.",
         "openSourceLicense": "{{productName}} é um software de código aberto disponível sob a Licença Pública Mozilla 2.0, possibilitado pelo projeto de código aberto Firefox e outros softwares de código aberto.",

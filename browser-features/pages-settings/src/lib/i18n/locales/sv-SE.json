@@ -61,9 +61,9 @@
             "description": "{{productName}} skyddar dina uppgifter och din integritet som standard, men du kan också hantera dessa inställningar manuellt."
         },
         "ablazeAccount": {
-            "title": "Ablaze-konto (kommer snart)",
-            "footerLinkText": "Ablaze konto",
-            "description": "Använd ett Mozilla-konto för att synkronisera vissa data med andra enheter. Ablaze konto synkroniserar data som inte kan synkroniseras med ett Mozilla-konto."
+            "title": "Derp-konto (kommer snart)",
+            "footerLinkText": "Derp konto",
+            "description": "Använd ett Mozilla-konto för att synkronisera vissa data med andra enheter. Derp konto synkroniserar data som inte kan synkroniseras med ett Mozilla-konto."
         },
         "manageExtensions": {
             "title": "Hantera tillägg",
@@ -293,7 +293,7 @@
         "releaseNotes": "Kommentarer till utgåvan och mer information",
         "browserVersion": "{{productName}} version: {{browserVersion}} | Firefox-version: {{firefoxVersion}}",
         "isOfficialBuild": "(Officiellt bygge)",
-        "browserDescription": "{{productName}} är en webbläsare som utvecklats i Japan. Den bygger på Firefox under Ablaze för att förbättra webben.",
+        "browserDescription": "{{productName}} är en webbläsare som utvecklats i Japan. Den bygger på Firefox under Derp för att förbättra webben.",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Projekt. Alla rättigheter reserverade.",
         "openSourceLicense": "{{productName}} är en programvara med öppen källkod som är tillgänglig under Mozilla Public License 2.0, vilket möjliggörs av Firefox-projektet med öppen källkod och annan programvara med öppen källkod.",

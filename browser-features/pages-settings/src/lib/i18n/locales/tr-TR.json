@@ -61,9 +61,9 @@
             "description": "{{productName}} varsayılan olarak verilerinizi ve gizliliğinizi korur, ancak bu ayarları manuel olarak da değiştirebilirsiniz."
         },
         "ablazeAccount": {
-            "title": "Ablaze Hesabı (Çok Yakında)",
-            "footerLinkText": "Ablaze Hesabı",
-            "description": "Bazı verileri diğer cihazlarla senkronize etmek için bir Mozilla Hesabı kullanın. Ablaze Hesabı, Mozilla Hesabı ile senkronize edilemeyen verileri senkronize eder."
+            "title": "Derp Hesabı (Çok Yakında)",
+            "footerLinkText": "Derp Hesabı",
+            "description": "Bazı verileri diğer cihazlarla senkronize etmek için bir Mozilla Hesabı kullanın. Derp Hesabı, Mozilla Hesabı ile senkronize edilemeyen verileri senkronize eder."
         },
         "manageExtensions": {
             "title": "Eklentileri yönet",
@@ -293,7 +293,7 @@
         "releaseNotes": "Sürüm Notları ve Daha Fazla Bilgi",
         "browserVersion": "{{productName}} sürümü: {{browserVersion}} | Firefox sürümü: {{firefoxVersion}}",
         "isOfficialBuild": "(Resmi Yapı)",
-        "browserDescription": "{{productName}} Japonya'da geliştirilen bir tarayıcıdır. Web'i geliştirmek için Ablaze altında Firefox üzerine inşa edilmiştir.",
+        "browserDescription": "{{productName}} Japonya'da geliştirilen bir tarayıcıdır. Web'i geliştirmek için Derp altında Firefox üzerine inşa edilmiştir.",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Projesi. Tüm hakları saklıdır.",
         "openSourceLicense": "{{productName}}, Mozilla Kamu Lisansı 2.0 kapsamıda bulunan Firefox açık kaynak projesi ve diğer açık kaynak yazılımlar sayesinde mümkün kılınan açık kaynaklı bir yazılımdır.",

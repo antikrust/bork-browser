@@ -61,9 +61,9 @@
             "description": "{{productName}} 默认情况下会保护你的数据和隐私，但你也可以手动管理这些设置。"
         },
         "ablazeAccount": {
-            "title": "Ablaze 账户（即将推出）",
-            "footerLinkText": "Ablaze 帐户",
-            "description": "使用 Mozilla 账户与其他设备同步部分数据。Ablaze 账户可同步无法使用 Mozilla 账户同步的数据。"
+            "title": "Derp 账户（即将推出）",
+            "footerLinkText": "Derp 帐户",
+            "description": "使用 Mozilla 账户与其他设备同步部分数据。Derp 账户可同步无法使用 Mozilla 账户同步的数据。"
         },
         "manageExtensions": {
             "title": "管理扩展",
@@ -293,7 +293,7 @@
         "releaseNotes": "发布说明和更多信息",
         "browserVersion": "{{productName}} 版本： {{browserVersion}} | 火狐浏览器版本： {{firefoxVersion}}",
         "isOfficialBuild": "（官方构建）",
-        "browserDescription": "{{productName}} 是日本开发的一款浏览器。是 Ablaze 旗下的，基于 Firefox 上开发的浏览器，旨在促进网络发展。",
+        "browserDescription": "{{productName}} 是日本开发的一款浏览器。是 Derp 旗下的，基于 Firefox 上开发的浏览器，旨在促进网络发展。",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} 项目。保留所有权利。",
         "openSourceLicense": "{{productName}} 是根据 Mozilla Public License 2.0 提供的开源软件，由 Firefox 开源项目和其他开源软件实现。",

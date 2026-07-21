@@ -61,9 +61,9 @@
             "description": "{{productName}} 預設會保護您的個資和隱私，但您也可以手動管理這些設定。"
         },
         "ablazeAccount": {
-            "title": "Ablaze 帳戶 (即將推出)",
-            "footerLinkText": "Ablaze 帳戶",
-            "description": "使用 Mozilla 帳戶與其他裝置同步某些資料。而使用 Ablaze 帳戶則可同步 Mozilla 帳戶無法同步的資料。"
+            "title": "Derp 帳戶 (即將推出)",
+            "footerLinkText": "Derp 帳戶",
+            "description": "使用 Mozilla 帳戶與其他裝置同步某些資料。而使用 Derp 帳戶則可同步 Mozilla 帳戶無法同步的資料。"
         },
         "manageExtensions": {
             "title": "擴充套件管理",
@@ -293,7 +293,7 @@
         "releaseNotes": "發佈說明與更多資訊",
         "browserVersion": "{{productName}} 版本： {{browserVersion}} | Firefox 版本： {{firefoxVersion}}",
         "isOfficialBuild": "(公式版本)",
-        "browserDescription": "{{productName}} 是一款於日本誕生的瀏覽器。以 Firefox 為基礎，由 Ablaze 社開發，旨在促進網路發展。",
+        "browserDescription": "{{productName}} 是一款於日本誕生的瀏覽器。以 Firefox 為基礎，由 Derp 社開發，旨在促進網路發展。",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Project。保留所有權利。",
         "openSourceLicense": "{{productName}} 是可在 Mozilla Public License 2.0 下使用的開放原始碼軟體，由 Firefox 開放原始碼專案和其他開放原始碼軟體促成。",

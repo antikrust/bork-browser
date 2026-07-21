@@ -61,9 +61,9 @@
             "description": "{{productName}} schützt deine Daten und deine Privatsphäre standardmäßig. Du kannst diese Einstellungen aber auch selbst anpassen."
         },
         "ablazeAccount": {
-            "title": "Ablaze-Konto (demnächst)",
-            "footerLinkText": "Ablaze-Konto",
-            "description": "Verwende ein Mozilla-Konto, um bestimmte Daten mit anderen Geräten zu synchronisieren. Das Ablaze-Konto synchronisiert Daten, die sich mit einem Mozilla-Konto nicht synchronisieren lassen."
+            "title": "Derp-Konto (demnächst)",
+            "footerLinkText": "Derp-Konto",
+            "description": "Verwende ein Mozilla-Konto, um bestimmte Daten mit anderen Geräten zu synchronisieren. Das Derp-Konto synchronisiert Daten, die sich mit einem Mozilla-Konto nicht synchronisieren lassen."
         },
         "manageExtensions": {
             "title": "Erweiterungen verwalten",
@@ -293,7 +293,7 @@
         "releaseNotes": "Versionshinweise und weitere Informationen",
         "browserVersion": "{{productName}}-Version: {{browserVersion}} | Firefox-Version: {{firefoxVersion}}",
         "isOfficialBuild": "(offizielle Build)",
-        "browserDescription": "{{productName}} ist ein in Japan entwickelter Browser. Er basiert auf Firefox und wird unter Ablaze weiterentwickelt, um das Web zu verbessern.",
+        "browserDescription": "{{productName}} ist ein in Japan entwickelter Browser. Er basiert auf Firefox und wird unter Derp weiterentwickelt, um das Web zu verbessern.",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Project. Alle Rechte vorbehalten.",
         "openSourceLicense": "{{productName}} ist Open-Source-Software unter der Mozilla Public License 2.0 und wird durch das Open-Source-Projekt Firefox sowie weitere Open-Source-Software ermöglicht.",

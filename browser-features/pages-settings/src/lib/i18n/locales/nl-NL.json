@@ -61,9 +61,9 @@
             "description": "{{productName}} beschermt standaard je gegevens en privacy, maar je kunt deze instellingen ook handmatig beheren."
         },
         "ablazeAccount": {
-            "title": "Ablaze Account (binnenkort beschikbaar)",
-            "footerLinkText": "Ablaze Account",
-            "description": "Gebruik een Mozilla-account om bepaalde gegevens met andere apparaten te synchroniseren. Ablaze Account synchroniseert gegevens die niet met een Mozilla-account gesynchroniseerd kunnen worden."
+            "title": "Derp Account (binnenkort beschikbaar)",
+            "footerLinkText": "Derp Account",
+            "description": "Gebruik een Mozilla-account om bepaalde gegevens met andere apparaten te synchroniseren. Derp Account synchroniseert gegevens die niet met een Mozilla-account gesynchroniseerd kunnen worden."
         },
         "manageExtensions": {
             "title": "Extensies beheren",
@@ -293,7 +293,7 @@
         "releaseNotes": "Release Notes & More Information",
         "browserVersion": "{{productName}} version: {{browserVersion}} | Firefox version: {{firefoxVersion}}",
         "isOfficialBuild": "(Official Build)",
-        "browserDescription": "{{productName}} is a browser developed in Japan. It's built on Firefox under Ablaze to improve the web.",
+        "browserDescription": "{{productName}} is a browser developed in Japan. It's built on Firefox under Derp to improve the web.",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Project. All rights reserved.",
         "openSourceLicense": "{{productName}} is open-source software available under the Mozilla Public License 2.0, made possible by the Firefox open-source project and other open-source software.",

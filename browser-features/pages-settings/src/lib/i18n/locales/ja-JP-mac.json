@@ -61,9 +61,9 @@
             "description": "{{productName}} はデフォルトであなたのデータとプライバシーを保護しますが、これらの設定を手動で管理することもできます。"
         },
         "ablazeAccount": {
-            "title": "Ablaze アカウント (近日公開)",
-            "footerLinkText": "Ablaze アカウント",
-            "description": "Mozilla アカウントを使用すると、一部のデータを他のデバイスと同期できます。 Ablaze アカウントは、 Mozilla アカウントで同期できないデータを同期できます。"
+            "title": "Derp アカウント (近日公開)",
+            "footerLinkText": "Derp アカウント",
+            "description": "Mozilla アカウントを使用すると、一部のデータを他のデバイスと同期できます。 Derp アカウントは、 Mozilla アカウントで同期できないデータを同期できます。"
         },
         "manageExtensions": {
             "title": "拡張機能を管理",
@@ -293,7 +293,7 @@
         "releaseNotes": "リリースノートとその他の情報",
         "browserVersion": "{{productName}} バージョン: {{browserVersion}} | Firefox バージョン: {{firefoxVersion}}",
         "isOfficialBuild": "(公式ビルド)",
-        "browserDescription": "{{productName}} は日本生まれのブラウザーです。ウェブをより良くするために、Firefox をベースに Ablaze の下で開発されています。",
+        "browserDescription": "{{productName}} は日本生まれのブラウザーです。ウェブをより良くするために、Firefox をベースに Derp の下で開発されています。",
         "browser": "{{productName}}",
         "copyright": "© 2024 {{productName}} Project. All rights reserved.",
         "openSourceLicense": "{{productName}} は、 Mozilla Public License 2.0 の下で使用可能なオープンソースソフトウェアです。 Firefox オープンソースプロジェクトやその他のオープンソースソフトウェアによって実現されています。",

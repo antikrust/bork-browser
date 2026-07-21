@@ -94,6 +94,16 @@ overlay() {
   log "installing icons"
   bash tools/release/brand-icons.sh "$approot"
 
+  # Vendor name: the published 152.0.7-1 runtimes were compiled before the
+  # runtime source vendor fix (derp-runtime 6d606025f65: -vendor-short-name and
+  # MOZ_APP_VENDOR -> Derp), so their loose brand.ftl still says "Ablaze" — which
+  # the About dialog renders as "Derp is designed by Ablaze". These branding files
+  # are loose (chrome-format=flat), so correct them here until the runtimes are
+  # rebuilt from the fixed source (mac natively; linux/windows on the build PC).
+  log "correcting vendor name (Ablaze -> Derp)"
+  find "$approot/browser" \( -name brand.ftl -o -name brand.properties \) \
+    -exec perl -i -pe 's/Ablaze/Derp/g' {} +
+
   find "$approot/noraneko-devdir" -name "*.map" -delete
 }
 
@@ -178,6 +188,14 @@ build_mac() {
   # that meant a regenerated icon set only reached the package if someone had
   # remembered to install it into _dist/bin first.
   bash tools/release/brand-icons.sh "$res"
+
+  # This lane assembles from the local runtime tree and never routes through
+  # overlay(), so apply the same loose-file vendor correction here: the tree's
+  # brand.ftl still says "Ablaze" ("Derp is designed by Ablaze" in About) until
+  # the mac runtime is rebuilt from the fixed source.
+  log "mac: correcting vendor name (Ablaze -> Derp)"
+  find "$res/browser" \( -name brand.ftl -o -name brand.properties \) \
+    -exec perl -i -pe 's/Ablaze/Derp/g' {} +
 
   log "mac: signing (ad-hoc) and packing"
   codesign --force --deep -s - "$app"

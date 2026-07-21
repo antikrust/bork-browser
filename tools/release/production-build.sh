@@ -76,7 +76,10 @@ if [ "$UPLOAD" = 1 ]; then
     [ -d "$d" ] || continue
     rsync -av "$d/" "$WEB_REMOTE/"
   done
-  ( cd dist && find macos linux windows -type f 2>/dev/null -exec shasum -a 256 {} \; > SHA256SUMS.txt ) || true
+  # flat basenames — the packages are served flat (rsync above uses "$d/"), so a
+  # subdir-prefixed sums file fails `sha256sum -c` on the server.
+  ( cd dist && find macos linux windows -type f 2>/dev/null -exec shasum -a 256 {} \; \
+      | sed -E 's#  .*/#  #' > SHA256SUMS.txt ) || true
   [ -f dist/SHA256SUMS.txt ] && rsync -av dist/SHA256SUMS.txt "$WEB_REMOTE/"
   log "uploaded. live at https://therob.lol/derp/"
 else
