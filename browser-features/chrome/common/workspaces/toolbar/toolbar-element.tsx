@@ -19,6 +19,7 @@ import { configStore, enabled } from "../data/config.ts";
 import Workspaces from "../index.ts";
 import { selectedWorkspaceID, workspacesDataStore } from "../data/data.ts";
 import { getContainerColorName } from "../utils/container-color.ts";
+import { workspaceColorCss } from "../utils/workspace-colors.ts";
 import { registerVivaldiImportBridge } from "../vivaldi-import.ts";
 
 const { CustomizableUI } = ChromeUtils.importESModule(
@@ -174,6 +175,19 @@ export class WorkspacesToolbarButton {
       }
       if (derpIcon.getAttribute("src") !== iconSrc) {
         derpIcon.setAttribute("src", iconSrc);
+      }
+      // Workspace colour tints the glyph, same as the rail and popup
+      // rows (inline stroke over the context-paint data URI).
+      const colorCss = workspaceColorCss(
+        (workspace as { color?: string | null }).color,
+      );
+      if (colorCss) {
+        (derpIcon as unknown as HTMLElement).style.setProperty(
+          "stroke",
+          colorCss,
+        );
+      } else {
+        (derpIcon as unknown as HTMLElement).style.removeProperty("stroke");
       }
 
       // Chevron after the name: the chooser is a menu and should read as

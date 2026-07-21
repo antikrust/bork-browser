@@ -688,6 +688,27 @@ panel:has(#workspacesToolbarButtonPanel) {
   overflow: hidden;
 }
 
+/* Ease in on show, like Firefox's own launcher expand: the rail is
+   in-flow (it pushes content), so it slides from behind the window edge
+   and the page eases right instead of jumping. Mount-only — the Show
+   unmount means no exit animation, which matches the launcher too. */
+@media (prefers-reduced-motion: no-preference) {
+  #derp-workspaces-rail {
+    animation: derp-rail-ease-in 200ms ease-out;
+  }
+
+  @keyframes derp-rail-ease-in {
+    from {
+      margin-inline-start: -35px;
+      opacity: 0;
+    }
+    to {
+      margin-inline-start: 0;
+      opacity: 1;
+    }
+  }
+}
+
 .derp-workspaces-rail-list {
   display: flex;
   flex-direction: column;
