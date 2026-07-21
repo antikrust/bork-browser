@@ -6,22 +6,21 @@
 import type { zFloorpDesignConfigs } from "../../designs/type.ts";
 import type * as t from "io-ts";
 
-// UserJS imports
-import leptonUserJs from "@nora/skin/lepton/userjs/lepton.js?raw";
-import photonUserJs from "@nora/skin/lepton/userjs/photon.js?raw";
+// UserJS import (the engine's fixed preference set)
+import derpPrefsUserJs from "@nora/skin/derp/derp-prefs.js?raw";
 
 // CSS raw imports for development
-import leptonChromeStylesRaw from "@nora/skin/lepton/css/leptonChrome.css?raw";
-import leptonContentStylesRaw from "@nora/skin/lepton/css/leptonContent.css?raw";
+import engineChromeStylesRaw from "@nora/skin/derp/css/engine-chrome.css?raw";
+import engineContentStylesRaw from "@nora/skin/derp/css/engine-content.css?raw";
 import derpStylesRaw from "@nora/skin/derp/css/derp.css?raw";
 // Gecko 152 (Project Nova) compatibility: LEPTON_COMPAT_CSS layers the
-// Lepton palette + Floorp icon patches for the Lepton family (lepton, derp).
+// engine's palette + Floorp icon patches for derp's interface engine.
 // Loads AFTER the skin's own sheets so equal-specificity rules win by order.
 import { LEPTON_COMPAT_CSS } from "./lepton-compat-152.css.ts";
 
 /**
- * Lepton / Photon / ProtonFix: match nav-bar and bookmark bar to the toolbar
- * surface color, so they read as one piece with the selected tab.
+ * Match nav-bar and bookmark bar to the toolbar surface color, so they read
+ * as one piece with the selected tab.
  *
  * Why this is LWT-aware: under a third-party LWT the theme author often
  * deliberately differentiates the selected-tab color from the toolbar color
@@ -32,9 +31,9 @@ import { LEPTON_COMPAT_CSS } from "./lepton-compat-152.css.ts";
  *
  *   - Default / built-in themes (default-theme, compact-light, compact-dark):
  *     Firefox does NOT set `[lwtheme]` for these, so they fall through to the
- *     "no theme" branch and are painted with the selected tab color. Lepton's
- *     own `userChrome.tab.color_like_toolbar` aligns the tab to the toolbar
- *     here, so this reads as the intended Lepton "one surface" look.
+ *     "no theme" branch and are painted with the selected tab color. The
+ *     engine's `userChrome.tab.color_like_toolbar` aligns the tab to the
+ *     toolbar here, so this reads as the intended "one surface" look.
  *   - Third-party LWTs (community colorways, add-on themes): these DO set the
  *     `[lwtheme]` attribute. We respect the theme's own toolbar color instead
  *     of the tab color, so the bar stays anchored to the toolbar the author
@@ -54,8 +53,8 @@ import { LEPTON_COMPAT_CSS } from "./lepton-compat-152.css.ts";
  * `--toolbar-non-lwt-bgcolor`, while `--toolbar-background-color` is the
  * 152-introduced toolbar token that can diverge (e.g. default-theme dark:
  * `--toolbar-bgcolor` = `#171717` but `--toolbar-background-color` =
- * `rgb(43,42,51)`). Because Lepton's `color_like_toolbar` aligns the selected
- * tab to `--toolbar-bgcolor` (it unsets `--tab-selected-bgcolor`), the nav-bar
+ * `rgb(43,42,51)`). Because the engine's `color_like_toolbar` aligns the
+ * selected tab to `--toolbar-bgcolor` (it unsets `--tab-selected-bgcolor`), the nav-bar
  * must follow the SAME token to stay visually flush with the selected tab.
  * Therefore the chain prefers `--toolbar-bgcolor` first and only falls back to
  * `--toolbar-background-color` when the legacy token is unset.
@@ -146,73 +145,38 @@ const getIconBasePath = (skin: string): string => {
 };
 
 /**
- * Get CSS configuration based on the selected UI theme
+ * Get the CSS configuration for derp's single interface: the engine sheets
+ * with derp's compact overrides layered last so they win by source order.
  */
 export function getCSSFromConfig(
-  pref: t.TypeOf<typeof zFloorpDesignConfigs>,
+  _pref: t.TypeOf<typeof zFloorpDesignConfigs>,
 ): FCSS {
   const isDev = import.meta.env.DEV;
-  const uiTheme = pref.globalConfigs.userInterface;
 
-  switch (uiTheme) {
-    case "lepton": {
-      if (isDev) {
-        return {
-          chromeStylesRaw: [
-            leptonChromeStylesRaw,
-            leptonContentStylesRaw,
-            LEPTON_COMPAT_CSS,
-            navBarBackgroundColorCSS,
-          ],
-          iconBasePath: "http://localhost:5174/lepton/icons",
-          userjs: leptonUserJs,
-        };
-      }
-      return {
-        chromeStyles: [
-          getStylePath("lepton/css/leptonChrome.css"),
-          getStylePath("lepton/css/leptonContent.css"),
-        ],
-        chromeStylesRaw: [LEPTON_COMPAT_CSS, navBarBackgroundColorCSS],
-        userjs: leptonUserJs,
-      };
-    }
-
-    case "derp": {
-      // Photon base (Lepton engine with the photon userjs) with derp's
-      // compact overrides layered last so they win by source order.
-      if (isDev) {
-        return {
-          chromeStylesRaw: [
-            leptonChromeStylesRaw,
-            LEPTON_COMPAT_CSS,
-            navBarBackgroundColorCSS,
-            derpStylesRaw,
-          ],
-          stylesRaw: [leptonContentStylesRaw],
-          iconBasePath: "http://localhost:5174/lepton/icons",
-          userjs: photonUserJs,
-        };
-      }
-      return {
-        chromeStyles: [
-          getStylePath("lepton/css/leptonChrome.css"),
-          getStylePath("lepton/css/leptonContent.css"),
-        ],
-        chromeStylesRaw: [
-          LEPTON_COMPAT_CSS,
-          navBarBackgroundColorCSS,
-          derpStylesRaw,
-        ],
-        styles: [getStylePath("lepton/css/leptonContent.css")],
-        userjs: photonUserJs,
-      };
-    }
-
-    default: {
-      console.warn(`[getCSSFromConfig] Unknown UI theme: ${uiTheme}`);
-      uiTheme satisfies never;
-      return { userjs: null };
-    }
+  if (isDev) {
+    return {
+      chromeStylesRaw: [
+        engineChromeStylesRaw,
+        LEPTON_COMPAT_CSS,
+        navBarBackgroundColorCSS,
+        derpStylesRaw,
+      ],
+      stylesRaw: [engineContentStylesRaw],
+      iconBasePath: "http://localhost:5174/derp/icons",
+      userjs: derpPrefsUserJs,
+    };
   }
+  return {
+    chromeStyles: [
+      getStylePath("derp/css/engine-chrome.css"),
+      getStylePath("derp/css/engine-content.css"),
+    ],
+    chromeStylesRaw: [
+      LEPTON_COMPAT_CSS,
+      navBarBackgroundColorCSS,
+      derpStylesRaw,
+    ],
+    styles: [getStylePath("derp/css/engine-content.css")],
+    userjs: derpPrefsUserJs,
+  };
 }

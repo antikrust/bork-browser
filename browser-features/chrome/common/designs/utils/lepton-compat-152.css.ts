@@ -9,20 +9,20 @@
  * Gecko 152 renamed a large set of chrome CSS variables (see
  * `gecko-152-var-aliases.css.ts`) AND made the built-in-theme signals that
  * user style sheets historically relied on unreliable. The alias file covers
- * the renames; this file covers the rest:
+ * the renames; this file covers the rest. derp ships a single interface (its
+ * engine is the flattened, in-tree descendant of Lepton — see
+ * `skin/derp/css/engine-chrome.css`), so every layer here applies to it:
  *
- *   1. `GECKO_152_COLOR_FIX_CSS` — theme/LWT color stabilization. Applied to
- *      EVERY design (including `fluerial`), because dialogs going black and
- *      the chrome collapsing to a single color are not Lepton-specific
- *      symptoms — they hit any chrome component that reads `--lwt-accent-color`
- *      / `--in-content-page-background` / `--arrowpanel-background` once the
+ *   1. `GECKO_152_COLOR_FIX_CSS` — theme/LWT color stabilization: dialogs
+ *      going black and the chrome collapsing to a single color hit any
+ *      chrome component that reads `--lwt-accent-color` /
+ *      `--in-content-page-background` / `--arrowpanel-background` once the
  *      built-in-theme block stops matching.
- *   2. `LEPTON_COMPAT_152_CSS` — Lepton-only tab/toolbox variable aliases and
- *      palette restoration that mirrors Lepton's intended colors. Applied
- *      only to the `lepton` / `photon` / `protonfix` designs.
- *   3. `FLOORP_ICON_PATCHES` — Floorp-only icon rules extracted from the
- *      vendored leptonChrome.css so the daily upstream sync cannot delete
- *      them. Lepton-family only (the IDs are Lepton-scoped).
+ *   2. `LEPTON_COMPAT_152_CSS` — engine tab/toolbox variable aliases and
+ *      palette restoration that mirrors the engine's intended colors.
+ *   3. `FLOORP_ICON_PATCHES` — Floorp-only icon rules that historically
+ *      lived in the vendored engine CSS; hosted here since before the
+ *      engine was flattened in-tree.
  *
  * ## Design rule: never clobber a theme-provided value
  *
@@ -40,10 +40,10 @@
  */
 
 /**
- * Theme/LWT color stabilization — applied to every design.
+ * Theme/LWT color stabilization — applied to the whole chrome.
  *
  * What this fixes:
- *  - **Black dialogs.** Lepton and several Floorp components derive
+ *  - **Black dialogs.** The engine and several Floorp components derive
  *    `--in-content-page-background` from `--lwt-accent-color`. On 152 the
  *    accent can resolve to nothing in-content, so dialogs paint black. Anchor
  *    in-content surfaces to a stable per-scheme value, and let an LWT that
@@ -101,29 +101,26 @@ export const GECKO_152_COLOR_FIX_CSS = `
 `;
 
 /**
- * Lepton-specific compatibility — applied only to `lepton` / `photon` /
- * `protonfix` (they share the vendored Lepton CSS).
+ * Engine-specific compatibility for derp's single interface.
  *
- * Why this exists (Floorp Issue #2489): the vendored Lepton CSS
- * (`skin/lepton/css/leptonChrome.css`) detects built-in light/dark themes
- * through three brittle mechanisms that Gecko 152 no longer populates
- * reliably:
+ * Why this exists (Floorp Issue #2489): the engine CSS
+ * (`skin/derp/css/engine-chrome.css`, the flattened Lepton descendant)
+ * detects built-in light/dark themes through three brittle mechanisms that
+ * Gecko 152 no longer populates reliably:
  *
  *   1. `[lwtheme-mozlightdark]` attribute
  *   2. `[builtintheme][devtoolstheme="..."]`
  *   3. inline `[style*="--lwt-accent-color: rgb(240, 240, 244); …"]`
  *      exact-string RGB matching
  *
- * When the detection misses, Lepton's `!important` color overrides on
+ * When the detection misses, the engine's `!important` color overrides on
  * `--lwt-accent-color`, `--toolbar-bgcolor`, `--arrowpanel-background`, etc.
- * never apply. `fluerial` and the built-in `proton` design are unaffected
- * because they do not use Lepton CSS.
+ * never apply.
  *
- * We do **not** patch the vendored Lepton files: the `update_lepton.yml`
- * workflow re-syncs them from upstream daily and would clobber any local
- * edit. Instead this is injected AFTER Lepton's own sheets, so
- * equal-specificity rules here win by source order. This keeps the upstream
- * sync path clean and lets us adapt to Gecko 153+ by editing only this file.
+ * This layer stays separate from the engine sheet: it is injected AFTER the
+ * engine's own sheets, so equal-specificity rules here win by source order,
+ * and a Gecko 153+ adaptation only needs to edit this file rather than the
+ * flattened engine.
  *
  * The selectors below deliberately rely on the stable `:-moz-lwtheme` /
  * `[lwtheme]` / `prefers-color-scheme` signals rather than hardcoded RGB
@@ -205,21 +202,16 @@ export const LEPTON_COMPAT_152_CSS = `
 `;
 
 /**
- * Floorp-specific icon rules extracted from
- * `skin/lepton/css/leptonChrome.css` lines 14596–14672.
+ * Floorp-specific icon rules for elements the upstream engine never knew
+ * about (PWA/SSB, UserCSSLoader, webpanel, share mode, etc.).
  *
- * Upstream Lepton does not know about these Floorp-only element IDs
- * (PWA/SSB, UserCSSLoader, webpanel, share mode, etc.). They were living
- * inside the vendored file, which means the daily `update_lepton.yml`
- * workflow would silently delete them whenever upstream restructured that
- * region. Hosting them here makes them independent of upstream syncs.
- *
- * The rules are duplicated verbatim from the vendored source (same `url()`
- * references resolve identically because this sheet is injected into the
- * same document and the relative `../icons` path is rewritten by
- * `replaceIconPaths()` at registration time). Duplicating intentionally
- * rather than deleting the vendored copy: the vendored copy disappears on
- * the next upstream sync, at which point this becomes the single source.
+ * They originally lived inside the vendored engine CSS and were hosted here
+ * to survive the (since removed) daily upstream sync. The engine
+ * (`skin/derp/css/engine-chrome.css`) is now flattened and owned in-tree,
+ * so this is simply their permanent home; the `url()` references resolve
+ * identically because this sheet is injected into the same document and the
+ * relative `../icons` path is rewritten by `replaceIconPaths()` at
+ * registration time.
  */
 export const FLOORP_ICON_PATCHES = `
 /*= Floorp Browser (icon patches, extracted from leptonChrome.css) ==========*/
@@ -302,8 +294,8 @@ export const FLOORP_ICON_PATCHES = `
 `;
 
 /**
- * Combined Lepton-family stylesheet: color fix + Lepton-specific compat +
- * Floorp icon patches. Injected after Lepton's own sheets.
+ * Combined engine compatibility stylesheet: color fix + engine compat +
+ * Floorp icon patches. Injected after the engine's own sheets.
  */
 export const LEPTON_COMPAT_CSS =
   GECKO_152_COLOR_FIX_CSS +

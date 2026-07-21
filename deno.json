@@ -43,7 +43,7 @@
     "libs/vite-plugin-gen-jarmn/**/*",
     "libs/vite-plugin-disable-csp/**/*",
     "tools/build/tasks/inject/mixins/**/*",
-    "browser-features/skin/lepton/userjs/**/*",
+    "browser-features/skin/derp/derp-prefs.js",
     "browser-features/chrome/experiment/csk/**/*",
     "browser-features/chrome/common/reverse-sidebar-position/**/*",
     "bridge/loader-features/vite.config.ts",

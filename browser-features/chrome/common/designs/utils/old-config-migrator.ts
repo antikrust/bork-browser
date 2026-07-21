@@ -4,18 +4,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 export const getOldInterfaceConfig = () => {
-  // derp keeps only two interfaces: lepton and derp. Legacy Floorp
-  // interface prefs (photon/protonfix under interface=3, fluerial under
-  // interface=8 — all removed) collapse to lepton, their nearest surviving
-  // sibling. A fresh profile (no legacy pref) defaults to derp, the fork's
-  // own interface.
-  switch (Services.prefs.getIntPref("floorp.browser.user.interface", 0)) {
-    case 3:
-    case 8:
-      return "lepton";
-  }
-
-  return "derp";
+  // derp ships a single interface. Every legacy Floorp interface pref value
+  // (interface=3 family, fluerial under interface=8 — all removed) collapses
+  // to it, so there is nothing left to read from the old pref.
+  return "derp" as const;
 };
 
 export const getOldTabbarStyleConfig = () => {

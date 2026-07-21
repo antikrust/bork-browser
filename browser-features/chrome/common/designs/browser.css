@@ -4,7 +4,7 @@
 
 #bsb-context-add,
 #bsb-context-link-add {
-  --menuitem-image: url("chrome://floorp/skin/designs/lepton/movetowindow-16.svg");
+  --menuitem-image: url("chrome://noraneko-skin/content/derp/icons/movetowindow-16.svg");
 }
 
 #undo-closed-tab {

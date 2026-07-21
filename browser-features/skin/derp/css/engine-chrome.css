@@ -1,4 +1,8 @@
 @charset "UTF-8";
+/* derp interface engine — browser chrome styles.
+ * Derived from Lepton (black7375's Firefox-UI-Fix, MPL-2.0), flattened to
+ * derp's fixed configuration. Owned and maintained in-tree; there is no
+ * upstream sync. */
 @namespace xul url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 @namespace html url("http://www.w3.org/1999/xhtml");
 /** Default Theme - Contrast **************************************************/

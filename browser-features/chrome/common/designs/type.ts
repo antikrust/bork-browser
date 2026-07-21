@@ -11,10 +11,9 @@ export const zFloorpDesignConfigs = t.intersection([
     globalConfigs: t.intersection([
       t.type({
         faviconColor: t.boolean,
-        userInterface: t.union([
-          t.literal("lepton"),
-          t.literal("derp"),
-        ]),
+        // derp's single interface. Retired values ("lepton" and older) in
+        // stored configs are coerced to "derp" in configs.ts before decoding.
+        userInterface: t.literal("derp"),
         appliedUserJs: t.string,
       }),
       t.UnknownRecord,

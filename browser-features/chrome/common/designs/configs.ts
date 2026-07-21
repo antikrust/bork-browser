@@ -70,6 +70,27 @@ export function coerceRemovedTabbarStyle(parsed: unknown): unknown {
   return parsed;
 }
 
+/**
+ * derp ships a single interface ("derp"); the selectable "lepton" option was
+ * removed. A config saved before the removal can still carry a retired
+ * userInterface value, which the schema no longer accepts. Coerce any
+ * non-"derp" value to "derp" before decoding — a decode failure here would
+ * throw away the user's entire design config, not just the stale interface.
+ */
+export function coerceRemovedUserInterface(parsed: unknown): unknown {
+  if (isPlainObject(parsed)) {
+    const globalConfigs = parsed.globalConfigs;
+    if (
+      isPlainObject(globalConfigs) &&
+      globalConfigs.userInterface !== undefined &&
+      globalConfigs.userInterface !== "derp"
+    ) {
+      globalConfigs.userInterface = "derp";
+    }
+  }
+  return parsed;
+}
+
 export function getOldUICustomizationConfig() {
   try {
     const navbarBottom = Services.prefs.getBoolPref(
@@ -288,7 +309,9 @@ function createConfig(): [
       "floorp.design.configs",
       getOldConfigs,
     );
-    const parsedConfig = coerceRemovedTabbarStyle(JSON.parse(configStr));
+    const parsedConfig = coerceRemovedUserInterface(
+      coerceRemovedTabbarStyle(JSON.parse(configStr)),
+    );
     // Merge existing config with defaults to tolerate newly added fields
     const merged = deepMerge(defaultConfig, parsedConfig);
     // Ensure backward compatibility: set default position if missing
@@ -312,7 +335,9 @@ function createConfig(): [
         "floorp.design.configs",
         getOldConfigs,
       );
-      const parsedConfig = coerceRemovedTabbarStyle(JSON.parse(configStr));
+      const parsedConfig = coerceRemovedUserInterface(
+        coerceRemovedTabbarStyle(JSON.parse(configStr)),
+      );
       const merged = deepMerge(defaultConfig, parsedConfig);
       // Ensure backward compatibility: set default position if missing
       if (

@@ -29,7 +29,7 @@
  * name. This is a single, Floorp-wide shim rather than touching 50+ call
  * sites, because:
  *   - the rename is mechanical (same semantics, different spelling),
- *   - it keeps the vendored Lepton CSS untouched (update_lepton.yml safe),
+ *   - it keeps the interface-engine CSS (skin/derp/css/) untouched,
  *   - it lets Floorp migrate component by component over time.
  *
  * The aliases are declared WITHOUT !important and only set a value when the
@@ -51,7 +51,7 @@
  * ## What is NOT a rename (deliberately absent from the table)
  *
  *   - `--toolbar-color` — still defined in 152 (global-shared.css). It is NOT
- *     `--toolbar-text-color`. Floorp/Lepton components that read
+ *     `--toolbar-text-color`. Floorp/engine components that read
  *     `--toolbar-color` keep working unaided.
  *   - `--panel-text-color` — NEW in 152 (popup.css: `--panel-text-color:
  *     MenuText`). It is not the rename of any 151 token; it is the 152 form
@@ -59,9 +59,9 @@
  *
  * ## Injection point
  *
- * Applied to ALL designs via `browser-design-element.tsx`, not just the
- * Lepton family — because Floorp's own components (not only Lepton) read
- * these names. See Issue #2489.
+ * Applied via `browser-design-element.tsx` ahead of the interface sheets —
+ * because Floorp's own components (not only the engine) read these names.
+ * See Issue #2489.
  */
 
 /**
@@ -114,7 +114,7 @@ export const GECKO_152_RENAMED_VARS: ReadonlyArray<
  * `--toolbar-text-color` is the important one: `tab.tokens.css` on 152 reads
  * `--tab-selected-textcolor: var(--toolbar-text-color)`, but Mozilla defines
  * `--toolbar-text-color` nowhere — it is expected to come from the active
- * theme / LWT / Lepton. On a plain build it is therefore empty and selected
+ * theme / LWT / interface engine. On a plain build it is therefore empty and selected
  * tab text goes unstyled. Alias it to `--toolbar-color` (the 152-surviving
  * token that actually carries the toolbar text color), letting LWTs that set
  * `--lwt-text-color` win first.
@@ -137,9 +137,9 @@ function buildAliasDeclarations(): string {
 }
 
 /**
- * The variable alias stylesheet. Injected for every Floorp design so all
- * Floorp chrome components (and the vendored Lepton CSS) keep resolving the
- * pre-152 variable names.
+ * The variable alias stylesheet. Injected chrome-wide so all Floorp chrome
+ * components (and the interface-engine CSS) keep resolving the pre-152
+ * variable names.
  */
 export const GECKO_152_VAR_ALIASES_CSS = `
 /* =========================================================================

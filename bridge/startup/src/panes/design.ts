@@ -5,8 +5,10 @@
 
 /**
  * Appearance pane — port of the hub's design settings page
- * (pages-settings/src/app/design): interface choice, tab bar position,
- * tab behavior, tab sleep exclusions and UI customization.
+ * (pages-settings/src/app/design): interface options, tab bar position,
+ * tab behavior, tab sleep exclusions and UI customization. derp ships a
+ * single interface design, so there is no design picker — the Interface
+ * group carries only the favicon-color toggle.
  *
  * Nearly everything lives in the floorp.design.configs JSON pref. Each
  * control read-modify-writes a single nested field, preserving every other
@@ -16,8 +18,8 @@
  * derp.tabs.hoverReload.enabled (default false). Tab sleep exclusions are
  * their own JSON pref, floorp.tabs.sleep.exclusion ({enabled, patterns}).
  *
- * The hub's Lepton sub-page (the userChrome.* toggles) is deliberately not
- * ported here — it is being retired separately.
+ * The hub's engine sub-page (the userChrome.* toggles) was retired with the
+ * design picker.
  *
  * Text mirrors the hub's en-US strings; i18n wiring is a follow-up for all
  * derp panes at once.
@@ -366,25 +368,6 @@ function build(root: Element): void {
 
   /* ---- Interface ---- */
   root.appendChild(groupboxOf("Interface", [
-    noteText('Choose the interface design. "Lepton" is the default.'),
-    radioGroup(
-      "derp-design-interface",
-      [
-        {
-          id: "derp-design-interface-derp",
-          label: "Derp (Compact)",
-          value: "derp",
-        },
-        {
-          id: "derp-design-interface-lepton",
-          label: "Lepton",
-          value: "lepton",
-        },
-      ],
-      () => designString(["globalConfigs", "userInterface"], "derp"),
-      (value) => setDesignValue(["globalConfigs", "userInterface"], value),
-    ),
-    sectionHeader("Other Interface Settings"),
     designCheckbox(
       "derp-design-favicon-color",
       ["globalConfigs", "faviconColor"],
