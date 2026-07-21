@@ -178,6 +178,150 @@ export default class TabStacks extends NoraComponentBase {
       });
     }
 
+    // ===== Native drag corrections around stack chips =====
+    // Two fixes, both post-passes over TabDragAndDrop._animateTabMove:
+    //
+    // (underline) Native paints a "will join this group" cue as a coloured
+    // underline on the DRAGGED tab, timed off the dragged tab's box edges —
+    // while our chip highlight tracks the cursor. The two disagreed by half
+    // a tab width, in opposite directions per drag direction. For stacks the
+    // chip highlight is the only signal; the underline is suppressed via a
+    // strip attribute (see styles.css). Plain groups keep native behavior.
+    //
+    // (hold) Native shifts the chip aside ("make room to reorder") once the
+    // dragged box overlaps it past moveOverThresholdPercent — but overlap is
+    // measured against the NARROWER of the two boxes, so the chip jumped the
+    // moment the cursor touched it. While the cursor is over a stack chip
+    // the gesture is "drop into": the reorder shift is held (chip stays put,
+    // the approach-side gap is kept), and native reordering resumes as soon
+    // as the cursor leaves the chip.
+    const TAB_DROP_TYPE = "application/x-moz-tabbrowser-tab";
+    type DragItem = Element & {
+      currentIndex?: number;
+      elementIndex?: number;
+      pinned?: boolean;
+      style?: CSSStyleDeclaration;
+    };
+    type NativeDragData = {
+      fromTabList?: boolean;
+      movingTabs?: unknown[];
+      movingTabsSet?: Set<unknown>;
+      tabWidth?: number;
+      animDropElementIndex?: number;
+      dropElement?: unknown;
+      dropBefore?: boolean;
+    };
+    const tabsEl = gb.tabContainer as unknown as XULElement & {
+      dragAndDropElements?: DragItem[];
+      tabDragAndDrop?: {
+        _animateTabMove?: (event: DragEvent) => void;
+        __derpAnimateWrapped?: boolean;
+      };
+    };
+    const correctStackDrag = (event: DragEvent) => {
+      const dragged = (event.dataTransfer as unknown as {
+        mozGetDataAt?: (type: string, index: number) => unknown;
+      })?.mozGetDataAt?.(TAB_DROP_TYPE, 0) as
+        | (Element & {
+          _dragData?: NativeDragData;
+          pinned?: boolean;
+          elementIndex?: number;
+          group?: StackGroup | null;
+        })
+        | null;
+      const dragData = dragged?._dragData;
+      if (
+        !dragged || !dragData || dragData.fromTabList ||
+        !dragged.classList?.contains?.("tabbrowser-tab")
+      ) {
+        // Group-label and split-view drags keep native behavior wholesale.
+        tabsEl.removeAttribute("data-derp-stack-droptarget");
+        return;
+      }
+
+      // Suppress the native join-underline while the drop target is a stack.
+      const de = dragData.dropElement as Element | null | undefined;
+      const deGroup = de?.tagName?.toLowerCase?.() === "tab-group"
+        ? de
+        : de?.closest?.("tab-group") ?? null;
+      tabsEl.toggleAttribute(
+        "data-derp-stack-droptarget",
+        deGroup?.getAttribute?.("data-derp-stack") === "true",
+      );
+
+      // Hold the reorder shift while the cursor is over a stack chip.
+      // Horizontal LTR strips only — exactly the layout stacks are built
+      // for; anything else keeps stock behavior.
+      if (
+        tabsEl.getAttribute("orient") !== "horizontal" ||
+        Services.locale.isAppLocaleRTL || dragged.pinned
+      ) {
+        return;
+      }
+      const chipGroup = (event.target as Element | null)
+        ?.closest?.(".tab-group-label-container")
+        ?.closest?.("tab-group[data-derp-stack]") as StackGroup | null;
+      if (!chipGroup || (dragged.group as unknown) === chipGroup) return;
+      const labelEl = ((chipGroup as unknown as { labelElement?: DragItem })
+        .labelElement ??
+        (chipGroup as unknown as Element).querySelector(
+          ".tab-group-label",
+        )) as DragItem | null;
+      const labelIndex = labelEl?.elementIndex;
+      const draggedIndex = dragged.elementIndex;
+      if (typeof labelIndex !== "number" || typeof draggedIndex !== "number") {
+        return;
+      }
+      // The no-shift state keeps the gap on the approach side: coming from
+      // the left that is the label's own index, from the right one past it
+      // (the zero-width members' slots — shifting those moves nothing).
+      const clampIndex = draggedIndex < labelIndex
+        ? labelIndex
+        : labelIndex + 1;
+      dragData.animDropElementIndex = clampIndex;
+      const firstMember = chipGroup.tabs?.[0];
+      if (firstMember) {
+        // Releasing here should join the stack even if the native drop
+        // handler wins the race (the chip's own drop handler then no-ops).
+        dragData.dropElement = firstMember;
+        dragData.dropBefore = true;
+      }
+      const shiftSize = dragData.tabWidth ?? 0;
+      const moving = dragData.movingTabsSet ??
+        new Set(dragData.movingTabs ?? []);
+      for (const item of tabsEl.dragAndDropElements ?? []) {
+        if (moving.has(item) || item === dragged || item.pinned) continue;
+        const cur = item.currentIndex ?? item.elementIndex;
+        if (typeof cur !== "number") continue;
+        let shift = 0;
+        if (cur < draggedIndex && cur >= clampIndex) shift = shiftSize;
+        else if (cur > draggedIndex && cur < clampIndex) shift = -shiftSize;
+        const box = item.classList?.contains?.("tab-group-label")
+          ? item.closest?.(".tab-group-label-container") as DragItem | null
+          : item;
+        if (box?.style) {
+          box.style.transform = shift ? `translateX(${shift}px)` : "";
+        }
+      }
+    };
+    const tdd = tabsEl.tabDragAndDrop;
+    if (tdd?._animateTabMove && !tdd.__derpAnimateWrapped) {
+      const origAnimate = tdd._animateTabMove.bind(tdd);
+      tdd._animateTabMove = (event: DragEvent) => {
+        origAnimate(event);
+        try {
+          correctStackDrag(event);
+        } catch (e) {
+          console.error("[tab-stacks] stack drag correction failed:", e);
+        }
+      };
+      tdd.__derpAnimateWrapped = true;
+      onCleanup(() => {
+        tdd._animateTabMove = origAnimate;
+        tdd.__derpAnimateWrapped = false;
+      });
+    }
+
     const onTabEvent = (event: Event) => {
       if (event.type === "TabSelect") {
         rememberSelection();
@@ -331,6 +475,43 @@ export default class TabStacks extends NoraComponentBase {
       document?.removeEventListener("popuphidden", onTabContextHidden, true);
     });
 
+    // From a row-2 proxy the native menu must not offer "Add Tab to Group":
+    // "New Group" would mint another stack from inside this one, and group
+    // membership is stack membership here — moving between stacks is done
+    // by dragging. Bubble phase, so it runs AFTER the popup's own
+    // TabContextMenu.updateContextMenu has made its visibility calls.
+    const MOVE_TO_GROUP_ID = "context_moveTabToGroup";
+    let hidMoveToGroup = false;
+    const onTabContextShowingLate = (event: Event) => {
+      const popup = event.target as Element & { triggerNode?: Node | null };
+      if (!(popup instanceof Element) || popup.id !== "tabContextMenu") return;
+      const trigger = popup.triggerNode as Element | null;
+      if (!trigger?.closest?.(".derp-stack-tab")) return;
+      const item = document?.getElementById(MOVE_TO_GROUP_ID) as
+        | (XULElement & { hidden: boolean })
+        | null;
+      if (item && !item.hidden) {
+        item.hidden = true;
+        hidMoveToGroup = true;
+      }
+    };
+    const onTabContextHiddenLate = (event: Event) => {
+      const popup = event.target as Element;
+      if (!(popup instanceof Element) || popup.id !== "tabContextMenu") return;
+      if (!hidMoveToGroup) return;
+      const item = document?.getElementById(MOVE_TO_GROUP_ID) as
+        | (XULElement & { hidden: boolean })
+        | null;
+      if (item) item.hidden = false;
+      hidMoveToGroup = false;
+    };
+    document.addEventListener("popupshowing", onTabContextShowingLate);
+    document.addEventListener("popuphidden", onTabContextHiddenLate);
+    onCleanup(() => {
+      document?.removeEventListener("popupshowing", onTabContextShowingLate);
+      document?.removeEventListener("popuphidden", onTabContextHiddenLate);
+    });
+
     // Stack ⇄ plain-group conversion. This build wires no context menu to
     // group labels (no context= attribute on the label chain), so the
     // feature owns one: right-click on any group label/chip opens it.
@@ -346,19 +527,34 @@ export default class TabStacks extends NoraComponentBase {
       })
       | null = null;
     let kindItem: XULElement | null = null;
+    // Every item carries a Stack and a Group wording; the menu serves both
+    // kinds and used to say "Reload Stack" etc. on plain groups too.
+    const dualLabelItems: Array<
+      { item: XULElement; stack: string; group: string }
+    > = [];
+    const relabelKindMenu = (kind: GroupKind): void => {
+      for (const d of dualLabelItems) {
+        d.item.setAttribute("label", kind === "stack" ? d.stack : d.group);
+      }
+    };
     const popupSet = doc.getElementById("mainPopupSet");
     if (popupSet) {
       kindMenu = doc.createXULElement("menupopup") as typeof kindMenu &
         XULElement;
       kindMenu.id = KIND_MENU_ID;
-      const makeItem = (label: string, onCommand: () => void): XULElement => {
+      const makeItem = (
+        stackLabel: string,
+        groupLabel: string,
+        onCommand: () => void,
+      ): XULElement => {
         const item = doc.createXULElement("menuitem");
-        item.setAttribute("label", label);
+        item.setAttribute("label", stackLabel);
         item.addEventListener("command", onCommand);
         kindMenu?.appendChild(item);
+        dualLabelItems.push({ item, stack: stackLabel, group: groupLabel });
         return item;
       };
-      makeItem("Reload Stack", () => {
+      makeItem("Reload Stack", "Reload Group", () => {
         const gb = getGBrowser();
         const group = menuGroup;
         if (!group || !gb) return;
@@ -368,7 +564,7 @@ export default class TabStacks extends NoraComponentBase {
           console.error("[tab-stacks] reload stack failed:", e);
         }
       });
-      makeItem("New Tab in Stack", () => {
+      makeItem("New Tab in Stack", "New Tab in Group", () => {
         const gb = getGBrowser();
         const group = menuGroup;
         if (!group || !gb) return;
@@ -387,7 +583,7 @@ export default class TabStacks extends NoraComponentBase {
           console.error("[tab-stacks] new tab in stack failed:", e);
         }
       });
-      makeItem("Rename Stack…", () => {
+      makeItem("Rename Stack…", "Rename Group…", () => {
         // Native group editor: rename + colour. Naming a stack pins the
         // chip title (an unnamed chip tracks the stack's current tab).
         const gb = getGBrowser();
@@ -406,7 +602,7 @@ export default class TabStacks extends NoraComponentBase {
         bumpStacksVersion();
       });
       kindMenu.appendChild(kindItem);
-      makeItem("Ungroup Stack", () => {
+      makeItem("Ungroup Stack", "Ungroup Tabs", () => {
         // Dissolve the stack, keep every tab in the strip.
         const gb = getGBrowser();
         const group = menuGroup;
@@ -418,7 +614,7 @@ export default class TabStacks extends NoraComponentBase {
         }
       });
       kindMenu.appendChild(doc.createXULElement("menuseparator"));
-      makeItem("Close Stack", () => {
+      makeItem("Close Stack", "Close Group", () => {
         const gb = getGBrowser();
         const group = menuGroup;
         if (!group || !gb) return;
@@ -444,11 +640,11 @@ export default class TabStacks extends NoraComponentBase {
       event.preventDefault();
       event.stopPropagation();
       menuGroup = group;
+      const kind = getGroupKind(group.id);
+      relabelKindMenu(kind);
       kindItem.setAttribute(
         "label",
-        getGroupKind(group.id) === "stack"
-          ? "Change to Tab Group"
-          : "Change to Tab Stack",
+        kind === "stack" ? "Change to Tab Group" : "Change to Tab Stack",
       );
       kindMenu.openPopupAtScreen(event.screenX, event.screenY, true);
     };
@@ -484,6 +680,7 @@ export default class TabStacks extends NoraComponentBase {
     const endTabDrag = () => {
       clearDropIndicators();
       clearChipHighlight();
+      tabsEl.removeAttribute("data-derp-stack-droptarget");
       // TabGrouped from a drop arrives before dragend; clear on a delay,
       // then reconcile the bar with wherever selection actually landed.
       setTimeout(() => {
@@ -495,16 +692,30 @@ export default class TabStacks extends NoraComponentBase {
       }, 150);
     };
     const onTabGroupedDuringDrag = (event: Event) => {
-      if (!tabDragActive || !lastDropPoint) return;
+      if (!tabDragActive) return;
       const tab = event.target as StackTab;
       const group = tab.group;
+      if (!group) return;
       if (
-        !group ||
         (group as unknown as Element).getAttribute?.("data-derp-stack") !==
           "true"
       ) {
+        // Dropped into a plain group: native scrolls the strip to the
+        // group's start (its icon), not to the tab that just landed. Once
+        // the native machinery settles, bring the dropped tab itself into
+        // view — the whole point of the gesture is seeing where it went.
+        setTimeout(() => {
+          try {
+            if (tab.isConnected && tab.group === group) {
+              asb?.ensureElementIsVisible(tab as unknown as Element, false);
+            }
+          } catch {
+            // best-effort scroll
+          }
+        }, 120);
         return;
       }
+      if (!lastDropPoint) return;
       const lc = (group as unknown as Element).querySelector(
         ".tab-group-label-container",
       );
@@ -547,6 +758,7 @@ export default class TabStacks extends NoraComponentBase {
       event.preventDefault();
       event.stopImmediatePropagation();
       clearDropIndicators();
+      clearChipHighlight();
       // Adopt after the native drag machinery settles.
       setTimeout(() => {
         try {
@@ -565,11 +777,46 @@ export default class TabStacks extends NoraComponentBase {
     // Proxy drops: reorder inside the bar, or leave the stack by dropping
     // into the tab row.
 
+    // The native strip drop indicator (.tab-drop-indicator) — the same
+    // blue line link drops show. Native hides it for our custom drag type,
+    // so the proxy path positions it directly. Cell-edge box-shadows were
+    // tried first and failed exactly where they matter most: inset on a
+    // stack chip they sat flush against the chip's coloured border and
+    // were unreadable.
+    const stripDropIndicator = ():
+      | (HTMLElement & { hidden: boolean })
+      | null =>
+      (gb.tabContainer as unknown as Element)?.querySelector(
+        ".tab-drop-indicator",
+      ) as (HTMLElement & { hidden: boolean }) | null;
+    const showStripDropLine = (boundaryX: number | null): void => {
+      const ind = stripDropIndicator();
+      if (!ind) return;
+      if (boundaryX == null) {
+        ind.hidden = true;
+        ind.style.transform = "";
+        return;
+      }
+      const rect = (gb.tabContainer as unknown as {
+        arrowScrollbox?: Element;
+      }).arrowScrollbox?.getBoundingClientRect();
+      if (!rect) return;
+      // Mirror the native margin math (drag-and-drop.js handle_dragover):
+      // unhide first — a hidden indicator measures clientWidth 0.
+      ind.hidden = false;
+      const margin = boundaryX - rect.left + ind.clientWidth / 2;
+      ind.style.transform = `translateX(${Math.round(margin)}px)`;
+    };
     const clearDropIndicators = () => {
       for (
         const el of document.querySelectorAll("[data-drop-side]")
       ) {
         el.removeAttribute("data-drop-side");
+      }
+      const ind = stripDropIndicator();
+      if (ind && !ind.hidden) {
+        ind.hidden = true;
+        ind.style.transform = "";
       }
     };
     const clearChipHighlight = () => {
@@ -600,6 +847,66 @@ export default class TabStacks extends NoraComponentBase {
       clearDropIndicators();
       chip.setAttribute("data-derp-drop-into", "true");
     };
+    // Row-1 insertion targets for proxy drags: ungrouped tabs AND whole
+    // groups. A stack chip (or a plain group) is one atomic cell — a proxy
+    // drops beside it, never between its members. Without the groups in
+    // this list, hovering directly left/right of a chip showed no
+    // indicator and the drop resolved against some tab further away.
+    type StripItem = {
+      el: Element;
+      group: StackGroup | null;
+      x: number;
+      width: number;
+    };
+    const collectStripItems = (excludeTab: StackTab | null): StripItem[] => {
+      const gb2 = getGBrowser();
+      if (!gb2) return [];
+      const items: StripItem[] = [];
+      for (const t of gb2.tabs) {
+        if (t.hidden || t.group || t === excludeTab) continue;
+        const r = (t as unknown as Element).getBoundingClientRect();
+        if (r.width === 0) continue;
+        items.push({
+          el: t as unknown as Element,
+          group: null,
+          x: r.x,
+          width: r.width,
+        });
+      }
+      for (const g of gb2.tabGroups) {
+        const ge = g as unknown as Element;
+        const lc = ge.querySelector(".tab-group-label-container");
+        const lcRect = lc?.getBoundingClientRect();
+        if (!lc || !lcRect || lcRect.width === 0) continue;
+        let right = lcRect.right;
+        if (ge.getAttribute("data-derp-stack") !== "true") {
+          // Plain group: the cell spans the label plus its visible tabs.
+          for (const t of g.tabs) {
+            if (t.hidden) continue;
+            const r = (t as unknown as Element).getBoundingClientRect();
+            if (r.width > 0 && r.right > right) right = r.right;
+          }
+        }
+        items.push({
+          el: ge,
+          group: g,
+          x: lcRect.x,
+          width: right - lcRect.x,
+        });
+      }
+      items.sort((a, b) => a.x - b.x);
+      return items;
+    };
+    const resolveStripAnchor = (
+      items: StripItem[],
+      clientX: number,
+    ): StripItem | undefined => {
+      let anchor: StripItem | undefined;
+      for (const it of items) {
+        if (clientX >= it.x + it.width / 2) anchor = it;
+      }
+      return anchor;
+    };
     const onProxyDragOver = (event: DragEvent) => {
       if (!event.dataTransfer?.types?.includes(PROXY_TYPE)) return;
       const t = event.target as Element | null;
@@ -610,6 +917,12 @@ export default class TabStacks extends NoraComponentBase {
         return;
       }
       event.preventDefault();
+      // The strip's native dragover handler treats our custom type as
+      // dropEffect "none" and re-hides the drop indicator this handler
+      // just positioned (it runs later — target phase vs our capture).
+      // It does nothing else for proxy drags (even its autoscroll sits
+      // behind the same "none" early-return), so cut it out entirely.
+      event.stopPropagation();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
       // Insertion indicator on the nearest cell edge, like the top row.
       clearDropIndicators();
@@ -624,35 +937,39 @@ export default class TabStacks extends NoraComponentBase {
         }
         proxies[proxies.length - 1]?.setAttribute("data-drop-side", "after");
       } else if (inStrip) {
-        const gb = getGBrowser();
-        if (!gb) return;
-        let anchor: StackTab | undefined;
-        for (const tab of gb.tabs) {
-          if (tab.hidden || tab.group) continue;
-          const r = tab.getBoundingClientRect();
-          if (r.width === 0) continue;
-          if (event.clientX >= r.x + r.width / 2) anchor = tab;
+        // Releasing on the proxy's own chip is a no-op (see onProxyDrop) —
+        // show no line there.
+        const dt = event.dataTransfer as
+          | (DataTransfer & { mozSourceNode?: Node | null })
+          | null;
+        const srcProxy = (dt?.mozSourceNode as Element | null)?.closest?.(
+          ".derp-stack-tab",
+        );
+        const srcTab = findTabByDragId(
+          srcProxy?.getAttribute("data-derp-drag-id") ?? "",
+        );
+        const hoverChip = t?.closest?.(".tab-group-label-container")
+          ?.closest?.("tab-group[data-derp-stack]");
+        if (hoverChip && hoverChip === (srcTab?.group as unknown as Element)) {
+          return;
         }
+        // The native blue line marks the exact insertion boundary: the
+        // trailing edge of the cell the drop will follow (or the leading
+        // edge of the first cell for a drop at the very start).
+        const items = collectStripItems(null);
+        const anchor = resolveStripAnchor(items, event.clientX);
         if (anchor) {
-          (anchor as unknown as Element).setAttribute(
-            "data-drop-side",
-            "after",
-          );
+          showStripDropLine(anchor.x + anchor.width);
+        } else if (items[0]) {
+          showStripDropLine(items[0].x);
         } else {
-          const first = gb.tabs.find(
-            (tab) =>
-              !tab.hidden && !tab.group &&
-              tab.getBoundingClientRect().width > 0,
-          );
-          (first as unknown as Element | undefined)?.setAttribute(
-            "data-drop-side",
-            "before",
-          );
+          showStripDropLine(null);
         }
       }
     };
     const onProxyDrop = (event: DragEvent) => {
       clearDropIndicators();
+      clearChipHighlight();
       const dragId = event.dataTransfer?.getData(PROXY_TYPE);
       if (!dragId) return;
       const gb = getGBrowser();
@@ -704,22 +1021,23 @@ export default class TabStacks extends NoraComponentBase {
           // mutation: ungroupTab() inserts the tab into the strip and
           // shifts every tab right of the group, so measuring afterwards
           // resolved against moved boxes and landed a slot early.
-          const visible = gb.tabs.filter(
-            (t) =>
-              !t.hidden && t !== tab && !t.group &&
-              t.getBoundingClientRect().width > 0,
-          );
-          let anchor: StackTab | undefined;
-          for (const t of visible) {
-            const rect = t.getBoundingClientRect();
-            if (event.clientX >= rect.x + rect.width / 2) anchor = t;
-          }
-          const first = visible[0];
+          // Whole groups count as cells too, so a drop directly beside a
+          // stack chip lands exactly there (moveTabAfter/Before with a
+          // tab-group element places the tab outside, adjacent to it).
+          const items = collectStripItems(tab);
+          const anchor = resolveStripAnchor(items, event.clientX);
+          const first = items[0];
           gb.ungroupTab?.(tab);
           if (anchor) {
-            gb.moveTabAfter?.(tab, anchor);
+            gb.moveTabAfter?.(
+              tab,
+              (anchor.group ?? anchor.el) as unknown as StackTab,
+            );
           } else if (first) {
-            gb.moveTabBefore?.(tab, first);
+            gb.moveTabBefore?.(
+              tab,
+              (first.group ?? first.el) as unknown as StackTab,
+            );
           }
         }
         this.updateGroupChips();
@@ -858,6 +1176,19 @@ export default class TabStacks extends NoraComponentBase {
           if (countLabel && countLabel.textContent !== String(reachable)) {
             countLabel.textContent = String(reachable);
           }
+          // Long typed names: the label grows to the stack chip's cap and
+          // then fades out (styles.css) — but only mark it cropped when
+          // the text actually overflows. The box hugs its content, so an
+          // unconditional fade would eat the tail of every short name.
+          const lp = plainLabel as
+            | (Element & { scrollWidth?: number; clientWidth?: number })
+            | null;
+          if (lp && typeof lp.scrollWidth === "number") {
+            lp.toggleAttribute(
+              "data-derp-cropped",
+              lp.scrollWidth > (lp.clientWidth ?? 0) + 1,
+            );
+          }
           for (
             const sel of [
               ".tab-group-label-container",
@@ -907,11 +1238,13 @@ export default class TabStacks extends NoraComponentBase {
         }
         const label = group.querySelector(".tab-group-label");
         label?.setAttribute("data-derp-count", String(group.tabs.length));
-        // A user-given group name wins; otherwise show the stack's
-        // current tab title.
+        // A user-given group name wins; otherwise the stack's FIRST tab
+        // anchors the title (stable — no renaming as you click around
+        // inside the stack). Bound either way; the chip fades the rest.
+        const chipTitle = group.label || getGroupDisplayTitle(group);
         label?.setAttribute(
           "data-derp-title",
-          group.label || getGroupDisplayTitle(group),
+          chipTitle.length > 60 ? `${chipTitle.slice(0, 60)}…` : chipTitle,
         );
       } catch {
         // Group may be mid-removal; the next event refreshes it.

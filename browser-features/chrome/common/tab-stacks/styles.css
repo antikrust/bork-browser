@@ -39,9 +39,14 @@ tab-group[data-derp-stack] .tab-group-label-container {
    outranks a plain tab-group selector, so the chip sat 4px right of the
    previous tab's background edge with a dead strip between them. */
 #tabbrowser-tabs tab-group[data-derp-stack] > .tab-group-label-container {
-  flex: 100 100 auto !important;
+  /* Exactly a tab's flex: `flex: 100 100` (basis 0) is what .tabbrowser-tab
+     uses, so the chip grows and shrinks in lockstep with its neighbours.
+     Basis auto sized the chip to its full title text instead — a fresh
+     stack (or one that just adopted a tab with a long title) rendered up
+     to twice as wide as the tabs beside it. */
+  flex: 100 100 0% !important;
   min-width: var(--tab-min-width, 76px) !important;
-  max-width: 225px !important;
+  max-width: var(--tab-max-width, 225px) !important;
   align-items: stretch !important;
   /* Vertical seat comes from pack="start" (set in index.ts): XUL layout
      attributes are presentation hints that author CSS cannot override. */
@@ -130,10 +135,25 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   min-height: 20px;
   padding: 2px 5px !important;
   box-sizing: border-box;
+  /* Native caps the label at 10em and relies on text-overflow — which
+     inline-flex display silently disables (the text becomes a flex item),
+     so long typed names hard-clipped mid-letter. Grow to the same cap as
+     a stack chip instead; the fade below handles the excess. */
+  max-width: var(--tab-max-width, 225px) !important;
+  overflow: hidden;
+  white-space: nowrap;
   /* Native collapsed/active labels grow a bright 1px outline ring that
      reads as a misshapen border on the icon square — the member tabs
      already show selection, so the ring adds nothing here. */
   outline: none !important;
+}
+
+/* Fade the tail like a tab label — but only when the text actually
+   overflows (index.ts marks that): the label box hugs its content, so an
+   unconditional fade would eat the end of every short name. */
+#tabbrowser-tabs tab-group:not([data-derp-stack])
+  .tab-group-label[data-derp-cropped] {
+  mask-image: linear-gradient(to left, transparent, black 1.5em);
 }
 
 /* Same layers glyph as the stack chips, so both group kinds read as tab
@@ -296,7 +316,10 @@ tab-group[data-derp-stack] .tab-group-label::before {
   text-align: start;
   overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
+  /* Same overflow treatment as tab labels: fade the tail out (tabs.css
+     masks .tab-label-container with this exact gradient). A short title
+     never reaches the fade zone, so nothing changes for it. */
+  mask-image: linear-gradient(to left, transparent, black 1em);
 }
 
 tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
@@ -455,14 +478,9 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   box-shadow: inset -2px 0 0 var(--focus-outline-color, #0a84ff);
 }
 
-/* Same indicator on row-1 tabs when a proxy is dragged up to leave. */
-.tabbrowser-tab[data-drop-side="before"] .tab-background {
-  box-shadow: inset 2px 0 0 var(--focus-outline-color, #0a84ff) !important;
-}
-
-.tabbrowser-tab[data-drop-side="after"] .tab-background {
-  box-shadow: inset -2px 0 0 var(--focus-outline-color, #0a84ff) !important;
-}
+/* Row-1 insertion feedback for proxy drags is the NATIVE .tab-drop-indicator
+   (positioned by showStripDropLine in index.ts) — box-shadow edge lines were
+   unreadable beside a stack chip's coloured border. */
 
 /* Drag ghost for proxy drags (HTML node: snapshotting live XUL inside
    the strip is flaky — same trick as the workspaces rows). */
@@ -628,3 +646,15 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   ) !important;
   border-color: var(--focus-outline-color, #0a84ff) !important;
 }
+
+/* While the native drop target is a stack, the dragged tab must NOT show
+   the native "will join this group" underline (its .tab-group-line painted
+   in the group colour): it keys off the dragged tab's box edges, so it led
+   or trailed the chip highlight by half a tab depending on drag direction.
+   The chip highlight above is the one true join signal. The attribute is
+   maintained by the _animateTabMove wrapper in index.ts; plain groups keep
+   the native underline. */
+#tabbrowser-tabs[data-derp-stack-droptarget] .tabbrowser-tab .tab-group-line {
+  display: none !important;
+}
+

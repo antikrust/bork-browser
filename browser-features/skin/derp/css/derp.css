@@ -341,7 +341,11 @@
   padding: 0 10px !important;
   margin: 0 !important;
   align-self: stretch !important;
-  display: flex !important;
+  /* NO display here: xul.css already renders toolbarbuttons as flex, and
+     forcing `display !important` overrode the native show/hide swap between
+     the inline and fixed "+" — both were visible at once whenever the strip
+     crossed the overflow boundary (joining a stack hides a tab, so a drag
+     into a stack flipped the boundary and "grew a second plus"). */
   align-items: center !important;
   justify-content: center !important;
 }

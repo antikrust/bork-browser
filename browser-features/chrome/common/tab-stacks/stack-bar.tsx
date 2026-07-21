@@ -38,6 +38,7 @@ type TabBrowser = {
   ungroupTab?: (tab: StackTab) => void;
   reloadTab?: (tab: StackTab) => void;
   moveTabBefore?: (tab: StackTab, target: StackTab) => void;
+  moveTabAfter?: (tab: StackTab, target: StackTab) => void;
 };
 
 export const getGBrowser = (): TabBrowser | null =>
@@ -72,22 +73,15 @@ export const rememberSelection = () => {
   }
 };
 
-/** Title shown on the stack chip: the stack's current tab, like Vivaldi. */
+/** Title shown on an unnamed stack chip: its FIRST tab, as a stable
+ * anchor. It used to track the last tab clicked inside the stack, which
+ * read as the chip constantly renaming itself while you worked in it.
+ * (A user-given name always wins over this — see updateGroupChips.) */
 export const getGroupDisplayTitle = (group: StackGroup): string => {
-  const remembered = lastSelectedInGroup.get(group);
-  const tab =
-    remembered && remembered.isConnected && remembered.group === group
-      ? remembered
-      : group.tabs.find((t) => t.selected) ?? group.tabs[0];
-  // Seed the memory with whatever we resolved: a stack restored with the
-  // selection already inside it has no remembered entry (no TabSelect
-  // ever fired in-group), so clicking OUT of the stack re-resolved the
-  // title to the first tab and the chip appeared to rename itself.
-  if (tab && tab !== remembered) {
-    lastSelectedInGroup.set(group, tab);
-  }
-  const label = tab?.label ?? "";
-  return label.length > 24 ? `${label.slice(0, 24)}…` : label;
+  const label = group.tabs[0]?.label ?? "";
+  // Bound the attribute size only — visually the chip's box crops and
+  // fades the text like a tab, so the cut must stay past the widest chip.
+  return label.length > 60 ? `${label.slice(0, 60)}…` : label;
 };
 
 export const activateGroup = (group: StackGroup) => {
