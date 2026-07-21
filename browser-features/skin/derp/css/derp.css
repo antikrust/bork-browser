@@ -455,3 +455,9 @@
 :root[data-derp-dark] #panel-sidebar-splitter {
   background-color: #050506 !important;
 }
+
+/* Sidepanel icon column: the bottom (settings) icon sat flush against
+   the window edge. */
+#panel-sidebar-select-box {
+  padding-bottom: 2px !important;
+}

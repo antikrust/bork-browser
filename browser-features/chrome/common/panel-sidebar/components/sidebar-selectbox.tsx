@@ -8,7 +8,6 @@ import { panelSidebarData } from "../data/data";
 import { PanelSidebarButton } from "./sidebar-panel-button";
 import { showPanelSidebarAddModal } from "./panel-sidebar-modal";
 import type { CPanelSidebar } from "./panel-sidebar";
-import { WorkspacesPanels } from "../../workspaces/toolbar/workspaces-panels.tsx";
 import {
   ExtensionTweaker,
   toggleExtensionTweaker,
@@ -39,7 +38,8 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
           }
         }}
       />
-      <WorkspacesPanels />
+      {/* Workspaces moved to the left rail (workspaces/toolbar/
+          workspaces-rail.tsx) — manageOnBms renders nothing here. */}
       <For each={panelSidebarData()}>
         {(panel) => <PanelSidebarButton panel={panel} ctx={props.ctx} />}
       </For>
@@ -106,7 +106,25 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
         />
         <xul:toolbarbutton
           class="panel-sidebar-panel"
-          onCommand={() => globalThis.openPreferences()}
+          onCommand={() => {
+            // Toggle: first press opens Settings, pressing again while
+            // you're looking at it closes it (the tab), not a re-open.
+            const gb = globalThis.gBrowser;
+            let current = "";
+            try {
+              current = gb.selectedBrowser?.currentURI?.spec ?? "";
+            } catch {
+              // lazy/teardown browser — treat as not-settings
+            }
+            if (
+              current.startsWith("about:settings") ||
+              current.startsWith("about:preferences")
+            ) {
+              gb.removeTab(gb.selectedTab);
+            } else {
+              globalThis.openPreferences();
+            }
+          }}
           id="panel-sidebar-preferences-icon"
         />
       </xul:vbox>
