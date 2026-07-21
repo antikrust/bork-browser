@@ -50,6 +50,14 @@ export default class DerpDefaults extends NoraComponentBase {
     this.brandMacAppMenu();
     this.fixOpenPreferencesWindow();
     this.applyDarkVariant();
+    // Snappier chrome tooltips (workspace rail names and friends): 300ms
+    // instead of the 500ms default. Default branch — not persisted, so a
+    // future default change wins automatically.
+    try {
+      Services.prefs.getDefaultBranch("").setIntPref("ui.tooltipDelay", 300);
+    } catch (e) {
+      console.error("[derp-defaults] tooltip delay tune failed:", e);
+    }
   }
 
   /**

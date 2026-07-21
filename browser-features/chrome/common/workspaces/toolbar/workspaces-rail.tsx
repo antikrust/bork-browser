@@ -212,7 +212,7 @@ const RailWorkspaceButton = (props: RailWorkspaceButtonProps) => {
       data-workspaceId={props.workspaceId}
       role="button"
       tabIndex={0}
-      title={workspaceName()}
+      tooltiptext={workspaceName()}
       aria-label={workspaceName()}
       draggable="true"
       onClick={handleActivate}
@@ -314,7 +314,7 @@ function Rail(props: { ctx: WorkspacesService }) {
           <Show when={canImportVivaldi()}>
             <RailControlButton
               id="derp-workspaces-rail-import-vivaldi"
-              icon="chrome://global/skin/icons/import.svg"
+              icon="chrome://browser/skin/import.svg"
               label={texts().importVivaldi}
               onActivate={handleImportVivaldi}
             />
