@@ -688,3 +688,47 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   display: none !important;
 }
 
+
+/* ===== Group colour palette: fix red + a second row ===== */
+/* Native's red swatch points at --color-red-* design tokens this runtime
+   never defines, so the swatch painted a transparent circle ("there's no
+   red!"). Define the trio. The group colour setter templates ANY name
+   into var(--tab-group-color-<name>), so the eight extra colours below
+   need nothing more than these variables (swatches injected by
+   onGroupEditorShowing in index.ts). */
+:root {
+  --color-red-70: #b3231a;
+  --color-red-20: #ff8a80;
+  --color-red-0: #ffe3e0;
+
+  --tab-group-color-crimson: #881337;
+  --tab-group-color-crimson-invert: #fb7185;
+  --tab-group-color-crimson-pale: #ffe4e6;
+  --tab-group-color-amber: #b45309;
+  --tab-group-color-amber-invert: #fbbf24;
+  --tab-group-color-amber-pale: #fef3c7;
+  --tab-group-color-lime: #4d7c0f;
+  --tab-group-color-lime-invert: #a3e635;
+  --tab-group-color-lime-pale: #ecfccb;
+  --tab-group-color-teal: #0f766e;
+  --tab-group-color-teal-invert: #2dd4bf;
+  --tab-group-color-teal-pale: #ccfbf1;
+  --tab-group-color-indigo: #4338ca;
+  --tab-group-color-indigo-invert: #818cf8;
+  --tab-group-color-indigo-pale: #e0e7ff;
+  --tab-group-color-magenta: #a21caf;
+  --tab-group-color-magenta-invert: #e879f9;
+  --tab-group-color-magenta-pale: #fae8ff;
+  --tab-group-color-brown: #6b4423;
+  --tab-group-color-brown-invert: #c9915f;
+  --tab-group-color-brown-pale: #f3e5d8;
+  --tab-group-color-slate: #475569;
+  --tab-group-color-slate-invert: #94a3b8;
+  --tab-group-color-slate-pale: #e2e8f0;
+}
+
+/* Seventeen swatches wrap into the second row. */
+.tab-group-editor-swatches {
+  flex-wrap: wrap !important;
+  row-gap: 8px;
+}

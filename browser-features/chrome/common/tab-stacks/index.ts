@@ -718,9 +718,9 @@ export default class TabStacks extends NoraComponentBase {
           console.error("[tab-stacks] new tab in stack failed:", e);
         }
       });
-      makeItem("Rename Stack…", "Rename Group…", () => {
-        // Native group editor: rename + colour. Naming a stack pins the
-        // chip title (an unnamed chip tracks the stack's current tab).
+      makeItem("Manage Stack…", "Manage Group…", () => {
+        // Native group editor: rename, colour and group actions — it
+        // manages, it doesn't just rename, so the label says Manage.
         const gb = getGBrowser();
         if (menuGroup) gb?.tabGroupMenu?.openEditModal(menuGroup);
       });
@@ -765,6 +765,75 @@ export default class TabStacks extends NoraComponentBase {
       });
       popupSet.appendChild(kindMenu);
     }
+    // ===== Extra group colours (second swatch row) =====
+    // Native populates its swatches once from a static list; ours are
+    // appended on first editor open and persist (same delegated change
+    // listener on the container picks them up — the colour setter accepts
+    // any name that has --tab-group-color-<name> vars, see styles.css).
+    const EXTRA_GROUP_COLORS: Array<{ name: string; label: string }> = [
+      { name: "crimson", label: "Crimson" },
+      { name: "amber", label: "Amber" },
+      { name: "lime", label: "Lime" },
+      { name: "teal", label: "Teal" },
+      { name: "indigo", label: "Indigo" },
+      { name: "magenta", label: "Magenta" },
+      { name: "brown", label: "Brown" },
+      { name: "slate", label: "Slate" },
+    ];
+    const onGroupEditorShowing = (event: Event) => {
+      const panel = event.target as Element;
+      if (!(panel instanceof Element) || panel.localName !== "panel") return;
+      const container = panel.querySelector?.(".tab-group-editor-swatches");
+      if (!container) return;
+      try {
+        if (!container.querySelector("[data-derp-extra-swatch]")) {
+          for (const c of EXTRA_GROUP_COLORS) {
+            const input = document.createElement(
+              "input",
+            ) as HTMLInputElement;
+            input.id = `tab-group-editor-swatch-${c.name}`;
+            input.type = "radio";
+            input.name = "tab-group-color";
+            input.value = c.name;
+            input.setAttribute("data-derp-extra-swatch", "true");
+            const label = document.createElement("label") as HTMLElement;
+            label.classList.add("tab-group-editor-swatch");
+            label.setAttribute("data-derp-extra-swatch", "true");
+            (label as HTMLElement & { htmlFor: string }).htmlFor = input.id;
+            label.title = c.label;
+            label.style.setProperty(
+              "--tabgroup-swatch-color",
+              `var(--tab-group-color-${c.name})`,
+            );
+            label.style.setProperty(
+              "--tabgroup-swatch-color-invert",
+              `var(--tab-group-color-${c.name}-invert)`,
+            );
+            container.append(input, label);
+          }
+        }
+        // Native's open bookkeeping only checks/unchecks ITS swatches;
+        // reflect the edited group's colour on ours each open.
+        const menu = (getGBrowser() as unknown as {
+          tabGroupMenu?: { activeGroup?: { color?: string } | null };
+        } | null)?.tabGroupMenu;
+        const color = menu?.activeGroup?.color ?? null;
+        for (
+          const r of container.querySelectorAll(
+            "input[data-derp-extra-swatch]",
+          ) as NodeListOf<HTMLInputElement>
+        ) {
+          r.checked = !!color && r.value === color;
+        }
+      } catch (e) {
+        console.error("[tab-stacks] extra colour swatches failed:", e);
+      }
+    };
+    document.addEventListener("popupshowing", onGroupEditorShowing);
+    onCleanup(() => {
+      document?.removeEventListener("popupshowing", onGroupEditorShowing);
+    });
+
     const onLabelContextMenu = (event: MouseEvent) => {
       const target = event.target as Element | null;
       const labelContainer = target?.closest?.(".tab-group-label-container");
