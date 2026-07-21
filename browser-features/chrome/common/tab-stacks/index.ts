@@ -335,6 +335,68 @@ export default class TabStacks extends NoraComponentBase {
       });
     }
 
+    // No drag ghosts. Native startTabDrag hands the OS a 160×90 PageThumbs
+    // canvas as the drag image for every tab drag — white until the async
+    // capture lands, then a live page preview floating beside the tab that
+    // is ALREADY moving under the cursor (the "double ghost"; start pages
+    // capture instantly, so they showed the full preview every time). The
+    // strip's own movingtab animation is the feedback; the floating image
+    // adds nothing. Replace it with a transparent 1px node and shadow
+    // updateDragImage on this DataTransfer so the async capture cannot
+    // bring the preview back mid-drag. setDragImage must happen while the
+    // dragstart event is still being dispatched, and native stopPropagates
+    // it — hence the wrap, not a listener. All-tabs-list drags keep their
+    // image (the list row does not move, so there the image IS the
+    // feedback); row-2 proxies never enter startTabDrag and keep their
+    // text-pill ghost.
+    let ghostBlank: HTMLElement | null = null;
+    const killTabDragGhost = (event: DragEvent) => {
+      const dt = event.dataTransfer as
+        | (DataTransfer & {
+          mozTypesAt?: (i: number) => ArrayLike<string>;
+          updateDragImage?: (...args: unknown[]) => void;
+        })
+        | null;
+      if (!dt || dt.mozTypesAt?.(0)?.[0] !== TAB_DROP_TYPE) return;
+      if (!ghostBlank) {
+        ghostBlank = document.createElement("div");
+        ghostBlank.style.cssText =
+          "width:1px;height:1px;opacity:0;position:fixed;top:-10px;left:-10px;";
+        document.documentElement?.appendChild(ghostBlank);
+      }
+      try {
+        dt.setDragImage(ghostBlank, 0, 0);
+        dt.updateDragImage = () => {};
+      } catch (e) {
+        console.error("[tab-stacks] drag ghost suppression failed:", e);
+      }
+    };
+    type StartTabDragFn = (
+      event: DragEvent,
+      tab: unknown,
+      opts?: { fromTabList?: boolean },
+    ) => void;
+    const tddStart = tdd as
+      | (typeof tdd & {
+        startTabDrag?: StartTabDragFn;
+        __derpGhostWrapped?: boolean;
+      })
+      | undefined;
+    if (tddStart?.startTabDrag && !tddStart.__derpGhostWrapped) {
+      const origStartTabDrag = tddStart.startTabDrag.bind(tddStart);
+      tddStart.startTabDrag = (event, tab, opts) => {
+        origStartTabDrag(event, tab, opts);
+        if (!opts?.fromTabList) killTabDragGhost(event);
+      };
+      tddStart.__derpGhostWrapped = true;
+      onCleanup(() => {
+        tddStart.startTabDrag = origStartTabDrag;
+        tddStart.__derpGhostWrapped = false;
+        ghostBlank?.remove();
+        ghostBlank = null;
+      });
+    }
+
     const onTabEvent = (event: Event) => {
       if (event.type === "TabSelect") {
         rememberSelection();
