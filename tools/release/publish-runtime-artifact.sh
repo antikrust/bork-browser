@@ -14,14 +14,19 @@
 #
 # Example:
 #   publish-runtime-artifact.sh windows x86_64 \
-#     /mnt/terra/derp-runtime-build/artifacts/floorp-windows-x86_64-moz-artifact.zip \
+#     /path/to/derp-runtime-build/artifacts/floorp-windows-x86_64-moz-artifact.zip \
 #     derp-runtime-152.0.7-1
 #
-# Prereqs: gh authed for the RUNTIME_REPO; the artifact already built + pulled
-# out of the build host/VM (see project-runtime-build-recipe memory for the
-# per-platform build steps).
+# Prereqs: gh authed for the runtime repo; the artifact already built + pulled
+# out of the build host/VM (see BUILD.md for the per-platform build steps).
 
 set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# Local infra config (runtime repo); hosts.env is gitignored — see hosts.env.example.
+HOSTS_ENV="${DERP_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
+# shellcheck source=/dev/null
+[ -f "$HOSTS_ENV" ] && source "$HOSTS_ENV"
 
 RUNTIME_REPO="${DERP_RUNTIME_REPO:-100mountains/derp-runtime}"
 

@@ -23,3 +23,12 @@ logs/
 # Upstream CI signing-key template. Untracked so a filled-in copy can never
 # be committed to what is now a public repo.
 .secrets
+
+# Local release infra (real host names, paths). Ships as hosts.env.example only.
+tools/release/hosts.env
+
+# Internal design/audit docs — kept out of the public repo.
+ARCHITECTURE-AUDIT.md
+RUNTIME-FORK-PLAN.md
+/*-AUDIT.md
+/*-PLAN.md
