@@ -72,6 +72,11 @@ const createDefaultShortcuts = (): Record<string, ShortcutConfig> => {
       modifiers: { ...CHROME_CHORD },
       action: "derp-toggle-panel-sidebar",
     },
+    "derp-toggle-workspaces-rail": {
+      key: "W",
+      modifiers: { ...CHROME_CHORD },
+      action: "derp-toggle-workspaces-rail",
+    },
   };
 };
 

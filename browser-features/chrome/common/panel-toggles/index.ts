@@ -7,8 +7,10 @@ import {
   noraComponent,
   NoraComponentBase,
 } from "#features-chrome/utils/base.ts";
+import { onCleanup } from "solid-js";
 import { configStore, setConfigStore } from "../workspaces/data/config.ts";
 import { togglePanelSidebar } from "../lean-urlbar/sidebar-toggle.ts";
+import { gestureActions } from "../mouse-gesture/utils/gestures.ts";
 
 const { CustomizableUI } = ChromeUtils.importESModule(
   "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
@@ -154,16 +156,11 @@ const ensureWidgets = (): void => {
     console.error("[panel-toggles] Failed to remove #sidebar-button:", e);
   }
 
-  createToggleWidget(
-    RAIL_BUTTON_ID,
-    RAIL_BUTTON_TOOLTIP,
-    (event) => resolveHooks(event)?.toggleWorkspacesRail(),
-  );
-  createToggleWidget(
-    PANEL_BUTTON_ID,
-    PANEL_BUTTON_TOOLTIP,
-    (event) => resolveHooks(event)?.togglePanelSidebar(),
-  );
+  // Deliberate no-op handlers: commands are handled by the per-window
+  // delegate in init(). Keeping logic here too would double-toggle (=
+  // visible no-op) the day CustomizableUI's api-widget dispatch works.
+  createToggleWidget(RAIL_BUTTON_ID, RAIL_BUTTON_TOOLTIP, () => {});
+  createToggleWidget(PANEL_BUTTON_ID, PANEL_BUTTON_TOOLTIP, () => {});
 
   pinPlacement(RAIL_BUTTON_ID, 0);
   pinPlacement(PANEL_BUTTON_ID, "end");
@@ -196,6 +193,34 @@ export default class PanelToggles extends NoraComponentBase {
       togglePanelSidebar: () => togglePanelSidebar(window),
     };
     (window as unknown as Record<string, unknown>)[HOOKS_PROP] = hooks;
+
+    // The buttons' command events are handled HERE, per window, by a
+    // document-level delegate. CustomizableUI's own api-widget onCommand
+    // dispatch was verifiably inert for these nodes (widget registered,
+    // node built, hooks live — click did nothing), and a delegate also
+    // survives node rebuilds on customization.
+    const onDelegatedCommand = (event: Event) => {
+      const id = (event.target as Element | null)?.id;
+      if (id === RAIL_BUTTON_ID) {
+        hooks.toggleWorkspacesRail();
+      } else if (id === PANEL_BUTTON_ID) {
+        hooks.togglePanelSidebar();
+      }
+    };
+    window.addEventListener("command", onDelegatedCommand);
+    onCleanup(() => {
+      window.removeEventListener("command", onDelegatedCommand);
+    });
+
+    // Keyboard chord for the rail, same family as the rest of the derp
+    // chrome controls (Cmd/Ctrl+Alt+letter): W toggles the workspaces
+    // rail; S (panel sidebar) already lives in lean-urlbar's actions.
+    gestureActions.registerActions([
+      {
+        name: "derp-toggle-workspaces-rail",
+        fn: () => hooks.toggleWorkspacesRail(),
+      },
+    ]);
 
     this.injectStyle();
     ensureWidgets();
