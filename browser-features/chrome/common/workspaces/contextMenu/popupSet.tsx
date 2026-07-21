@@ -7,7 +7,7 @@ import { ContextMenuUtils } from "#features-chrome/utils/context-menu.tsx";
 import { createRoot, getOwner, type Owner, runWithOwner } from "solid-js";
 import type { WorkspacesService } from "../workspacesService.ts";
 import { ContextMenu } from "./contextMenu.tsx";
-import { createSignal, Show } from "solid-js";
+import { createSignal } from "solid-js";
 import type { TWorkspaceID } from "../utils/type.ts";
 
 type ChromeDocument = Document & { popupNode?: Element | null };
@@ -22,76 +22,66 @@ export class WorkspacesPopupContextMenu {
     if (owner) runWithOwner(owner, exec);
     else createRoot(exec);
   }
-  contextWorkspaceID: TWorkspaceID | null = null;
-  needDisableBefore = false;
-  needDisableAfter = false;
-  /**
-   * Create context menu items for workspaces.
-   * @param event The event.
-   * @returns The context menu items.
-   */
-  private createWorkspacesContextMenuItems(event: Event) {
-    //delete already exsist items
-    const menuElem = document?.getElementById(
-      "workspaces-toolbar-item-context-menu",
-    );
-    while (menuElem?.firstChild) {
-      const firstChild = menuElem.firstChild as XULElement;
-      firstChild.remove();
-    }
-
-    // Use popupNode if available (set by panel sidebar), otherwise explicitOriginalTarget (toolbar)
-    const chromeDoc = document as ChromeDocument;
-    let eventTargetElement = (chromeDoc.popupNode ?? event.explicitOriginalTarget) as XULElement;
-
-    // Traverse up to find the workspace div if we got a child element
-    while (eventTargetElement && !eventTargetElement.id?.startsWith("workspace-")) {
-      eventTargetElement = eventTargetElement.parentElement as unknown as XULElement;
-    }
-
-    // Extract workspace ID with validation
-    const contextWorkspaceId = eventTargetElement?.id?.replace("workspace-", "") ?? "";
-    if (this.ctx.isWorkspaceID(contextWorkspaceId)) {
-      this.contextWorkspaceID = contextWorkspaceId;
-    }
-
-    const beforeSiblingElem =
-      eventTargetElement.previousElementSibling?.getAttribute(
-        "data-workspaceId",
-      ) || null;
-    const afterSiblingElem =
-      eventTargetElement.nextElementSibling?.getAttribute("data-workspaceId") ||
-      null;
-
-    const isAfterSiblingExist = afterSiblingElem != null;
-    // Disable "move up" only if this is the first workspace (no previous sibling)
-    this.needDisableBefore = beforeSiblingElem === null;
-    // Disable "move down" only if this is the last workspace (no next sibling)
-    this.needDisableAfter = !isAfterSiblingExist;
-  }
 
   private PopupSet() {
-    const [show, setShow] = createSignal(false);
+    // The menu DOM is STATIC — built once and reused for every open.
+    // popupshowing only refreshes these signals. The previous shape tore
+    // every child out and re-rendered the tree inside popupshowing,
+    // mutating the popup while the native macOS menu (nsMenuX) was mid
+    // construction — implicated in parent-process segfaults with this
+    // exact menu open (two identical SIGSEGV stacks on 2026-07-21).
+    const [contextWorkspaceId, setContextWorkspaceId] = createSignal<
+      TWorkspaceID | null
+    >(null);
+    const [disableBefore, setDisableBefore] = createSignal(false);
+    const [disableAfter, setDisableAfter] = createSignal(false);
+
+    const refreshFromEvent = (event: Event) => {
+      // Use popupNode if available (set by the rail), otherwise
+      // explicitOriginalTarget (toolbar chooser rows).
+      const chromeDoc = document as ChromeDocument;
+      let target = (chromeDoc.popupNode ??
+        (event as Event & { explicitOriginalTarget?: Element })
+          .explicitOriginalTarget) as Element | null;
+      while (target && !target.id?.startsWith("workspace-")) {
+        target = target.parentElement;
+      }
+      if (!target) return;
+      const id = target.id.replace("workspace-", "");
+      if (this.ctx.isWorkspaceID(id)) {
+        setContextWorkspaceId(id);
+      }
+      const before = target.previousElementSibling?.getAttribute(
+        "data-workspaceId",
+      ) ?? null;
+      const after = target.nextElementSibling?.getAttribute(
+        "data-workspaceId",
+      ) ?? null;
+      setDisableBefore(before === null);
+      setDisableAfter(after === null);
+    };
+
     return (
       <xul:popupset>
         <xul:menupopup
           id="workspaces-toolbar-item-context-menu"
-          onPopupShowing={(event) => {
-            this.createWorkspacesContextMenuItems(event);
-            setShow(true);
-          }}
-          onPopupHiding={() => {
-            setShow(false);
+          onPopupShowing={(event: Event) => {
+            // Only the outermost popup's showing refreshes state — the
+            // Set Icon submenu bubbles its own popupshowing through here.
+            if (
+              (event.target as Element | null)?.id ===
+                "workspaces-toolbar-item-context-menu"
+            ) {
+              refreshFromEvent(event);
+            }
           }}
         >
-          <Show when={show()}>
-            <ContextMenu
-              disableBefore={this.needDisableBefore}
-              disableAfter={this.needDisableAfter}
-              contextWorkspaceId={this.contextWorkspaceID!}
-              ctx={this.ctx}
-            />
-          </Show>
+          <ContextMenu
+            disableBefore={disableBefore()}
+            disableAfter={disableAfter()}
+            contextWorkspaceId={contextWorkspaceId()!}
+            ctx={this.ctx}
+          />
         </xul:menupopup>
       </xul:popupset>
     );

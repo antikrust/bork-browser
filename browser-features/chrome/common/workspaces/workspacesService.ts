@@ -370,6 +370,21 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
     });
   }
 
+  /**
+   * Set (or clear, with null) a workspace's icon in place — the rail's
+   * right-click "Set Icon" picker writes through here. Null falls back
+   * to the neutral folder glyph at render time.
+   */
+  public setWorkspaceIcon(id: TWorkspaceID, icon: string | null) {
+    const workspace = this.getRawWorkspace(id);
+    if (!workspace) return;
+    setWorkspacesDataStore("data", (prev) => {
+      const temp = this.cloneWorkspaceMap(prev);
+      temp.set(id, { ...workspace, icon });
+      return temp as unknown as TWorkspacesStoreData["data"];
+    });
+  }
+
   public changeWorkspace(id: TWorkspaceID) {
     this.tabManagerCtx.changeWorkspace(id);
     Services.obs.notifyObservers(

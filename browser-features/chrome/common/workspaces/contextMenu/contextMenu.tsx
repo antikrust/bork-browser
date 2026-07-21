@@ -7,9 +7,13 @@ import type { TWorkspaceID } from "../utils/type";
 import { startInlineRename } from "../toolbar/popup-block-element.tsx";
 import type { WorkspacesService } from "../workspacesService";
 import i18next from "i18next";
-import { createSignal } from "solid-js";
+import { createSignal, For } from "solid-js";
 import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
 import { configStore, setConfigStore } from "../data/config.ts";
+
+const { CustomizableUI } = ChromeUtils.importESModule(
+  "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
+);
 
 const translationKeys = {
   moveUp: "workspaces.context-menu.move-up",
@@ -82,6 +86,29 @@ export function ContextMenu(props: {
         onCommand={() =>
           props.ctx.manageWorkspaceFromDialog(props.contextWorkspaceId)}
       />
+      {/* Every workspace gets an icon without a dialog round-trip: the
+          full builtin library inline, plus the neutral folder default. */}
+      <xul:menu label="Set Icon">
+        <xul:menupopup>
+          <xul:menuitem
+            label="None (folder)"
+            onCommand={() =>
+              props.ctx.setWorkspaceIcon(props.contextWorkspaceId, null)}
+          />
+          <xul:menuseparator />
+          <For each={props.ctx.iconCtx.workspaceIconsArray}>
+            {(name) => (
+              <xul:menuitem
+                class="menuitem-iconic"
+                label={name.charAt(0).toUpperCase() + name.slice(1)}
+                image={props.ctx.iconCtx.getWorkspaceIconUrl(name)}
+                onCommand={() =>
+                  props.ctx.setWorkspaceIcon(props.contextWorkspaceId, name)}
+              />
+            )}
+          </For>
+        </xul:menupopup>
+      </xul:menu>
       <xul:menuseparator class="workspaces-context-menu-separator" />
       <xul:menuitem
         label={texts().archive}
@@ -107,6 +134,29 @@ export function ContextMenu(props: {
         label="Workspaces sidebar"
         checked={configStore.manageOnBms}
         onCommand={() => setConfigStore("manageOnBms", !configStore.manageOnBms)}
+      />
+      {/* Quick recovery for a chooser dragged out in customize mode —
+          and the deliberate way to run rail-only. */}
+      <xul:menuitem
+        type="checkbox"
+        label="Workspaces in tab bar"
+        checked={!!CustomizableUI.getPlacementOfWidget(
+          "workspaces-toolbar-button",
+        )}
+        onCommand={() => {
+          const placed = !!CustomizableUI.getPlacementOfWidget(
+            "workspaces-toolbar-button",
+          );
+          if (placed) {
+            CustomizableUI.removeWidgetFromArea("workspaces-toolbar-button");
+          } else {
+            CustomizableUI.addWidgetToArea(
+              "workspaces-toolbar-button",
+              "TabsToolbar",
+              0,
+            );
+          }
+        }}
       />
     </>
   );
