@@ -47,6 +47,120 @@ export default class DerpDefaults extends NoraComponentBase {
     void this.applyDefaultSearch();
     this.relocateExtensionButtons();
     this.brandMacAppMenu();
+    this.fixOpenPreferencesWindow();
+  }
+
+  /**
+   * Settings must open in the window you asked from. Stock openPreferences
+   * fails that twice over: it targets Services.wm.getMostRecentWindow
+   * (recency can lag the click on macOS), and its switchToTabHavingURI
+   * searches EVERY window for an existing settings tab and switches focus
+   * there — with two windows, Settings appeared to open "in the other
+   * window". This version is strictly window-local: reuse a settings tab
+   * in THIS window, else open a new one HERE.
+   */
+  private fixOpenPreferencesWindow(): void {
+    type SettingsBrowser = {
+      currentURI?: { spec?: string } | null;
+      contentDocument?: { readyState?: string } | null;
+      contentWindow?: { gotoPref?: (pane: string) => void } | null;
+      loadURI?: (uri: unknown, opts: Record<string, unknown>) => void;
+      addEventListener: (
+        type: string,
+        fn: () => void,
+        opts: Record<string, unknown>,
+      ) => void;
+    };
+    type SettingsTab = { linkedBrowser?: SettingsBrowser | null };
+    type PrefWindow = typeof window & {
+      openPreferences?: (
+        paneID?: string,
+        extraArgs?: { urlParams?: Record<string, string | undefined> },
+      ) => Promise<void> | void;
+      openTrustedLinkIn?: (url: string, where: string) => void;
+      gBrowser?: {
+        tabs: SettingsTab[];
+        selectedTab: SettingsTab;
+        selectedBrowser?: SettingsBrowser;
+      };
+    };
+    const win = window as PrefWindow;
+    const orig = win.openPreferences?.bind(win);
+    if (!orig || !win.openTrustedLinkIn || !win.gBrowser) return;
+    const isSettingsUri = (u: string): boolean =>
+      u.startsWith("about:settings") || u.startsWith("about:preferences");
+    win.openPreferences = async (paneID, extraArgs) => {
+      try {
+        const friendly = (paneID ?? "").replace(
+          /^pane./,
+          (m) => m[4].toLowerCase(),
+        );
+        let params: URLSearchParams | null = null;
+        if (extraArgs?.urlParams) {
+          params = new URLSearchParams();
+          for (const [name, value] of Object.entries(extraArgs.urlParams)) {
+            if (value !== undefined) params.set(name, value);
+          }
+        }
+        const suffix = (params ? `?${params}` : "") +
+          (friendly ? `#${friendly}` : "");
+        const gb = win.gBrowser!;
+        let existing: SettingsTab | null = null;
+        for (const t of gb.tabs) {
+          let u = "";
+          try {
+            u = t.linkedBrowser?.currentURI?.spec ?? "";
+          } catch {
+            // lazy tab without a resolvable URI — not a settings tab
+          }
+          if (isSettingsUri(u)) {
+            existing = t;
+            break;
+          }
+        }
+        if (!existing) {
+          win.openTrustedLinkIn!(`about:settings${suffix}`, "tab");
+          return;
+        }
+        gb.selectedTab = existing;
+        const browser = existing.linkedBrowser;
+        if (!browser || !suffix) return;
+        const current = (() => {
+          try {
+            return browser.currentURI?.spec ?? "";
+          } catch {
+            return "";
+          }
+        })();
+        if (current.endsWith(suffix) === false) {
+          if (paneID && browser.contentWindow?.gotoPref) {
+            if (browser.contentDocument?.readyState !== "complete") {
+              await new Promise<void>((resolve) =>
+                browser.addEventListener("load", resolve, {
+                  capture: true,
+                  once: true,
+                })
+              );
+            }
+            browser.contentWindow.gotoPref(paneID);
+          } else {
+            browser.loadURI?.(
+              Services.io.newURI(`about:settings${suffix}`),
+              {
+                triggeringPrincipal: Services.scriptSecurityManager
+                  .getSystemPrincipal(),
+              },
+            );
+          }
+        }
+      } catch (e) {
+        console.error(
+          "[derp-defaults] window-local openPreferences failed, using stock:",
+          e,
+        );
+        return orig(paneID, extraArgs);
+      }
+    };
   }
 
   /**
