@@ -255,6 +255,14 @@
   "qrcode-generate-page-action": "このページの QR コードを生成",
   "qrcode-generate-page-action-title": "QR コードジェネレーター",
   "panelSidebar": {
+    "staticPanels": {
+      "browser-manager-sidebar": "ブラウザーマネージャー",
+      "bookmark-sidebar": "ブックマーク",
+      "history-sidebar": "履歴",
+      "download-sidebar": "ダウンロード",
+      "notes-sidebar": "メモ",
+      "synced-tabs-sidebar": "他のデバイスのタブ"
+    },
     "modal": {
       "type": "パネルの種類",
       "typeOptions": {

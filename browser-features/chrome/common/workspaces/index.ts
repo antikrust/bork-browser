@@ -12,6 +12,7 @@ import { WorkspaceIcons } from "./utils/workspace-icons.ts";
 import { WorkspacesService } from "./workspacesService.ts";
 import { WorkspaceManageModal } from "./workspace-modal.tsx";
 import { WorkspacesToolbarButton } from "./toolbar/toolbar-element.tsx";
+import { WorkspacesSidebarRail } from "./toolbar/workspaces-rail.tsx";
 import { WorkspacesPopupContextMenu } from "./contextMenu/popupSet.tsx";
 import { WorkspacesDataManager } from "./workspacesDataManagerBase.tsx";
 import { enabled } from "./data/config.ts";
@@ -79,6 +80,7 @@ export default class Workspaces extends NoraComponentBase {
 
         new WorkspaceManageModal(ctx, iconCtx);
         new WorkspacesToolbarButton(ctx);
+        new WorkspacesSidebarRail(ctx);
         new WorkspacesPopupContextMenu(ctx);
         new WorkspacesTabContextMenu(ctx);
         new WorkspacesLinkContextMenu(ctx);

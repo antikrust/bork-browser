@@ -9,6 +9,7 @@ import type { WorkspacesService } from "../workspacesService";
 import i18next from "i18next";
 import { createSignal } from "solid-js";
 import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
+import { configStore, setConfigStore } from "../data/config.ts";
 
 const translationKeys = {
   moveUp: "workspaces.context-menu.move-up",
@@ -87,6 +88,25 @@ export function ContextMenu(props: {
         onCommand={async () => {
           await props.ctx.archiveWorkspace(props.contextWorkspaceId);
         }}
+      />
+      <xul:menuseparator />
+      {/* Display toggles, moved here from the settings page: the store's
+          persistence effect writes them back to floorp.workspaces.v4.config. */}
+      <xul:menuitem
+        type="checkbox"
+        label="Show workspace name"
+        checked={configStore.showWorkspaceNameOnToolbar}
+        onCommand={() =>
+          setConfigStore(
+            "showWorkspaceNameOnToolbar",
+            !configStore.showWorkspaceNameOnToolbar,
+          )}
+      />
+      <xul:menuitem
+        type="checkbox"
+        label="Workspaces sidebar"
+        checked={configStore.manageOnBms}
+        onCommand={() => setConfigStore("manageOnBms", !configStore.manageOnBms)}
       />
     </>
   );

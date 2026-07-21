@@ -95,9 +95,13 @@ function createConfig(): [
   const [configStore, setConfigStore] = createStore(finalConfig);
 
   createEffect(() => {
+    // Spread, not unwrap(): unwrap kills Solid's tracking, so this effect
+    // fired exactly once and store writes never persisted. (Unnoticed for so
+    // long because the old settings hub wrote the pref directly and only the
+    // observer below fed the store; the navbar/menu toggles write the store.)
     Services.prefs.setStringPref(
       WORKSPACED_CONFIG_PREF_NAME,
-      JSON.stringify(unwrap(configStore)),
+      JSON.stringify({ ...configStore }),
     );
   });
 

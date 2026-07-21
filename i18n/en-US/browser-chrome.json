@@ -256,6 +256,14 @@
   "qrcode-generate-page-action": "Generate QR Code for this page",
   "qrcode-generate-page-action-title": "QR Code Generator",
   "panelSidebar": {
+    "staticPanels": {
+      "browser-manager-sidebar": "Browser Manager",
+      "bookmark-sidebar": "Bookmarks",
+      "history-sidebar": "History",
+      "download-sidebar": "Downloads",
+      "notes-sidebar": "Notes",
+      "synced-tabs-sidebar": "Tabs from other devices"
+    },
     "modal": {
       "type": "Panel Type",
       "typeOptions": {

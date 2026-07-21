@@ -144,7 +144,12 @@ export class PanelSidebarAddModal {
     const staticPanelOptions = Object.entries(STATIC_PANEL_DATA).map(
       ([key, panel]) => ({
         value: key,
-        label: panel.l10n,
+        // The static panels' l10n keys resolve under
+        // panelSidebar.staticPanels; fall back to the raw key for any
+        // panel without a translation.
+        label: i18next.t(`panelSidebar.staticPanels.${panel.l10n}`, {
+          defaultValue: panel.l10n,
+        }),
         icon: "",
       }),
     );

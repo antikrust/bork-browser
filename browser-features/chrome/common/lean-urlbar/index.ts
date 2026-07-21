@@ -11,13 +11,16 @@ import {
 } from "#features-chrome/utils/base.ts";
 import { gestureActions } from "../mouse-gesture/utils/gestures.ts";
 import { LeanUrlbarStyle } from "./lean-urlbar.tsx";
+import {
+  SIDEBAR_HIDDEN_ATTR,
+  SIDEBAR_HIDDEN_PREF,
+  togglePanelSidebar,
+} from "./sidebar-toggle.ts";
 
 const AUTOHIDE_ENABLED_PREF = "derp.urlbar.autohide.enabled";
 const SIDEBAR_TOGGLE_ENABLED_PREF = "derp.sidebar.toggle.enabled";
 const HIDDEN_PREF = "derp.urlbar.hidden";
-const SIDEBAR_HIDDEN_PREF = "derp.sidebar.hidden";
 const HIDDEN_ATTR = "derp-urlbar-hidden";
-const SIDEBAR_HIDDEN_ATTR = "derp-sidebar-hidden";
 const PEEK_ATTR = "derp-urlbar-peek";
 
 /**
@@ -150,11 +153,10 @@ export default class LeanUrlbar extends NoraComponentBase {
         name: "derp-toggle-panel-sidebar",
         fn: () => {
           // Registered so the shortcut binding resolves; inert while the
-          // feature switch is off.
+          // feature switch is off. The toggle itself is shared with the
+          // derp-panel-sidebar-button navbar widget (sidebar-toggle.ts).
           if (!sidebarToggleEnabled) return;
-          const next = !root.hasAttribute(SIDEBAR_HIDDEN_ATTR);
-          applySidebarHidden(next);
-          Services.prefs.setBoolPref(SIDEBAR_HIDDEN_PREF, next);
+          togglePanelSidebar(window);
         },
       },
     ]);

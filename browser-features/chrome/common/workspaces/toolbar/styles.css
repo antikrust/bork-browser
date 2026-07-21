@@ -639,7 +639,8 @@ panel:has(#workspacesToolbarButtonPanel) {
   }
 }
 
-/* Workspace panel (for sidebar) drag & drop styles */
+/* Workspace rail/panel drag & drop styles: the insertion line sits above
+   or below the button under the pointer, matching the popup list. */
 .workspace-panel {
   &[dragging="true"] {
     opacity: 0.5;
@@ -652,4 +653,96 @@ panel:has(#workspacesToolbarButtonPanel) {
   &[drag-over="after"] {
     box-shadow: 0 2px 0 var(--focus-outline-color, #0a84ff);
   }
+}
+
+/* ===== Workspaces rail (Firefox revamped-sidebar slot) ===== */
+
+/* While the rail is active we own the slot's *content* only: the native
+   lit <sidebar-main> launcher (self-rerendering — never reach into it)
+   is hidden, not removed, and the launcher resize splitter goes with it
+   since it would resize content that no longer shows. The #sidebar-main
+   box itself stays Firefox's: SidebarController decides when the slot
+   shows and where it sits. */
+:root[derp-workspaces-rail] #sidebar-main > sidebar-main {
+  display: none !important;
+}
+:root[derp-workspaces-rail] #sidebar-launcher-splitter {
+  display: none !important;
+}
+
+#derp-workspaces-rail {
+  /* derp's indigo accent, marking the active workspace. */
+  --derp-rail-accent: #6366f1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  /* Match the native icon launcher's footprint (32px icon buttons plus
+     breathing room) so the slot doesn't jump when we take it over. */
+  width: 40px;
+  min-width: 40px;
+  padding: 6px 0 4px;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.derp-workspaces-rail-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 auto;
+  gap: 2px;
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+.derp-workspaces-rail-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 2px;
+  width: 100%;
+}
+
+.workspace-rail-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+}
+
+.workspace-rail-button:hover {
+  background-color: var(
+    --toolbarbutton-hover-background,
+    rgba(128, 128, 128, 0.2)
+  );
+}
+
+.workspace-rail-button img {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+/* Active workspace: indigo-tinted plate with an indigo ring. (Outline,
+   not box-shadow — the drag insertion lines above use box-shadow and the
+   two must not fight on the active button.) */
+.workspace-rail-button[data-checked="true"] {
+  background-color: color-mix(in srgb, var(--derp-rail-accent) 25%, transparent);
+  outline: 1px solid var(--derp-rail-accent);
+  outline-offset: -1px;
+}
+
+.workspace-rail-control img {
+  opacity: 0.8;
 }

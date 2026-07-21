@@ -44,6 +44,13 @@ const BASE_STATIC_PANEL_DATA: StaticPanelData = {
     defaultWidth: 415,
   },
 
+  "floorp//synced-tabs": {
+    url: "chrome://browser/content/syncedtabs/sidebar.xhtml",
+    icon: "chrome://browser/skin/synced-tabs.svg",
+    l10n: "synced-tabs-sidebar",
+    defaultWidth: 415,
+  },
+
   "floorp//notes": {
     url: import.meta.env.DEV
       ? "http://localhost:5188"
