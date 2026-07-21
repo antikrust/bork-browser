@@ -16,9 +16,13 @@
 }
 
 /* derp: vertical tabs are removed from the browser (sidebar.verticalTabs is
-   locked false at startup). Hide the native toggle in the tab-strip/toolbar
-   context menu — clicking it could only fail against the locked pref. */
-#toolbar-context-toggle-vertical-tabs {
+   locked false at startup). Hide EVERY native entry that offers the mode —
+   the toolbar context menu AND the sidebar context menu (the first sweep
+   missed the sidebar one) — clicking them could only fail against the
+   locked pref. The customize-sidebar panel's toggle is shadow-DOM and
+   pref-locked, so it is inert if ever reached. */
+#toolbar-context-toggle-vertical-tabs,
+#sidebar-context-menu-enable-vertical-tabs {
   display: none !important;
 }
 
