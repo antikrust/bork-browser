@@ -198,9 +198,16 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
 #tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label-container,
 #tabbrowser-tabs tab-group:not([data-derp-stack])
   .tab-group-overflow-count-container {
-  background-color: light-dark(
-    var(--tab-group-color),
-    var(--tab-group-color-invert)
+  /* A wash of the group colour, not the solid native cell: the solid
+     bright invert forced dark text (unreadable against the compact
+     theme, and the dark colour inherited into member-tab titles on the
+     dark wash). 32% matches a selected member's wash — the label reads
+     as the strongest cell of its group, and the strip's normal light
+     text works on it. */
+  background-color: color-mix(
+    in srgb,
+    light-dark(var(--tab-group-color), var(--tab-group-color-invert)) 32%,
+    transparent
   );
   align-items: center;
   justify-content: center;
@@ -219,19 +226,13 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   min-height: 0;
 }
 
-/* The label and the count sit in sibling containers, and each resolved
-   light-dark() in its own context — the same expression gave them opposite
-   answers, leaving pale text and a pale icon on the pale cell while only the
-   count went dark. Resolve it once on the group they share and have both
-   inherit, so the two halves cannot drift apart again. The icon is painted
-   with currentColor, so it follows the label for free. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) {
-  color: light-dark(
-    var(--tab-group-color-pale),
-    var(--tab-group-label-text-dark)
-  );
-}
-
+/* No group-coloured text anywhere: the earlier group-level colour rule
+   resolved to Firefox's DARK text token and inherited into member-tab
+   titles sitting on the dark wash — near-black on near-black. With the
+   cell itself now a wash, the strip's normal light text works for the
+   label, the count and every member title alike; `inherit !important`
+   still overrides native's own label colour (which assumes the solid
+   cell). The glyph paints with currentColor and follows for free. */
 #tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label,
 #tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-overflow-count {
   color: inherit !important;

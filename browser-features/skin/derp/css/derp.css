@@ -355,6 +355,22 @@
   background-color: rgba(255, 255, 255, 0.09) !important;
 }
 
+/* ===== Strip drop indicator: plain line, no pin head ===== */
+/* Native draws a 12px-wide pin/circle SVG. Keep the box exactly as native
+   sizes it (12px wide, -12px start margin) so the positioning math —
+   native link drops and tab-stacks' showStripDropLine alike — is
+   untouched, and paint a straight 2px line down its centre instead,
+   matching the theme's other insertion lines. */
+#tabbrowser-tabs .tab-drop-indicator {
+  background: linear-gradient(
+    to right,
+    transparent calc(50% - 1px),
+    var(--focus-outline-color, #0a84ff) calc(50% - 1px),
+    var(--focus-outline-color, #0a84ff) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  ) !important;
+}
+
 #TabsToolbar #tabs-newtab-button > .toolbarbutton-icon,
 #TabsToolbar #new-tab-button > .toolbarbutton-icon {
   border-radius: 0 !important;

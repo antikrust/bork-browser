@@ -73,12 +73,16 @@ export const rememberSelection = () => {
   }
 };
 
-/** Title shown on an unnamed stack chip: its FIRST tab, as a stable
- * anchor. It used to track the last tab clicked inside the stack, which
- * read as the chip constantly renaming itself while you worked in it.
+/** Title shown on an unnamed stack chip: its first REACHABLE tab, as a
+ * stable anchor. It used to track the last tab clicked inside the stack,
+ * which read as the chip constantly renaming itself while you worked in
+ * it. Workspaces can park members hidden — never title the chip after a
+ * tab this workspace cannot even see.
  * (A user-given name always wins over this — see updateGroupChips.) */
 export const getGroupDisplayTitle = (group: StackGroup): string => {
-  const label = group.tabs[0]?.label ?? "";
+  const anchor = group.tabs.find((t) => !(t as { hidden?: boolean }).hidden) ??
+    group.tabs[0];
+  const label = anchor?.label ?? "";
   // Bound the attribute size only — visually the chip's box crops and
   // fades the text like a tab, so the cut must stay past the widest chip.
   return label.length > 60 ? `${label.slice(0, 60)}…` : label;
@@ -88,10 +92,14 @@ export const activateGroup = (group: StackGroup) => {
   const gb = getGBrowser();
   if (!gb) return;
   const remembered = lastSelectedInGroup.get(group);
-  const target =
-    remembered && remembered.isConnected && remembered.group === group
-      ? remembered
-      : group.tabs[0];
+  const usable = (t: StackTab | undefined): t is StackTab =>
+    !!t && t.isConnected && t.group === group &&
+    !(t as { hidden?: boolean }).hidden;
+  // Never select a workspace-hidden member — that yanks the session into
+  // another workspace's state. First reachable tab is the fallback.
+  const target = usable(remembered)
+    ? remembered
+    : group.tabs.find((t) => usable(t)) ?? null;
   if (target) {
     gb.selectedTab = target;
   }

@@ -664,6 +664,7 @@ export default class TabStacks extends NoraComponentBase {
     // side of the stack it was dropped on.
     let tabDragActive = false;
     let lastDropPoint: { x: number; y: number } | null = null;
+    let lastTabDropTime = 0;
     const onTabDragStart = (event: DragEvent) => {
       const t = event.target as Element | null;
       if (
@@ -673,8 +674,17 @@ export default class TabStacks extends NoraComponentBase {
       }
     };
     const onAnyDrop = (event: DragEvent) => {
-      if (tabDragActive) {
+      // Record every TAB drop, not only drags that started in this window:
+      // a drop from ANOTHER window adopts the tab here and can land it
+      // inside a stack's neighbourhood — it must pass the same on-chip
+      // validation (dragstart never fired here, so tabDragActive alone
+      // would miss it).
+      const isTabDrop = (event.dataTransfer as
+        | (DataTransfer & { mozTypesAt?: (i: number) => ArrayLike<string> })
+        | null)?.mozTypesAt?.(0)?.[0] === TAB_DROP_TYPE;
+      if (tabDragActive || isTabDrop) {
         lastDropPoint = { x: event.clientX, y: event.clientY };
+        lastTabDropTime = Date.now();
       }
     };
     const endTabDrag = () => {
@@ -692,7 +702,10 @@ export default class TabStacks extends NoraComponentBase {
       }, 150);
     };
     const onTabGroupedDuringDrag = (event: Event) => {
-      if (!tabDragActive) return;
+      // In-window drags flag themselves at dragstart; cross-window drops
+      // only leave the fresh drop record. Anything else (menu commands,
+      // programmatic addTabs) must not be second-guessed here.
+      if (!tabDragActive && Date.now() - lastTabDropTime > 500) return;
       const tab = event.target as StackTab;
       const group = tab.group;
       if (!group) return;
@@ -755,6 +768,19 @@ export default class TabStacks extends NoraComponentBase {
         ".tabbrowser-tab",
       ) ?? null) as StackTab | null;
       if (!src || src.group === group) return;
+      // A multiselected drag carries every selected tab, exactly like the
+      // native drop path would — joining only the grabbed one stranded
+      // the rest of the selection outside the stack.
+      const srcGlobal = (src.ownerDocument as Document & {
+        defaultView?: { gBrowser?: { selectedTabs?: StackTab[] } } | null;
+      })?.defaultView;
+      const joining = (src as unknown as { multiselected?: boolean })
+          .multiselected
+        ? (srcGlobal?.gBrowser?.selectedTabs ?? [src]).filter(
+          (t) => t.group !== group,
+        )
+        : [src];
+      if (!joining.length) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       clearDropIndicators();
@@ -762,7 +788,7 @@ export default class TabStacks extends NoraComponentBase {
       // Adopt after the native drag machinery settles.
       setTimeout(() => {
         try {
-          group.addTabs([src]);
+          group.addTabs(joining);
           this.updateGroupChips();
           syncActiveGroup();
           bumpStacksVersion();
