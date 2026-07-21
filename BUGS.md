@@ -35,6 +35,24 @@ Assessed 2026-07-19 against upstream through PR #2567.
   manual eyeball — driving the reactive sidebar to mount a web-panel window
   blind via Marionette was impractical.
 
+### Workspaces config changes silently un-persisted (unwrap() kills effect tracking)
+- **Upstream:** [#2570](https://github.com/Floorp-Projects/Floorp/issues/2570)
+  (reported by us 2026-07-21), fix offered as
+  [#2571](https://github.com/Floorp-Projects/Floorp/pull/2571)
+- **derp status:** **fixed 2026-07-21 (`6f0849ea55`)** — the persistence
+  `createEffect` in `workspaces/data/config.ts` serialized
+  `JSON.stringify(unwrap(configStore))`; `unwrap()` reads the raw target, so
+  the effect tracked no dependencies and fired exactly once at startup. Every
+  later `setConfigStore()` write was silently never persisted. Latent since
+  the file was written: the old settings hub wrote the pref directly (the
+  observer feeds the store *from* the pref), so nothing exercised store→pref
+  until the rail/name toggles started writing the store.
+- **Fix:** serialize a spread (`{ ...configStore }`) — the config object is
+  flat, so every top-level key is read through the proxy and tracked.
+  `data.ts` was already correct: it calls `trackStore()` before its
+  `unwrap()`, which is why workspace *data* persisted while *config* didn't.
+- **Verified:** live in derp — rail/name toggles now survive restarts.
+
 ## Present in derp — fix exists upstream, port available
 
 ### PWA install/launch follows the selected tab, not the invoking browser
