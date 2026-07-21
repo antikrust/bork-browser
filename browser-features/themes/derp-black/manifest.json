@@ -1,0 +1,47 @@
+{
+  "manifest_version": 2,
+  "name": "Derp Black",
+  "version": "1.0.1",
+  "description": "derp built-in theme — Derp Black. Black chrome.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "derp-black@themes.derp"
+    }
+  },
+  "theme": {
+    "colors": {
+      "frame": "#050506",
+      "frame_inactive": "#050506",
+      "toolbar": "#0b0b0d",
+      "toolbar_text": "#e6e6ea",
+      "toolbar_field": "#131317",
+      "toolbar_field_text": "#e6e6ea",
+      "toolbar_field_border": "#242429",
+      "toolbar_field_focus": "#17171c",
+      "toolbar_field_border_focus": "#6b7280",
+      "toolbar_top_separator": "#050506",
+      "toolbar_bottom_separator": "#1c1c21",
+      "tab_background_text": "#a9a9b2",
+      "tab_selected": "#17171c",
+      "tab_text": "#fbfbfe",
+      "tab_line": "#6b7280",
+      "tab_loading": "#6b7280",
+      "popup": "#101014",
+      "popup_text": "#e6e6ea",
+      "popup_border": "#242429",
+      "popup_highlight": "rgba(107,114,128,0.32)",
+      "popup_highlight_text": "#ffffff",
+      "sidebar": "#0b0b0d",
+      "sidebar_text": "#e6e6ea",
+      "sidebar_border": "#1c1c21",
+      "sidebar_highlight": "rgba(107,114,128,0.32)",
+      "sidebar_highlight_text": "#ffffff",
+      "icons": "#cfcfd6",
+      "icons_attention": "#6b7280",
+      "button_background_hover": "#1d1d23",
+      "button_background_active": "#26262d",
+      "ntp_background": "#050506",
+      "ntp_text": "#e6e6ea"
+    }
+  }
+}

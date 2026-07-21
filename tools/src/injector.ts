@@ -47,6 +47,49 @@ const DEFAULT_POLICIES = {
   },
 };
 
+/**
+ * derp theme pack: the static WebExtension themes in browser-features/themes/
+ * are zipped into <app>/distribution/extensions/<gecko-id>.xpi, which Firefox
+ * auto-installs into new profiles (user-visible in about:addons, removable).
+ * The runtime does not enforce add-on signing, so plain zips are enough.
+ */
+export function installThemePack(): void {
+  const themesSrc = path.join(PROJECT_ROOT, "browser-features", "themes");
+  if (!exists(themesSrc)) return;
+  const extDir = path.join(BIN_DIR, "distribution", "extensions");
+  try {
+    Deno.mkdirSync(extDir, { recursive: true });
+    let count = 0;
+    for (const entry of Deno.readDirSync(themesSrc)) {
+      if (!entry.isDirectory) continue;
+      const dir = path.join(themesSrc, entry.name);
+      const manifestPath = path.join(dir, "manifest.json");
+      if (!exists(manifestPath)) continue;
+      const manifest = JSON.parse(Deno.readTextFileSync(manifestPath)) as {
+        browser_specific_settings?: { gecko?: { id?: string } };
+      };
+      const id = manifest.browser_specific_settings?.gecko?.id;
+      if (!id) {
+        logger.warn(`theme ${entry.name}: no gecko id, skipped`);
+        continue;
+      }
+      const xpi = path.join(extDir, `${id}.xpi`);
+      safeRemove(xpi);
+      // Zip contents at archive root (manifest.json top-level), no extras.
+      const result = runCommandChecked("zip", ["-r", "-X", "-q", xpi, "."], dir);
+      if (!result.success) {
+        logger.error(`theme ${entry.name}: zip failed: ${result.stderr}`);
+        continue;
+      }
+      count++;
+    }
+    logger.success(`theme pack: ${count} themes → distribution/extensions`);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    logger.error(`Failed to build theme pack: ${msg}`);
+  }
+}
+
 export function installDistributionPolicies(): void {
   const distDir = path.join(BIN_DIR, "distribution");
   try {
@@ -196,6 +239,7 @@ export function run(mode: string, dirName = "noraneko-devdir"): void {
 
   createManifest(mode, dirPath);
   installDistributionPolicies();
+  installThemePack();
 
   const mounts: Array<[string, string]> = [
     ["content", "bridge/loader-features/_dist"],

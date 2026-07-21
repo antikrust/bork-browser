@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220">
+  <defs>
+    <linearGradient id="wash" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#052e16" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#052e16" stop-opacity="0.360"/>
+      <stop offset="1" stop-color="#052e16" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="rgba(34,197,94,0)"/>
+      <stop offset="0.6" stop-color="rgba(34,197,94,0.3)"/>
+      <stop offset="1" stop-color="rgba(34,197,94,0.15)"/>
+    </linearGradient>
+    <linearGradient id="vfade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+    <mask id="fadeout">
+      <rect width="1600" height="220" fill="url(#vfade)"/>
+    </mask>
+  </defs>
+  <g mask="url(#fadeout)">
+    <rect width="1600" height="220" fill="url(#wash)"/>
+    <path d="M 340 235 C 720 150, 980 210, 1620 40 L 1620 235 Z" fill="rgba(34,197,94,0.054)"/>
+    <path d="M 480 240 C 860 170, 1120 230, 1640 90" fill="none" stroke="url(#stroke)" stroke-width="3"/>
+    <path d="M 560 245 C 940 195, 1180 250, 1660 130" fill="none" stroke="url(#stroke)" stroke-width="2" opacity="0.7"/>
+    <path d="M 640 250 C 1020 215, 1240 265, 1680 170" fill="none" stroke="url(#stroke)" stroke-width="1.5" opacity="0.45"/>
+  </g>
+</svg>
