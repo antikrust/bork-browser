@@ -461,3 +461,45 @@
 #panel-sidebar-select-box {
   padding-bottom: 2px !important;
 }
+
+/* Dark Derp: the left rail and the address bar follow the strip to black
+   ("the same as the rest") — the workspaces rail sits in the native
+   sidebar slot, and #nav-bar painted its own grey. The urlbar field
+   keeps a slightly lifted tone so the input still reads as a field. */
+:root[data-derp-dark] #nav-bar {
+  background-color: #050506 !important;
+}
+
+:root[data-derp-dark] #sidebar-main,
+:root[data-derp-dark] #derp-workspaces-rail {
+  background-color: #050506 !important;
+}
+
+:root[data-derp-dark] .urlbar-background {
+  /* Class, not id — the field element carries .urlbar-background. */
+  background-color: #131317 !important;
+}
+
+
+/* ===== Panel toggles sit exactly over their panels ===== */
+/* The nav bar's first/last widgets are the two panel toggles; the panels
+   are 35px columns flush with the window edges. Zero the bar's inline
+   padding and pin each toggle to a 35px slot so its icon centres on the
+   panel's own centreline. */
+#nav-bar {
+  padding-inline: 0 !important;
+}
+
+#derp-workspaces-rail-button,
+#derp-panel-sidebar-button {
+  width: 35px !important;
+  min-width: 35px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  justify-content: center !important;
+}
+
+#derp-workspaces-rail-button .toolbarbutton-icon,
+#derp-panel-sidebar-button .toolbarbutton-icon {
+  margin-inline: auto !important;
+}
