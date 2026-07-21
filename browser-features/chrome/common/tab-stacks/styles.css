@@ -46,7 +46,13 @@ tab-group[data-derp-stack] .tab-group-label-container {
      to twice as wide as the tabs beside it. */
   flex: 100 100 0% !important;
   min-width: var(--tab-min-width, 76px) !important;
-  max-width: var(--tab-max-width, 225px) !important;
+  /* NO !important on max-width — deliberately. When a drag starts, native
+     freezes every strip cell with an INLINE max-width at its current
+     width, then pulls the dragged tab out of flow. An !important here
+     beat that freeze, making the chip the only cell still free to flex —
+     it absorbed the whole vacated width and ballooned mid-drag. Tabs'
+     own max-width is plain for exactly this reason. */
+  max-width: var(--tab-max-width, 225px);
   align-items: stretch !important;
   /* Vertical seat comes from pack="start" (set in index.ts): XUL layout
      attributes are presentation hints that author CSS cannot override. */
