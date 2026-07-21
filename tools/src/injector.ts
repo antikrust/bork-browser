@@ -22,21 +22,16 @@ const DEFAULT_POLICIES = {
     SearchEngines: {
       Default: "DuckDuckGo",
     },
+    // Blocking is uBlock Origin alone: Ghostery and Privacy Badger were
+    // ~wholly redundant on top of it (Ghostery's one distinct feature,
+    // consent auto-reject, is covered natively — derp-defaults enables
+    // cookiebanners.service.mode 1). Fewer defaults, fewer "which blocker
+    // broke this site" mysteries.
     ExtensionSettings: {
       "uBlock0@raymondhill.net": {
         installation_mode: "normal_installed",
         install_url:
           "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi",
-      },
-      "firefox@ghostery.com": {
-        installation_mode: "normal_installed",
-        install_url:
-          "https://addons.mozilla.org/firefox/downloads/latest/ghostery/latest.xpi",
-      },
-      "jid1-MnnxcxisBPnSXQ@jetpack": {
-        installation_mode: "normal_installed",
-        install_url:
-          "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17/latest.xpi",
       },
       "addon@darkreader.org": {
         installation_mode: "normal_installed",

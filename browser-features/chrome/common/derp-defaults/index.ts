@@ -58,6 +58,18 @@ export default class DerpDefaults extends NoraComponentBase {
     } catch (e) {
       console.error("[derp-defaults] tooltip delay tune failed:", e);
     }
+    // Native cookie-banner auto-reject, on by default: mode 1 clicks
+    // "reject all" ONLY where the banner offers it (never auto-accepts —
+    // that's mode 2's fallback, deliberately not used). This replaced
+    // shipping Ghostery just for its Never-Consent feature. Default
+    // branch: a user's explicit choice in about:config survives.
+    try {
+      const defaults = Services.prefs.getDefaultBranch("");
+      defaults.setIntPref("cookiebanners.service.mode", 1);
+      defaults.setIntPref("cookiebanners.service.mode.privateBrowsing", 1);
+    } catch (e) {
+      console.error("[derp-defaults] cookie banner mode failed:", e);
+    }
   }
 
   /**
