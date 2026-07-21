@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import * as path from "@std/path";
-import { BIN_PATH_EXE, PATHS, PROJECT_ROOT } from "./defines.ts";
+import { PATHS, PROJECT_ROOT, resolveBinPathExe } from "./defines.ts";
 import { ProcessUtils } from "./utils.ts";
 
 export const MARIONETTE_STATE_FILE = path.join(PROJECT_ROOT, "_dist", "marionette-port.txt");
@@ -34,7 +34,7 @@ export interface BrowserLaunchOptions {
 export function browserCommand(options: BrowserLaunchOptions = {}): string[] {
   const { marionette = true } = options;
   const args = [
-    BIN_PATH_EXE,
+    resolveBinPathExe(),
     "--profile",
     PATHS.profile_test,
   ];

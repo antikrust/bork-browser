@@ -8,9 +8,9 @@ import {
   PATHS,
   BIN_DIR,
   BIN_ROOT_DIR,
-  BIN_PATH_EXE,
   BIN_VERSION,
   getBinArchive,
+  resolveBinPathExe,
 } from "./defines.ts";
 import type { BinArchive, Platform } from "./defines.ts";
 import { Logger, runCommand, exists, safeRemove } from "./utils.ts";
@@ -186,7 +186,7 @@ function brandIcons(): void {
 
 export async function run(): Promise<void> {
   const hasVersion = exists(BIN_VERSION);
-  const hasBin = exists(BIN_PATH_EXE);
+  const hasBin = exists(resolveBinPathExe());
   let needInit = false;
 
   logger.info(BIN_VERSION);

@@ -68,17 +68,34 @@ export const BIN_PATH = path.join(BIN_DIR, BRANDING.base_name);
 
 export const PROD_BIN_DIR = "../obj-artifact-build-output/dist/bin";
 
-export const BIN_PATH_EXE =
-  PLATFORM !== "darwin"
-    ? BIN_PATH + (PLATFORM === "windows" ? ".exe" : "-bin")
-    : path.join(
-        PATHS.bin_root,
-        BRANDING.base_name,
-        `${BRANDING.display_name}.app`,
-        "Contents",
-        "MacOS",
-        BRANDING.base_name,
-      );
+/**
+ * The macOS runtime binary is derp-branded at build time (the surrounding
+ * folder and .app name stay Floorp), so the executable may be named either
+ * "derp" (current runtimes) or the base name (older ones). Probed at call
+ * time, not module load: extraction happens after imports in the same run,
+ * so a constant would be resolved against a not-yet-extracted tree.
+ */
+export function resolveBinPathExe(): string {
+  if (PLATFORM !== "darwin") {
+    return BIN_PATH + (PLATFORM === "windows" ? ".exe" : "-bin");
+  }
+  const macosDir = path.join(
+    PATHS.bin_root,
+    BRANDING.base_name,
+    `${BRANDING.display_name}.app`,
+    "Contents",
+    "MacOS",
+  );
+  for (const name of ["derp", BRANDING.base_name]) {
+    try {
+      Deno.statSync(path.join(macosDir, name));
+      return path.join(macosDir, name);
+    } catch {
+      // keep probing
+    }
+  }
+  return path.join(macosDir, BRANDING.base_name);
+}
 
 export const BIN_VERSION = path.join(BIN_DIR, "nora.version.txt");
 
