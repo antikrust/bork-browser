@@ -51,6 +51,17 @@ const defaultData: PanelSidebarData = {
       extensionId: undefined,
     },
     {
+      id: "default-panel-synced-tabs",
+      url: "floorp//synced-tabs",
+      width: 0,
+      type: "static",
+      icon: undefined,
+      userContextId: undefined,
+      zoomLevel: undefined,
+      userAgent: undefined,
+      extensionId: undefined,
+    },
+    {
       id: "default-panel-notes",
       url: "floorp//notes",
       width: 0,
