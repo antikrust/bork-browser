@@ -98,10 +98,36 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
         />
         <xul:toolbarbutton
           class="panel-sidebar-panel"
-          onCommand={() =>
-            globalThis.gBrowser.addTrustedTab("about:logins", {
-              inBackground: false,
-            })}
+          onCommand={() => {
+            // Toggle, same shape as the settings gear below: pressing
+            // while you're looking at Passwords closes that tab.
+            const gb = globalThis.gBrowser;
+            let current = "";
+            try {
+              current = gb.selectedBrowser?.currentURI?.spec ?? "";
+            } catch {
+              // lazy/teardown browser — treat as not-passwords
+            }
+            if (current.startsWith("about:logins")) {
+              gb.removeTab(gb.selectedTab);
+              return;
+            }
+            // Reuse a Passwords tab already open in THIS window (manual
+            // scan — switchToTabHavingURI searches every window).
+            for (const tab of gb.tabs) {
+              let spec = "";
+              try {
+                spec = tab.linkedBrowser?.currentURI?.spec ?? "";
+              } catch {
+                continue;
+              }
+              if (spec.startsWith("about:logins")) {
+                gb.selectedTab = tab;
+                return;
+              }
+            }
+            gb.addTrustedTab("about:logins", { inBackground: false });
+          }}
           id="panel-sidebar-passwords-icon"
         />
         <xul:toolbarbutton

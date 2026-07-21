@@ -136,9 +136,23 @@
 /* --lwt-accent-color is what paints the tab strip (--toolbar-bgcolor is a
    lighter color-mix and does not match). */
 #panel-sidebar-box,
+#panel-sidebar-header,
 #panel-sidebar-select-box,
 #panel-sidebar-splitter {
   background-color: var(--lwt-accent-color) !important;
+}
+
+/* The panel header kept its own grey (--panel-sidebar-background-color)
+   and, with the float button hidden, native panels showed a 38px empty
+   band holding one close X — the "huge grey box". Blend it with the
+   panel surface (above) and slim it to a 28px strip. */
+#panel-sidebar-header {
+  --panel-sidebar-header-height: 28px;
+  --panel-sidebar-actions-size: 24px;
+}
+
+#panel-sidebar-header .panel-sidebar-actions {
+  padding: 4px;
 }
 
 /* ===== No floating-sidebar mode ===== */
@@ -451,9 +465,18 @@
    as a normal-coloured slab beside a black bar. Plain black — the swish
    is frame art, not panel art. */
 :root[data-derp-dark] #panel-sidebar-box,
+:root[data-derp-dark] #panel-sidebar-header,
 :root[data-derp-dark] #panel-sidebar-select-box,
 :root[data-derp-dark] #panel-sidebar-splitter {
   background-color: #050506 !important;
+}
+
+/* Dark Derp: the workspaces chooser popup rode the default arrowpanel
+   grey and sat visibly lighter than the black chrome around it. Same
+   lifted tone as the urlbar field so rows and hovers still read. */
+:root[data-derp-dark] panel:has(#workspacesToolbarButtonPanel) {
+  --arrowpanel-background: #131317;
+  --arrowpanel-border-color: #26262c;
 }
 
 /* Sidepanel icon column: the bottom (settings) icon sat flush against
