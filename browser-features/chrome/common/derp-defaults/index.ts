@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { onCleanup } from "solid-js";
 import {
   noraComponent,
   NoraComponentBase,
@@ -48,6 +49,33 @@ export default class DerpDefaults extends NoraComponentBase {
     this.relocateExtensionButtons();
     this.brandMacAppMenu();
     this.fixOpenPreferencesWindow();
+    this.applyDarkVariant();
+  }
+
+  /**
+   * Dark Derp: derp.theme.dark.enabled paints the tab-strip surfaces
+   * black with the swish curves (skin/derp/css/derp.css keys off the
+   * data-derp-dark root attribute). A skin variant, not a WebExtension
+   * theme — the theme pack recolours all chrome and tramples the tab
+   * group palette; this touches the strip alone. Live: flipping the pref
+   * restyles every window without a restart.
+   */
+  private applyDarkVariant(): void {
+    const PREF = "derp.theme.dark.enabled";
+    const apply = () => {
+      try {
+        document.documentElement?.toggleAttribute(
+          "data-derp-dark",
+          Services.prefs.getBoolPref(PREF, false),
+        );
+      } catch (e) {
+        console.error("[derp-defaults] dark variant toggle failed:", e);
+      }
+    };
+    apply();
+    const observer = () => apply();
+    Services.prefs.addObserver(PREF, observer);
+    onCleanup(() => Services.prefs.removeObserver(PREF, observer));
   }
 
   /**
