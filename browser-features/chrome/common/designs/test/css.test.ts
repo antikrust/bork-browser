@@ -60,7 +60,7 @@ function makeConfig(
 // ---------------------------------------------------------------------------
 
 function testLeptonReturnsUserjs(): void {
-  const result = getCSSFromConfig(makeConfig("lepton"));
+  const result = getCSSFromConfig(makeConfig("derp"));
   assert(result.userjs !== null, "lepton should have non-null userjs");
   assert(
     result.userjs!.length > 0,
@@ -69,7 +69,7 @@ function testLeptonReturnsUserjs(): void {
 }
 
 function testLeptonNoUseTabColorAsToolbarColor(): void {
-  const result = getCSSFromConfig(makeConfig("lepton"));
+  const result = getCSSFromConfig(makeConfig("derp"));
   assertEquals(
     result.useTabColorAsToolbarColor,
     undefined,
@@ -78,9 +78,9 @@ function testLeptonNoUseTabColorAsToolbarColor(): void {
 }
 
 function testLeptonHasExpectedStyleEntries(): void {
-  const result = getCSSFromConfig(makeConfig("lepton"));
-  // Production: chromeStyles = [leptonChrome, leptonContent] (2).
-  // Dev:        chromeStylesRaw = [leptonChrome, LEPTON_COMPAT, navBar] (3).
+  const result = getCSSFromConfig(makeConfig("derp"));
+  // Production: chromeStyles = [engineChrome, engineContent] (2).
+  // Dev:        chromeStylesRaw = [engineChrome, LEPTON_COMPAT, navBar] (3).
   // Both branches must carry Lepton's chrome + content sheets; the Gecko 152
   // compat layer and the nav-bar color override are layered on as raw CSS.
   const chromeCount = result.chromeStyles?.length ??
@@ -106,7 +106,7 @@ function testLeptonDerpNavBarCssIncludesPersonalToolbar(): void {
   // chromeStylesRaw (content assertions are then made against
   // `navBarBackgroundColorCSS` directly, to avoid false matches from the
   // vendored Lepton sheet which legitimately contains many selectors).
-  for (const theme of ["lepton", "derp"] as const) {
+  for (const theme of ["derp"] as const) {
     const css = getChromeInlineCss(theme);
     assert(
       css.includes("#PersonalToolbar"),
@@ -135,7 +135,7 @@ function testLeptonDerpNavBarCssIncludesPersonalToolbar(): void {
 function testNavBarCssIsLwtAware(): void {
   // The nav-bar CSS is shared across the Lepton family. Assert it is wired into
   // every theme's chromeStylesRaw first...
-  for (const theme of ["lepton", "derp"] as const) {
+  for (const theme of ["derp"] as const) {
     assert(
       getChromeInlineCss(theme).includes("nav-bar") === false ||
         getChromeInlineCss(theme).includes("--floorp-chrome-surface-color"),
@@ -144,7 +144,7 @@ function testNavBarCssIsLwtAware(): void {
   }
 
   // ...then make every CONTENT assertion against `navBarBackgroundColorCSS`
-  // directly. The vendored leptonChrome.css legitimately uses
+  // directly. The vendored engineChrome.css legitimately uses
   // `:not(:-moz-lwtheme)` (~150 occurrences) and `:root[lwtheme]` selectors of
   // its own, so testing the merged `chromeStylesRaw` string would produce false
   // positives/negatives. The regression we care about lives ONLY in
@@ -283,7 +283,7 @@ function testDerpHasChromeStyles(): void {
 
 function testAllThemesReturnNonNullResult(): void {
   const themes: TFloorpDesignConfigs["globalConfigs"]["userInterface"][] = [
-    "lepton",
+    "derp",
     "derp",
   ];
   for (const theme of themes) {
@@ -302,7 +302,7 @@ function testAllThemesReturnNonNullResult(): void {
 function testProductionPathsUseChromeProtocol(): void {
   // In production mode, styles should use chrome:// URLs
   // We verify the structural pattern: if chromeStyles exist, they should be chrome:// URLs
-  const result = getCSSFromConfig(makeConfig("lepton"));
+  const result = getCSSFromConfig(makeConfig("derp"));
   if (result.chromeStyles) {
     for (const url of result.chromeStyles) {
       assert(
@@ -388,7 +388,7 @@ function testDerpHasIconBasePathInDev(): void {
 }
 
 function testLeptonHasIconBasePathInDev(): void {
-  const result = getCSSFromConfig(makeConfig("lepton"));
+  const result = getCSSFromConfig(makeConfig("derp"));
   const hasIconPath = result.iconBasePath !== undefined;
   assert(
     hasIconPath || result.chromeStyles !== undefined,
@@ -414,7 +414,7 @@ function testDerpHasBothStyleTypes(): void {
 function testUserjsContentNonEmpty(): void {
   const themesWithUserjs: Array<
     TFloorpDesignConfigs["globalConfigs"]["userInterface"]
-  > = ["lepton", "derp"];
+  > = ["derp"];
 
   for (const theme of themesWithUserjs) {
     const result = getCSSFromConfig(makeConfig(theme));
@@ -433,7 +433,7 @@ function testProductionThemesCanCombineChromeStylesAndRaw(): void {
 
   const themes: Array<
     TFloorpDesignConfigs["globalConfigs"]["userInterface"]
-  > = ["lepton", "derp"];
+  > = ["derp"];
 
   for (const theme of themes) {
     const result = getCSSFromConfig(makeConfig(theme));

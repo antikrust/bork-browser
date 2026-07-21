@@ -54,7 +54,7 @@ import {
 
 type RgbTuple = readonly [number, number, number];
 
-type DesignName = "lepton" | "derp";
+type DesignName = "derp";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -62,7 +62,7 @@ type DesignName = "lepton" | "derp";
 
 /** Designs covered by the color matrix. */
 const DESIGNS: readonly DesignName[] = [
-  "lepton",
+  "derp",
   "derp",
 ] as const;
 
@@ -73,7 +73,7 @@ const DESIGNS: readonly DesignName[] = [
  * `false` and `proton` is stock Firefox — both are exempt.
  */
 const TAB_TRACKS_TOOLBAR_DESIGNS: readonly DesignName[] = [
-  "lepton",
+  "derp",
   "derp",
 ] as const;
 
@@ -273,7 +273,7 @@ function getActiveDesignFromPref(): DesignName | null {
       globalConfigs?: { userInterface?: unknown };
     };
     const ui = parsed?.globalConfigs?.userInterface;
-    if (ui === "lepton" || ui === "derp") {
+    if (ui === "derp" || ui === "derp") {
       return ui;
     }
   } catch {

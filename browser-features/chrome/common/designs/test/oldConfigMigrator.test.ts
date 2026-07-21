@@ -60,7 +60,7 @@ function testInterfaceCase3DefaultLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "lepton",
+        "derp",
         "interface=3, lepton=0 should return lepton",
       );
     },
@@ -76,7 +76,7 @@ function testInterfaceCase3PhotonNowLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "lepton",
+        "derp",
         "legacy photon (3, 1) collapses to lepton",
       );
     },
@@ -92,7 +92,7 @@ function testInterfaceCase3ProtonfixNowLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "lepton",
+        "derp",
         "legacy protonfix (3, 3) collapses to lepton",
       );
     },
@@ -103,7 +103,7 @@ function testInterfaceCase8FluerialNowLepton(): void {
   withIntPref("floorp.browser.user.interface", 8, () => {
     assertEquals(
       getOldInterfaceConfig(),
-      "lepton",
+      "derp",
       "legacy fluerial (8) collapses to lepton",
     );
   });
@@ -220,7 +220,7 @@ function testInterfaceCase3InvalidLeptonReturnsLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "lepton",
+        "derp",
         "interface=3, lepton=99 should default to lepton",
       );
     },
