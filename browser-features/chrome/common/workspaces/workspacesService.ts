@@ -336,13 +336,15 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
     // Loose check: a missing modal used to resolve undefined, which slid
     // past === null into a destructure crash.
     if (result == null) return;
-    const { name, icon, userContextId } = result;
+    const { name, icon, userContextId, color } = result;
     const workspace = this.getRawWorkspace(targetWorkspaceID);
     if (!workspace) return;
     const newWorkspace: TWorkspace = {
       ...workspace,
       name: name as string,
       icon: icon as string,
+      // "" is the swatch row's "none" dot.
+      color: (color as string) || null,
       userContextId: Number(userContextId),
     };
     setWorkspacesDataStore("data", (prev) => {
@@ -366,21 +368,6 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
     setWorkspacesDataStore("data", (prev) => {
       const temp = this.cloneWorkspaceMap(prev);
       temp.set(id, { ...workspace, name: trimmed });
-      return temp as unknown as TWorkspacesStoreData["data"];
-    });
-  }
-
-  /**
-   * Set (or clear, with null) a workspace's icon in place — the rail's
-   * right-click "Set Icon" picker writes through here. Null falls back
-   * to the neutral folder glyph at render time.
-   */
-  public setWorkspaceIcon(id: TWorkspaceID, icon: string | null) {
-    const workspace = this.getRawWorkspace(id);
-    if (!workspace) return;
-    setWorkspacesDataStore("data", (prev) => {
-      const temp = this.cloneWorkspaceMap(prev);
-      temp.set(id, { ...workspace, icon });
       return temp as unknown as TWorkspacesStoreData["data"];
     });
   }

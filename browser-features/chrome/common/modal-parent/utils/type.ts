@@ -8,7 +8,11 @@ export interface TFormItem {
     | "checkbox"
     | "radio"
     | "url"
-    | "icon-picker";
+    | "icon-picker"
+    // Row of colour dots. options carry { label, value, icon } with icon
+    // holding the CSS colour to paint the dot; value "" is offered as a
+    // "none" dot automatically.
+    | "swatch";
   id: string;
   label?: string;
   value?: string | number;

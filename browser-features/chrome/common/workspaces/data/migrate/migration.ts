@@ -256,6 +256,7 @@ export function migrateWorkspacesData(): Promise<void> {
                       dataMap.set(idParsed, {
                         name: detail.name,
                         icon: detail.icon ?? undefined,
+                        color: null,
                         userContextId:
                           typeof detail.userContextId === "number"
                             ? detail.userContextId

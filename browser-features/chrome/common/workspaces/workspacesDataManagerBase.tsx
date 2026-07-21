@@ -61,6 +61,7 @@ export class WorkspacesDataManager implements WorkspacesDataManagerBase {
     const workspace: TWorkspace = {
       name,
       icon: null,
+      color: null,
       userContextId: 0,
       isSelected: null,
       isDefault: null,

@@ -16,6 +16,7 @@ import { type Accessor, createSignal } from "solid-js";
 import { createRootHMR } from "@nora/solid-xul";
 import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
 import { IconTranslationsHandler } from "./utils/icon-translations-handler.ts";
+import { WORKSPACE_COLORS } from "./utils/workspace-colors.ts";
 
 const { ContextualIdentityService } = ChromeUtils.importESModule(
   "resource://gre/modules/ContextualIdentityService.sys.mjs",
@@ -137,6 +138,23 @@ export class WorkspaceManageModal {
           ],
         },
         {
+          // Colour sits ABOVE the icon picker: the icon grid is the tall
+          // scrolly element and anything after it hides below the fold.
+          id: "color",
+          type: "swatch",
+          label: i18next.t("workspaces.modal.color", {
+            defaultValue: "Color",
+          }),
+          value: workspace.color || "",
+          // Same palette as the tab-group/stack editor. The dialog page
+          // has no chrome CSS variables, so dots get literal colours.
+          options: WORKSPACE_COLORS.map((c) => ({
+            label: c.name.charAt(0).toUpperCase() + c.name.slice(1),
+            value: c.name,
+            icon: `light-dark(${c.light}, ${c.dark})`,
+          })),
+        },
+        {
           id: "icon",
           type: "icon-picker",
           label: texts.icon,
@@ -168,7 +186,9 @@ export class WorkspaceManageModal {
     return await new Promise((resolve) => {
       this.modalParent.showNoraModal(formConfig, {
         width: 540,
-        height: 500,
+        // Tall enough for name + container + colour row with the icon
+        // grid still getting usable space below.
+        height: 580,
       }, (result: TFormResult | null) => resolve(result));
     });
   }

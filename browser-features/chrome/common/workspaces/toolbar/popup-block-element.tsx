@@ -9,6 +9,7 @@ import type { WorkspacesService } from "../workspacesService";
 import { getContainerColorName } from "../utils/container-color";
 import { workspacesDataStore } from "../data/data.ts";
 import { WORKSPACE_TAB_ATTRIBUTION_ID } from "../utils/workspaces-static-names.ts";
+import { workspaceColorCss } from "../utils/workspace-colors.ts";
 import { LAYERS_ICON } from "./icons.ts";
 
 // A drop/drag-end can be followed by a stray click on the same row, which
@@ -213,6 +214,10 @@ export function PopupToolbarElement(props: {
           props.pinned
             ? LAYERS_ICON
             : props.ctx.iconCtx.getWorkspaceIconUrl(ws().icon);
+        // Workspace colour tints the glyph (context-stroke follows the
+        // inline stroke); unset keeps the stylesheet's currentColor.
+        const iconStroke = () =>
+          workspaceColorCss((ws() as { color?: string | null }).color);
         const userContextId = () => ws().userContextId ?? 0;
         const hasContainer = () => userContextId() > 0;
         const containerColorName = () => getContainerColorName(userContextId());
@@ -244,7 +249,11 @@ export function PopupToolbarElement(props: {
             }}
             onDblClick={startEditing}
           >
-            <xul:image class="workspaceRowIcon" src={icon()} />
+            <xul:image
+              class="workspaceRowIcon"
+              src={icon()}
+              style={iconStroke() ? { stroke: iconStroke()! } : undefined}
+            />
             <Show
               when={!editing()}
               fallback={

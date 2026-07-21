@@ -9,6 +9,10 @@ import * as t from "io-ts";
 export const zWorkspace = t.type({
   name: t.string,
   icon: t.union([t.string, t.null, t.undefined]),
+  // Colour NAME from the shared tab-group palette (workspace-colors.ts),
+  // tinting the workspace's rail/chooser glyph. Optional like icon so
+  // stored profiles from before the field validate unchanged.
+  color: t.union([t.string, t.null, t.undefined]),
   userContextId: t.number,
   isSelected: t.union([t.boolean, t.null, t.undefined]),
   isDefault: t.union([t.boolean, t.null, t.undefined]),

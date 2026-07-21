@@ -18,10 +18,7 @@ import { selectedWorkspaceID, workspacesDataStore } from "../data/data.ts";
 import type { TWorkspaceID } from "../utils/type.ts";
 import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
 import i18next from "i18next";
-import {
-  hasVivaldiWorkspaces,
-  importVivaldiWorkspaces,
-} from "../vivaldi-import.ts";
+import { workspaceColorCss } from "../utils/workspace-colors.ts";
 import { LAYERS_ICON } from "./icons.ts";
 
 /**
@@ -67,12 +64,10 @@ const railActive = (): boolean =>
 
 const translationKeys = {
   createNew: "workspaces.popup.create-new" as const,
-  importVivaldi: "workspaces.popup.import-vivaldi" as const,
 };
 
 const getTranslations = () => ({
   createNew: i18next.t(translationKeys.createNew),
-  importVivaldi: i18next.t(translationKeys.importVivaldi),
 });
 
 type RailWorkspaceButtonProps = {
@@ -109,6 +104,14 @@ const RailWorkspaceButton = (props: RailWorkspaceButtonProps) => {
   const workspaceName = createMemo(() =>
     (workspace() as { name?: string } | undefined)?.name ?? ""
   );
+  // Workspace colour tints the glyph via inline stroke (the data-URI
+  // glyphs paint context-stroke); unset stays on the stylesheet's
+  // currentColor.
+  const iconStroke = createMemo(() =>
+    workspaceColorCss(
+      (workspace() as { color?: string | null } | undefined)?.color,
+    )
+  );
   const isSelected = () => selectedWorkspaceID() === props.workspaceId;
 
   const handleActivate = () => {
@@ -128,7 +131,9 @@ const RailWorkspaceButton = (props: RailWorkspaceButtonProps) => {
       | XULPopupElement
       | null;
 
-    menu?.openPopupAtScreen(event.screenX, event.screenY, true);
+    // The trigger event makes the popup manager set popup.triggerNode —
+    // the shared menu's primary way to resolve which workspace was hit.
+    menu?.openPopupAtScreen(event.screenX, event.screenY, true, event);
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -219,7 +224,10 @@ const RailWorkspaceButton = (props: RailWorkspaceButtonProps) => {
       data-workspaceId={props.workspaceId}
       role="button"
       tabIndex={0}
-      tooltiptext={workspaceName()}
+      // HTML element: tooltips come from title. tooltiptext is XUL-only
+      // and silently does nothing here (the round of "quicker tooltips"
+      // that swapped it in killed rail tooltips entirely).
+      title={workspaceName()}
       aria-label={workspaceName()}
       draggable={isDefaultWorkspace() ? "false" : "true"}
       onClick={handleActivate}
@@ -231,7 +239,13 @@ const RailWorkspaceButton = (props: RailWorkspaceButtonProps) => {
       onDragLeave={handleDragLeave}
       onDrop={isDefaultWorkspace() ? undefined : handleDrop}
     >
-      <img src={iconUrl()} width="16" height="16" alt="" />
+      <img
+        src={iconUrl()}
+        width="16"
+        height="16"
+        alt=""
+        style={iconStroke() ? { stroke: iconStroke()! } : undefined}
+      />
     </div>
   );
 };
@@ -277,30 +291,6 @@ function Rail(props: { ctx: WorkspacesService }) {
   // createNoNameWorkspace already switches to the new workspace itself.
   const handleCreateWorkspace = () => props.ctx.createNoNameWorkspace();
 
-  // Only offer the import when there is actually a Vivaldi profile to read.
-  const [canImportVivaldi, setCanImportVivaldi] = createSignal(false);
-  createEffect(() => {
-    if (!railActive()) return;
-    hasVivaldiWorkspaces()
-      .then(setCanImportVivaldi)
-      .catch(() => setCanImportVivaldi(false));
-  });
-
-  const handleImportVivaldi = () => {
-    importVivaldiWorkspaces(props.ctx)
-      .then((result) => {
-        console.log(
-          `[workspaces] Imported ${result.workspacesCreated} Vivaldi workspaces, ${result.tabsRestored} tabs` +
-            (result.skipped.length
-              ? ` (already present: ${result.skipped.join(", ")})`
-              : ""),
-        );
-        // Nothing new to offer once everything has come across.
-        setCanImportVivaldi(false);
-      })
-      .catch((e) => console.error("[workspaces] Vivaldi import failed", e));
-  };
-
   // Mirror the chooser popup exactly: the default workspace pinned on
   // top, then the reorderable rest in store order. The rail used to show
   // raw store order, so the default sat wherever history left it.
@@ -322,6 +312,8 @@ function Rail(props: { ctx: WorkspacesService }) {
             )}
           </For>
         </div>
+        {/* Import lives in the welcome flow (pages-welcome import step),
+            not on the rail — install-time concern, not a daily control. */}
         <div class="derp-workspaces-rail-footer">
           <RailControlButton
             id="derp-workspaces-rail-create"
@@ -329,14 +321,6 @@ function Rail(props: { ctx: WorkspacesService }) {
             label={texts().createNew}
             onActivate={handleCreateWorkspace}
           />
-          <Show when={canImportVivaldi()}>
-            <RailControlButton
-              id="derp-workspaces-rail-import-vivaldi"
-              icon="chrome://browser/skin/import.svg"
-              label={texts().importVivaldi}
-              onActivate={handleImportVivaldi}
-            />
-          </Show>
         </div>
       </div>
     </Show>

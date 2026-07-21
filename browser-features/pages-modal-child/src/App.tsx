@@ -312,6 +312,53 @@ const FormField = ({ item, control }: FormFieldProps) => {
         </div>
       );
 
+    case "swatch":
+      return (
+        <div className="mb-4 w-full">
+          {item.label && (
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+              {item.label}
+            </label>
+          )}
+          <Controller
+            name={item.id}
+            control={control}
+            defaultValue={String(item.value ?? "")}
+            render={({ field: { onChange, value } }) => (
+              <div className="flex flex-wrap gap-2">
+                {/* "None" dot first: clears the colour. */}
+                {[{ label: "None", value: "", icon: "" }, ...(item.options ??
+                  [])].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    title={opt.label}
+                    aria-label={opt.label}
+                    aria-pressed={value === opt.value}
+                    onClick={() => onChange(opt.value)}
+                    className={`h-6 w-6 rounded-full border transition-shadow ${
+                      value === opt.value
+                        ? "ring-2 ring-offset-2 ring-[#0061E0] dark:ring-offset-[#2B2A33]"
+                        : ""
+                    } ${
+                      opt.icon
+                        ? "border-black/20 dark:border-white/20"
+                        : "border-gray-400 dark:border-gray-500"
+                    }`}
+                    style={opt.icon
+                      ? { backgroundColor: opt.icon }
+                      : {
+                        background:
+                          "linear-gradient(135deg, transparent 44%, #d13328 46%, #d13328 54%, transparent 56%)",
+                      }}
+                  />
+                ))}
+              </div>
+            )}
+          />
+        </div>
+      );
+
     case "checkbox":
       return (
         <div className="mb-4 w-full">
