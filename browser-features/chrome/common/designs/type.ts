@@ -21,9 +21,10 @@ export const zFloorpDesignConfigs = t.intersection([
     ]),
     tabbar: t.intersection([
       t.type({
+        // "vertical" was removed with vertical tabs; configs.ts coerces
+        // stored configs that still carry it before decoding.
         tabbarStyle: t.union([
           t.literal("horizontal"),
-          t.literal("vertical"),
           t.literal("multirow"),
         ]),
         tabbarPosition: t.union([

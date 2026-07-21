@@ -60,6 +60,35 @@ export function executeOnce(id: string, callback: () => void): boolean {
   return true;
 }
 
+/**
+ * derp: vertical tabs are removed from the browser entirely — the horizontal
+ * strip is the only tab layout (tab stacks and the derp theme assume it).
+ * The native mode is pref-gated, so removal = enforcement: migrate any
+ * profile that still has it on, pin the default to false, and lock the pref
+ * so neither about:config nor Firefox's own settings UI can re-enter the
+ * mode. Locks don't persist, so this must run every startup (it does: this
+ * module is imported at the top of the patched BrowserGlue, before the first
+ * window exists).
+ */
+function enforceVerticalTabsRemoved(): void {
+  const PREF = "sidebar.verticalTabs";
+  try {
+    const wasVertical = Services.prefs.getBoolPref(PREF, false);
+    if (Services.prefs.prefHasUserValue(PREF)) {
+      Services.prefs.clearUserPref(PREF);
+    }
+    Services.prefs.getDefaultBranch("").setBoolPref(PREF, false);
+    Services.prefs.lockPref(PREF);
+    if (wasVertical) {
+      // The settings page did this when leaving vertical mode; keep the
+      // one-time cleanup for profiles migrated off it here.
+      Services.prefs.setBoolPref("sidebar.revamp", false);
+    }
+  } catch (e) {
+    console.error("[NoranekoStartup] Failed to enforce vertical-tabs removal:", e);
+  }
+}
+
 function initializeVersionInfo(): void {
   isFirstRun = !Services.prefs.getStringPref(
     "browser.startup.homepage_override.mstone",
@@ -463,6 +492,7 @@ async function initializeExperiments() {
 }
 
 (async () => {
+  enforceVerticalTabsRemoved();
   registerSsbCommandLineHandler();
   await registerCustomAboutPages();
   initializeVersionInfo();

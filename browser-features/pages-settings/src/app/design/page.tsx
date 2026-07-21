@@ -70,13 +70,10 @@ export default function Page() {
       return;
     }
 
-    const styleChanged = lastSaved?.style !== currentSettings.style;
     const snapshot = cloneDesignSettings(currentSettings);
     lastSavedSettingsRef.current = snapshot;
 
-    void saveDesignSettings(snapshot, {
-      hasTabStyleChanged: styleChanged,
-    });
+    void saveDesignSettings(snapshot);
   }, [cloneDesignSettings, hasLoadedDefaults, watchAll]);
 
   const LeptonSettingsButton = () => {

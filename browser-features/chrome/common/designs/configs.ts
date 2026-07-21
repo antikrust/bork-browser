@@ -53,6 +53,23 @@ export function deepMerge<T extends Record<string, unknown>>(
   return result;
 }
 
+/**
+ * Vertical tabs were removed from derp; a config saved before the removal
+ * can still carry tabbarStyle "vertical", which the schema no longer
+ * accepts. Coerce it to "horizontal" before decoding — a decode failure
+ * here would throw away the user's entire design config, not just the
+ * stale style.
+ */
+export function coerceRemovedTabbarStyle(parsed: unknown): unknown {
+  if (isPlainObject(parsed)) {
+    const tabbar = parsed.tabbar;
+    if (isPlainObject(tabbar) && tabbar.tabbarStyle === "vertical") {
+      tabbar.tabbarStyle = "horizontal";
+    }
+  }
+  return parsed;
+}
+
 export function getOldUICustomizationConfig() {
   try {
     const navbarBottom = Services.prefs.getBoolPref(
@@ -271,7 +288,7 @@ function createConfig(): [
       "floorp.design.configs",
       getOldConfigs,
     );
-    const parsedConfig = JSON.parse(configStr);
+    const parsedConfig = coerceRemovedTabbarStyle(JSON.parse(configStr));
     // Merge existing config with defaults to tolerate newly added fields
     const merged = deepMerge(defaultConfig, parsedConfig);
     // Ensure backward compatibility: set default position if missing
@@ -295,7 +312,7 @@ function createConfig(): [
         "floorp.design.configs",
         getOldConfigs,
       );
-      const parsedConfig = JSON.parse(configStr);
+      const parsedConfig = coerceRemovedTabbarStyle(JSON.parse(configStr));
       const merged = deepMerge(defaultConfig, parsedConfig);
       // Ensure backward compatibility: set default position if missing
       if (

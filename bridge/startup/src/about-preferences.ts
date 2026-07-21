@@ -462,6 +462,22 @@ function injectFloorpHubWarningStyles(): void {
     body.floorp-start-active #firefoxHomeCategory {
       display: none !important;
     }
+
+    /*
+     * derp: vertical tabs are removed from the browser entirely
+     * (sidebar.verticalTabs is locked false at startup), so hide the native
+     * horizontal/vertical tab-orientation picker in the Browser Layout
+     * group. Unconditional — no body-class gate. The picker's
+     * <setting-control> wrapper and the inner control both carry stable ids
+     * (setting-group and setting-control render into light DOM, so page CSS
+     * reaches them; this covers the legacy pane and the settings redesign,
+     * which share the markup in preferences.xhtml). The group's separate
+     * "Show sidebar" checkbox is deliberately left visible.
+     */
+    #setting-control-browserLayoutRadioGroup,
+    #browserLayoutRadioGroup {
+      display: none !important;
+    }
   `;
 
   const parent =

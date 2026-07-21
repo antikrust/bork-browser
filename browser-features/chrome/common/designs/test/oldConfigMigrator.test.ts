@@ -133,12 +133,12 @@ function testTabbarStyleMultirow(): void {
   });
 }
 
-function testTabbarStyleVertical(): void {
+function testTabbarStyleVerticalRemoved(): void {
   withIntPref("floorp.tabbar.style", 2, () => {
     assertEquals(
       getOldTabbarStyleConfig(),
-      "vertical",
-      "style=2 should return vertical",
+      "horizontal",
+      "style=2 (legacy vertical, removed) should fall back to horizontal",
     );
   });
 }
@@ -263,7 +263,10 @@ export function runAllTests(): void {
     { name: "interface 8 → lepton", fn: testInterfaceCase8FluerialNowLepton },
     { name: "tabbar style 0 → horizontal", fn: testTabbarStyleHorizontal },
     { name: "tabbar style 1 → multirow", fn: testTabbarStyleMultirow },
-    { name: "tabbar style 2 → vertical", fn: testTabbarStyleVertical },
+    {
+      name: "tabbar style 2 (removed vertical) → horizontal",
+      fn: testTabbarStyleVerticalRemoved,
+    },
     { name: "tabbar position 0 → default", fn: testTabbarPositionDefault },
     { name: "tabbar position 1 → hide", fn: testTabbarPositionHide },
     { name: "tabbar position 2 → optimise", fn: testTabbarPositionOptimise },

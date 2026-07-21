@@ -73,16 +73,8 @@ export class PanelSidebarElem {
     if (owner) runWithOwner(owner, execEffect);
     else createRoot(execEffect);
 
-    this.setVerticalTabBgColor();
-    Services.prefs.addObserver("sidebar.verticalTabs", () => {
-      this.setVerticalTabBgColor();
-    });
-  }
-
-  private setVerticalTabBgColor() {
-    const newValue = Services.prefs.getBoolPref("sidebar.verticalTabs");
-    // Gecko 152 (Project Nova) renamed --toolbox-bgcolor -> --toolbox-background-color
-    // and --toolbar-bgcolor -> --toolbar-background-color.
+    // Vertical tabs are removed from derp, so the sidebar always tracks the
+    // toolbar token (the vertical-tabs mode used the toolbox token instead).
     //
     // FALLBACK ORDERING MATTERS: on Gecko 152 the legacy --toolbar-bgcolor and
     // the new --toolbar-background-color are NOT guaranteed to hold the same
@@ -91,13 +83,11 @@ export class PanelSidebarElem {
     // selected .tab-background from --toolbar-bgcolor, and Lepton's
     // color_like_toolbar unsets --tab-selected-bgcolor so the tab resolves to
     // --toolbar-bgcolor. The panel-sidebar / status bar must track the SAME
-    // token as the selected tab, so the legacy names are preferred and the new
-    // 152 names are kept only as a final fallback.
+    // token as the selected tab, so the legacy name is preferred and the new
+    // 152 name is kept only as a fallback.
     this.documentElement?.style.setProperty(
       "--panel-sidebar-background-color",
-      newValue
-        ? "var(--toolbox-bgcolor, var(--toolbox-background-color, var(--toolbar-bgcolor, var(--toolbar-background-color))))"
-        : "var(--toolbar-bgcolor, var(--toolbar-background-color))",
+      "var(--toolbar-bgcolor, var(--toolbar-background-color))",
     );
   }
 

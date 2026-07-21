@@ -37,10 +37,10 @@ export const zDesignFormData = t.type({
   ]),
   faviconColor: t.boolean,
 
-  // Tab Bar
+  // Tab Bar ("vertical" was removed with vertical tabs; dataManager coerces
+  // stored configs that still carry it)
   style: t.union([
     t.literal("horizontal"),
-    t.literal("vertical"),
     t.literal("multirow"),
   ]),
   position: t.union([

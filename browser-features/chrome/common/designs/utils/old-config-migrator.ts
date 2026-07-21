@@ -19,11 +19,11 @@ export const getOldInterfaceConfig = () => {
 };
 
 export const getOldTabbarStyleConfig = () => {
+  // Legacy style=2 was vertical — removed from derp entirely; those
+  // profiles fall back to the horizontal strip.
   switch (Services.prefs.getIntPref("floorp.tabbar.style", 0)) {
     case 1:
       return "multirow";
-    case 2:
-      return "vertical";
     default:
       return "horizontal";
   }

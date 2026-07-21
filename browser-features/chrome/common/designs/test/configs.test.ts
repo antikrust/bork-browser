@@ -2,6 +2,7 @@
 // @colocated-env browser
 
 import {
+  coerceRemovedTabbarStyle,
   deepMerge,
   isPlainObject,
   getOldUICustomizationConfig,
@@ -330,8 +331,8 @@ function testDefaultConfigWithPrefs(): void {
       );
       assertEquals(
         config.tabbar.tabbarStyle,
-        "vertical",
-        "style=2 should give vertical",
+        "horizontal",
+        "style=2 (legacy vertical, removed) should fall back to horizontal",
       );
       assertEquals(
         config.tabbar.tabbarPosition,
@@ -356,6 +357,39 @@ function testGetOldConfigsIsParsable(): void {
     typeof parsed.globalConfigs === "object",
     "parsed config should have globalConfigs",
   );
+}
+
+// ---------------------------------------------------------------------------
+// Tests — coerceRemovedTabbarStyle
+// ---------------------------------------------------------------------------
+
+function testCoerceRemovedTabbarStyleVertical(): void {
+  const parsed = { tabbar: { tabbarStyle: "vertical", tabbarPosition: "default" } };
+  coerceRemovedTabbarStyle(parsed);
+  assertEquals(
+    parsed.tabbar.tabbarStyle,
+    "horizontal",
+    "stored vertical style should be coerced to horizontal",
+  );
+}
+
+function testCoerceRemovedTabbarStyleLeavesOthers(): void {
+  const parsed = { tabbar: { tabbarStyle: "multirow" } };
+  coerceRemovedTabbarStyle(parsed);
+  assertEquals(
+    parsed.tabbar.tabbarStyle,
+    "multirow",
+    "non-vertical styles should pass through untouched",
+  );
+}
+
+function testCoerceRemovedTabbarStyleTolerantOfShape(): void {
+  // Must not throw on configs missing the tabbar branch (or non-objects).
+  coerceRemovedTabbarStyle(null);
+  coerceRemovedTabbarStyle("garbage");
+  coerceRemovedTabbarStyle({});
+  coerceRemovedTabbarStyle({ tabbar: 5 });
+  assert(true, "malformed shapes should be tolerated");
 }
 
 // ---------------------------------------------------------------------------
@@ -459,6 +493,19 @@ export async function runAllTests(): Promise<void> {
     { name: "default config with prefs", fn: testDefaultConfigWithPrefs },
     // getOldConfigs
     { name: "getOldConfigs is parsable", fn: testGetOldConfigsIsParsable },
+    // coerceRemovedTabbarStyle
+    {
+      name: "coerce removed vertical style",
+      fn: testCoerceRemovedTabbarStyleVertical,
+    },
+    {
+      name: "coerce leaves other styles",
+      fn: testCoerceRemovedTabbarStyleLeavesOthers,
+    },
+    {
+      name: "coerce tolerates malformed shapes",
+      fn: testCoerceRemovedTabbarStyleTolerantOfShape,
+    },
     // getUICustomizationSetting
     { name: "get setting existing", fn: testGetUICustomizationExistingSetting },
     {

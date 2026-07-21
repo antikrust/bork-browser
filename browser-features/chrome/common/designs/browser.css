@@ -15,6 +15,13 @@
   list-style-image: url("chrome://floorp/skin/icons/verticaltab.svg");
 }
 
+/* derp: vertical tabs are removed from the browser (sidebar.verticalTabs is
+   locked false at startup). Hide the native toggle in the tab-strip/toolbar
+   context menu — clicking it could only fail against the locked pref. */
+#toolbar-context-toggle-vertical-tabs {
+  display: none !important;
+}
+
 :root[lwt-default-theme-in-dark-mode="true"] #tabbrowser-tabpanels,
 :root[style*="--lwt-accent-color: rgb(28, 27, 34)"]
   #tabbrowser-tabpanels[flex] {

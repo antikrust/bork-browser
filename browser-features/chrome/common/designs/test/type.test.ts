@@ -72,13 +72,20 @@ function testAllUserInterfaceValues(): void {
 }
 
 function testAllTabbarStyleValues(): void {
-  const styles = ["horizontal", "vertical", "multirow"];
+  const styles = ["horizontal", "multirow"];
   for (const style of styles) {
     const config = makeValidConfig();
     (config.tabbar as Record<string, unknown>).tabbarStyle = style;
     const result = zFloorpDesignConfigs.decode(config);
     assert(isRight(result), `tabbarStyle="${style}" should be valid`);
   }
+
+  // Vertical tabs were removed; the schema must reject the old value so the
+  // coercion in configs.ts (vertical → horizontal) stays load-bearing.
+  const config = makeValidConfig();
+  (config.tabbar as Record<string, unknown>).tabbarStyle = "vertical";
+  const result = zFloorpDesignConfigs.decode(config);
+  assert(isLeft(result), 'removed tabbarStyle="vertical" should be rejected');
 }
 
 function testAllTabbarPositionValues(): void {

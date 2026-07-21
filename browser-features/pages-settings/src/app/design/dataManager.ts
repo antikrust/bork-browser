@@ -140,13 +140,8 @@ export async function getLeptonSettings(): Promise<LeptonFormData> {
   return settings;
 }
 
-interface SaveDesignSettingsOptions {
-  hasTabStyleChanged?: boolean;
-}
-
 export async function saveDesignSettings(
   settings: DesignFormData,
-  options: SaveDesignSettingsOptions = {},
 ): Promise<null | void> {
   if (Object.keys(settings).length === 0) {
     return;
@@ -223,17 +218,6 @@ export async function saveDesignSettings(
     settings.tabDragToSplitCreate,
   );
   await rpc.setBoolPref(HOVER_RELOAD_PREF, settings.tabHoverReload);
-
-  const { hasTabStyleChanged = false } = options;
-
-  if (hasTabStyleChanged && settings.style !== undefined) {
-    const isVertical = settings.style === "vertical";
-    await rpc.setBoolPref("sidebar.verticalTabs", isVertical);
-
-    if (!isVertical) {
-      await rpc.setBoolPref("sidebar.revamp", false);
-    }
-  }
 }
 
 export async function getDesignSettings(): Promise<DesignFormData | null> {
@@ -249,7 +233,11 @@ export async function getDesignSettings(): Promise<DesignFormData | null> {
   const formData: DesignFormData = {
     design: data.globalConfigs.userInterface,
     position: data.tabbar.tabbarPosition,
-    style: data.tabbar.tabbarStyle,
+    // Vertical tabs are removed; a config saved before the removal round-trips
+    // to the horizontal strip.
+    style: data.tabbar.tabbarStyle === "vertical"
+      ? "horizontal"
+      : data.tabbar.tabbarStyle,
     tabOpenPosition: data.tab.tabOpenPosition,
     tabMinHeight: data.tab.tabMinHeight,
     tabMinWidth: data.tab.tabMinWidth,
