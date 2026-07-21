@@ -7,7 +7,7 @@ import type { TWorkspaceID } from "../utils/type";
 import { startInlineRename } from "../toolbar/popup-block-element.tsx";
 import type { WorkspacesService } from "../workspacesService";
 import i18next from "i18next";
-import { createSignal, For } from "solid-js";
+import { createSignal } from "solid-js";
 import { addI18nObserver } from "#i18n/config-browser-chrome.ts";
 import { configStore, setConfigStore } from "../data/config.ts";
 
@@ -43,6 +43,9 @@ export function ContextMenu(props: {
   disableAfter: boolean;
   contextWorkspaceId: TWorkspaceID;
   ctx: WorkspacesService;
+  /** Bumped by the owner on every popupshowing — non-reactive reads
+   * (CustomizableUI placement) key off it to refresh per open. */
+  openTick: number;
 }) {
   const [texts, setTexts] = createSignal(getTranslations());
 
@@ -86,29 +89,10 @@ export function ContextMenu(props: {
         onCommand={() =>
           props.ctx.manageWorkspaceFromDialog(props.contextWorkspaceId)}
       />
-      {/* Every workspace gets an icon without a dialog round-trip: the
-          full builtin library inline, plus the neutral folder default. */}
-      <xul:menu label="Set Icon">
-        <xul:menupopup>
-          <xul:menuitem
-            label="None (folder)"
-            onCommand={() =>
-              props.ctx.setWorkspaceIcon(props.contextWorkspaceId, null)}
-          />
-          <xul:menuseparator />
-          <For each={props.ctx.iconCtx.workspaceIconsArray}>
-            {(name) => (
-              <xul:menuitem
-                class="menuitem-iconic"
-                label={name.charAt(0).toUpperCase() + name.slice(1)}
-                image={props.ctx.iconCtx.getWorkspaceIconUrl(name)}
-                onCommand={() =>
-                  props.ctx.setWorkspaceIcon(props.contextWorkspaceId, name)}
-              />
-            )}
-          </For>
-        </xul:menupopup>
-      </xul:menu>
+      {/* No Set Icon submenu: icon (and colour) live in the Manage
+          Workspace dialog. The 34-item iconic submenu was also the prime
+          suspect for native segfaults on submenu hover-open (see
+          project memory, 2026-07-21). */}
       <xul:menuseparator class="workspaces-context-menu-separator" />
       <xul:menuitem
         label={texts().archive}
@@ -119,10 +103,13 @@ export function ContextMenu(props: {
       <xul:menuseparator />
       {/* Display toggles, moved here from the settings page: the store's
           persistence effect writes them back to floorp.workspaces.v4.config. */}
+      {/* XUL shows a tick for ANY present checked attribute — the string
+          "false" still ticks — so false must remove the attribute
+          entirely (undefined), never write it. */}
       <xul:menuitem
         type="checkbox"
         label="Show workspace name"
-        checked={configStore.showWorkspaceNameOnToolbar}
+        checked={configStore.showWorkspaceNameOnToolbar ? "true" : undefined}
         onCommand={() =>
           setConfigStore(
             "showWorkspaceNameOnToolbar",
@@ -132,17 +119,19 @@ export function ContextMenu(props: {
       <xul:menuitem
         type="checkbox"
         label="Workspaces sidebar"
-        checked={configStore.manageOnBms}
+        checked={configStore.manageOnBms ? "true" : undefined}
         onCommand={() => setConfigStore("manageOnBms", !configStore.manageOnBms)}
       />
       {/* Quick recovery for a chooser dragged out in customize mode —
-          and the deliberate way to run rail-only. */}
+          and the deliberate way to run rail-only. openTick re-reads the
+          non-reactive CustomizableUI placement on every open. */}
       <xul:menuitem
         type="checkbox"
         label="Workspaces in tab bar"
-        checked={!!CustomizableUI.getPlacementOfWidget(
-          "workspaces-toolbar-button",
-        )}
+        checked={props.openTick >= 0 &&
+            CustomizableUI.getPlacementOfWidget("workspaces-toolbar-button")
+          ? "true"
+          : undefined}
         onCommand={() => {
           const placed = !!CustomizableUI.getPlacementOfWidget(
             "workspaces-toolbar-button",

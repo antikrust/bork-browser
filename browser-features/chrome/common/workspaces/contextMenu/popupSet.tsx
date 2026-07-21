@@ -9,6 +9,11 @@ import type { WorkspacesService } from "../workspacesService.ts";
 import { ContextMenu } from "./contextMenu.tsx";
 import { createSignal } from "solid-js";
 import type { TWorkspaceID } from "../utils/type.ts";
+import { configStore, setConfigStore } from "../data/config.ts";
+
+const { CustomizableUI } = ChromeUtils.importESModule(
+  "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
+);
 
 type ChromeDocument = Document & { popupNode?: Element | null };
 
@@ -21,6 +26,75 @@ export class WorkspacesPopupContextMenu {
       ContextMenuUtils.addToolbarContentMenuPopupSet(() => this.PopupSet());
     if (owner) runWithOwner(owner, exec);
     else createRoot(exec);
+    this.ensureToolbarWorkspacesMenu();
+  }
+
+  /**
+   * A "Workspaces" submenu in the TOOLBAR context menu carrying the
+   * display toggles — reachable even when both the chooser and the rail
+   * are gone (the "accidentally removed the workspaces tab" recovery).
+   * Static DOM, built once; checked states refresh per open (XUL ticks
+   * show for ANY present checked attribute, so false = attribute gone).
+   */
+  private ensureToolbarWorkspacesMenu(): void {
+    const MENU_ID = "derp-workspaces-toolbar-menu";
+    const CHOOSER_ID = "workspaces-toolbar-button";
+    const toolbarMenu = document?.getElementById("toolbar-context-menu");
+    if (!toolbarMenu || document?.getElementById(MENU_ID)) return;
+    const doc = document as Document & {
+      createXULElement: (tag: string) => XULElement;
+    };
+    const menu = doc.createXULElement("menu");
+    menu.id = MENU_ID;
+    menu.setAttribute("label", "Workspaces");
+    const popup = doc.createXULElement("menupopup");
+    const items: Array<{ node: XULElement; isChecked: () => boolean }> = [];
+    const makeToggle = (
+      label: string,
+      isChecked: () => boolean,
+      toggle: () => void,
+    ): void => {
+      const item = doc.createXULElement("menuitem");
+      item.setAttribute("type", "checkbox");
+      item.setAttribute("label", label);
+      item.addEventListener("command", toggle);
+      popup.appendChild(item);
+      items.push({ node: item, isChecked });
+    };
+    makeToggle(
+      "Show workspace name",
+      () => !!configStore.showWorkspaceNameOnToolbar,
+      () =>
+        setConfigStore(
+          "showWorkspaceNameOnToolbar",
+          !configStore.showWorkspaceNameOnToolbar,
+        ),
+    );
+    makeToggle(
+      "Workspaces sidebar",
+      () => !!configStore.manageOnBms,
+      () => setConfigStore("manageOnBms", !configStore.manageOnBms),
+    );
+    makeToggle(
+      "Workspaces in tab bar",
+      () => !!CustomizableUI.getPlacementOfWidget(CHOOSER_ID),
+      () => {
+        if (CustomizableUI.getPlacementOfWidget(CHOOSER_ID)) {
+          CustomizableUI.removeWidgetFromArea(CHOOSER_ID);
+        } else {
+          CustomizableUI.addWidgetToArea(CHOOSER_ID, "TabsToolbar", 0);
+        }
+      },
+    );
+    toolbarMenu.addEventListener("popupshowing", (event: Event) => {
+      if (event.target !== toolbarMenu) return;
+      for (const { node, isChecked } of items) {
+        if (isChecked()) node.setAttribute("checked", "true");
+        else node.removeAttribute("checked");
+      }
+    });
+    menu.appendChild(popup);
+    toolbarMenu.appendChild(menu);
   }
 
   private PopupSet() {
@@ -35,12 +109,24 @@ export class WorkspacesPopupContextMenu {
     >(null);
     const [disableBefore, setDisableBefore] = createSignal(false);
     const [disableAfter, setDisableAfter] = createSignal(false);
+    const [openTick, setOpenTick] = createSignal(0);
 
     const refreshFromEvent = (event: Event) => {
-      // Use popupNode if available (set by the rail), otherwise
-      // explicitOriginalTarget (toolbar chooser rows).
+      // Resolution order matters. triggerNode is what the popup manager
+      // recorded for THIS open (context= attribute opens and any
+      // openPopup* call passed a trigger event). popupNode is only a
+      // fallback — and is consumed on read, because it otherwise goes
+      // stale: one rail right-click left it pointing at that rail button
+      // forever, so chooser-row opens resolved the wrong workspace and
+      // Delete silently did nothing from the tab-bar chooser.
       const chromeDoc = document as ChromeDocument;
-      let target = (chromeDoc.popupNode ??
+      const popup = event.target as (Element & {
+        triggerNode?: Element | null;
+      });
+      const staleFallback = chromeDoc.popupNode ?? null;
+      chromeDoc.popupNode = null;
+      let target = (popup.triggerNode ??
+        staleFallback ??
         (event as Event & { explicitOriginalTarget?: Element })
           .explicitOriginalTarget) as Element | null;
       while (target && !target.id?.startsWith("workspace-")) {
@@ -73,6 +159,7 @@ export class WorkspacesPopupContextMenu {
                 "workspaces-toolbar-item-context-menu"
             ) {
               refreshFromEvent(event);
+              setOpenTick((t) => t + 1);
             }
           }}
         >
@@ -81,6 +168,7 @@ export class WorkspacesPopupContextMenu {
             disableAfter={disableAfter()}
             contextWorkspaceId={contextWorkspaceId()!}
             ctx={this.ctx}
+            openTick={openTick()}
           />
         </xul:menupopup>
       </xul:popupset>
