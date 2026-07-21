@@ -91,11 +91,13 @@ tab-group[data-derp-stack] .derp-stack-icon {
   width: 14px;
   height: 14px;
   padding: 1px;
-  opacity: 0.75;
+  opacity: 0.9;
   pointer-events: none;
   -moz-context-properties: fill, stroke;
   fill: currentColor;
-  stroke: currentColor;
+  /* Stacks have a colour — the chip glyph wears it (same expression as
+     the chip border), instead of plain text colour. */
+  stroke: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
 }
 
 tab-group[data-derp-stack] .tab-group-label-container:hover .derp-stack-icon {
