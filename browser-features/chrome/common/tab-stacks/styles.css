@@ -256,6 +256,29 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   content: none !important;
 }
 
+/* Hover reads as ONE unit. Stock's hover highlight is an element wrapped
+   around the label alone, so on a collapsed group the label half lit up
+   while the count half (a sibling cell) sat unchanged — obvious under the
+   built-in colour themes. Kill the stock label-only highlight and paint
+   both cells together: hovering anywhere on a collapsed group brightens
+   the pair; on an expanded group (no count cell) the label cell brightens
+   by itself. */
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label-hover-highlight {
+  background: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label-container:hover,
+#tabbrowser-tabs tab-group[collapsed]:not([data-derp-stack]):hover > .tab-group-label-container,
+#tabbrowser-tabs tab-group[collapsed]:not([data-derp-stack]):hover > .tab-group-overflow-count-container {
+  background-color: color-mix(
+    in srgb,
+    light-dark(var(--tab-group-color), var(--tab-group-color-invert)) 45%,
+    transparent
+  );
+}
+
 tab-group[data-derp-stack] .tab-group-label {
   /* Hide the native group-name text; our ::before shows name/tab title. */
   font-size: 0 !important;

@@ -397,6 +397,66 @@ export default class TabStacks extends NoraComponentBase {
       });
     }
 
+    // The native hover preview panel lists a hovered group's member tabs.
+    // For a stack that's pure noise: it duplicates row 2, it appears only
+    // sometimes (the chip owns click/press, so the hover machinery loses
+    // races to other controls), and its rows are display-only. Suppress it
+    // for stacks; plain groups keep the native panel. previewPanel is a
+    // plain property the hover machinery assigns lazily, so an accessor
+    // wraps whatever gets stored there, whenever that happens.
+    type PreviewPanel = {
+      activate?: (target: unknown) => void;
+      deactivate?: (target?: unknown, opts?: { force?: boolean }) => void;
+      __derpNoStackPreview?: boolean;
+    };
+    const wrapPreviewPanel = (
+      panel: PreviewPanel | null | undefined,
+    ): PreviewPanel | null | undefined => {
+      if (
+        !panel || panel.__derpNoStackPreview ||
+        typeof panel.activate !== "function"
+      ) {
+        return panel;
+      }
+      const origActivate = panel.activate.bind(panel);
+      panel.activate = (target: unknown) => {
+        const el = target as
+          | (Element & { group?: Element | null })
+          | null
+          | undefined;
+        const groupEl = el?.tagName?.toLowerCase?.() === "tab-group"
+          ? el
+          : el?.closest?.("tab-group") ?? el?.group ?? null;
+        if (groupEl?.getAttribute?.("data-derp-stack") === "true") {
+          try {
+            panel.deactivate?.(target, { force: true });
+          } catch {
+            // panel state stays native's problem
+          }
+          return;
+        }
+        return origActivate(target);
+      };
+      panel.__derpNoStackPreview = true;
+      return panel;
+    };
+    const tabsElPP = tabsEl as XULElement & {
+      previewPanel?: PreviewPanel | null;
+    };
+    let currentPreviewPanel = wrapPreviewPanel(tabsElPP.previewPanel);
+    Object.defineProperty(tabsElPP, "previewPanel", {
+      configurable: true,
+      get: () => currentPreviewPanel,
+      set: (v: PreviewPanel | null) => {
+        currentPreviewPanel = wrapPreviewPanel(v);
+      },
+    });
+    onCleanup(() => {
+      delete (tabsElPP as { previewPanel?: unknown }).previewPanel;
+      (tabsElPP as { previewPanel?: unknown }).previewPanel =
+        currentPreviewPanel;
+    });
+
     const onTabEvent = (event: Event) => {
       if (event.type === "TabSelect") {
         rememberSelection();
