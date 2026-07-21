@@ -69,7 +69,7 @@ export function createSmokeSteps(mode: SmokeMode): SmokeStep[] {
       //         browser-features/modules  (50 errors)
       //         pages-welcome (17),
       //         pages-profile-manager (17), pages-newtab (13), pages-notes (11),
-      //         pages-workflow-progress (9), pages-modal-child (7), pages-aboutDialog (4)
+      //         pages-modal-child (7), pages-aboutDialog (4)
       name: "runtime check: floorp source directories",
       args: [
         "check",

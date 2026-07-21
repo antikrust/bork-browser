@@ -52,10 +52,6 @@ export async function run(writer: any): Promise<void> {
       name: "profile-manager",
       path: path.join(PROJECT_ROOT, "browser-features/pages-profile-manager"),
     },
-    {
-      name: "workflow-progress",
-      path: path.join(PROJECT_ROOT, "browser-features/pages-workflow-progress"),
-    },
   ];
 
   // Ensure logs directory exists
@@ -206,8 +202,6 @@ export function getPortFor(serverName: string): number {
       return 5187;
     case "profile-manager":
       return 5179;
-    case "workflow-progress":
-      return 5192;
     default:
       return DEV_SERVER.default_port;
   }
