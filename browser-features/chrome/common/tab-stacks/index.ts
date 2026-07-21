@@ -81,6 +81,19 @@ function setGroupKind(groupId: string, kind: GroupKind): void {
   }
 }
 
+/** Smallest unused auto-name: New Stack, New Stack 1, New Stack 2, … */
+function nextAutoStackName(gb: { tabGroups: StackGroup[] }): string {
+  const used = new Set<number>();
+  const re = /^New Stack(?: (\d+))?$/;
+  for (const g of gb.tabGroups) {
+    const m = re.exec(g.label ?? "");
+    if (m) used.add(m[1] ? Number(m[1]) : 0);
+  }
+  let n = 0;
+  while (used.has(n)) n++;
+  return n === 0 ? "New Stack" : `New Stack ${n}`;
+}
+
 /** Every mutation that can change stack contents or chip labels. */
 const TAB_EVENTS = [
   "TabSelect",
@@ -665,6 +678,7 @@ export default class TabStacks extends NoraComponentBase {
     let tabDragActive = false;
     let lastDropPoint: { x: number; y: number } | null = null;
     let lastTabDropTime = 0;
+    let lastProxyStripScroll = 0;
     const onTabDragStart = (event: DragEvent) => {
       const t = event.target as Element | null;
       if (
@@ -979,6 +993,31 @@ export default class TabStacks extends NoraComponentBase {
         if (hoverChip && hoverChip === (srcTab?.group as unknown as Element)) {
           return;
         }
+        // Autoscroll an overflowing strip while the proxy hovers near its
+        // ends — native only autoscrolls its own drag types, so far-away
+        // slots were unreachable in one gesture. Throttled; instant, so
+        // the geometry below is measured post-scroll.
+        const asbEl = (gb.tabContainer as unknown as {
+          arrowScrollbox?: XULElement & {
+            scrollByPixels?: (px: number, instant?: boolean) => void;
+            scrollIncrement?: number;
+          };
+        }).arrowScrollbox;
+        if (
+          asbEl?.hasAttribute?.("overflowing") &&
+          Date.now() - lastProxyStripScroll > 80
+        ) {
+          const sr = asbEl.getBoundingClientRect();
+          const edge = 44;
+          const inc = Math.min(asbEl.scrollIncrement ?? 96, 160);
+          if (event.clientX < sr.left + edge) {
+            asbEl.scrollByPixels?.(-inc, true);
+            lastProxyStripScroll = Date.now();
+          } else if (event.clientX > sr.right - edge) {
+            asbEl.scrollByPixels?.(inc, true);
+            lastProxyStripScroll = Date.now();
+          }
+        }
         // The native blue line marks the exact insertion boundary: the
         // trailing edge of the cell the drop will follow (or the leading
         // edge of the first cell for a drop at the very start).
@@ -1226,6 +1265,16 @@ export default class TabStacks extends NoraComponentBase {
           continue;
         }
         group.setAttribute("data-derp-stack", "true");
+        // Every stack carries a name. Unnamed stacks used to derive the
+        // chip title from a member tab — but real pages retitle themselves
+        // on focus (SPAs, notification counters), so the chip appeared to
+        // rename and resize on every click inside the stack. A stable
+        // auto-name (New Stack, New Stack 1, …) ends that for good; the
+        // native label persists via session restore and prefills the
+        // rename editor.
+        if (!group.label) {
+          group.label = nextAutoStackName(gb);
+        }
         // pack="center" is a XUL layout attribute mapped to
         // justify-content: center as a presentation hint — author CSS
         // cannot beat it at any specificity, not even inline !important.
@@ -1264,9 +1313,9 @@ export default class TabStacks extends NoraComponentBase {
         }
         const label = group.querySelector(".tab-group-label");
         label?.setAttribute("data-derp-count", String(group.tabs.length));
-        // A user-given group name wins; otherwise the stack's FIRST tab
-        // anchors the title (stable — no renaming as you click around
-        // inside the stack). Bound either way; the chip fades the rest.
+        // The label always exists now (auto-named above); the member-tab
+        // fallback only covers the beat between group creation and the
+        // auto-name landing. Bound either way; the chip fades the rest.
         const chipTitle = group.label || getGroupDisplayTitle(group);
         label?.setAttribute(
           "data-derp-title",
