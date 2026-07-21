@@ -135,4 +135,21 @@ export class WorkspaceIcons {
     }
     return this.resolvedIcons[icon];
   }
+
+  /**
+   * Same glyph with a literal stroke, for NATIVE menu images — the
+   * "Move Tab to Workspace" and "Open Link in Workspace" submenu items.
+   * context-stroke is CSS context paint; the native macOS menu icon
+   * loader has no CSS context to give it, and context-paint SVGs in
+   * native submenus are the standing suspect for the submenu-open
+   * segfaults of 2026-07-21 (null+0x68 under
+   * _sendMenuOpeningNotification). Mid-gray reads on both light and
+   * dark native menus.
+   */
+  public getWorkspaceMenuIconUrl(icon: string | null | undefined): string {
+    return this.getWorkspaceIconUrl(icon).replaceAll(
+      encodeURIComponent('stroke="context-stroke"'),
+      encodeURIComponent('stroke="#808080"'),
+    );
+  }
 }

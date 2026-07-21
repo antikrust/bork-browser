@@ -126,7 +126,11 @@ export class WorkspacesTabContextMenu {
       }
       menuitem.classList.add("menuitem-iconic");
       menuitem.setAttribute("label", workspace.name);
-      const iconUrl = this.ctx.iconCtx.getWorkspaceIconUrl(workspace.icon);
+      // Menu variant: literal stroke — context-stroke has no meaning to
+      // the native menu icon loader (see workspace-icons.ts).
+      const iconUrl = this.ctx.iconCtx.getWorkspaceMenuIconUrl(
+        workspace.icon,
+      );
       if (iconUrl) {
         menuitem.setAttribute("image", iconUrl);
       } else {
