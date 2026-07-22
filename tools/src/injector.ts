@@ -22,6 +22,11 @@ const DEFAULT_POLICIES = {
     SearchEngines: {
       Default: "DuckDuckGo",
     },
+    // The runtime's compiled-in update URL is Mozilla's aus5 server, which
+    // doesn't serve this product — every check is a no-op ping. Updates are
+    // derp's own check instead (chrome/common/update-check reads
+    // updates/update.xml from the repo's main branch).
+    DisableAppUpdate: true,
     // Blocking is uBlock Origin alone: Ghostery and Privacy Badger were
     // ~wholly redundant on top of it (Ghostery's one distinct feature,
     // consent auto-reject, is covered natively — derp-defaults enables

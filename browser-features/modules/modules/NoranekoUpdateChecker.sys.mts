@@ -119,14 +119,12 @@ function getUpdateType(oldVersion: string, newVersion: string): UpdateType {
 }
 
 /**
- * Get the update.xml URL using nsIUpdateChecker.
- * This respects MOZ_UPDATE_URL and other Firefox update settings.
+ * The published update manifest: updates/update.xml on the repo's main
+ * branch, refreshed by tools/release/build-derp-packages.sh on every
+ * package run. No update server — GitHub raw serving is the endpoint.
  */
 function getUpdateXmlUrl(): string {
-  // DEV ENVIRONMENT OVERRIDE
-  const url = "http://localhost:5173/update.xml";
-  console.log(`[NoranekoUpdateChecker] Using DEV URL: ${url}`);
-  return url;
+  return "https://raw.githubusercontent.com/100mountains/derp/main/updates/update.xml";
 }
 
 /**
@@ -351,31 +349,4 @@ export function checkIfUpdatedOnStartup(): UpdateInfo {
 export function saveCurrentVersion(): void {
   const currentVersion = NoranekoConstants.version2 as string;
   Services.prefs.setStringPref(PREF_OLD_VERSION2, currentVersion);
-}
-
-/**
- * Check for version2 updates and trigger Firefox update if needed.
- * This will invoke the native Firefox update mechanism.
- */
-export async function triggerUpdateIfNeeded(): Promise<{
-  triggered: boolean;
-  status: Version2UpdateStatus;
-}> {
-  const status = await checkForVersion2Updates();
-
-  if (!status.hasUpdate) {
-    console.log("[NoranekoUpdateChecker] No version2 update available");
-    return { triggered: false, status };
-  }
-
-  console.log(
-    `[NoranekoUpdateChecker] Version2 update detected: ${status.localVersion2} -> ${status.remoteVersion2}`,
-  );
-
-  // IMPLEMENTATION DELETED AS REQUESTED
-  console.log(
-    "[NoranekoUpdateChecker] Update execution logic has been removed.",
-  );
-
-  return { triggered: false, status };
 }

@@ -262,4 +262,20 @@ fi
 [ -d _dist/noraneko ] || fail "_dist/noraneko missing — run with --build"
 
 for lane in "${LANES[@]}"; do "build_$lane"; done
+
+# The in-browser update check (chrome/common/update-check) reads
+# updates/update.xml from this repo's main branch — refresh it from
+# package.json so a published package and the manifest can't drift.
+# It only announces the release once committed and pushed.
+PKG_VERSION="$(perl -ne 'print $1 if /"version":\s*"([^"]+)"/' package.json)"
+cat > updates/update.xml <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+  <update type="minor"
+          displayVersion="${PKG_VERSION}"
+          appVersion2="${PKG_VERSION}"
+          detailsURL="https://therob.lol/derp/"/>
+</updates>
+EOF
+log "updates/update.xml -> ${PKG_VERSION} (commit + push to announce the release)"
 log "done"
