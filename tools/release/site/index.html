@@ -49,6 +49,47 @@
   <p>Everything else follows from the same instinct: no AI assistant, no
   sponsored tiles, no telemetry, no engagement features nobody asked for.</p>
 
+  <h2>no AI</h2>
+  <p>Not "switched off in settings" — <b>deleted from the build</b>. Firefox
+  ships a local inference stack; derp removes it at packaging time, so none
+  of it is on your disk:</p>
+  <ul>
+    <li>no <b>ONNX Runtime</b>, no <b>transformers.js</b></li>
+    <li>no <b>wllama</b> (llama.cpp), no <b>openai.mjs</b></li>
+    <li>no <b>model hub</b> downloader, and both <b>MLEngine actors</b>
+      removed</li>
+    <li><code class="inline">browser.ml.enable</code> is off as well, along
+      with the chatbot, link previews, page assist and AI tab grouping</li>
+  </ul>
+  <p>Translation still works, because it never needed any of that: it runs
+  Bergamot locally, fetches its language models separately, and the text
+  never leaves your machine.</p>
+
+  <h2>no telemetry</h2>
+  <p>No telemetry, no data sharing, no crash reports, no studies, no
+  sponsored content, no "recommendations". The pings are turned off and the
+  reporting endpoints are blanked, so there is nothing to opt out of.</p>
+
+  <h2>what it does</h2>
+  <ul>
+    <li><b>Workspaces</b> — separate sets of tabs with their own colour and
+      icon, switched from a rail down the side.</li>
+    <li><b>Tab stacks</b> — a stack is one chip in the tab strip; its tabs
+      appear in a second row underneath.</li>
+    <li><b>Tab groups</b> — Firefox's own groups, alongside stacks.</li>
+    <li><b>Zen mode</b> — toolbars and status bar retract, leaving the
+      page.</li>
+    <li><b>Mouse gestures</b> — hold right-click and draw; every browser
+      command is bindable.</li>
+    <li><b>Chromium extensions</b> — yes, really: derp installs from the
+      Chrome Web Store as well as Firefox add-ons. Inherited from Floorp;
+      not everything works, but a surprising amount does.</li>
+    <li><b>Side panels</b> — web pages, notes, downloads and a local
+      translator docked beside the page.</li>
+    <li><b>Split view</b>, a command palette on <b>F2</b>, and a lean
+      address bar that hides entirely if you want it to.</li>
+  </ul>
+
   <h2>coming from Vivaldi?</h2>
   <p>derp <b>imports your Vivaldi workspaces</b>, including which tabs live in
   which workspace — it reads Vivaldi's own session data, so a workspace with
