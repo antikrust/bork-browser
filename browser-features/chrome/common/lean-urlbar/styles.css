@@ -35,11 +35,31 @@
   pointer-events: none !important;
 }
 
-/* Panel sidebar toggle (Alt+Cmd+S) */
+/* Panel sidebar toggle (Alt+Cmd+S) — eased collapse, not display:none, so
+   showing and hiding slide the content over instead of snapping. Matches
+   the workspaces rail's 200ms ease so both panels feel the same. Width is
+   animatable (the box carries an inline pixel width); overflow clips the
+   contents while it closes. !important beats the blanket
+   `transition: ... !important` rules in engine-chrome.css (the flattened
+   lepton skin), which would replace the list and turn the slide into a
+   snap — same trap as panel-sidebar's #derp-ext-tweaker. */
+@media (prefers-reduced-motion: no-preference) {
+  #panel-sidebar-select-box,
+  #panel-sidebar-box,
+  #panel-sidebar-splitter {
+    transition: width 200ms ease, min-width 200ms ease, max-width 200ms ease,
+      opacity 200ms ease !important;
+  }
+}
 :root[derp-sidebar-hidden] #panel-sidebar-select-box,
 :root[derp-sidebar-hidden] #panel-sidebar-box,
 :root[derp-sidebar-hidden] #panel-sidebar-splitter {
-  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Peek: the URL input overlays the tab row via absolute positioning —

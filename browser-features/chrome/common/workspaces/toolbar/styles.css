@@ -690,8 +690,7 @@ panel:has(#workspacesToolbarButtonPanel) {
 
 /* Ease in on show, like Firefox's own launcher expand: the rail is
    in-flow (it pushes content), so it slides from behind the window edge
-   and the page eases right instead of jumping. Mount-only — the Show
-   unmount means no exit animation, which matches the launcher too. */
+   and the page eases right instead of jumping. */
 @media (prefers-reduced-motion: no-preference) {
   #derp-workspaces-rail {
     animation: derp-rail-ease-in 200ms ease-out;
@@ -706,6 +705,29 @@ panel:has(#workspacesToolbarButtonPanel) {
       margin-inline-start: 0;
       opacity: 1;
     }
+  }
+
+  /* Ease out on hide: [derp-rail-closing] holds the slot owned (native
+     launcher still hidden) while the RAIL collapses its width, then it
+     unmounts (workspaces-rail.tsx). Only the rail is animated — its width
+     is explicit (35px), which interpolates; #sidebar-main is width:auto
+     (content-driven) and auto→0 cannot interpolate, so the slot is left
+     alone to track its collapsing content. The !important beats the
+     blanket `transition: ... !important` rules in engine-chrome.css (the
+     flattened lepton skin), which would otherwise replace this list and
+     turn the slide into a snap. */
+  #derp-workspaces-rail {
+    transition: width 200ms ease, min-width 200ms ease, max-width 200ms ease,
+      opacity 200ms ease !important;
+  }
+
+  :root[derp-rail-closing] #derp-workspaces-rail {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
   }
 }
 

@@ -40,6 +40,11 @@ import { LAYERS_ICON } from "./icons.ts";
 const REVAMP_PREF = "sidebar.revamp";
 const RAIL_ENABLED_REVAMP_PREF = "derp.workspaces.rail.enabledRevamp";
 const RAIL_ACTIVE_ATTR = "derp-workspaces-rail";
+// While this is set the rail is on its way out: the slot stays owned (the
+// native launcher stays hidden) and the CSS collapses the slot's width so
+// the exit eases instead of snapping. Removed when the teardown completes.
+const RAIL_CLOSING_ATTR = "derp-rail-closing";
+const RAIL_EASE_MS = 200;
 const HOST_BOX_ID = "sidebar-main";
 
 const DEFAULT_ICON = "chrome://branding/content/icon32.png";
@@ -281,7 +286,7 @@ const RailControlButton = (props: RailControlButtonProps) => {
   );
 };
 
-function Rail(props: { ctx: WorkspacesService }) {
+function Rail(props: { ctx: WorkspacesService; present: () => boolean }) {
   const [texts, setTexts] = createSignal(getTranslations());
 
   addI18nObserver(() => {
@@ -303,7 +308,7 @@ function Rail(props: { ctx: WorkspacesService }) {
   });
 
   return (
-    <Show when={railActive()}>
+    <Show when={props.present()}>
       <div id="derp-workspaces-rail">
         <div class="derp-workspaces-rail-list">
           <For each={railOrder()}>
@@ -344,17 +349,44 @@ export class WorkspacesSidebarRail {
       return;
     }
 
-    render(() => <Rail ctx={ctx} />, host, { hotCtx: import.meta.hot });
+    // `present` keeps the rail mounted through its exit animation: it goes
+    // true immediately on show, but lags railActive going false by
+    // RAIL_EASE_MS so the slot can collapse smoothly before teardown.
+    const [present, setPresent] = createSignal(railActive());
+    let closeTimer: ReturnType<typeof setTimeout> | undefined;
+    render(() => <Rail ctx={ctx} present={present} />, host, {
+      hotCtx: import.meta.hot,
+    });
 
+    // Depends only on railActive() — setPresent is never read here, so no
+    // reactive loop.
     createEffect(() => {
       if (railActive()) {
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          closeTimer = undefined;
+        }
+        root.removeAttribute(RAIL_CLOSING_ATTR);
+        setPresent(true);
         this.activate(root);
       } else {
-        this.deactivate(root);
+        // Ease out: hold the slot (RAIL_ACTIVE_ATTR stays, native launcher
+        // stays hidden) and mark it closing so the CSS collapses the slot
+        // width; tear down only once the animation has run.
+        root.setAttribute(RAIL_CLOSING_ATTR, "");
+        if (closeTimer) clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => {
+          closeTimer = undefined;
+          root.removeAttribute(RAIL_CLOSING_ATTR);
+          setPresent(false);
+          this.deactivate(root);
+        }, RAIL_EASE_MS);
       }
     });
 
     onCleanup(() => {
+      if (closeTimer) clearTimeout(closeTimer);
+      root.removeAttribute(RAIL_CLOSING_ATTR);
       root.removeAttribute(RAIL_ACTIVE_ATTR);
     });
   }
