@@ -47,6 +47,12 @@
   #panel-sidebar-select-box,
   #panel-sidebar-box,
   #panel-sidebar-splitter {
+    /* Deliberately no margin-inline-start. That margin is zen's retract,
+       and easing it from an always-mounted sheet is what made the page
+       content slide sideways when zen turned off: these boxes are in
+       flow, so the content area is re-laid-out on every frame the margin
+       animates. It stays scoped to [zenmode] in zen-mode.css, where it
+       expires with the attribute. */
     transition: width 200ms ease, min-width 200ms ease, max-width 200ms ease,
       opacity 200ms ease !important;
   }
