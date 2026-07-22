@@ -255,6 +255,9 @@
   },
   "qrcode-generate-page-action": "Generate QR Code for this page",
   "qrcode-generate-page-action-title": "QR Code Generator",
+  "urlbar": {
+    "copyAddress": "Copy address"
+  },
   "panelSidebar": {
     "modal": {
       "type": "Panel Type",

@@ -254,6 +254,9 @@
   },
   "qrcode-generate-page-action": "このページの QR コードを生成",
   "qrcode-generate-page-action-title": "QR コードジェネレーター",
+  "urlbar": {
+    "copyAddress": "アドレスをコピー"
+  },
   "panelSidebar": {
     "staticPanels": {
       "browser-manager-sidebar": "ブラウザーマネージャー",
