@@ -1,0 +1,16 @@
+diff --git a/chrome/toolkit/content/global/translations/about-translations.html b/chrome/toolkit/content/global/translations/about-translations.html
+--- ./chrome/toolkit/content/global/translations/about-translations.html
++++ ./chrome/toolkit/content/global/translations/about-translations.html
+@@ -54,12 +54,6 @@
+           id="about-translations-description-text"
+           data-l10n-id="about-translations-description"
+         ></span>
+-        <a
+-          id="about-translations-learn-more-link"
+-          is="moz-support-link"
+-          href="#"
+-          support-page="website-translation"
+-        ></a>
+       </div>
+
+       <moz-message-bar
