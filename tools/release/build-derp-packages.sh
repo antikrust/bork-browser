@@ -85,11 +85,17 @@ overlay() {
   # Default extension pack: written at build time by the injector into the
   # dev tree only (installDistributionPolicies targets _dist/bin), so clean
   # runtime trees need it copied in or fresh installs get no extensions.
-  log "installing distribution policies"
-  local policies="_dist/bin/floorp/Floorp.app/Contents/Resources/distribution/policies.json"
-  [ -f "$policies" ] || fail "policies.json missing from dev tree — run stage once"
+  # Same for distribution/extensions/ — the 10 built-in theme XPIs
+  # (installThemePack); without the copy, fresh installs get no themes.
+  log "installing distribution policies + theme pack"
+  local dist_src="_dist/bin/floorp/Floorp.app/Contents/Resources/distribution"
+  [ -f "$dist_src/policies.json" ] ||
+    fail "policies.json missing from dev tree — run stage once"
+  [ -d "$dist_src/extensions" ] ||
+    fail "distribution/extensions (theme pack) missing from dev tree — run stage once"
   mkdir -p "$approot/distribution"
-  cp "$policies" "$approot/distribution/policies.json"
+  cp "$dist_src/policies.json" "$approot/distribution/policies.json"
+  cp -R "$dist_src/extensions" "$approot/distribution/extensions"
 
   log "installing icons"
   bash tools/release/brand-icons.sh "$approot"
