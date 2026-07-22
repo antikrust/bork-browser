@@ -368,6 +368,15 @@ function build(root: Element): void {
 
   /* ---- Interface ---- */
   root.appendChild(groupboxOf("Interface", [
+    // Dark Derp is skin-level (data-derp-dark root attribute via
+    // derp-defaults' pref observer), NOT an addon theme — this is its only
+    // UI. Off = the normal Derp look. Takes effect instantly.
+    prefCheckbox(
+      "derp-design-dark-derp",
+      "derp.theme.dark.enabled",
+      false,
+      "Dark Derp (black tab strip, panels and toolbar)",
+    ),
     designCheckbox(
       "derp-design-favicon-color",
       ["globalConfigs", "faviconColor"],
