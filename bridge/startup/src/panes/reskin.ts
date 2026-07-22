@@ -155,20 +155,33 @@ setting-group [id="related-settings-tabs-browsing-link"] {
 }
 
 /* ---------- grid backdrop ----------
-   A subtle math-paper line grid on the scrolling content region (cards sit
-   on top); color derives from the text color at very low strength so it
-   works in both themes. */
+   Math-book graph paper on the scrolling content region (cards sit on
+   top): a faint minor grid with a slightly stronger major line every
+   4 squares. Color derives from the text color at very low strength so
+   it works in both themes. */
 .main-content {
-  background-image: linear-gradient(
-      color-mix(in oklab, var(--derp-base-content) 6%, transparent) 1px,
+  background-image:
+    /* major lines every 4 squares */
+    linear-gradient(
+      color-mix(in oklab, var(--derp-base-content) 7%, transparent) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      color-mix(in oklab, var(--derp-base-content) 6%, transparent) 1px,
+      color-mix(in oklab, var(--derp-base-content) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    /* minor lines */
+    linear-gradient(
+      color-mix(in oklab, var(--derp-base-content) 3%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--derp-base-content) 3%, transparent) 1px,
       transparent 1px
     ) !important;
-  background-size: 24px 24px !important;
+  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px !important;
 }
 `;
 
