@@ -1,16 +1,39 @@
 diff --git a/chrome/toolkit/content/global/translations/about-translations.html b/chrome/toolkit/content/global/translations/about-translations.html
 --- ./chrome/toolkit/content/global/translations/about-translations.html
 +++ ./chrome/toolkit/content/global/translations/about-translations.html
-@@ -54,12 +54,6 @@
-           id="about-translations-description-text"
-           data-l10n-id="about-translations-description"
-         ></span>
+@@ -12,7 +12,7 @@
+     />
+     <meta name="color-scheme" content="light dark" />
+     <meta name="viewport" content="width=device-width" />
+-    <title data-l10n-id="about-translations-title"></title>
++    <title>Translate.</title>
+     <link rel="stylesheet" href="chrome://global/skin/global.css" />
+     <link rel="stylesheet" href="chrome://global/skin/in-content/common.css" />
+     <link
+@@ -44,22 +44,12 @@
+           id="about-translations-logo"
+           src="chrome://branding/content/about-logo.svg"
+         />
+-        <h1
+-          id="about-translations-h1"
+-          data-l10n-id="about-translations-title"
+-        ></h1>
++        <h1 id="about-translations-h1">Translate.</h1>
+       </div>
+       <div id="about-translations-description">
+-        <span
+-          id="about-translations-description-text"
+-          data-l10n-id="about-translations-description"
+-        ></span>
 -        <a
 -          id="about-translations-learn-more-link"
 -          is="moz-support-link"
 -          href="#"
 -          support-page="website-translation"
 -        ></a>
++        <span id="about-translations-description-text"
++          >Local translations only no internet</span
++        >
        </div>
-
+ 
        <moz-message-bar

@@ -1,0 +1,46 @@
+diff --git a/chrome/toolkit/content/global/translations/about-translations.css b/chrome/toolkit/content/global/translations/about-translations.css
+--- ./chrome/toolkit/content/global/translations/about-translations.css
++++ ./chrome/toolkit/content/global/translations/about-translations.css
+@@ -309,6 +309,42 @@
+ 
+   #about-translations-target-section {
+     grid-column: 1 / -1;
++    grid-row: 3;
++  }
++}
++
++/* derp: in the sidebar panel (~400px wide) the three-across language row
++   squeezed both menus until their labels read "Detect langua…". Below the
++   width where that row can hold two menus and the swap button, stack them
++   into one column and push the text areas down to suit. */
++@media (max-width: 700px) {
++  #about-translations-main-user-interface {
++    grid-template-columns: 1fr;
++  }
++
++  #about-translations-source-select {
++    grid-column: 1;
++    grid-row: 1;
++  }
++
++  #about-translations-swap-languages-button {
++    grid-column: 1;
++    grid-row: 2;
++    justify-self: center;
++  }
++
++  #about-translations-target-select {
++    grid-column: 1;
+     grid-row: 3;
+   }
++
++  #about-translations-source-section {
++    grid-column: 1;
++    grid-row: 4;
++  }
++
++  #about-translations-target-section {
++    grid-column: 1;
++    grid-row: 5;
++  }
+ }
