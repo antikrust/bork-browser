@@ -109,6 +109,12 @@ overlay() {
   log "correcting vendor name (Ablaze -> Derp)"
   find "$approot/browser" \( -name brand.ftl -o -name brand.properties \) \
     -exec perl -i -pe 's/Ablaze/Derp/g' {} +
+  # application.ini too (Vendor=Ablaze): shown by about:support and used in
+  # the profile path on Windows/Linux (AppData\Vendor\Name, ~/.vendor) — fine
+  # to change pre-release, but a profile-moving change once users exist.
+  # macOS profiles key on the app name only, so existing mac profiles keep.
+  [ -f "$approot/application.ini" ] &&
+    perl -i -pe 's/^Vendor=Ablaze$/Vendor=Derp/' "$approot/application.ini"
 
   find "$approot/noraneko-devdir" -name "*.map" -delete
 }
