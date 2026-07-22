@@ -163,12 +163,12 @@ setting-group [id="related-settings-tabs-browsing-link"] {
   background-image:
     /* major lines every 4 squares */
     linear-gradient(
-      color-mix(in oklab, var(--derp-base-content) 7%, transparent) 1px,
+      color-mix(in oklab, var(--derp-base-content) 5%, transparent) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      color-mix(in oklab, var(--derp-base-content) 7%, transparent) 1px,
+      color-mix(in oklab, var(--derp-base-content) 5%, transparent) 1px,
       transparent 1px
     ),
     /* minor lines */
