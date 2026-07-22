@@ -92,6 +92,16 @@ export default class LeanUrlbar extends NoraComponentBase {
 
     const applyHidden = (hidden: boolean) => {
       if (hidden) {
+        // The nav bar's height is its content's, and auto does not
+        // interpolate — the collapse needs a real number to travel from.
+        // Measured at the moment of hiding rather than cached, so it stays
+        // right when the toolbar's contents change; showing again reuses
+        // the value, which is the height it is returning to.
+        const nav = document?.getElementById("nav-bar");
+        const h = nav?.getBoundingClientRect().height ?? 0;
+        if (h > 0) {
+          root.style.setProperty("--derp-navbar-height", `${Math.ceil(h)}px`);
+        }
         root.setAttribute(HIDDEN_ATTR, "");
       } else {
         root.removeAttribute(HIDDEN_ATTR);

@@ -535,8 +535,11 @@
   background-color: #050506 !important;
 }
 
-:root[data-derp-dark] .urlbar-background {
-  /* Class, not id — the field element carries .urlbar-background. */
+:root[data-derp-dark] .urlbar-background,
+:root[data-derp-dark] #urlbar[open] > .urlbarView {
+  /* Class, not id — the field element carries .urlbar-background. The
+     results panel is listed with it so the suggestions sit on the same
+     tone as the field rather than the lighter stock field colour. */
   background-color: #131317 !important;
 }
 

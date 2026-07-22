@@ -7,9 +7,24 @@
    it activates, so the nav bar flickering back for zen would leave a blank
    row of unaccounted height at the top. Only the peek stands down in zen. */
 
-/* Address bar hidden ("a"): the nav bar takes no space at all. */
+/* Address bar hidden ("a"): the nav bar takes no space at all.
+   max-height rather than height, because height is auto here and auto does
+   not interpolate — index.ts publishes the measured height as
+   --derp-navbar-height just before hiding, giving the collapse a real
+   distance to cover. Same 200ms ease as the side panels. */
+@media (prefers-reduced-motion: no-preference) {
+  #nav-bar {
+    transition: max-height 200ms ease, padding 200ms ease, opacity 200ms ease
+      !important;
+  }
+}
+
+#nav-bar {
+  max-height: var(--derp-navbar-height, 100px);
+}
+
 :root[derp-urlbar-hidden]:not([derp-urlbar-peek]) #nav-bar {
-  height: 0 !important;
+  max-height: 0 !important;
   min-height: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -47,12 +62,6 @@
   #panel-sidebar-select-box,
   #panel-sidebar-box,
   #panel-sidebar-splitter {
-    /* Deliberately no margin-inline-start. That margin is zen's retract,
-       and easing it from an always-mounted sheet is what made the page
-       content slide sideways when zen turned off: these boxes are in
-       flow, so the content area is re-laid-out on every frame the margin
-       animates. It stays scoped to [zenmode] in zen-mode.css, where it
-       expires with the attribute. */
     transition: width 200ms ease, min-width 200ms ease, max-width 200ms ease,
       opacity 200ms ease !important;
   }
@@ -117,4 +126,118 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* No megabar. Focusing the address bar made it lunge: [breakout-extend]
+   pulls it left by --urlbar-margin-inline, widens it by twice that, swaps
+   the input container's height for the taller --urlbar-container-height,
+   and scales the whole thing in with the urlbar-grow keyframes. The result
+   overhangs the page and shifts the text under the cursor at the exact
+   moment you start typing.
+
+   The results list is a separate element (.urlbarView, inside #urlbar and
+   after the input) and already sits below the bar, so pinning the bar to
+   its resting geometry loses nothing: you still get suggestions, they just
+   drop underneath instead of the field jumping at you. As a bonus the list
+   now lines up with the bar's edges rather than the wider box. */
+#urlbar[breakout][breakout-extend] {
+  margin-left: 0 !important;
+  margin-inline: 0 !important;
+  width: var(--urlbar-width) !important;
+}
+
+#urlbar[breakout][breakout-extend] > .urlbar-input-container {
+  /* Vertically the box grew by taking --urlbar-container-height and
+     padding the field back to centre. Dropping that padding alone lifts
+     the field, because the positioning code has already written an inline
+     `top` that assumes it. So give the padding back as margin: same
+     offset, but outside the box, which keeps the field where it was while
+     the box stays the height it was. */
+  height: var(--urlbar-height) !important;
+  /* Keep the resting padding rather than zeroing it: it sits inside the
+     fixed height, so the icons inside the bar line up with where they were
+     — zeroing it lifted them by exactly that 1px. */
+  padding-block: var(--urlbar-container-padding) !important;
+  margin-block-start: calc(
+    (var(--urlbar-container-height) - var(--urlbar-height)) / 2
+  ) !important;
+  padding-inline: var(--urlbar-container-padding) !important;
+}
+
+/* The grow animation is on the background layer; without it the panel
+   simply appears. */
+#urlbar[breakout][breakout-extend] > .urlbar-background {
+  animation-name: none !important;
+}
+
+/* Focusing the bar lifted it off the page with a drop shadow
+   (rgba(0,0,0,.13) 0 2px 14px). Nothing else about the field changes on
+   focus — same fill, same border — so dropping the shadow leaves the bar
+   looking exactly as it does at rest while the results slide out below. */
+#urlbar[breakout][breakout-extend] > .urlbar-background,
+#urlbar[focused] > .urlbar-background {
+  box-shadow: none !important;
+  /* And the ring around it: an outline (2px solid, the system accent at
+     half alpha) drawn on the background layer. */
+  outline: none !important;
+}
+
+/* The background layer also carries a border that is transparent at rest
+   and turns solid grey once the panel opens. Since that element spans the
+   whole open bar, that border is the outline drawn around the field and
+   its results together. Held transparent, as it is when resting — the
+   fill stays, so the results still read as a panel. */
+#urlbar[focused] > .urlbar-background,
+#urlbar[open] > .urlbar-background,
+#urlbar[breakout][breakout-extend] > .urlbar-background {
+  border-color: transparent !important;
+}
+
+/* The painted box is this element, and when the panel opens it stretches
+   from the field all the way down past the results — 26px tall becomes
+   340px. That is what reads as the address bar itself ballooning. Pinned
+   to the field's own height, offset by the same amount as the input,
+   since the positioning code shifts #urlbar up when it extends. */
+#urlbar[breakout][breakout-extend] > .urlbar-background {
+  inset-block-start: calc(
+    (var(--urlbar-container-height) - var(--urlbar-height)) / 2
+  ) !important;
+  inset-block-end: auto !important;
+  height: var(--urlbar-height) !important;
+  /* border-box, or the element's own 1px borders sit outside that height
+     and the box ends up 2px taller than the field it is meant to match. */
+  box-sizing: border-box !important;
+}
+
+/* Which leaves the results with nothing behind them — they were relying on
+   that stretched box — so they get their own, sitting under the bar as a
+   separate panel rather than one continuous slab. */
+#urlbar[open] > .urlbarView {
+  background-color: var(--toolbar-field-background-color) !important;
+  border: 1px solid var(--toolbar-field-border-color, rgba(255, 255, 255, 0.08))
+    !important;
+  border-radius: var(--border-radius-medium, 8px) !important;
+  margin-block-start: 4px !important;
+  overflow: hidden !important;
+}
+
+/* #urlbar sits in the top layer, so it does not shrink with the nav bar —
+   during the hide it stayed put while everything around it collapsed,
+   which reads as the input moving independently of the rest. Fade it
+   instead: out quickly as the hide starts, and back in over the last half
+   of the show, so it arrives just as the bar finishes opening. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* #urlbar renders in the top layer, so it neither collapses with the nav
+     bar nor inherits its opacity. Given the same distance the collapse
+     covers (--derp-navbar-height, measured at toggle time in index.ts) and
+     the same 200ms, it travels with everything else. */
+  #urlbar {
+    transition: transform 200ms ease, opacity 200ms ease !important;
+  }
+}
+
+:root[derp-urlbar-hidden]:not([derp-urlbar-peek]) #urlbar {
+  transform: translateY(calc(-1 * var(--derp-navbar-height, 32px)))
+    !important;
 }
