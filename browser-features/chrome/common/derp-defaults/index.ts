@@ -20,6 +20,52 @@ const { AppConstants } = ChromeUtils.importESModule(
 const SEARCH_APPLIED_PREF = "derp.search.defaultApplied";
 const DEFAULT_ENGINE = "DuckDuckGo";
 
+/**
+ * about: pages are separate documents, so no chrome stylesheet reaches
+ * them — the sidebar's downloads panel and the settings pages stayed on
+ * Firefox's own dark grey instead of the derp black. Registered through
+ * the style sheet service, the only route into privileged documents (also
+ * why extensions like Dark Reader can never touch them).
+ *
+ * background-color, not just the token: on about:downloads both html and
+ * body compute to transparent, so the grey is the canvas Gecko paints for
+ * a dark-scheme document with no background of its own — no variable
+ * reaches it. A background on :root propagates to the canvas and does.
+ * The token goes along for the components that read it.
+ */
+const DARK_CONTENT_CSS = `@-moz-document url-prefix("about:") {
+  :root {
+    background-color: #050506 !important;
+    --in-content-page-background: #050506 !important;
+  }
+}`;
+
+const styleSheetService = Cc[
+  "@mozilla.org/content/style-sheet-service;1"
+].getService(Ci.nsIStyleSheetService);
+
+const darkContentSheetUri = Services.io.newURI(
+  "data:text/css;charset=utf-8," + encodeURIComponent(DARK_CONTENT_CSS),
+);
+
+/**
+ * Register (or drop) the about:-page sheet with Dark Derp. The sheet is
+ * process-wide rather than per-window, so both calls are guarded — every
+ * window runs this, and the pref is global.
+ */
+function applyDarkContentSheet(on: boolean): void {
+  const type = styleSheetService.USER_SHEET;
+  const registered = styleSheetService.sheetRegistered(
+    darkContentSheetUri,
+    type,
+  );
+  if (on && !registered) {
+    styleSheetService.loadAndRegisterSheet(darkContentSheetUri, type);
+  } else if (!on && registered) {
+    styleSheetService.unregisterSheet(darkContentSheetUri, type);
+  }
+}
+
 /** Our name, as it should read wherever a product name is shown. */
 const BRAND_NAME = "Derp";
 
@@ -84,10 +130,9 @@ export default class DerpDefaults extends NoraComponentBase {
     const PREF = "derp.theme.dark.enabled";
     const apply = () => {
       try {
-        document.documentElement?.toggleAttribute(
-          "data-derp-dark",
-          Services.prefs.getBoolPref(PREF, false),
-        );
+        const on = Services.prefs.getBoolPref(PREF, false);
+        document.documentElement?.toggleAttribute("data-derp-dark", on);
+        applyDarkContentSheet(on);
       } catch (e) {
         console.error("[derp-defaults] dark variant toggle failed:", e);
       }

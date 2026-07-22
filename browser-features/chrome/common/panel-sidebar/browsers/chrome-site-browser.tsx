@@ -8,6 +8,13 @@ import { STATIC_PANEL_DATA } from "../data/static-panels.ts";
 
 export function ChromeSiteBrowser({ id, url }: Panel) {
   const panel = STATIC_PANEL_DATA[url as keyof typeof STATIC_PANEL_DATA];
+  // about: pages need a content browser too, not just http. Loaded as a
+  // chrome-type browser, about:translations rendered nothing at all: the
+  // page is built by a window actor that only attaches to content browsing
+  // contexts. chrome:// panels (notes) must stay chrome-type, so the test
+  // is on the scheme rather than a blanket change.
+  const asContent = panel.url?.startsWith("http") ||
+    panel.url?.startsWith("about:");
   return (
     <xul:browser
       id={`sidebar-panel-${id}`}
@@ -21,7 +28,7 @@ export function ChromeSiteBrowser({ id, url }: Panel) {
       disableglobalhistory="true"
       messagemanagergroup="browsers"
       autocompletepopup="PopupAutoComplete"
-      {...(panel.url?.startsWith("http")
+      {...(asContent
         ? {
           type: "content",
           remote: "true",

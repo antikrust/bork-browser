@@ -73,15 +73,15 @@ const defaultData: PanelSidebarData = {
       extensionId: undefined,
     },
     {
-      id: "default-panel-translate-google-com",
-      url: "https://translate.google.com",
+      id: "default-panel-translate",
+      url: "floorp//translate",
       width: 0,
+      type: "static",
       icon: undefined,
       userContextId: undefined,
       zoomLevel: undefined,
       userAgent: undefined,
       extensionId: undefined,
-      type: "web",
     },
     {
       id: "default-panel-derp-help",

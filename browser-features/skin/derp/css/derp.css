@@ -471,12 +471,49 @@
   background-color: #050506 !important;
 }
 
-/* Dark Derp: the workspaces chooser popup rode the default arrowpanel
-   grey and sat visibly lighter than the black chrome around it. Same
-   lifted tone as the urlbar field so rows and hovers still read. */
-:root[data-derp-dark] panel:has(#workspacesToolbarButtonPanel) {
-  --arrowpanel-background: #131317;
-  --arrowpanel-border-color: #26262c;
+/* The backdrop behind web content. It sits at the stock #2b2a33, several
+   shades lighter than the black chrome — normally invisible because a page
+   paints over it, but the panel sidebar's ease resizes this box on every
+   frame, and the strip it gives up at the end of the animation showed as a
+   pale flash along the bottom before content repainted into it. */
+:root[data-derp-dark] #browser,
+:root[data-derp-dark] #tabbrowser-tabbox {
+  background-color: #050506 !important;
+}
+
+/* The page area behind whatever panel is loaded. about:downloads and the
+   places sidebars paint NO background of their own (html and body both
+   compute to transparent), so the surface behind them is what the user
+   sees — it was the light default. Painting the container and any browser
+   in it covers every panel at once instead of one page at a time; pages
+   that do paint their own background simply cover this. */
+:root[data-derp-dark] #panel-sidebar-browser-box,
+:root[data-derp-dark] #panel-sidebar-browser-box-wrapper,
+:root[data-derp-dark] #panel-sidebar-box browser {
+  background-color: #050506 !important;
+}
+
+/* Dark Derp: panels — the workspaces chooser, the app menu the sidebar
+   hamburger opens, and every other arrowpanel — sat visibly lighter than
+   the black chrome. engine-chrome.css (the flattened lepton skin) sets
+   --arrowpanel-background to the mac panel grey with !important, so the
+   earlier plain rule never applied; hence the !important here. One rule
+   for all panels rather than a list that grows with each popup someone
+   notices, and the same black as the strip so nothing reads as a lighter
+   slab floating over the chrome. */
+:root[data-derp-dark] panel {
+  /* --panel-background-color is the one that actually paints: every panel
+     draws its box in the shadow DOM, and chrome://global/skin/popup.css
+     fills it with `&::part(content) { background-color:
+     var(--panel-background-color) }`. Setting --arrowpanel-background or
+     --panel-background changes the computed value on the panel and does
+     nothing at all to what you see — the app menu and workspaces chooser
+     stayed on the stock grey through both. The other two are kept for the
+     older widgets that still read them. */
+  --panel-background-color: #050506 !important;
+  --arrowpanel-background: #050506 !important;
+  --panel-background: #050506 !important;
+  --arrowpanel-border-color: #26262c !important;
 }
 
 /* Sidepanel icon column: the bottom (settings) icon sat flush against

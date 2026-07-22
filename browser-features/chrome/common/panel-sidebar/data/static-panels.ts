@@ -44,6 +44,19 @@ const BASE_STATIC_PANEL_DATA: StaticPanelData = {
     defaultWidth: 415,
   },
 
+  /* Firefox's own translator, which runs the models locally — no text
+     leaves the machine. Static, not a web panel: web panels host the site
+     inside a nested browser.xhtml, which is why the Google Translate panel
+     this replaces could not be reached by extensions (Dark Reader included)
+     and stayed white. Loaded directly, about:translations is a normal
+     privileged page and follows the theme. */
+  "floorp//translate": {
+    url: "about:translations",
+    icon: "chrome://browser/skin/translations.svg",
+    l10n: "translate-sidebar",
+    defaultWidth: 415,
+  },
+
   "floorp//synced-tabs": {
     url: "chrome://browser/content/syncedtabs/sidebar.xhtml",
     icon: "chrome://browser/skin/synced-tabs.svg",

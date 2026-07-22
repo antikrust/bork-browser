@@ -3,6 +3,18 @@
   themes: light --default, dark --prefersdark;
 }
 
+/* Notes sits in the panel sidebar beside black chrome, where daisyUI's
+   stock dark base (a lifted blue-grey) read as a lighter slab. Only the
+   three base surfaces move to the derp blacks — every other daisyUI
+   colour stays as it is. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-base-100: #050506;
+    --color-base-200: #0b0b0e;
+    --color-base-300: #16161b;
+  }
+}
+
 /* TipTap editor styles — replicates Lexical theme from config.ts */
 .tiptap {
   @apply outline-none h-full;
