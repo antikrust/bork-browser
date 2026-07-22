@@ -543,6 +543,23 @@
   background-color: #131317 !important;
 }
 
+/* The same unification for the default scheme, which never had it: the
+   chrome showed three surfaces where it should show one. The tab strip
+   and the panel sidebar both sit on --lwt-accent-color (Window), but
+   #nav-bar paints itself from --toolbar-bgcolor, which is Field with 15%
+   white mixed in — lighter by construction, not by theme. And the rail
+   slot paints nothing at all, so it fell through to #browser's
+   --tabpanel-background-color, a third tone again.
+
+   Both are pointed at the strip's own token rather than a literal, so
+   they track the active theme instead of pinning one colour. Dark Derp
+   still overrides all of it below. */
+:root:not([data-derp-dark]) #nav-bar,
+:root:not([data-derp-dark]) #sidebar-main,
+:root:not([data-derp-dark]) #derp-workspaces-rail {
+  background-color: var(--lwt-accent-color) !important;
+}
+
 
 /* ===== Panel toggles sit exactly over their panels ===== */
 /* The nav bar's first/last widgets are the two panel toggles; the panels
