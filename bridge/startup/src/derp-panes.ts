@@ -19,52 +19,10 @@ import { applyDerpReskin } from "./panes/reskin.ts";
 
 export function setupDerpPanes(): void {
   applyDerpReskin();
-  trimNativeSettings();
   // Order = sidebar order: Appearance first (most used), then features.
   registerDesignPane();
   registerWorkspacesPane();
   registerSidebarPane();
   registerGesturePane();
   registerShortcutsPane();
-}
-
-/**
- * Remove native settings surfaces for features derp doesn't ship. The CSS in
- * reskin.ts hides the lazy-rendered pane content; removing the category
- * button here keeps it out of keyboard navigation too. The pane content's
- * data-category is read off the button before removal so the hide rule can't
- * drift from Firefox's internal naming.
- */
-function trimNativeSettings(): void {
-  try {
-    const doc = document!;
-    // The category list is Lit-rendered LAZILY: the old lookup-only version
-    // raced it — when #category-ai-features wasn't in the DOM yet the whole
-    // function no-oped and "Derp Labs" survived that load ("sometimes
-    // there"). The button hides by static id CSS immediately, unconditionally;
-    // the node removal + pane-content hide (view read off the button so the
-    // rule can't drift from Firefox's internal naming) retries until the
-    // element materializes.
-    const style = doc.createElement("style");
-    style.id = "derp-trim-native-settings";
-    style.textContent = "#category-ai-features { display: none !important; }";
-    doc.head?.appendChild(style);
-    let tries = 0;
-    const attempt = () => {
-      const ai = doc.getElementById("category-ai-features");
-      if (ai) {
-        const view = ai.getAttribute("view");
-        if (view) {
-          style.textContent +=
-            `\n[data-category="${view}"], setting-pane[data-category="${view}"] { display: none !important; }`;
-        }
-        ai.remove();
-        return;
-      }
-      if (++tries < 40) setTimeout(attempt, 250);
-    };
-    attempt();
-  } catch (e) {
-    console.error("[derp-panes] trimNativeSettings failed:", e);
-  }
 }

@@ -140,7 +140,9 @@ button, menulist {
    native settings surfaces for both so the page matches the product:
    the AI Features category+pane, the Browser Layout chooser in
    Tabs & Browsing, and Appearance's cross-link to it. */
-#category-ai-features {
+#category-ai-features,
+[data-category="paneAi"],
+setting-pane[data-category="paneAi"] {
   display: none !important;
 }
 setting-group:has([id^="browserLayout"]),
@@ -152,17 +154,21 @@ setting-group [id="related-settings-tabs-browsing-link"] {
   display: none !important;
 }
 
-/* ---------- the hub's dot-grid backdrop ----------
-   The hub laid a faint dot grid over its content area. Reproduce it on the
-   scrolling content region (cards sit on top); color derives from the text
-   color at very low strength so it works in both themes. */
+/* ---------- grid backdrop ----------
+   A subtle math-paper line grid on the scrolling content region (cards sit
+   on top); color derives from the text color at very low strength so it
+   works in both themes. */
 .main-content {
-  background-image: radial-gradient(
-    color-mix(in oklab, var(--derp-base-content) 9%, transparent) 1px,
-    transparent 1px
-  ) !important;
+  background-image: linear-gradient(
+      color-mix(in oklab, var(--derp-base-content) 6%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--derp-base-content) 6%, transparent) 1px,
+      transparent 1px
+    ) !important;
   background-size: 24px 24px !important;
-  background-position: 12px 12px !important;
 }
 `;
 
