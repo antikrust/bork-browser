@@ -47,9 +47,6 @@ function measureAndSetCSSVariables() {
 
   setIfRendered("panel-sidebar-box", "--zenmode-sidebar-width", "w");
   setIfRendered("panel-sidebar-select-box", "--zenmode-selectbox-width", "w");
-  // The workspaces rail sits at the opposite window edge and arrived after
-  // this file was written, which is why zen left it on screen.
-  setIfRendered("sidebar-main", "--zenmode-rail-width", "w");
 }
 
 function setupPrefSync() {
@@ -208,12 +205,12 @@ function setupHoverReveal() {
       const panelSelectBox = document!.getElementById(
         "panel-sidebar-select-box",
       );
-      const rail = document!.getElementById("sidebar-main");
-      const within = (el: HTMLElement | null) =>
-        !!el && clientX >= el.getBoundingClientRect().left &&
-        clientX <= el.getBoundingClientRect().right;
-      const insideSidebar = within(panelSidebar) || within(panelSelectBox) ||
-        within(rail);
+      const insideSidebar = (panelSidebar &&
+        clientX >= panelSidebar.getBoundingClientRect().left &&
+        clientX <= panelSidebar.getBoundingClientRect().right) ||
+        (panelSelectBox &&
+          clientX >= panelSelectBox.getBoundingClientRect().left &&
+          clientX <= panelSelectBox.getBoundingClientRect().right);
 
       if (!insideSidebar) {
         clearSideTimer();

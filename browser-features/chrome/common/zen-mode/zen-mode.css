@@ -35,29 +35,6 @@
   transition: opacity 0.15s ease !important;
 }
 
-/* derp workspaces rail — the left-edge counterpart. It postdates this
-   file, so zen simply never knew about it and left it sitting on screen
-   while everything else retracted. Same negative-margin mechanism as the
-   panel sidebar, for the same reason: it is a box at a window edge, and
-   the width is measured into --zenmode-rail-width alongside the others —
-   and the same scoping for the transition, for the reason spelled out on
-   the panel sidebar below. */
-:root[zenmode] #sidebar-main {
-  margin-inline-start: calc(-1 * var(--zenmode-rail-width, 35px)) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transition:
-    margin-inline-start 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.25s ease !important;
-}
-
-/* Back on the same edge-hover that reveals the panel sidebar. */
-:root[zenmode][zenmode-reveal-side] #sidebar-main {
-  margin-inline-start: 0 !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-
 /* Firefox sidebar */
 :root[zenmode] #sidebar-box,
 :root[zenmode] #sidebar-select-box,
@@ -71,15 +48,7 @@
    measured offset between them — the same cache disease this rewrite
    removes. Their sizes are static (fixed icon strip, splitter-set panel
    width), and the resize observer trues the variables up the moment the
-   boxes first lay out.
-
-   The transition is declared inside the [zenmode] rule on purpose, and
-   must stay there. These boxes are in flow, so an animated margin resizes
-   the content area on every frame it runs — if the easing is alive on the
-   way out of zen, the page itself slides sideways for the length of the
-   animation. Scoped to [zenmode] the declaration is gone the instant the
-   attribute is, so the return is a single reflow and the page holds
-   still. */
+   boxes first lay out. */
 :root[zenmode] #panel-sidebar-box {
   margin-inline-start: calc(
     -1 * var(--zenmode-sidebar-width, 250px)
@@ -111,11 +80,9 @@
 }
 
 /* Re-basing a measured sidebar distance (first layout after boot,
-   splitter drag) must snap, not slide. The rail is re-measured in the
-   same pass, so it belongs here too. */
+   splitter drag) must snap, not slide. */
 :root[zenmode][zenmode-rebase] #panel-sidebar-box,
-:root[zenmode][zenmode-rebase] #panel-sidebar-select-box,
-:root[zenmode][zenmode-rebase] #sidebar-main {
+:root[zenmode][zenmode-rebase] #panel-sidebar-select-box {
   transition: none !important;
 }
 
