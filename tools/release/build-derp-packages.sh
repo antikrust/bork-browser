@@ -116,7 +116,34 @@ overlay() {
   [ -f "$approot/application.ini" ] &&
     perl -i -pe 's/^Vendor=Ablaze$/Vendor=Derp/' "$approot/application.ini"
 
+  strip_ai_bundle "$approot"
+
   find "$approot/noraneko-devdir" -name "*.map" -delete
+}
+
+# The local AI inference stack: ONNX Runtime, HuggingFace transformers,
+# llama.cpp (wllama), an OpenAI client, and the model-hub downloader that
+# feeds them. derp ships none of it — the prefs are off, but off is not the
+# same as absent, and we do not want an LLM runtime sitting on disk.
+#
+# Translation survives this: it uses Bergamot, downloaded separately from
+# RemoteSettings, and imports exactly two files from the ml/ directory —
+# AIFeature.sys.mjs (the on/off gate it inherits) and EngineProcess.sys.mjs
+# (the shared process manager). Both are kept. Everything EngineProcess
+# says about the deleted modules is comments in an engine-id table, not
+# imports, so nothing translation touches goes missing.
+strip_ai_bundle() {
+  local approot="$1"
+  local ml="$approot/chrome/toolkit/content/global/ml"
+  [ -d "$ml" ] || return 0
+  log "removing the AI inference bundle"
+  local before
+  before="$(du -sk "$ml" | cut -f1)"
+  find "$ml" -mindepth 1 -maxdepth 1 \
+    ! -name AIFeature.sys.mjs ! -name EngineProcess.sys.mjs -exec rm -rf {} +
+  rm -f "$approot/actors/MLEngineChild.sys.mjs" \
+        "$approot/actors/MLEngineParent.sys.mjs"
+  log "AI bundle: ${before}K -> $(du -sk "$ml" | cut -f1)K (translation kept)"
 }
 
 fetch_runtime() {
