@@ -4,12 +4,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * Panel Sidebar pane — port of the hub's sidebar settings page
- * (pages-settings/src/app/sidebar): the floorp.panelSidebar.enabled bool
- * pref, the settings kept in the floorp.panelSidebar.config JSON pref, and
- * a read-only view of the saved panels (floorp.panelSidebar.data) with
- * per-panel delete. Full panel management (add/edit/reorder) stays in the
- * sidebar itself.
+ * Panel Sidebar pane — a read-only view of the saved panels
+ * (floorp.panelSidebar.data) with per-panel delete. Full panel management
+ * (add/edit/reorder) stays in the sidebar itself. The old Basic Settings
+ * block is gone: the feature is hardcoded on, panels stay loaded when
+ * closed, and the global web-panel width default stands (see the feature
+ * layer — data.ts forces panelSidebar.enabled, panel-sidebar.tsx no longer
+ * unloads on close).
  *
  * Text mirrors the hub's en-US strings; i18n wiring is a follow-up for all
  * derp panes at once.
@@ -17,36 +18,19 @@
 
 import {
   addDerpPane,
-  checkboxRow,
   doc,
-  ensureBoolPref,
   groupboxOf,
   log,
   paneHeader,
   queuePrefsUpdate,
-  radioGroup,
-  readJsonPref,
   win,
-  writeJsonPrefField,
 } from "./framework.ts";
 
-const ENABLED_PREF = "floorp.panelSidebar.enabled";
-const CONFIG_PREF = "floorp.panelSidebar.config";
+// The Basic Settings block (enable toggle, unload-on-close, global width)
+// is gone — those are hardcoded now: the sidebar is always enabled, panels
+// stay loaded when closed, and the global web-panel width default (400)
+// stands. Only the saved-panel list remains manageable here.
 const DATA_PREF = "floorp.panelSidebar.data";
-
-/* ------------------------------------------------------------------ */
-/* floorp.panelSidebar.config — flat JSON fields                       */
-/* ------------------------------------------------------------------ */
-
-function configBool(field: string, fallback: boolean): boolean {
-  const v = readJsonPref(CONFIG_PREF)[field];
-  return typeof v === "boolean" ? v : fallback;
-}
-
-function configNumber(field: string): number | null {
-  const v = readJsonPref(CONFIG_PREF)[field];
-  return typeof v === "number" && Number.isFinite(v) ? v : null;
-}
 
 /* ------------------------------------------------------------------ */
 /* floorp.panelSidebar.data — {data: Panel[]}                          */
@@ -209,61 +193,6 @@ function noteText(text: string): Element {
   return p;
 }
 
-function sectionHeader(title: string): Element {
-  const label = doc.createXULElement("label");
-  label.setAttribute("style", "font-weight: 600; margin-block-start: 8px;");
-  label.textContent = title;
-  return label;
-}
-
-function labelLine(text: string): Element {
-  const label = doc.createXULElement("label");
-  label.textContent = text;
-  return label;
-}
-
-interface NumberRowSpec {
-  id: string;
-  label: string;
-  current: () => number | null;
-  onChange: (value: number) => void;
-  description?: string;
-}
-
-/** Labeled html input[type=number]; commits on change (blur/Enter). An
- * emptied field keeps the last saved value instead of writing 0. */
-function numberRow(spec: NumberRowSpec): Element {
-  const row = doc.createXULElement("vbox");
-  const line = doc.createXULElement("hbox");
-  line.setAttribute("align", "center");
-  const lab = doc.createXULElement("label");
-  lab.setAttribute("flex", "1");
-  lab.textContent = spec.label;
-  line.appendChild(lab);
-  const input = doc.createElement("input");
-  input.type = "number";
-  input.id = spec.id;
-  input.style.width = "6em";
-  try {
-    const v = spec.current();
-    if (typeof v === "number" && Number.isFinite(v)) input.value = String(v);
-  } catch { /* leave empty */ }
-  input.addEventListener("change", () => {
-    if (input.value.trim() === "") return;
-    const v = Number(input.value);
-    if (!Number.isFinite(v)) return;
-    try {
-      spec.onChange(v);
-    } catch (e) {
-      console.error("[derp-panes]", spec.id, "number change failed:", e);
-    }
-  });
-  line.appendChild(input);
-  row.appendChild(line);
-  if (spec.description) row.appendChild(noteText(spec.description));
-  return row;
-}
-
 /* ------------------------------------------------------------------ */
 /* Pane                                                                */
 /* ------------------------------------------------------------------ */
@@ -273,35 +202,6 @@ function build(root: Element): void {
     "Panel Sidebar",
     "Panel Sidebar is a feature that allows you to display various tools, websites, and extensions on the side of the window. Here, you can customize, add, delete, and manage panels.",
   ));
-
-  root.appendChild(groupboxOf("Basic Settings", [
-    checkboxRow({
-      id: "derp-sidebar-enabled",
-      label: "Enable Panel Sidebar",
-      description:
-        "Panel Sidebar is different from Firefox's sidebar and won't interfere with it. Panel Sidebar can display web pages, unlike Firefox's sidebar. You can also manage workspaces in the sidebar. Derp's restart is required to completely enable or disable the panel sidebar feature.",
-      preference: ENABLED_PREF,
-    }),
-    sectionHeader("Other Panel Sidebar Settings"),
-    checkboxRow({
-      id: "derp-sidebar-auto-unload",
-      label: "Unload when closing panel",
-      checked: () => configBool("autoUnload", false),
-      onChange: (checked) =>
-        writeJsonPrefField(CONFIG_PREF, "autoUnload", checked),
-    }),
-    numberRow({
-      id: "derp-sidebar-global-width",
-      label: "Global Web Panel Width",
-      current: () => configNumber("globalWidth"),
-      onChange: (value) =>
-        writeJsonPrefField(CONFIG_PREF, "globalWidth", value),
-      description: "Global width is applied when panel width is set to 0.",
-    }),
-    noteText(
-      "The icon provider setting has been removed as Derp now tries to get panel icons directly from web pages when possible.",
-    ),
-  ]));
 
   const listBox = doc.createXULElement("vbox");
   listBox.id = "derp-sidebar-panel-list";
@@ -329,7 +229,6 @@ function build(root: Element): void {
 }
 
 function init(): void {
-  ensureBoolPref(ENABLED_PREF);
   queuePrefsUpdate();
 }
 

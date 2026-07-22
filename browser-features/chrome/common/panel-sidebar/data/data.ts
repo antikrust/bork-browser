@@ -11,7 +11,6 @@ import {
   type Setter,
 } from "solid-js";
 import {
-  defaultEnabled,
   strDefaultConfig,
   strDefaultData,
 } from "../utils/default-prerf.js";
@@ -174,37 +173,23 @@ export const [isFloatingDragging, setIsFloatingDragging] = createRootHMR(
 );
 
 function createIsPanelSidebarEnabled(): [Accessor<boolean>, Setter<boolean>] {
-  const [isPanelSidebarEnabled, setIsPanelSidebarEnabled] =
-    createSignal<boolean>(
-      Services.prefs.getBoolPref(
-        PanelSidebarStaticNames.panelSidebarEnabledPrefName,
-        defaultEnabled,
-      ),
-    );
-  createEffect(() => {
+  // Hardcoded on: the enable/disable setting was removed (bridge sidebar
+  // pane). The signal is permanently true so the sidebar always mounts and
+  // nothing — a stored false, or the toggle-sidebar gesture — can unmount
+  // it. The pref is forced true too, for the other readers that still
+  // consult it directly. Visibility (show/hide) is a separate concern,
+  // owned by the nav-bar toggle / Cmd+Alt+S.
+  try {
     Services.prefs.setBoolPref(
       PanelSidebarStaticNames.panelSidebarEnabledPrefName,
-      isPanelSidebarEnabled(),
+      true,
     );
-  });
-  const observer = () =>
-    setIsPanelSidebarEnabled(
-      Services.prefs.getBoolPref(
-        PanelSidebarStaticNames.panelSidebarEnabledPrefName,
-        defaultEnabled,
-      ),
-    );
-  Services.prefs.addObserver(
-    PanelSidebarStaticNames.panelSidebarEnabledPrefName,
-    observer,
-  );
-  onCleanup(() => {
-    Services.prefs.removeObserver(
-      PanelSidebarStaticNames.panelSidebarEnabledPrefName,
-      observer,
-    );
-  });
-
+  } catch (e) {
+    console.error("[PanelSidebar] failed to force enabled pref:", e);
+  }
+  const [isPanelSidebarEnabled, setIsPanelSidebarEnabled] = createSignal<
+    boolean
+  >(true);
   return [isPanelSidebarEnabled, setIsPanelSidebarEnabled];
 }
 

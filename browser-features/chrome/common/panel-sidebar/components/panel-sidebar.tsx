@@ -188,10 +188,11 @@ export class CPanelSidebar {
 
   public changePanel(panelId: string): void {
     if (panelId === selectedPanelId()) {
+      // Closing a panel just hides it; the browser stays loaded so
+      // reopening is instant and web panels keep their state and playback.
+      // (Hardcoded — the autoUnload setting was removed. Explicit unload is
+      // still available from the panel's context menu.)
       setSelectedPanelId(null);
-      if (panelSidebarConfig().autoUnload) {
-        this.unloadPanel(panelId);
-      }
       return;
     }
 

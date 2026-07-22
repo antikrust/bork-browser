@@ -6,6 +6,7 @@ import {
   getSplitViewGroupIdForTabs,
 } from "#features-chrome/common/split-view/patches/session-restore.js";
 import { applyLayoutAttribute } from "#features-chrome/common/split-view/layout.js";
+import { togglePanelSidebar } from "#features-chrome/common/lean-urlbar/sidebar-toggle.ts";
 import { updateHandles } from "#features-chrome/common/split-view/components/split-view-splitters.js";
 import type { SplitViewLayout } from "#features-chrome/common/split-view/data/types.js";
 import {
@@ -453,13 +454,12 @@ export const actions: GestureActionRegistration[] = [
   },
   {
     name: "gecko-toggle-sidebar",
-    fn: (_win) => {
-      // Toggle Floorp's Panel Sidebar, not Firefox's built-in SidebarController.
-      // SidebarController.toggle() opens Firefox's native sidebar (History, etc.)
-      // which is not what Floorp users expect for "Toggle Sidebar".
-      const prefName = "floorp.panelSidebar.enabled";
-      const current = Services.prefs.getBoolPref(prefName, true);
-      Services.prefs.setBoolPref(prefName, !current);
+    fn: (win) => {
+      // Show/hide the Panel Sidebar — the same visibility toggle as the
+      // nav-bar button and Cmd+Alt+S. (It used to flip
+      // floorp.panelSidebar.enabled, the feature on/off pref, which is now
+      // hardcoded on and needed a restart to take effect anyway.)
+      togglePanelSidebar(win as unknown as Window);
     },
   },
   {
