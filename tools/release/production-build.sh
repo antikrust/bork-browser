@@ -89,6 +89,13 @@ if [ "$UPLOAD" = 1 ]; then
   ( cd dist && find macos linux windows -type f 2>/dev/null -exec shasum -a 256 {} \; \
       | sed -E 's#  .*/#  #' > SHA256SUMS.txt ) || true
   [ -f dist/SHA256SUMS.txt ] && rsync -av dist/SHA256SUMS.txt "$WEB_REMOTE/"
+
+  # The page quotes a sha256 per download; without this refresh every release
+  # republishes the PREVIOUS build's sums and verification fails for anyone
+  # who runs it. Page goes up last, after the files it describes exist.
+  log "refreshing page sums + sizes"
+  python3 "$ROOT/tools/release/update-site-sums.py"
+  rsync -av "$ROOT/tools/release/site/index.html" "${WEB_REMOTE%/downloads}/"
   log "uploaded. live at $SITE_URL"
 else
   log "skipped upload (--no-upload); packages in dist/"

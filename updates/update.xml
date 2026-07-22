@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <updates>
   <update type="minor"
-          displayVersion="12.15.3"
-          appVersion2="12.15.3"
+          displayVersion="1.0.0"
+          appVersion2="1.0.0"
           detailsURL="https://therob.lol/derp/"/>
 </updates>
