@@ -22,11 +22,16 @@ The rest is what got removed and what got built on top.
 
 Translation still works — it never used any of that.
 
-### Built
+### What it does
 
 Workspaces, tab stacks, tab groups, zen mode, split view, mouse gestures,
 side panels (notes, downloads, a local translator), a command palette on F2,
 an address bar that hides completely, and Chromium extension installs.
+
+Most of that comes down from Floorp — which is the point of forking Floorp
+rather than Firefox directly. What this fork adds on top is the compact chrome
+and its theme, the Vivaldi-style workspaces and tab stacks, the zen mode
+rewrite, the lean urlbar, and the removals above.
 
 **Coming from Vivaldi:** bork imports your Vivaldi workspaces *including which
 tabs live in which workspace* — it reads Vivaldi's own session data, so a
@@ -94,7 +99,10 @@ project.
 - **[Noraneko](https://github.com/nyanrus/noraneko-runtime)** — MPL 2.0 —
   [NyanRus](https://github.com/nyanrus)
 - **[Firefox UI FIX (Lepton)](https://github.com/black7375/Firefox-UI-Fix)** —
-  MPL 2.0 — [black7375](https://github.com/black7375)
+  MPL 2.0 — [black7375](https://github.com/black7375). No longer a dependency:
+  the parts still used were flattened to bork's fixed configuration as
+  `skin/bork/css/engine-chrome.css` and are maintained in-tree, with no
+  upstream sync.
 - **[Paxmod](https://github.com/numirias/paxmod)** — MIT —
   [numirias](https://github.com/numirias/)
 - **[Fushra Pulse](https://pulsebrowser.app/)** — MPL 2.0 —
