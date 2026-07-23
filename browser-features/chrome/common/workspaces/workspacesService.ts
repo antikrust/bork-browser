@@ -372,6 +372,22 @@ export class WorkspacesService implements WorkspacesDataManagerBase {
     });
   }
 
+  /**
+   * Set a workspace's icon in place. Like renameWorkspace: no modal, nothing
+   * else on the workspace touched. Takes either a library icon name or a
+   * self-contained data: URI — getWorkspaceIconUrl resolves both — which is
+   * what lets the Vivaldi import carry a workspace's own glyph across.
+   */
+  public setWorkspaceIcon(id: TWorkspaceID, icon: string | null) {
+    const workspace = this.getRawWorkspace(id);
+    if (!workspace || workspace.icon === icon) return;
+    setWorkspacesDataStore("data", (prev) => {
+      const temp = this.cloneWorkspaceMap(prev);
+      temp.set(id, { ...workspace, icon });
+      return temp as unknown as TWorkspacesStoreData["data"];
+    });
+  }
+
   public changeWorkspace(id: TWorkspaceID) {
     this.tabManagerCtx.changeWorkspace(id);
     Services.obs.notifyObservers(

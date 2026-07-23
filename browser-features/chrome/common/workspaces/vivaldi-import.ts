@@ -4,6 +4,7 @@
 
 import type { WorkspacesService } from "./workspacesService.ts";
 import { workspacesDataStore } from "./data/data.ts";
+import { svgUri } from "./toolbar/icons.ts";
 
 interface VivaldiTab {
   workspaceId: number;
@@ -34,13 +35,52 @@ export interface VivaldiImportResult {
   skipped: string[];
 }
 
+/** XML text-node escaping, for dropping an emoji into an SVG <text>. */
+function escapeXml(text: string): string {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
 /**
- * Recreate Vivaldi's workspaces here, with their tabs.
+ * Turn a Vivaldi workspace's mark into something bork can store as its icon.
+ *
+ * bork's own library is a fixed set of named glyphs, but getWorkspaceIconUrl
+ * passes a self-contained `data:image/` URI straight through, so Vivaldi's
+ * marks can come across as-is instead of every imported workspace collapsing
+ * onto the default folder.
+ *
+ * Vivaldi keeps a 16x16 inline SVG stroked with `currentColor`, and separately
+ * an optional emoji. The SVG is what its icon picker sets and every workspace
+ * has one, so that wins; the emoji is the fallback for the rare workspace
+ * with no drawn icon. `currentColor` becomes `context-stroke` so an imported
+ * glyph follows UI text colour exactly like a built-in one — without that
+ * swap the stroke resolves against the image's own context and the glyph
+ * comes out invisible on a dark rail.
+ */
+function iconFromVivaldi(workspace: VivaldiWorkspace): string | null {
+  const svg = workspace.icon?.trim();
+  if (svg?.startsWith("<svg")) {
+    return svgUri(
+      svg.replaceAll('stroke="currentColor"', 'stroke="context-stroke"'),
+    );
+  }
+  if (workspace.emoji) {
+    return svgUri(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" ' +
+        'viewBox="0 0 16 16"><text x="8" y="13" font-size="13" ' +
+        `text-anchor="middle">${escapeXml(workspace.emoji)}</text></svg>`,
+    );
+  }
+  return null;
+}
+
+/**
+ * Recreate Vivaldi's workspaces here, with their tabs and their icons.
  *
  * Tabs are created lazily: a hundred-plus restored tabs would otherwise all
- * start loading at once. Vivaldi's own icons are inline SVG and bork's are a
- * fixed named set, so imported workspaces keep the neutral default glyph and
- * only carry the name across.
+ * start loading at once.
  */
 export async function importVivaldiWorkspaces(
   ctx: WorkspacesService,
@@ -75,6 +115,7 @@ export async function importVivaldiWorkspaces(
     }
 
     const id = ctx.createWorkspace(workspace.name);
+    ctx.setWorkspaceIcon(id, iconFromVivaldi(workspace));
     result.workspacesCreated++;
 
     for (const tab of tabsByWorkspace.get(workspace.id) ?? []) {
