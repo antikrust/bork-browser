@@ -128,97 +128,40 @@
   }
 }
 
-/* No megabar. Focusing the address bar made it lunge: [breakout-extend]
-   pulls it left by --urlbar-margin-inline, widens it by twice that, swaps
-   the input container's height for the taller --urlbar-container-height,
-   and scales the whole thing in with the urlbar-grow keyframes. The result
-   overhangs the page and shifts the text under the cursor at the exact
-   moment you start typing.
+/* No megabar. The address bar is a top-layer popover; focusing it makes
+   Firefox add [breakout-extend], which — with browser.nova.enabled off, our
+   case — grows the field: wider by twice --urlbar-margin-inline, taller to
+   --urlbar-container-height, scaled in by the urlbar-grow keyframes and
+   lifted with a focus ring and drop shadow. We want the field to hold
+   perfectly still and only the results to drop underneath it.
 
-   The results list is a separate element (.urlbarView, inside #urlbar and
-   after the input) and already sits below the bar, so pinning the bar to
-   its resting geometry loses nothing: you still get suggestions, they just
-   drop underneath instead of the field jumping at you. As a bonus the list
-   now lines up with the bar's edges rather than the wider box. */
+   Firefox writes those grow rules against the .urlbar CLASS, so the #urlbar
+   ID outweighs them: each rule below reverts one extend-time change back to
+   the resting [breakout] value, and none of them needs !important. The
+   field's width, height and padding are pinned to their resting values;
+   #urlbar itself is left free to grow downward, so its background still
+   backs the results list that opens below the field. */
 #urlbar[breakout][breakout-extend] {
-  margin-left: 0 !important;
-  margin-inline: 0 !important;
-  width: var(--urlbar-width) !important;
+  margin-inline: 0;
+  width: var(--urlbar-width);
 }
 
 #urlbar[breakout][breakout-extend] > .urlbar-input-container {
-  /* Vertically the box grew by taking --urlbar-container-height and
-     padding the field back to centre. Dropping that padding alone lifts
-     the field, because the positioning code has already written an inline
-     `top` that assumes it. So give the padding back as margin: same
-     offset, but outside the box, which keeps the field where it was while
-     the box stays the height it was. */
-  height: var(--urlbar-height) !important;
-  /* Keep the resting padding rather than zeroing it: it sits inside the
-     fixed height, so the icons inside the bar line up with where they were
-     — zeroing it lifted them by exactly that 1px. */
-  padding-block: var(--urlbar-container-padding) !important;
-  margin-block-start: calc(
-    (var(--urlbar-container-height) - var(--urlbar-height)) / 2
-  ) !important;
-  padding-inline: var(--urlbar-container-padding) !important;
+  height: var(--urlbar-height);
+  padding: var(--urlbar-container-padding);
 }
 
-/* The grow animation is on the background layer; without it the panel
-   simply appears. */
 #urlbar[breakout][breakout-extend] > .urlbar-background {
-  animation-name: none !important;
+  animation-name: none;
 }
 
-/* Focusing the bar lifted it off the page with a drop shadow
-   (rgba(0,0,0,.13) 0 2px 14px). Nothing else about the field changes on
-   focus — same fill, same border — so dropping the shadow leaves the bar
-   looking exactly as it does at rest while the results slide out below. */
-#urlbar[breakout][breakout-extend] > .urlbar-background,
-#urlbar[focused] > .urlbar-background {
-  box-shadow: none !important;
-  /* And the ring around it: an outline (2px solid, the system accent at
-     half alpha) drawn on the background layer. */
-  outline: none !important;
-}
-
-/* The background layer also carries a border that is transparent at rest
-   and turns solid grey once the panel opens. Since that element spans the
-   whole open bar, that border is the outline drawn around the field and
-   its results together. Held transparent, as it is when resting — the
-   fill stays, so the results still read as a panel. */
-#urlbar[focused] > .urlbar-background,
+/* Focus must not restyle the field itself: drop the grow-in shadow and the
+   focus ring so the bar looks exactly as it does at rest while the results
+   appear beneath it. */
 #urlbar[open] > .urlbar-background,
-#urlbar[breakout][breakout-extend] > .urlbar-background {
-  border-color: transparent !important;
-}
-
-/* The painted box is this element, and when the panel opens it stretches
-   from the field all the way down past the results — 26px tall becomes
-   340px. That is what reads as the address bar itself ballooning. Pinned
-   to the field's own height, offset by the same amount as the input,
-   since the positioning code shifts #urlbar up when it extends. */
-#urlbar[breakout][breakout-extend] > .urlbar-background {
-  inset-block-start: calc(
-    (var(--urlbar-container-height) - var(--urlbar-height)) / 2
-  ) !important;
-  inset-block-end: auto !important;
-  height: var(--urlbar-height) !important;
-  /* border-box, or the element's own 1px borders sit outside that height
-     and the box ends up 2px taller than the field it is meant to match. */
-  box-sizing: border-box !important;
-}
-
-/* Which leaves the results with nothing behind them — they were relying on
-   that stretched box — so they get their own, sitting under the bar as a
-   separate panel rather than one continuous slab. */
-#urlbar[open] > .urlbarView {
-  background-color: var(--toolbar-field-background-color) !important;
-  border: 1px solid var(--toolbar-field-border-color, rgba(255, 255, 255, 0.08))
-    !important;
-  border-radius: var(--border-radius-medium, 8px) !important;
-  margin-block-start: 4px !important;
-  overflow: hidden !important;
+#urlbar[focused] > .urlbar-background {
+  box-shadow: none;
+  outline: none;
 }
 
 /* #urlbar sits in the top layer, so it does not shrink with the nav bar —
