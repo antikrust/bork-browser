@@ -179,6 +179,20 @@
   display: none !important;
 }
 
+/* ===== "Ask an AI chatbot" — gone. bork ships no AI. The real fix is the
+   browser.ml.chat.page / .menu prefs (see static/gecko/pref/override.ini):
+   GenAI.buildAskChatMenu gates on those, not chat.enabled. This is the
+   belt-and-suspenders visual kill so the item cannot appear even if a pref
+   fails to apply — context-menu entry, sidebar switcher entry, and toolbar
+   entry alike. ===== */
+#context-ask-chat,
+#context-ask-chat-hidden,
+#sidebar-switcher-genai-chat,
+#toolbar-context-ask-chat,
+menuitem[id^="context-ask-chat"] {
+  display: none !important;
+}
+
 @media (-moz-platform: macos) {
   #PanelUI-menu-button {
     display: none !important;
