@@ -89,6 +89,41 @@
   transition: opacity 0.25s ease !important;
 }
 
+/* Lifting the page out of the flow takes with it the item that was filling
+   the row, and the right-hand cluster has nothing left to push against —
+   so it packs leftward and comes to rest beside the rail. Retracted that
+   is invisible, but the edge reveal then produced a panel on the wrong
+   side of the window. The two boxes are anchored to the edge they belong
+   to instead of relying on a sibling to hold them there.
+
+   The rail needs no anchor: it is the first item in the row and stays at
+   the start edge on its own.
+
+   35px is the icon strip's width by design — derp.css states it where it
+   sizes the rail to match ("Same width as the right panel's icon column
+   (35px) — the two rails mirror each other"). A constant, not a cached
+   measurement: nothing re-takes it, so there is nothing to go stale, and
+   it brings back none of the observer/rebase apparatus. */
+:root[zenmode] #panel-sidebar-select-box {
+  position: absolute !important;
+  inset-block: 0 !important;
+  inset-inline-end: 0 !important;
+}
+
+:root[zenmode] #panel-sidebar-box {
+  position: absolute !important;
+  inset-block: 0 !important;
+  inset-inline-end: var(--derp-panel-strip-width, 35px) !important;
+}
+
+/* The splitter is a resize handle for a panel you are not resizing while
+   the chrome is retracted, and placing it would need the panel's own width
+   — the one measurement this design does without. It has no business being
+   visible in zen at all. */
+:root[zenmode] #panel-sidebar-splitter {
+  display: none !important;
+}
+
 /* Status bar — out of flow at the window bottom, slides down by its own
    height. Same self-sizing rationale as the toolbox. */
 :root[zenmode] #nora-statusbar {
