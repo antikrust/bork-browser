@@ -8,7 +8,7 @@ import {
   NoraComponentBase,
 } from "#features-chrome/utils/base.ts";
 import { onCleanup } from "solid-js";
-import { configStore, setConfigStore } from "../workspaces/data/config.ts";
+import { toggleRailInThisWindow } from "../workspaces/toolbar/workspaces-rail.tsx";
 import { togglePanelSidebar } from "../lean-urlbar/sidebar-toggle.ts";
 import { gestureActions } from "../mouse-gesture/utils/gestures.ts";
 
@@ -188,8 +188,11 @@ export default class PanelToggles extends NoraComponentBase {
     // registers its own module instances so a toggle always acts on the
     // window that was clicked (and never on a closed window's stores).
     const hooks: PanelToggleHooks = {
-      toggleWorkspacesRail: () =>
-        setConfigStore("manageOnBms", !configStore.manageOnBms),
+      // Was setConfigStore("manageOnBms", …), which is a pref every window
+      // observes — so the rail was the one toggle here that acted on every
+      // window instead of this one. Its neighbour below has always taken
+      // the window; now both do.
+      toggleWorkspacesRail: () => toggleRailInThisWindow(),
       togglePanelSidebar: () => togglePanelSidebar(window),
     };
     (window as unknown as Record<string, unknown>)[HOOKS_PROP] = hooks;
@@ -218,7 +221,18 @@ export default class PanelToggles extends NoraComponentBase {
     gestureActions.registerActions([
       {
         name: "derp-toggle-workspaces-rail",
-        fn: () => hooks.toggleWorkspacesRail(),
+        // Resolve the hooks from the window the key was pressed in rather
+        // than closing over this window's. The registry is a process-wide
+        // singleton keyed by action name (actions.set(name, ...)), so every
+        // window that opens overwrites the previous window's registration
+        // — a closure over `hooks` sends the chord to whichever window
+        // happened to open last, whatever window you actually pressed it
+        // in. The window is passed in for exactly this reason, and each
+        // one has already published its own hooks under HOOKS_PROP.
+        fn: (win) =>
+          (win as unknown as Record<string, PanelToggleHooks | undefined>)[
+            HOOKS_PROP
+          ]?.toggleWorkspacesRail(),
       },
     ]);
 

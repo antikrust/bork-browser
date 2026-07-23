@@ -64,8 +64,36 @@ const getSidebarController = (): SidebarControllerLike | null =>
   (globalThis as unknown as { SidebarController?: SidebarControllerLike })
     .SidebarController ?? null;
 
-const railActive = (): boolean =>
-  enabled() && Boolean(configStore.manageOnBms);
+// Whether the rail is showing IN THIS WINDOW. Module scope is per-window
+// here — every window loads its own copy of the chrome bundle — so this
+// signal is window-local, the same way zen mode's enabled signal is.
+//
+// null means "this window has not been told either way, follow the
+// preference". Once the window's own toggle is used it holds its own
+// answer and stops following. That is the whole fix: configStore is backed
+// by a pref that every window observes, so deriving visibility straight
+// from it meant a toggle in one window moved the rail in all of them. The
+// left rail was the only one of the four chrome toggles that did this —
+// the panel sidebar, the address bar and zen are all window-local, which
+// is why only this one crossed windows.
+const [railShownHere, setRailShownHere] = createSignal<boolean | null>(null);
+
+/**
+ * Toggle the rail in this window only.
+ *
+ * Deliberately does not write configStore: that pref is the default a new
+ * window opens with, and writing it here is precisely what leaked the
+ * toggle into every other window. Changing the default stays with the
+ * workspaces context menu, where it reads as the setting it is.
+ */
+export function toggleRailInThisWindow(): void {
+  setRailShownHere(!railShown());
+}
+
+const railShown = (): boolean =>
+  railShownHere() ?? Boolean(configStore.manageOnBms);
+
+const railActive = (): boolean => enabled() && railShown();
 
 const translationKeys = {
   createNew: "workspaces.popup.create-new" as const,
