@@ -2,13 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**derp** is a fork of Floorp 12 ("Noraneko"), a Firefox-based browser built on the Gecko
+**bork** is a fork of Floorp 12 ("Noraneko"), a Firefox-based browser built on the Gecko
 engine. This repo contains the feature layer that overlays Firefox — not the Firefox source
 itself; the engine arrives as a prebuilt runtime (currently FF152, Floorp-runtime daily).
 
-Fork-specific: compact theme (`browser-features/skin/derp/`), Vivaldi-style workspaces and
+Fork-specific: compact theme (`browser-features/skin/bork/`), Vivaldi-style workspaces and
 tab stacks, zen mode, lean urlbar. Upstream remains `Floorp-Projects/Floorp` (`upstream`);
-push to `origin` (github.com/100mountains/derp). GitHub Actions are disabled on the fork —
+push to `origin` (github.com/100mountains/bork). GitHub Actions are disabled on the fork —
 do not re-enable.
 
 **NO BRANCHES — commits go straight to `main` and are pushed to `origin main`.** Never
@@ -50,7 +50,7 @@ deno task dev-tool stop                       # ends browser AND the vite server
 pkill -f feles-build                          # stray build trees
 for p in $(lsof -ti tcp:5170-5190); do kill $p; done   # see below
 rm -f _dist/marionette-port.txt
-deno task feles-build stage --marionette >> /tmp/derp-launch.log 2>&1 &
+deno task feles-build stage --marionette >> /tmp/bork-launch.log 2>&1 &
 # ready when _dist/marionette-port.txt exists AND the floorp process is up
 ```
 
@@ -65,7 +65,7 @@ Gotchas that cost real time:
   Recreate with `echo 2828 > _dist/marionette-port.txt` (Marionette's default port).
 - **`deno check` fails even on untouched upstream files.** Vite/the build is the authority.
   Type-check single files if useful, don't trust a clean tree.
-- Anchor process greps: `pgrep -f "^/Users/blah/github/derp/_dist/bin/floorp"` — an unanchored
+- Anchor process greps: `pgrep -f "^/Users/blah/github/bork/_dist/bin/floorp"` — an unanchored
   `-f` match also hits your own wrapper shells.
 - **Verify the running code by a code-level marker**, not by prefs or boot log lines. A pref
   says what the profile holds; only something the new code uniquely produces proves the build
@@ -320,8 +320,8 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
 
 **The design layer fights the theme**
 - It re-sets `--tab-min-height` (32px) with equal-importance rules that win by load order.
-  Anything needing the compact height must read **`--derp-tab-height`** (theme-owned,
-  `skin/derp/css/derp.css`) instead. It also inflates the tab close button and sizes strip and
+  Anything needing the compact height must read **`--bork-tab-height`** (theme-owned,
+  `skin/bork/css/bork.css`) instead. It also inflates the tab close button and sizes strip and
   tab paint boxes to 32px.
 - When a rule refuses to apply, check for a stronger cascade origin before escalating
   specificity: `display` on the tab close button could not be beaten, but `opacity` was

@@ -5,8 +5,8 @@
         "languageSupport": "Språkstöd",
         "features": "Funktioner",
         "featureIntroduction": "Funktion introduktion",
-        "hub": "Derp Hub",
-        "hubIntro": "Om Derp Hub",
+        "hub": "Bork Hub",
+        "hubIntro": "Om Bork Hub",
         "customize": "Anpassa",
         "initialSettings": "Initiala inställningar",
         "complete": "Slutförd",
@@ -14,25 +14,25 @@
         "next": "Nästa"
     },
     "hubPage": {
-        "title": "Om Derp Hub",
-        "subtitle": "En central plats för Derp-specifika inställningar.",
-        "sectionTitle": "Derp Hub",
-        "description": "Derp Hub är ett dedikerat inställningscenter för Derp-specifika alternativ. Du kan öppna det genom att navigera till 'about:preferences'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
+        "title": "Om Bork Hub",
+        "subtitle": "En central plats för Bork-specifika inställningar.",
+        "sectionTitle": "Bork Hub",
+        "description": "Bork Hub är ett dedikerat inställningscenter för Bork-specifika alternativ. Du kan öppna det genom att navigera till 'about:preferences'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
         "openHub": "Öppna about:preferences",
         "openPreferences": "Öppna inställningar (about:preferences)",
-        "tip": "Tips: du kan också komma åt Derp Hub från sidofältet för inställningar i Firefox.",
+        "tip": "Tips: du kan också komma åt Bork Hub från sidofältet för inställningar i Firefox.",
         "features": {
-            "dedicated": "Dedikerat Derp-inställningscenter",
+            "dedicated": "Dedikerat Bork-inställningscenter",
             "accessible": "Tillgängligt från about:preferences eller Firefox inställningar",
-            "centralized": "Alla Derp-specifika alternativ på ett ställe"
+            "centralized": "Alla Bork-specifika alternativ på ett ställe"
         }
     },
     "customize": {
-        "title": "Anpassa Derp",
-        "description": "Anpassa till dina önskade inställningar. Du kan alltid ändra dem senare från Derp Hub eller inställningssidan.",
+        "title": "Anpassa Bork",
+        "description": "Anpassa till dina önskade inställningar. Du kan alltid ändra dem senare från Bork Hub eller inställningssidan.",
         "appearance": {
             "title": "Utseende inställningar",
-            "description": "Du kan anpassa Derps utseende efter dina önskemål. Välj ett ljust eller mörkt tema, eller låt det växla automatiskt baserat på dina systeminställningar."
+            "description": "Du kan anpassa Borks utseende efter dina önskemål. Välj ett ljust eller mörkt tema, eller låt det växla automatiskt baserat på dina systeminställningar."
         },
         "themes": {
             "light": "Ljust",
@@ -51,28 +51,28 @@
             "noEnginesFound": "Inga sökmotorer hittades."
         },
         "floorpHub": {
-            "title": "Derp Hub",
-            "description": "Derp Hub är ett dedikerat inställningscenter för Derp-specifika alternativ. Du kan öppna det genom att navigera till 'about:preferences'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
+            "title": "Bork Hub",
+            "description": "Bork Hub är ett dedikerat inställningscenter för Bork-specifika alternativ. Du kan öppna det genom att navigera till 'about:preferences'. Det kan också nås från vänstra sidofältet i Firefox inställningssida på 'about:preferences'.",
             "openHub": "Öppna about:preferences",
             "openPreferences": "Öppna inställningar (about:preferences)"
         }
     },
     "finish": {
         "title": "Inställning färdig!",
-        "subtitle": "Grattis! Du har slutfört installationen av Derp. Njut av en bekväm och säker webbupplevelse.",
+        "subtitle": "Grattis! Du har slutfört installationen av Bork. Njut av en bekväm och säker webbupplevelse.",
         "nextSteps": {
             "title": "Nästa steg (valfritt)",
             "setDefault": "Ange som standardwebbläsare",
             "documentation": "Dokumentation"
         },
-        "getStarted": "Kom igång med Derp",
+        "getStarted": "Kom igång med Bork",
         "hint": "För mer detaljerade inställningar kan du anpassa via alternativet Inställningar i menyknappen längst upp till höger."
     },
     "welcomePage": {
-        "welcome": "Välkommen till Derp!",
-        "description": "Derp är en snabb och användarvänlig webbläsare som lägger stor vikt vid integritet och säkerhet. I den här guiden får du en introduktion till de viktigaste funktionerna och inställningarna i Derp.",
+        "welcome": "Välkommen till Bork!",
+        "description": "Bork är en snabb och användarvänlig webbläsare som lägger stor vikt vid integritet och säkerhet. I den här guiden får du en introduktion till de viktigaste funktionerna och inställningarna i Bork.",
         "readyToStart": "När du är klar klickar du på knappen nedan för att fortsätta.",
-        "features": "Derp funktioner",
+        "features": "Bork funktioner",
         "privacy": "Integritet",
         "privacyDesc": "Skyddar din data",
         "speed": "Hastighet",
@@ -82,28 +82,28 @@
         "start": "Kom igång"
     },
     "localizationPage": {
-        "title": "Derp talar ditt språk",
+        "title": "Bork talar ditt språk",
         "subtitle": "Kontrollera språkinställningar och ändra om det behövs",
         "languageSettings": "Språkinställningar",
         "languageChanged": "Språket har ändrats!",
         "currentLanguageInfo": "Nuvarande språkinformation",
         "systemLanguage": "Systemspråk",
-        "floorpLanguage": "Derp Språk",
+        "floorpLanguage": "Bork Språk",
         "selectLanguage": "Välj språk",
         "useSystemLanguage": "Använd systemets språk",
         "multilingual": "Flerspråksstöd",
         "chooseLanguage": "Välj bland ett brett utbud av språk",
-        "languageChangeNotice": "Om du byter språk kommer det nya språket att tillämpas utan att Derp behöver startas om. Vissa tillägg kanske inte stöder språkändringar."
+        "languageChangeNotice": "Om du byter språk kommer det nya språket att tillämpas utan att Bork behöver startas om. Vissa tillägg kanske inte stöder språkändringar."
     },
     "featuresPage": {
-        "title": "Huvudfunktioner för Derp",
-        "subtitle": "Derp kommer med många användbara funktioner. Kolla in översikt för funktioner!",
+        "title": "Huvudfunktioner för Bork",
+        "subtitle": "Bork kommer med många användbara funktioner. Kolla in översikt för funktioner!",
         "panelSidebar": {
             "title": "Panel sidofält",
             "description": "Få tillgång till praktiska funktioner från sidofältet till höger när du surfar. Du kan placera webbpaneler, anteckningsfunktioner, tillägg, bokmärken etc. i sidofältet.",
             "features": [
                 "Fäst webbplatser till sidofältet",
-                "Gör snabba anteckningar med Derp anteckningar medan du surfar",
+                "Gör snabba anteckningar med Bork anteckningar medan du surfar",
                 "Stöder behållare"
             ]
         },
@@ -139,19 +139,19 @@
     },
     "finishPage": {
         "title": "Inställning färdig!",
-        "subtitle": "Grattis! Du har slutfört installationen av Derp. Du kan nu njuta av bekväm och säker internetsurfning.",
+        "subtitle": "Grattis! Du har slutfört installationen av Bork. Du kan nu njuta av bekväm och säker internetsurfning.",
         "nextSteps": "Nästa steg (valfritt)",
         "defaultBrowser": "Ange som standardwebbläsare",
         "support": "Support",
         "documentation": "Dokumentation",
-        "getStarted": "Kom igång med Derp",
+        "getStarted": "Kom igång med Bork",
         "hint": "För mer detaljerade inställningar kan du anpassa via alternativet Inställningar i menyknappen längst upp till höger.",
         "resourcesLabel": "Resurser",
-        "defaultBrowserSuccess": "Derp har ställts in som din standardwebbläsare!"
+        "defaultBrowserSuccess": "Bork har ställts in som din standardwebbläsare!"
     },
     "whatsNew": {
-        "title": "Välkommen till Derp {{version}}!",
-        "subtitle": "Kolla in vad som är nytt i Derp!",
+        "title": "Välkommen till Bork {{version}}!",
+        "subtitle": "Kolla in vad som är nytt i Bork!",
         "tags": {
             "settings": "Inställningar",
             "productivity": "Produktivitet",
@@ -162,7 +162,7 @@
         "footer": {
             "follow": "Följ",
             "privacy": "Sekretess och villkor",
-            "about": "Om Derp",
+            "about": "Om Bork",
             "copyright": "© {{year}} Projekt. Alla rättigheter reserverade."
         }
     }

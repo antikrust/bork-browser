@@ -48,7 +48,7 @@ export class WorkspacesToolbarButton {
       null,
       () => {
         const exec = () => {
-          // derp: the chooser lives at the far left of the tab strip,
+          // bork: the chooser lives at the far left of the tab strip,
           // Vivaldi-style. Re-pin it if customization state drifted.
           try {
             const placement = CustomizableUI.getPlacementOfWidget(
@@ -165,16 +165,16 @@ export class WorkspacesToolbarButton {
       // the tab strip, so we own the icon: a dedicated <image> injected as
       // the first child, always left of the name. The native slots are
       // hidden in styles.css so this can never double up.
-      let derpIcon = xulElement.querySelector(
-        ".derp-workspaces-chooser-icon",
+      let borkIcon = xulElement.querySelector(
+        ".bork-workspaces-chooser-icon",
       ) as XULElement | null;
-      if (!derpIcon) {
-        derpIcon = document!.createXULElement("image") as XULElement;
-        derpIcon.classList.add("derp-workspaces-chooser-icon");
-        xulElement.insertBefore(derpIcon, xulElement.firstChild);
+      if (!borkIcon) {
+        borkIcon = document!.createXULElement("image") as XULElement;
+        borkIcon.classList.add("bork-workspaces-chooser-icon");
+        xulElement.insertBefore(borkIcon, xulElement.firstChild);
       }
-      if (derpIcon.getAttribute("src") !== iconSrc) {
-        derpIcon.setAttribute("src", iconSrc);
+      if (borkIcon.getAttribute("src") !== iconSrc) {
+        borkIcon.setAttribute("src", iconSrc);
       }
       // Workspace colour tints the glyph, same as the rail and popup
       // rows (inline stroke over the context-paint data URI).
@@ -182,22 +182,22 @@ export class WorkspacesToolbarButton {
         (workspace as { color?: string | null }).color,
       );
       if (colorCss) {
-        (derpIcon as unknown as HTMLElement).style.setProperty(
+        (borkIcon as unknown as HTMLElement).style.setProperty(
           "stroke",
           colorCss,
         );
       } else {
-        (derpIcon as unknown as HTMLElement).style.removeProperty("stroke");
+        (borkIcon as unknown as HTMLElement).style.removeProperty("stroke");
       }
 
       // Chevron after the name: the chooser is a menu and should read as
       // one. Appended last so it always sits right of the label text.
       let chevron = xulElement.querySelector(
-        ".derp-workspaces-chooser-chevron",
+        ".bork-workspaces-chooser-chevron",
       ) as XULElement | null;
       if (!chevron) {
         chevron = document!.createXULElement("image") as XULElement;
-        chevron.classList.add("derp-workspaces-chooser-chevron");
+        chevron.classList.add("bork-workspaces-chooser-chevron");
         chevron.setAttribute("src", CHEVRON_ICON);
         xulElement.appendChild(chevron);
       }

@@ -1,6 +1,6 @@
 {
   "aboutDialog": {
-    "ariaLabel": "Derp について",
+    "ariaLabel": "Bork について",
     "version": "バージョン",
     "channel": {
       "nightly": "Nightly",
@@ -36,7 +36,7 @@
     },
     "links": {
       "releaseNotes": "リリースノート",
-      "help": "Derp ヘルプ",
+      "help": "Bork ヘルプ",
       "feedback": "フィードバックを送信",
       "licensing": "ライセンス",
       "terms": "利用規約",

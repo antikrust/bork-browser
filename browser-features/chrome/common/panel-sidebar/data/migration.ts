@@ -6,10 +6,10 @@
 import { PanelSidebarStaticNames } from "../utils/panel-sidebar-static-names";
 import type { PanelSidebarConfig } from "../utils/type";
 
-const DERP_HELP_URL = "chrome://noraneko-help/content/index.html";
+const BORK_HELP_URL = "chrome://noraneko-help/content/index.html";
 
 /**
- * Profiles created before derp shipped its own help still hold a panel
+ * Profiles created before bork shipped its own help still hold a panel
  * pointing at upstream's documentation site, and changing the default only
  * affects new profiles. Repoint those panels at the local help instead —
  * matched on host so it catches whichever docs page the panel had settled on.
@@ -26,7 +26,7 @@ export function migrateHelpPanelUrl() {
     let changed = false;
     for (const panel of sidebar.data ?? []) {
       if (panel.url?.includes("docs.floorp.app")) {
-        panel.url = DERP_HELP_URL;
+        panel.url = BORK_HELP_URL;
         changed = true;
       }
     }

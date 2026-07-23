@@ -38,7 +38,7 @@ export interface VivaldiImportResult {
  * Recreate Vivaldi's workspaces here, with their tabs.
  *
  * Tabs are created lazily: a hundred-plus restored tabs would otherwise all
- * start loading at once. Vivaldi's own icons are inline SVG and derp's are a
+ * start loading at once. Vivaldi's own icons are inline SVG and bork's are a
  * fixed named set, so imported workspaces keep the neutral default glyph and
  * only carry the name across.
  */
@@ -113,10 +113,10 @@ export function registerVivaldiImportBridge(ctx: WorkspacesService): void {
   bridgeRegistered = true;
 
   const win = globalThis as unknown as Window;
-  win.addEventListener("derp-vivaldi-import", () => {
+  win.addEventListener("bork-vivaldi-import", () => {
     const reply = (detail: VivaldiImportResult) =>
       win.dispatchEvent(
-        new CustomEvent("derp-vivaldi-import-done", { detail }),
+        new CustomEvent("bork-vivaldi-import-done", { detail }),
       );
     importVivaldiWorkspaces(ctx)
       .then(reply)

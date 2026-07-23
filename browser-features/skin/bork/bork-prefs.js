@@ -1,6 +1,6 @@
-// derp interface engine preferences.
+// bork interface engine preferences.
 // Derived from Lepton v8.7.5 Photon style (black7375's Firefox-UI-Fix,
-// MPL-2.0), flattened to derp's fixed configuration. Owned in-tree; no
+// MPL-2.0), flattened to bork's fixed configuration. Owned in-tree; no
 // upstream sync.
 // ** Theme Default Options ****************************************************
 // userchrome.css usercontent.css activate

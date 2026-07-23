@@ -51,12 +51,12 @@ export const bumpStacksVersion = () => setVersion((v) => v + 1);
 const [activeGroup, setActiveGroup] = createSignal<StackGroup | null>(null);
 
 /** The stack bar shows the group of the currently selected tab — but only
- * groups we own (marked data-derp-stack); split-view groups are not ours. */
+ * groups we own (marked data-bork-stack); split-view groups are not ours. */
 export const syncActiveGroup = () => {
   const gb = getGBrowser();
   const group = gb?.selectedTab?.group ?? null;
   const isOurs = group &&
-    (group as unknown as Element).getAttribute?.("data-derp-stack") ===
+    (group as unknown as Element).getAttribute?.("data-bork-stack") ===
       "true";
   setActiveGroup(isOurs ? group : null);
 };
@@ -116,16 +116,16 @@ const DEFAULT_FAVICON = "chrome://global/skin/icons/defaultFavicon.svg";
  */
 let dragIdCounter = 0;
 export const getTabDragId = (tab: StackTab): string => {
-  let id = tab.getAttribute("data-derp-tab-id");
+  let id = tab.getAttribute("data-bork-tab-id");
   if (!id) {
     id = `dt${++dragIdCounter}`;
-    tab.setAttribute("data-derp-tab-id", id);
+    tab.setAttribute("data-bork-tab-id", id);
   }
   return id;
 };
 
 export const findTabByDragId = (id: string): StackTab | undefined =>
-  getGBrowser()?.tabs.find((t) => t.getAttribute("data-derp-tab-id") === id);
+  getGBrowser()?.tabs.find((t) => t.getAttribute("data-bork-tab-id") === id);
 
 function StackTabProxy(props: { tab: StackTab }) {
   // Inline address edit: double-click widens the cell into a text input,
@@ -151,7 +151,7 @@ function StackTabProxy(props: { tab: StackTab }) {
     // universal renderer gives us no `ref` helper, hence the id lookup).
     setTimeout(() => {
       const input = document?.getElementById(
-        `derp-stack-url-${getTabDragId(props.tab)}`,
+        `bork-stack-url-${getTabDragId(props.tab)}`,
       ) as HTMLInputElement | null;
       input?.focus();
       input?.select();
@@ -198,10 +198,10 @@ function StackTabProxy(props: { tab: StackTab }) {
 
   return (
     <xul:hbox
-      class="derp-stack-tab"
+      class="bork-stack-tab"
       align="center"
       data-selected={selected()}
-      data-derp-drag-id={getTabDragId(props.tab)}
+      data-bork-drag-id={getTabDragId(props.tab)}
       context="tabContextMenu"
       draggable="true"
       onDragStart={(event: DragEvent) => {
@@ -209,14 +209,14 @@ function StackTabProxy(props: { tab: StackTab }) {
         // the stack, up into the tab row to leave it (the real member
         // tabs are hidden in row 1, so this is the only drag handle).
         event.dataTransfer?.setData(
-          "application/x-derp-stack-tab",
+          "application/x-bork-stack-tab",
           getTabDragId(props.tab),
         );
         if (event.dataTransfer) {
           event.dataTransfer.effectAllowed = "move";
           try {
             const ghost = document!.createElement("div");
-            ghost.className = "derpStackDragGhost";
+            ghost.className = "borkStackDragGhost";
             ghost.textContent = props.tab.label ?? "";
             document!.documentElement?.appendChild(ghost);
             event.dataTransfer.setDragImage(ghost, 12, 14);
@@ -243,8 +243,8 @@ function StackTabProxy(props: { tab: StackTab }) {
         when={!editing()}
         fallback={
           <input
-            id={`derp-stack-url-${getTabDragId(props.tab)}`}
-            class="derp-stack-url-input"
+            id={`bork-stack-url-${getTabDragId(props.tab)}`}
+            class="bork-stack-url-input"
             value={currentUrl()}
             placeholder="Enter address"
             onKeyDown={(e: KeyboardEvent) => {
@@ -260,10 +260,10 @@ function StackTabProxy(props: { tab: StackTab }) {
           />
         }
       >
-        <xul:hbox class="derp-stack-tab-iconbox" align="center">
-          <xul:image class="derp-stack-tab-icon" src={icon()} />
+        <xul:hbox class="bork-stack-tab-iconbox" align="center">
+          <xul:image class="bork-stack-tab-icon" src={icon()} />
           <xul:toolbarbutton
-            class="derp-stack-tab-close"
+            class="bork-stack-tab-close"
             tooltiptext="Close tab"
             onClick={(event: MouseEvent) => {
               event.stopPropagation();
@@ -271,11 +271,11 @@ function StackTabProxy(props: { tab: StackTab }) {
             }}
           />
         </xul:hbox>
-        <xul:label class="derp-stack-tab-label" crop="end">
+        <xul:label class="bork-stack-tab-label" crop="end">
           {label()}
         </xul:label>
         <xul:image
-          class="derp-stack-tab-refresh"
+          class="bork-stack-tab-refresh"
           src="chrome://global/skin/icons/reload.svg"
           tooltiptext="Reload tab"
           onMouseDown={(event: MouseEvent) => {
@@ -325,14 +325,14 @@ export function StackBar() {
           buttons exactly like the tab strip, instead of wrapping into a
           second row and growing the bar. */}
       <xul:arrowscrollbox
-        id="derp-stack-bar"
+        id="bork-stack-bar"
         orient="horizontal"
         clicktoscroll="true"
         align="center"
       >
         <For each={tabs()}>{(tab) => <StackTabProxy tab={tab} />}</For>
         <xul:toolbarbutton
-          id="derp-stack-newtab"
+          id="bork-stack-newtab"
           label="+"
           tooltiptext="New tab in stack"
           onClick={addTabToActiveGroup}

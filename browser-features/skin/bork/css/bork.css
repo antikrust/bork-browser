@@ -3,15 +3,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* Derp — compact interface. Proton look, tighter everything. */
+/* Bork — compact interface. Proton look, tighter everything. */
 
 /* Marker so tooling can verify the theme is active */
 :root {
-  --derp-theme: 1;
+  --bork-theme: 1;
 }
 
 /* ===== Tabs: shorter, tighter, smaller text ===== */
-/* --derp-tab-height is ours alone: the design layer re-sets
+/* --bork-tab-height is ours alone: the design layer re-sets
    --tab-min-height (to 32px) with equal-importance rules, so anything
    that must agree on the compact height (tab pins below, stack chips,
    lean-urlbar peek offset) reads this variable instead. */
@@ -19,7 +19,7 @@
   /* 30px + the 2px block margins = the 32px bar the design layer always
      built — everything (tab pins, stack chips, lean-urlbar peek) keys off
      this one variable, so alignment holds at any value. */
-  --derp-tab-height: 30px;
+  --bork-tab-height: 30px;
   --tab-min-height: 30px !important;
 }
 
@@ -27,8 +27,8 @@
    metrics otherwise win by load order and misalign the lean-urlbar peek
    overlay (row jumps, tab tops covered) whenever the urlbar slides in. */
 #tabbrowser-tabs .tabbrowser-tab {
-  min-height: var(--derp-tab-height) !important;
-  max-height: var(--derp-tab-height) !important;
+  min-height: var(--bork-tab-height) !important;
+  max-height: var(--bork-tab-height) !important;
 }
 
 /* No indicator strip on tabs (container/keyline line at the top edge) —
@@ -39,18 +39,18 @@
 
 /* Pin the whole tab row to the compact height. The design layer sizes
    the strip and the tab paint boxes to 32px, which sank everything built
-   to --derp-tab-height: stack chips sat ~5px low and tab backgrounds
+   to --bork-tab-height: stack chips sat ~5px low and tab backgrounds
    painted 7px taller than their own tabs. */
 #TabsToolbar,
 #tabbrowser-arrowscrollbox,
 #tabbrowser-tabs {
-  min-height: calc(var(--derp-tab-height, 25px) + 2px) !important;
-  max-height: calc(var(--derp-tab-height, 25px) + 2px) !important;
+  min-height: calc(var(--bork-tab-height, 25px) + 2px) !important;
+  max-height: calc(var(--bork-tab-height, 25px) + 2px) !important;
 }
 
 #tabbrowser-tabs .tabbrowser-tab .tab-background {
   /* Full-bleed like the original bar: background fills the row. */
-  max-height: calc(var(--derp-tab-height, 30px) + 2px) !important;
+  max-height: calc(var(--bork-tab-height, 30px) + 2px) !important;
 }
 
 /* Overflow scroll arrows: identical containers on both ends (the left
@@ -237,7 +237,7 @@
      42px default. Compact is the lever lepton itself is built for; its
      [uidensity="compact"] branches shrink the toolbar buttons and urlbar
      without a specificity fight. The tab strip is unaffected: it is
-     pinned by --derp-tab-height. */
+     pinned by --bork-tab-height. */
   padding-block: 0 !important;
 }
 
@@ -298,11 +298,11 @@
 }
 
 /* ===== Hover-to-reload: glyph at the tab's right edge ===== */
-/* Shown via [derp-show-refresh], stamped by the tab-refresh feature after
+/* Shown via [bork-show-refresh], stamped by the tab-refresh feature after
    a short hover. A JS timer rather than transition-delay: pointer-events
    cannot be delayed in CSS, so the button would be invisibly clickable
    during the wait and stray right-edge clicks would reload. */
-#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .derp-tab-refresh {
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .bork-tab-refresh {
   opacity: 0;
   pointer-events: none;
   position: absolute !important;
@@ -326,14 +326,14 @@
   transition: opacity 0.18s ease;
 }
 
-/* Shown only when the option is on (derp.tabs.hoverReload.enabled; the
+/* Shown only when the option is on (bork.tabs.hoverReload.enabled; the
    tab-refresh feature mirrors the pref onto this root attribute). */
-:root[derp-hover-reload] #tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned])[derp-show-refresh] .derp-tab-refresh {
+:root[bork-hover-reload] #tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned])[bork-show-refresh] .bork-tab-refresh {
   opacity: 1;
   pointer-events: auto;
 }
 
-#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .derp-tab-refresh:hover {
+#tabbrowser-tabs#tabbrowser-tabs .tabbrowser-tab:not([pinned]) .bork-tab-refresh:hover {
   background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
@@ -421,7 +421,7 @@
   position: relative !important;
 }
 
-#TabsToolbar .derp-tab-url-input {
+#TabsToolbar .bork-tab-url-input {
   position: absolute;
   z-index: 10;
   box-sizing: border-box;
@@ -436,15 +436,15 @@
   transition: width 0.14s ease-out;
 }
 
-/* ===== Dark Derp (derp.theme.dark.enabled): black-swish tab strip ===== */
+/* ===== Dark Bork (bork.theme.dark.enabled): black-swish tab strip ===== */
 /* The strip surfaces alone go pure black with the swish curves — group
    colours, tab washes and the rest of the chrome stay exactly as normal
-   derp (the WebExtension theme pack recolours everything and tramples
+   bork (the WebExtension theme pack recolours everything and tramples
    the group palette; this variant deliberately touches only the strip).
-   derp-defaults stamps data-derp-dark from the pref, live — no restart.
+   bork-defaults stamps data-bork-dark from the pref, live — no restart.
    Both rows painted: row 2 is normally transparent over the toolbox, so
    leaving it would split the rows into two colours. */
-:root[data-derp-dark] #TabsToolbar {
+:root[data-bork-dark] #TabsToolbar {
   background-color: #050506 !important;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%221600%22%20height=%22220%22%20viewBox=%220%200%201600%20220%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%220%22%3E%3Cstop%20offset=%220%22%20stop-color=%22rgba(156,163,175,0)%22/%3E%3Cstop%20offset=%220.6%22%20stop-color=%22rgba(156,163,175,0.22)%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22rgba(156,163,175,0.11)%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22v%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22/%3E%3Cstop%20offset=%220.45%22%20stop-color=%22%23fff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23000%22/%3E%3C/linearGradient%3E%3Cmask%20id=%22m%22%3E%3Crect%20width=%221600%22%20height=%22220%22%20fill=%22url(%23v)%22/%3E%3C/mask%3E%3C/defs%3E%3Cg%20mask=%22url(%23m)%22%3E%3Cpath%20d=%22M%20340%20235%20C%20720%20150,%20980%20210,%201620%2040%20L%201620%20235%20Z%22%20fill=%22rgba(156,163,175,0.04)%22/%3E%3Cpath%20d=%22M%20480%20240%20C%20860%20170,%201120%20230,%201640%2090%22%20fill=%22none%22%20stroke=%22url(%23s)%22%20stroke-width=%223%22/%3E%3Cpath%20d=%22M%20560%20245%20C%20940%20195,%201180%20250,%201660%20130%22%20fill=%22none%22%20stroke=%22url(%23s)%22%20stroke-width=%222%22%20opacity=%220.7%22/%3E%3Cpath%20d=%22M%20640%20250%20C%201020%20215,%201240%20265,%201680%20170%22%20fill=%22none%22%20stroke=%22url(%23s)%22%20stroke-width=%221.5%22%20opacity=%220.45%22/%3E%3C/g%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
@@ -452,7 +452,7 @@
   background-size: auto 100% !important;
 }
 
-:root[data-derp-dark] #derp-stack-bar {
+:root[data-bork-dark] #bork-stack-bar {
   background-color: #050506;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%221600%22%20height=%22220%22%20viewBox=%220%200%201600%20220%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%220%22%3E%3Cstop%20offset=%220%22%20stop-color=%22rgba(156,163,175,0)%22/%3E%3Cstop%20offset=%220.6%22%20stop-color=%22rgba(156,163,175,0.22)%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22rgba(156,163,175,0.11)%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22v%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22/%3E%3Cstop%20offset=%220.45%22%20stop-color=%22%23fff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23000%22/%3E%3C/linearGradient%3E%3Cmask%20id=%22m%22%3E%3Crect%20width=%221600%22%20height=%22220%22%20fill=%22url(%23v)%22/%3E%3C/mask%3E%3C/defs%3E%3Cg%20mask=%22url(%23m)%22%3E%3Cpath%20d=%22M%20340%20235%20C%20720%20150,%20980%20210,%201620%2040%20L%201620%20235%20Z%22%20fill=%22rgba(156,163,175,0.04)%22/%3E%3Cpath%20d=%22M%20480%20240%20C%20860%20170,%201120%20230,%201640%2090%22%20fill=%22none%22%20stroke=%22url(%23s)%22%20stroke-width=%223%22/%3E%3Cpath%20d=%22M%20560%20245%20C%20940%20195,%201180%20250,%201660%20130%22%20fill=%22none%22%20stroke=%22url(%23s)%22%20stroke-width=%222%22%20opacity=%220.7%22/%3E%3Cpath%20d=%22M%20640%20250%20C%201020%20215,%201240%20265,%201680%20170%22%20fill=%22none%22%20stroke=%22url(%23s)%22%20stroke-width=%221.5%22%20opacity=%220.45%22/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -460,14 +460,14 @@
   background-size: auto 100%;
 }
 
-/* Dark Derp: the side panel is styled "same surface as the tabs" above
+/* Dark Bork: the side panel is styled "same surface as the tabs" above
    (--lwt-accent-color), so it must follow the strip to black or it sits
    as a normal-coloured slab beside a black bar. Plain black — the swish
    is frame art, not panel art. */
-:root[data-derp-dark] #panel-sidebar-box,
-:root[data-derp-dark] #panel-sidebar-header,
-:root[data-derp-dark] #panel-sidebar-select-box,
-:root[data-derp-dark] #panel-sidebar-splitter {
+:root[data-bork-dark] #panel-sidebar-box,
+:root[data-bork-dark] #panel-sidebar-header,
+:root[data-bork-dark] #panel-sidebar-select-box,
+:root[data-bork-dark] #panel-sidebar-splitter {
   background-color: #050506 !important;
 }
 
@@ -476,8 +476,8 @@
    paints over it, but the panel sidebar's ease resizes this box on every
    frame, and the strip it gives up at the end of the animation showed as a
    pale flash along the bottom before content repainted into it. */
-:root[data-derp-dark] #browser,
-:root[data-derp-dark] #tabbrowser-tabbox {
+:root[data-bork-dark] #browser,
+:root[data-bork-dark] #tabbrowser-tabbox {
   background-color: #050506 !important;
 }
 
@@ -487,13 +487,13 @@
    sees — it was the light default. Painting the container and any browser
    in it covers every panel at once instead of one page at a time; pages
    that do paint their own background simply cover this. */
-:root[data-derp-dark] #panel-sidebar-browser-box,
-:root[data-derp-dark] #panel-sidebar-browser-box-wrapper,
-:root[data-derp-dark] #panel-sidebar-box browser {
+:root[data-bork-dark] #panel-sidebar-browser-box,
+:root[data-bork-dark] #panel-sidebar-browser-box-wrapper,
+:root[data-bork-dark] #panel-sidebar-box browser {
   background-color: #050506 !important;
 }
 
-/* Dark Derp: panels — the workspaces chooser, the app menu the sidebar
+/* Dark Bork: panels — the workspaces chooser, the app menu the sidebar
    hamburger opens, and every other arrowpanel — sat visibly lighter than
    the black chrome. engine-chrome.css (the flattened lepton skin) sets
    --arrowpanel-background to the mac panel grey with !important, so the
@@ -501,7 +501,7 @@
    for all panels rather than a list that grows with each popup someone
    notices, and the same black as the strip so nothing reads as a lighter
    slab floating over the chrome. */
-:root[data-derp-dark] panel {
+:root[data-bork-dark] panel {
   /* --panel-background-color is the one that actually paints: every panel
      draws its box in the shadow DOM, and chrome://global/skin/popup.css
      fills it with `&::part(content) { background-color:
@@ -522,21 +522,21 @@
   padding-bottom: 2px !important;
 }
 
-/* Dark Derp: the left rail and the address bar follow the strip to black
+/* Dark Bork: the left rail and the address bar follow the strip to black
    ("the same as the rest") — the workspaces rail sits in the native
    sidebar slot, and #nav-bar painted its own grey. The urlbar field
    keeps a slightly lifted tone so the input still reads as a field. */
-:root[data-derp-dark] #nav-bar {
+:root[data-bork-dark] #nav-bar {
   background-color: #050506 !important;
 }
 
-:root[data-derp-dark] #sidebar-main,
-:root[data-derp-dark] #derp-workspaces-rail {
+:root[data-bork-dark] #sidebar-main,
+:root[data-bork-dark] #bork-workspaces-rail {
   background-color: #050506 !important;
 }
 
-:root[data-derp-dark] .urlbar-background,
-:root[data-derp-dark] #urlbar[open] > .urlbarView {
+:root[data-bork-dark] .urlbar-background,
+:root[data-bork-dark] #urlbar[open] > .urlbarView {
   /* Class, not id — the field element carries .urlbar-background. The
      results panel is listed with it so the suggestions sit on the same
      tone as the field rather than the lighter stock field colour. */
@@ -552,11 +552,11 @@
    --tabpanel-background-color, a third tone again.
 
    Both are pointed at the strip's own token rather than a literal, so
-   they track the active theme instead of pinning one colour. Dark Derp
+   they track the active theme instead of pinning one colour. Dark Bork
    still overrides all of it below. */
-:root:not([data-derp-dark]) #nav-bar,
-:root:not([data-derp-dark]) #sidebar-main,
-:root:not([data-derp-dark]) #derp-workspaces-rail {
+:root:not([data-bork-dark]) #nav-bar,
+:root:not([data-bork-dark]) #sidebar-main,
+:root:not([data-bork-dark]) #bork-workspaces-rail {
   background-color: var(--lwt-accent-color) !important;
 }
 
@@ -570,8 +570,8 @@
   padding-inline: 0 !important;
 }
 
-#derp-workspaces-rail-button,
-#derp-panel-sidebar-button {
+#bork-workspaces-rail-button,
+#bork-panel-sidebar-button {
   width: 35px !important;
   min-width: 35px !important;
   margin: 0 !important;
@@ -579,7 +579,7 @@
   justify-content: center !important;
 }
 
-#derp-workspaces-rail-button .toolbarbutton-icon,
-#derp-panel-sidebar-button .toolbarbutton-icon {
+#bork-workspaces-rail-button .toolbarbutton-icon,
+#bork-panel-sidebar-button .toolbarbutton-icon {
   margin-inline: auto !important;
 }

@@ -9,11 +9,11 @@
  * toggles stored in the floorp.workspaces.v4.config JSON pref.
  *
  * Text mirrors the hub's en-US strings; i18n wiring is a follow-up for all
- * derp panes at once.
+ * bork panes at once.
  */
 
 import {
-  addDerpPane,
+  addBorkPane,
   checkboxRow,
   doc,
   ensureBoolPref,
@@ -51,12 +51,12 @@ function build(root: Element): void {
 
   root.appendChild(groupboxOf("Basic settings", [
     checkboxRow({
-      id: "derp-workspaces-enabled",
+      id: "bork-workspaces-enabled",
       label: "Enable Workspaces",
       preference: ENABLED_PREF,
     }),
     configCheckbox(
-      "derp-workspaces-close-popup",
+      "bork-workspaces-close-popup",
       "closePopupAfterClick",
       "Close popup when selecting a workspace",
       "Closes the workspaces popup after you pick one.",
@@ -77,7 +77,7 @@ function build(root: Element): void {
 
 function importGroup(): Element {
   const status = doc.createElement("p");
-  status.id = "derp-workspaces-import-status";
+  status.id = "bork-workspaces-import-status";
   status.className = "description-deemphasized";
   status.style.marginBlock = "4px 0";
 
@@ -94,7 +94,7 @@ function importGroup(): Element {
       const row = doc.createXULElement("hbox");
       row.setAttribute("align", "center");
       const btn = doc.createXULElement("button");
-      btn.id = "derp-workspaces-import-vivaldi";
+      btn.id = "bork-workspaces-import-vivaldi";
       btn.setAttribute("label", "Import workspaces");
       btn.addEventListener("command", () => {
         void runVivaldiImport(btn, status);
@@ -104,7 +104,7 @@ function importGroup(): Element {
     })(),
     status,
   ]);
-  group.id = "derp-workspaces-import-group";
+  group.id = "bork-workspaces-import-group";
   (group as unknown as { hidden: boolean }).hidden = true; // shown when Vivaldi found
   return group;
 }
@@ -144,7 +144,7 @@ async function runVivaldiImport(
           120000,
         );
         win.addEventListener(
-          "derp-vivaldi-import-done",
+          "bork-vivaldi-import-done",
           (e: Event) => {
             win.clearTimeout(timer);
             resolve((e as CustomEvent).detail ?? {});
@@ -153,13 +153,13 @@ async function runVivaldiImport(
         );
       },
     );
-    win.dispatchEvent(new win.CustomEvent("derp-vivaldi-import"));
+    win.dispatchEvent(new win.CustomEvent("bork-vivaldi-import"));
     const result = await done;
     status.textContent = `Created ${result.workspacesCreated ?? 0} workspaces with ${
       result.tabsRestored ?? 0
     } tabs.`;
   } catch (e) {
-    console.error("[derp-panes] vivaldi import failed:", e);
+    console.error("[bork-panes] vivaldi import failed:", e);
     status.textContent = "That import did not finish. Nothing was changed.";
   } finally {
     btn.removeAttribute("disabled");
@@ -171,7 +171,7 @@ function init(): void {
   queuePrefsUpdate();
   // Only offer the Vivaldi import when a Vivaldi profile exists.
   void vivaldiAvailable().then((ok) => {
-    const group = doc.getElementById("derp-workspaces-import-group");
+    const group = doc.getElementById("bork-workspaces-import-group");
     if (group && ok) (group as unknown as { hidden: boolean }).hidden = false;
   });
 }
@@ -181,9 +181,9 @@ const ICON = "data:image/svg+xml," + encodeURIComponent(
 );
 
 export function registerWorkspacesPane(): void {
-  const ok = addDerpPane({
-    category: "paneDerpWorkspaces",
-    categoryId: "category-derp-workspaces",
+  const ok = addBorkPane({
+    category: "paneBorkWorkspaces",
+    categoryId: "category-bork-workspaces",
     label: "Workspaces",
     icon: ICON,
     build,

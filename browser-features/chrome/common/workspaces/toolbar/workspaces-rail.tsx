@@ -29,7 +29,7 @@ import { LAYERS_ICON } from "./icons.ts";
  * Firefox keeps ownership of the slot — geometry, position, show/hide all
  * stay SidebarController's — while we own its *content*: the native lit
  * <sidebar-main> launcher (a MozLitElement that re-renders itself; never
- * inject into it) is CSS-hidden behind the derp-workspaces-rail root
+ * inject into it) is CSS-hidden behind the bork-workspaces-rail root
  * attribute, and our SolidJS rail renders as its sibling inside the box.
  *
  * Visibility follows configStore.manageOnBms. Turning the rail on ensures
@@ -38,12 +38,12 @@ import { LAYERS_ICON } from "./icons.ts";
  */
 
 const REVAMP_PREF = "sidebar.revamp";
-const RAIL_ENABLED_REVAMP_PREF = "derp.workspaces.rail.enabledRevamp";
-const RAIL_ACTIVE_ATTR = "derp-workspaces-rail";
+const RAIL_ENABLED_REVAMP_PREF = "bork.workspaces.rail.enabledRevamp";
+const RAIL_ACTIVE_ATTR = "bork-workspaces-rail";
 // While this is set the rail is on its way out: the slot stays owned (the
 // native launcher stays hidden) and the CSS collapses the slot's width so
 // the exit eases instead of snapping. Removed when the teardown completes.
-const RAIL_CLOSING_ATTR = "derp-rail-closing";
+const RAIL_CLOSING_ATTR = "bork-rail-closing";
 const RAIL_EASE_MS = 200;
 const HOST_BOX_ID = "sidebar-main";
 
@@ -337,8 +337,8 @@ function Rail(props: { ctx: WorkspacesService; present: () => boolean }) {
 
   return (
     <Show when={props.present()}>
-      <div id="derp-workspaces-rail">
-        <div class="derp-workspaces-rail-list">
+      <div id="bork-workspaces-rail">
+        <div class="bork-workspaces-rail-list">
           <For each={railOrder()}>
             {(workspaceId) => (
               <RailWorkspaceButton workspaceId={workspaceId} ctx={props.ctx} />
@@ -347,9 +347,9 @@ function Rail(props: { ctx: WorkspacesService; present: () => boolean }) {
         </div>
         {/* Import lives in the welcome flow (pages-welcome import step),
             not on the rail — install-time concern, not a daily control. */}
-        <div class="derp-workspaces-rail-footer">
+        <div class="bork-workspaces-rail-footer">
           <RailControlButton
-            id="derp-workspaces-rail-create"
+            id="bork-workspaces-rail-create"
             icon="chrome://global/skin/icons/plus.svg"
             label={texts().createNew}
             onActivate={handleCreateWorkspace}

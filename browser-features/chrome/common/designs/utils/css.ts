@@ -7,14 +7,14 @@ import type { zFloorpDesignConfigs } from "../../designs/type.ts";
 import type * as t from "io-ts";
 
 // UserJS import (the engine's fixed preference set)
-import derpPrefsUserJs from "@nora/skin/derp/derp-prefs.js?raw";
+import borkPrefsUserJs from "@nora/skin/bork/bork-prefs.js?raw";
 
 // CSS raw imports for development
-import engineChromeStylesRaw from "@nora/skin/derp/css/engine-chrome.css?raw";
-import engineContentStylesRaw from "@nora/skin/derp/css/engine-content.css?raw";
-import derpStylesRaw from "@nora/skin/derp/css/derp.css?raw";
+import engineChromeStylesRaw from "@nora/skin/bork/css/engine-chrome.css?raw";
+import engineContentStylesRaw from "@nora/skin/bork/css/engine-content.css?raw";
+import borkStylesRaw from "@nora/skin/bork/css/bork.css?raw";
 // Gecko 152 (Project Nova) compatibility: LEPTON_COMPAT_CSS layers the
-// engine's palette + Floorp icon patches for derp's interface engine.
+// engine's palette + Floorp icon patches for bork's interface engine.
 // Loads AFTER the skin's own sheets so equal-specificity rules win by order.
 import { LEPTON_COMPAT_CSS } from "./lepton-compat-152.css.ts";
 
@@ -145,8 +145,8 @@ const getIconBasePath = (skin: string): string => {
 };
 
 /**
- * Get the CSS configuration for derp's single interface: the engine sheets
- * with derp's compact overrides layered last so they win by source order.
+ * Get the CSS configuration for bork's single interface: the engine sheets
+ * with bork's compact overrides layered last so they win by source order.
  */
 export function getCSSFromConfig(
   _pref: t.TypeOf<typeof zFloorpDesignConfigs>,
@@ -159,24 +159,24 @@ export function getCSSFromConfig(
         engineChromeStylesRaw,
         LEPTON_COMPAT_CSS,
         navBarBackgroundColorCSS,
-        derpStylesRaw,
+        borkStylesRaw,
       ],
       stylesRaw: [engineContentStylesRaw],
-      iconBasePath: "http://localhost:5174/derp/icons",
-      userjs: derpPrefsUserJs,
+      iconBasePath: "http://localhost:5174/bork/icons",
+      userjs: borkPrefsUserJs,
     };
   }
   return {
     chromeStyles: [
-      getStylePath("derp/css/engine-chrome.css"),
-      getStylePath("derp/css/engine-content.css"),
+      getStylePath("bork/css/engine-chrome.css"),
+      getStylePath("bork/css/engine-content.css"),
     ],
     chromeStylesRaw: [
       LEPTON_COMPAT_CSS,
       navBarBackgroundColorCSS,
-      derpStylesRaw,
+      borkStylesRaw,
     ],
-    styles: [getStylePath("derp/css/engine-content.css")],
-    userjs: derpPrefsUserJs,
+    styles: [getStylePath("bork/css/engine-content.css")],
+    userjs: borkPrefsUserJs,
   };
 }

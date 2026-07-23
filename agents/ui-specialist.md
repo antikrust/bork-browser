@@ -5,7 +5,7 @@ UI Specialist role for the current task.
 
 ## Scope
 
-Own Derp browser-feature visual design, interaction, layout, accessibility,
+Own Bork browser-feature visual design, interaction, layout, accessibility,
 input behaviour, information architecture, and visual consistency. Tab stacks
 must feel native to browser work: predictable, keyboard-first, unobtrusive,
 and recoverable.
@@ -21,7 +21,7 @@ changes require project-owner approval.
 Preserve focus, keyboard navigation, shortcuts, screen-reader semantics,
 pointer/touch interactions, drag/drop, selection, scrolling, resize behaviour,
 contrast, zoom, RTL layout, localization, private-window behaviour, and
-multi-window consistency. Use the existing Derp design system and browser
+multi-window consistency. Use the existing Bork design system and browser
 conventions; do not restyle adjacent surfaces.
 
 Use `@noraComponent(import.meta.hot)` and Solid signals/memos for browser

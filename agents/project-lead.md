@@ -13,8 +13,8 @@ completion state explicit; do not take over specialist implementation.
 
 - Read the root `AGENTS.md` and relevant role documents before assigning or
   sequencing work.
-- Keep tab stacks and other product customisations in the Derp feature layer.
-  Escalate only minimal, approved runtime needs to `derp-build`.
+- Keep tab stacks and other product customisations in the Bork feature layer.
+  Escalate only minimal, approved runtime needs to `bork-build`.
 - Route lifecycle, state, data, and runtime-contract questions to the Software
   Architect; research and comparisons to the Research Architect; UI and
   accessibility work to the UI Specialist.

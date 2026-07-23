@@ -1,5 +1,5 @@
 {
-    "title": "Derp Start",
+    "title": "Bork Start",
     "topSites": {
         "addSite": "Site toevoegen",
         "addNewSite": "Nieuwe site toevoegen",
@@ -27,7 +27,7 @@
         "randomImage": "Willekeurige afbeelding",
         "customImage": "Eigen afbeelding",
         "folderImages": "Afbeeldingen uit een map",
-        "floorpImages": "Derp Afbeeldingen",
+        "floorpImages": "Bork Afbeeldingen",
         "currentImage": "Huidige afbeelding:",
         "imageRecommendation": "Advies: gebruik afbeeldingen met een resolutie van 1920x1080 of hoger.",
         "currentFolder": "Huidige map:",
@@ -35,9 +35,9 @@
         "selected": "Geselecteerd",
         "enableSlideshow": "Diavoorstelling inschakelen",
         "slideshowInterval": "Interval (seconden)",
-        "floorpStart": "Derp Start",
-        "disableFloorpStart": "Derp Start uitschakelen (gebruik klassieke about:newtab)",
-        "disableFloorpStartDescription": "Indien ingeschakeld, zal Derp Start worden vervangen door het klassieke nieuwe tabblad/startpagina van Firefox.",
+        "floorpStart": "Bork Start",
+        "disableFloorpStart": "Bork Start uitschakelen (gebruik klassieke about:newtab)",
+        "disableFloorpStartDescription": "Indien ingeschakeld, zal Bork Start worden vervangen door het klassieke nieuwe tabblad/startpagina van Firefox.",
         "restartRequired": "Vereist een herstart van de browser om volledig van kracht te worden.",
         "firefoxLayout": "Legacy lay-out gebruiken (zoals Firefox Home)"
     },

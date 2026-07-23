@@ -60,7 +60,7 @@ export async function initI18nextInstance() {
     interpolation: {
       escapeValue: false,
       defaultVariables: {
-        productName: "Derp",
+        productName: "Bork",
       },
     },
     react: {

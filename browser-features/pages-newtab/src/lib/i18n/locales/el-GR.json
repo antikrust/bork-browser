@@ -1,5 +1,5 @@
 {
-    "title": "Έναρξη Derp",
+    "title": "Έναρξη Bork",
     "topSites": {
         "addSite": "Προσθήκη ιστότοπου",
         "addNewSite": "Προσθήκη νέου ιστότοπου",
@@ -27,7 +27,7 @@
         "randomImage": "Τυχαία εικόνα",
         "customImage": "Προσαρμοσμένη εικόνα",
         "folderImages": "Εικόνες από φάκελο",
-        "floorpImages": "Εικόνες Derp",
+        "floorpImages": "Εικόνες Bork",
         "currentImage": "Current image:",
         "imageRecommendation": "Recommended: 1920x1080 or higher",
         "currentFolder": "Current folder:",
@@ -35,9 +35,9 @@
         "selected": "Επιλέχθηκε",
         "enableSlideshow": "Ενεργοποίηση παρουσίασης",
         "slideshowInterval": "Slideshow Interval",
-        "floorpStart": "Έναρξη Derp",
-        "disableFloorpStart": "Απενεργοποίηση της εκκίνησης Derp (χρήση κλασικού about:newtab)",
-        "disableFloorpStartDescription": "Όταν είναι ενεργοποιημένη, η εκκίνηση Derp θα αντικατασταθεί από την κλασική νέα καρτέλα / αρχική σελίδα του Firefox.",
+        "floorpStart": "Έναρξη Bork",
+        "disableFloorpStart": "Απενεργοποίηση της εκκίνησης Bork (χρήση κλασικού about:newtab)",
+        "disableFloorpStartDescription": "Όταν είναι ενεργοποιημένη, η εκκίνηση Bork θα αντικατασταθεί από την κλασική νέα καρτέλα / αρχική σελίδα του Firefox.",
         "restartRequired": "Απαιτείται επανεκκίνηση του προγράμματος περιήγησης για να τεθεί σε πλήρη ισχύ.",
         "firefoxLayout": "Χρήση παλαιάς διάταξης (όπως η αρχική σελίδα του Firefox)"
     },

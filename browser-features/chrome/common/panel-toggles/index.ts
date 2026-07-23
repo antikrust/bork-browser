@@ -20,14 +20,14 @@ const { CustomizableUI } = ChromeUtils.importESModule(
  * The two definite sidebar toggles in the navbar, replacing Firefox's own
  * #sidebar-button:
  *
- * - derp-workspaces-rail-button (far left): toggles the workspaces rail
+ * - bork-workspaces-rail-button (far left): toggles the workspaces rail
  *   in Firefox's revamped-sidebar slot by flipping
  *   configStore.manageOnBms (workspaces/toolbar/workspaces-rail.tsx
  *   reacts to it).
- * - derp-panel-sidebar-button (far right): toggles the right panel
+ * - bork-panel-sidebar-button (far right): toggles the right panel
  *   sidebar through exactly the Cmd+Alt+S mechanism
- *   (lean-urlbar/sidebar-toggle.ts — derp-sidebar-hidden root attribute
- *   plus the derp.sidebar.hidden pref).
+ *   (lean-urlbar/sidebar-toggle.ts — bork-sidebar-hidden root attribute
+ *   plus the bork.sidebar.hidden pref).
  *
  * CustomizableUI widgets are global singletons that outlive the window
  * that created them, while the feature layer (and its stores) is
@@ -36,12 +36,12 @@ const { CustomizableUI } = ChromeUtils.importESModule(
  * window-local hooks each window registers on itself in init().
  */
 
-const RAIL_BUTTON_ID = "derp-workspaces-rail-button";
-const PANEL_BUTTON_ID = "derp-panel-sidebar-button";
+const RAIL_BUTTON_ID = "bork-workspaces-rail-button";
+const PANEL_BUTTON_ID = "bork-panel-sidebar-button";
 const RAIL_BUTTON_TOOLTIP = "Workspaces sidebar";
 const PANEL_BUTTON_TOOLTIP = "Panel sidebar";
-const HOOKS_PROP = "gDerpPanelToggles";
-const STYLE_ID = "derp-panel-toggles-style";
+const HOOKS_PROP = "gBorkPanelToggles";
+const STYLE_ID = "bork-panel-toggles-style";
 
 type PanelToggleHooks = {
   toggleWorkspacesRail: () => void;
@@ -57,7 +57,7 @@ const RIGHT_PANEL_ICON =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2IiBmaWxsPSJjb250ZXh0LWZpbGwiIGZpbGwtb3BhY2l0eT0iY29udGV4dC1maWxsLW9wYWNpdHkiPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgdHJhbnNmb3JtPSJtYXRyaXgoLTEgMCAwIDEgMTYgMCkiIGQ9Ik0zIDJoMTBhMiAyIDAgMCAxIDIgMnY4YTIgMiAwIDAgMS0yIDJIM2EyIDIgMCAwIDEtMi0yVjRhMiAyIDAgMCAxIDItMlptMyAxLjI1aDdhLjc1IC43NSAwIDAgMSAuNzUgLjc1djhhLjc1IC43NSAwIDAgMS0uNzUgLjc1SDZaIi8+PC9zdmc+";
 
 const STYLE_TEXT = `
-/* Firefox's native sidebar toggle is replaced by the derp pair; the
+/* Firefox's native sidebar toggle is replaced by the bork pair; the
    widget is also removed from the navbar via CustomizableUI. */
 #sidebar-button {
   display: none !important;
@@ -215,12 +215,12 @@ export default class PanelToggles extends NoraComponentBase {
       window.removeEventListener("command", onDelegatedCommand);
     });
 
-    // Keyboard chord for the rail, same family as the rest of the derp
+    // Keyboard chord for the rail, same family as the rest of the bork
     // chrome controls (Cmd/Ctrl+Alt+letter): W toggles the workspaces
     // rail; S (panel sidebar) already lives in lean-urlbar's actions.
     gestureActions.registerActions([
       {
-        name: "derp-toggle-workspaces-rail",
+        name: "bork-toggle-workspaces-rail",
         // Resolve the hooks from the window the key was pressed in rather
         // than closing over this window's. The registry is a process-wide
         // singleton keyed by action name (actions.set(name, ...)), so every

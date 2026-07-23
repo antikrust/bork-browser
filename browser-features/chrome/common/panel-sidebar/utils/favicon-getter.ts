@@ -23,7 +23,7 @@ export async function getFaviconURLForPanel(panel: Panel): Promise<string> {
   try {
     await globalThis.SessionStore.promiseInitialized;
     const url = panel.url ?? "";
-    // derp: the bundled docs panel carries a generic help glyph — the
+    // bork: the bundled docs panel carries a generic help glyph — the
     // site favicon is the Floorp logo, which reads as browser branding.
     if (url.startsWith("https://docs.floorp.app")) {
       return "chrome://global/skin/icons/help.svg";

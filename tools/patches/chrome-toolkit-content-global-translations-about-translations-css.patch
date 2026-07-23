@@ -9,7 +9,7 @@ diff --git a/chrome/toolkit/content/global/translations/about-translations.css b
 +  }
 +}
 +
-+/* derp: in the sidebar panel (~400px wide) the three-across language row
++/* bork: in the sidebar panel (~400px wide) the three-across language row
 +   squeezed both menus until their labels read "Detect langua…". Below the
 +   width where that row can hold two menus and the swap button, stack them
 +   into one column and push the text areas down to suit. */

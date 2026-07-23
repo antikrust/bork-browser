@@ -113,7 +113,7 @@ export function PopupToolbarElement(props: {
         // Private type: only our drop targets understand it, so dropping a
         // workspace on the tab strip / urlbar can't paste a UUID anywhere.
         event.dataTransfer.setData(
-          "application/x-derp-workspace",
+          "application/x-bork-workspace",
           props.workspaceId,
         );
         // HTML ghost node (snapshotting the live XUL row inside a native
@@ -177,7 +177,7 @@ export function PopupToolbarElement(props: {
     suppressClickUntil = Date.now() + 250;
 
     const draggedWorkspaceId = event.dataTransfer.getData(
-      "application/x-derp-workspace",
+      "application/x-bork-workspace",
     ) as TWorkspaceID | "";
     if (!draggedWorkspaceId || draggedWorkspaceId === props.workspaceId) {
       return;

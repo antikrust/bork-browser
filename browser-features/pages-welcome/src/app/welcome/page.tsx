@@ -1,5 +1,5 @@
 import Navigation from "../../components/Navigation";
-import derpWordmark from "../../assets/wordmark.png";
+import borkWordmark from "../../assets/wordmark.png";
 import { useTranslation } from "react-i18next";
 import { Shield, Zap, Palette, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -23,8 +23,8 @@ export default function WelcomePage() {
                             source centres the mark in transparent padding, so a
                             fixed square box drew it small inside empty space. */}
                         <img
-                            src={derpWordmark}
-                            alt="derp"
+                            src={borkWordmark}
+                            alt="bork"
                             className="w-72 h-auto mx-auto mb-6"
                         />
                         <h1 className="text-5xl font-bold mb-6">{t('welcomePage.welcome')}</h1>

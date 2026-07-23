@@ -54,7 +54,7 @@ export function deepMerge<T extends Record<string, unknown>>(
 }
 
 /**
- * Vertical tabs were removed from derp; a config saved before the removal
+ * Vertical tabs were removed from bork; a config saved before the removal
  * can still carry tabbarStyle "vertical", which the schema no longer
  * accepts. Coerce it to "horizontal" before decoding — a decode failure
  * here would throw away the user's entire design config, not just the
@@ -71,10 +71,10 @@ export function coerceRemovedTabbarStyle(parsed: unknown): unknown {
 }
 
 /**
- * derp ships a single interface ("derp"); the selectable "lepton" option was
+ * bork ships a single interface ("bork"); the selectable "lepton" option was
  * removed. A config saved before the removal can still carry a retired
  * userInterface value, which the schema no longer accepts. Coerce any
- * non-"derp" value to "derp" before decoding — a decode failure here would
+ * non-"bork" value to "bork" before decoding — a decode failure here would
  * throw away the user's entire design config, not just the stale interface.
  */
 export function coerceRemovedUserInterface(parsed: unknown): unknown {
@@ -83,9 +83,9 @@ export function coerceRemovedUserInterface(parsed: unknown): unknown {
     if (
       isPlainObject(globalConfigs) &&
       globalConfigs.userInterface !== undefined &&
-      globalConfigs.userInterface !== "derp"
+      globalConfigs.userInterface !== "bork"
     ) {
-      globalConfigs.userInterface = "derp";
+      globalConfigs.userInterface = "bork";
     }
   }
   return parsed;
@@ -235,7 +235,7 @@ export function createDefaultOldObjectConfigs(): TFloorpDesignConfigs {
     console.error("Failed to create default old object configs:", e);
     return {
       globalConfigs: {
-        userInterface: "derp",
+        userInterface: "bork",
         faviconColor: false,
         appliedUserJs: "",
       },

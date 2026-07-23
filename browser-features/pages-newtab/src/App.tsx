@@ -7,7 +7,7 @@ import "./globals.css";
 import { useComponents } from "./contexts/ComponentsContext.tsx";
 
 // No settings gear on the start page: new-tab customization is not a
-// daily control and the page stays chrome-free (derp simplification).
+// daily control and the page stays chrome-free (bork simplification).
 function NewTabContent() {
   const { components } = useComponents();
 

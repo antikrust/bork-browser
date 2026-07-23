@@ -55,7 +55,7 @@ import type {
  *
  * Pref (int) floorp.tabstrip.wheelguard — bitfield: 1 axis quarantine |
  * 2 reversal hold | 4 recentre latch; default 7 (all). Flip to 0 for
- * stock behavior. Readout at globalThis.__derpWheelGuard says which
+ * stock behavior. Readout at globalThis.__borkWheelGuard says which
  * rules engaged.
  */
 
@@ -74,7 +74,7 @@ const STREAM_GAP_MS = 400;
  * finger instead of a decaying tail's jitter. */
 const PEAK_FACTOR = 1.05;
 
-const READOUT_KEY = "__derpWheelGuard";
+const READOUT_KEY = "__borkWheelGuard";
 
 @noraComponent(import.meta.hot)
 export default class TabStripWheelGuard extends NoraComponentBase {
@@ -237,7 +237,7 @@ export default class TabStripWheelGuard extends NoraComponentBase {
     // (tabs.js handleResize -> _handleTabSelect -> ensureTabIsVisible).
     // Composes with tab-stacks' hidden-tab wrap — each skips on its own
     // condition and calls through otherwise.
-    if (!asb.__derpRecentreWrapped) {
+    if (!asb.__borkRecentreWrapped) {
       const origEnsure = asb.ensureElementIsVisible.bind(asb);
       asb.ensureElementIsVisible = (el: Element, instant?: boolean) => {
         try {
@@ -261,10 +261,10 @@ export default class TabStripWheelGuard extends NoraComponentBase {
         }
         return origEnsure(el, instant);
       };
-      asb.__derpRecentreWrapped = true;
+      asb.__borkRecentreWrapped = true;
       onCleanup(() => {
         asb.ensureElementIsVisible = origEnsure;
-        asb.__derpRecentreWrapped = false;
+        asb.__borkRecentreWrapped = false;
       });
     }
     this.logger.debug("attached");

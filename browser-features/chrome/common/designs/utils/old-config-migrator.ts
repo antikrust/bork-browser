@@ -4,14 +4,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 export const getOldInterfaceConfig = () => {
-  // derp ships a single interface. Every legacy Floorp interface pref value
+  // bork ships a single interface. Every legacy Floorp interface pref value
   // (interface=3 family, fluerial under interface=8 — all removed) collapses
   // to it, so there is nothing left to read from the old pref.
-  return "derp" as const;
+  return "bork" as const;
 };
 
 export const getOldTabbarStyleConfig = () => {
-  // Legacy style=2 was vertical — removed from derp entirely; those
+  // Legacy style=2 was vertical — removed from bork entirely; those
   // profiles fall back to the horizontal strip.
   switch (Services.prefs.getIntPref("floorp.tabbar.style", 0)) {
     case 1:

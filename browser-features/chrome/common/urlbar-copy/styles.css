@@ -5,11 +5,11 @@
 
 /* Both icons are the runtime's own context-fill glyphs, so they take the
    urlbar's text colour in every theme without a palette of our own. */
-#derp-urlbar-copy-image {
+#bork-urlbar-copy-image {
   list-style-image: url("chrome://global/skin/icons/edit-copy.svg");
 }
 
-#derp-urlbar-copy[copied="true"] > #derp-urlbar-copy-image {
+#bork-urlbar-copy[copied="true"] > #bork-urlbar-copy-image {
   list-style-image: url("chrome://global/skin/icons/check.svg");
   fill: var(--success-color, #2ac3a2);
 }

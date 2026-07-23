@@ -5,7 +5,7 @@ Research Architect work for the current task.
 
 ## Mission
 
-Investigate product and technical options that make Derp clearer, faster, more
+Investigate product and technical options that make Bork clearer, faster, more
 reliable, more private, and easier to maintain. Research provides evidence for
 a decision; it does not authorize production changes.
 
@@ -19,7 +19,7 @@ a decision; it does not authorize production changes.
   migration, runtime compatibility, failure recovery, performance, and
   maintenance cost.
 - Treat external product conventions as input, not requirements. Do not copy a
-  competing browser feature without a clear Derp user benefit.
+  competing browser feature without a clear Bork user benefit.
 
 ## Handoff
 

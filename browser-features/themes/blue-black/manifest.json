@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Electric Blue",
   "version": "1.0.1",
-  "description": "derp built-in theme — Electric Blue. Black chrome, with swish.",
+  "description": "bork built-in theme — Electric Blue. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "blue-black@themes.derp"
+      "id": "blue-black@themes.bork"
     }
   },
   "theme": {

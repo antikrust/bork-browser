@@ -5,8 +5,8 @@
         "languageSupport": "Ngôn ngữ",
         "features": "Tính năng",
         "featureIntroduction": "",
-        "hub": "Trung tâm Derp",
-        "hubIntro": "Về Derp Hub",
+        "hub": "Trung tâm Bork",
+        "hubIntro": "Về Bork Hub",
         "customize": "Tùy chỉnh",
         "initialSettings": "",
         "complete": "Xong",
@@ -14,25 +14,25 @@
         "next": "Tiếp"
     },
     "hubPage": {
-        "title": "Về Derp Hub",
-        "subtitle": "Trung tâm cho các cài đặt Derp",
-        "sectionTitle": "Trung tâm Derp",
-        "description": "Derp Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:preferences\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
+        "title": "Về Bork Hub",
+        "subtitle": "Trung tâm cho các cài đặt Bork",
+        "sectionTitle": "Trung tâm Bork",
+        "description": "Bork Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:preferences\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
         "openHub": "Mở about:preferences",
         "openPreferences": "Mở cài đặt (about:preferences)",
-        "tip": "Mẹo nè: Trung tâm Derp cũng có thể được mở từ thanh bên của cài đặt Firefox",
+        "tip": "Mẹo nè: Trung tâm Bork cũng có thể được mở từ thanh bên của cài đặt Firefox",
         "features": {
-            "dedicated": "Trung tâm cài đặt riêng cho Derp",
+            "dedicated": "Trung tâm cài đặt riêng cho Bork",
             "accessible": "Có thể truy cập từ about:preferences hoặc cài đặt của Firefox",
-            "centralized": "Mọi cài đặt Derp trong 1 chỗ"
+            "centralized": "Mọi cài đặt Bork trong 1 chỗ"
         }
     },
     "customize": {
-        "title": "Tùy chỉnh Derp",
-        "description": "Customize to your preferred settings. You can always change them later from the Derp Hub or settings page.",
+        "title": "Tùy chỉnh Bork",
+        "description": "Customize to your preferred settings. You can always change them later from the Bork Hub or settings page.",
         "appearance": {
             "title": "Cài đặt giao diện ",
-            "description": "Bạn thích Derp thế nào, Derp sẽ như thế. Sáng, tối, hoặc tự động chuyển theo cài đặt hệ thống"
+            "description": "Bạn thích Bork thế nào, Bork sẽ như thế. Sáng, tối, hoặc tự động chuyển theo cài đặt hệ thống"
         },
         "themes": {
             "light": "Sáng",
@@ -51,28 +51,28 @@
             "noEnginesFound": "Không tìm thấy công cụ tìm kiếm."
         },
         "floorpHub": {
-            "title": "Trung tâm Derp",
-            "description": "Derp Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:preferences\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
+            "title": "Trung tâm Bork",
+            "description": "Bork Hub là trang cài đặt riêng của Floopp. Bạn có thể mở bằng cách đi tới \"about:preferences\". Bạn cũng có thể truy cập bằng thanh bên trái của trang cài đặt Firefox \"about:preferences\".",
             "openHub": "Mở about:preferences",
             "openPreferences": "Mở cài đặt (about:preferences)"
         }
     },
     "finish": {
         "title": "Thiết lập hoàn tất!",
-        "subtitle": "Congratulations! You've completed the Derp setup. Enjoy a comfortable and secure internet browsing experience.",
+        "subtitle": "Congratulations! You've completed the Bork setup. Enjoy a comfortable and secure internet browsing experience.",
         "nextSteps": {
             "title": "Next Steps (Optional)",
             "setDefault": "Đặt làm trình duyệt mặc định",
             "documentation": "Tài liệu"
         },
-        "getStarted": "Bắt đầu với Derp",
+        "getStarted": "Bắt đầu với Bork",
         "hint": "For more detailed settings, you can customize via the Settings option in the menu button at the top right."
     },
     "welcomePage": {
-        "welcome": "Chào mừng đến Derp!",
-        "description": "Derp là trình duyệt nhanh và thân thiện người dùng tập trung vào quyền riêng tư và bảo mật. Chúng tôi sẽ dẫn bạn qua những tính năng và cài đặt của Derp",
+        "welcome": "Chào mừng đến Bork!",
+        "description": "Bork là trình duyệt nhanh và thân thiện người dùng tập trung vào quyền riêng tư và bảo mật. Chúng tôi sẽ dẫn bạn qua những tính năng và cài đặt của Bork",
         "readyToStart": "Khi bạn đã sẵn sàng, nhấn nút bên dưới để tiếp tục.",
-        "features": "Các tính năng của Derp",
+        "features": "Các tính năng của Bork",
         "privacy": "Quyền riêng tư",
         "privacyDesc": "Bảo vệ dữ liệu của bạn",
         "speed": "Nhanh",
@@ -82,28 +82,28 @@
         "start": "Bắt đầu thôi"
     },
     "localizationPage": {
-        "title": "Derp chung tiếng nói với bạn",
+        "title": "Bork chung tiếng nói với bạn",
         "subtitle": "Check language settings and change if needed",
         "languageSettings": "Cài đặt ngôn ngữ",
         "languageChanged": "Nói ngôn ngữ của bạn rồi nè!",
         "currentLanguageInfo": "Thông tin về ngôn ngữ hiện tại",
         "systemLanguage": "Ngôn ngữ hệ thống",
-        "floorpLanguage": "Ngôn ngữ của Derp",
+        "floorpLanguage": "Ngôn ngữ của Bork",
         "selectLanguage": "Chọn ngôn ngữ",
         "useSystemLanguage": "Dùng ngôn ngữ hệ thống",
         "multilingual": "Multilingual Support",
         "chooseLanguage": "Choose from a wide range of languages",
-        "languageChangeNotice": "Changing language will apply the new language without restarting Derp. Some add-ons may not support language changes."
+        "languageChangeNotice": "Changing language will apply the new language without restarting Bork. Some add-ons may not support language changes."
     },
     "featuresPage": {
-        "title": "Cái tinh năng nổi bật của Derp",
-        "subtitle": "Derp được trang bị vô vàn tính năng hữu ích. Hãy xem tổng quát về chúng!",
+        "title": "Cái tinh năng nổi bật của Bork",
+        "subtitle": "Bork được trang bị vô vàn tính năng hữu ích. Hãy xem tổng quát về chúng!",
         "panelSidebar": {
             "title": "Thanh bên",
             "description": "Access convenient features from the sidebar on the right while browsing. You can place web panels, note-taking functions, add-ons, bookmarks, etc. in the sidebar.",
             "features": [
                 "Ghim các trang vào thanh bên",
-                "Nhanh chóng ghi chú với Ghi Chú Derp khi duyệt",
+                "Nhanh chóng ghi chú với Ghi Chú Bork khi duyệt",
                 "Supports containers"
             ]
         },
@@ -139,19 +139,19 @@
     },
     "finishPage": {
         "title": "Thiết lập hoàn tất!",
-        "subtitle": "Tuyệt vời! Bạn đã hoàn thành thiết lập Derp. Tận hưởng cảm giác mượt mà và an toàn khi lướt mạng.",
+        "subtitle": "Tuyệt vời! Bạn đã hoàn thành thiết lập Bork. Tận hưởng cảm giác mượt mà và an toàn khi lướt mạng.",
         "nextSteps": "Next Steps (Optional)",
         "defaultBrowser": "Đặt làm trình duyệt mặc định",
         "support": "Hỗ trợ",
         "documentation": "Tài liệu",
-        "getStarted": "Bắt đầu với Derp",
+        "getStarted": "Bắt đầu với Bork",
         "hint": "Nếu cần cài đặt chi tiết hơn, hãy mở Cài đặt từ nút menu ở góc trên bên phải.",
         "resourcesLabel": "Tài nguyên",
-        "defaultBrowserSuccess": "Derp đã được đặt làm trình duyệt mặc định của bạn!"
+        "defaultBrowserSuccess": "Bork đã được đặt làm trình duyệt mặc định của bạn!"
     },
     "whatsNew": {
-        "title": "Chào mừng tới Derp {{version}}!",
-        "subtitle": "Xem có gì mới trên Derp!",
+        "title": "Chào mừng tới Bork {{version}}!",
+        "subtitle": "Xem có gì mới trên Bork!",
         "tags": {
             "settings": "Cài đặt",
             "productivity": "Năng suất",
@@ -162,8 +162,8 @@
         "footer": {
             "follow": "Theo dõi",
             "privacy": "Điều khoản và chính sách",
-            "about": "Về Derp",
-            "copyright": "{{year}} Derp Projects. Bảo lưu mọi quyền."
+            "about": "Về Bork",
+            "copyright": "{{year}} Bork Projects. Bảo lưu mọi quyền."
         }
     }
 }

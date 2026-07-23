@@ -45,9 +45,9 @@ function getComponentRegistrar(): nsIComponentRegistrar | null {
 }
 
 const executedFunctions = new Set<string>();
-// derp has no release blog; the download page is the closest thing to notes,
+// bork has no release blog; the download page is the closest thing to notes,
 // and it beats sending users to upstream's post for a version we did not ship.
-const RELEASE_NOTES_URL = "https://therob.lol/derp/";
+const RELEASE_NOTES_URL = "https://therob.lol/bork/";
 
 export function executeOnce(id: string, callback: () => void): boolean {
   if (executedFunctions.has(id)) {
@@ -61,8 +61,8 @@ export function executeOnce(id: string, callback: () => void): boolean {
 }
 
 /**
- * derp: vertical tabs are removed from the browser entirely — the horizontal
- * strip is the only tab layout (tab stacks and the derp theme assume it).
+ * bork: vertical tabs are removed from the browser entirely — the horizontal
+ * strip is the only tab layout (tab stacks and the bork theme assume it).
  * The native mode is pref-gated, so removal = enforcement: migrate any
  * profile that still has it on, pin the default to false, and lock the pref
  * so neither about:config nor Firefox's own settings UI can re-enter the
@@ -343,7 +343,7 @@ async function checkNewtabUserPreference(): Promise<boolean> {
  */
 
 const getCustomAboutPages = async (): Promise<Record<string, string>> => {
-  // about:hub is gone: derp settings live as native panes inside
+  // about:hub is gone: bork settings live as native panes inside
   // about:preferences (bridge/startup/src/panes/), so the separate React
   // settings app is no longer registered.
   const customAboutPages: Record<string, string> = {

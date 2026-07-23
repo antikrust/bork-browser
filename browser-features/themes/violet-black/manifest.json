@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Violet Noir",
   "version": "1.0.1",
-  "description": "derp built-in theme — Violet Noir. Black chrome, with swish.",
+  "description": "bork built-in theme — Violet Noir. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "violet-black@themes.derp"
+      "id": "violet-black@themes.bork"
     }
   },
   "theme": {

@@ -326,8 +326,8 @@ function testDefaultConfigWithPrefs(): void {
       const config = createDefaultOldObjectConfigs();
       assertEquals(
         config.globalConfigs.userInterface,
-        "derp",
-        "interface=8 (legacy fluerial) now collapses to derp",
+        "bork",
+        "interface=8 (legacy fluerial) now collapses to bork",
       );
       assertEquals(
         config.tabbar.tabbarStyle,

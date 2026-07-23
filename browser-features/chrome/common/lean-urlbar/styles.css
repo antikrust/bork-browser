@@ -10,7 +10,7 @@
 /* Address bar hidden ("a"): the nav bar takes no space at all.
    max-height rather than height, because height is auto here and auto does
    not interpolate — index.ts publishes the measured height as
-   --derp-navbar-height just before hiding, giving the collapse a real
+   --bork-navbar-height just before hiding, giving the collapse a real
    distance to cover. Same 200ms ease as the side panels. */
 @media (prefers-reduced-motion: no-preference) {
   #nav-bar {
@@ -20,10 +20,10 @@
 }
 
 #nav-bar {
-  max-height: var(--derp-navbar-height, 100px);
+  max-height: var(--bork-navbar-height, 100px);
 }
 
-:root[derp-urlbar-hidden]:not([derp-urlbar-peek]) #nav-bar {
+:root[bork-urlbar-hidden]:not([bork-urlbar-peek]) #nav-bar {
   max-height: 0 !important;
   min-height: 0 !important;
   padding: 0 !important;
@@ -37,7 +37,7 @@
 /* The urlbar itself lives in the top layer (Popover API), so hiding its
    ancestors does not hide it — it must be hidden directly (same trick as
    zen-mode). */
-:root[derp-urlbar-hidden]:not([derp-urlbar-peek]) #urlbar {
+:root[bork-urlbar-hidden]:not([bork-urlbar-peek]) #urlbar {
   opacity: 0 !important;
   pointer-events: none !important;
 }
@@ -45,7 +45,7 @@
 /* Zen's top-edge reveal would otherwise resurrect the urlbar (its reveal
    rule targets #urlbar directly); while the address bar is A-hidden, the
    reveal shows tabs only. */
-:root[zenmode][zenmode-reveal-top][derp-urlbar-hidden] #urlbar {
+:root[zenmode][zenmode-reveal-top][bork-urlbar-hidden] #urlbar {
   opacity: 0 !important;
   pointer-events: none !important;
 }
@@ -57,7 +57,7 @@
    contents while it closes. !important beats the blanket
    `transition: ... !important` rules in engine-chrome.css (the flattened
    lepton skin), which would replace the list and turn the slide into a
-   snap — same trap as panel-sidebar's #derp-ext-tweaker. */
+   snap — same trap as panel-sidebar's #bork-ext-tweaker. */
 @media (prefers-reduced-motion: no-preference) {
   #panel-sidebar-select-box,
   #panel-sidebar-box,
@@ -66,9 +66,9 @@
       opacity 200ms ease !important;
   }
 }
-:root[derp-sidebar-hidden] #panel-sidebar-select-box,
-:root[derp-sidebar-hidden] #panel-sidebar-box,
-:root[derp-sidebar-hidden] #panel-sidebar-splitter {
+:root[bork-sidebar-hidden] #panel-sidebar-select-box,
+:root[bork-sidebar-hidden] #panel-sidebar-box,
+:root[bork-sidebar-hidden] #panel-sidebar-splitter {
   width: 0 !important;
   min-width: 0 !important;
   max-width: 0 !important;
@@ -83,11 +83,11 @@
    top margin never exactly matched the nav bar's height, leaking a few
    px of content underneath the strip on every peek). Everything in the
    nav bar except the input stays hidden. */
-:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #navigator-toolbox {
+:root[bork-urlbar-hidden][bork-urlbar-peek]:not([zenmode]) #navigator-toolbox {
   position: relative !important;
 }
 
-:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #nav-bar {
+:root[bork-urlbar-hidden][bork-urlbar-peek]:not([zenmode]) #nav-bar {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -105,19 +105,19 @@
   pointer-events: auto;
 }
 
-:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode])
+:root[bork-urlbar-hidden][bork-urlbar-peek]:not([zenmode])
   #nav-bar
   > *:not(#urlbar-container) {
   display: none !important;
 }
 
-:root[derp-urlbar-hidden][derp-urlbar-peek]:not([zenmode]) #urlbar-container {
+:root[bork-urlbar-hidden][bork-urlbar-peek]:not([zenmode]) #urlbar-container {
   max-width: 60vw;
   margin-inline: auto !important;
-  animation: derp-urlbar-slide 0.15s ease;
+  animation: bork-urlbar-slide 0.15s ease;
 }
 
-@keyframes derp-urlbar-slide {
+@keyframes bork-urlbar-slide {
   from {
     transform: translateY(-10px);
     opacity: 0.4;
@@ -230,14 +230,14 @@
 @media (prefers-reduced-motion: no-preference) {
   /* #urlbar renders in the top layer, so it neither collapses with the nav
      bar nor inherits its opacity. Given the same distance the collapse
-     covers (--derp-navbar-height, measured at toggle time in index.ts) and
+     covers (--bork-navbar-height, measured at toggle time in index.ts) and
      the same 200ms, it travels with everything else. */
   #urlbar {
     transition: transform 200ms ease, opacity 200ms ease !important;
   }
 }
 
-:root[derp-urlbar-hidden]:not([derp-urlbar-peek]) #urlbar {
-  transform: translateY(calc(-1 * var(--derp-navbar-height, 32px)))
+:root[bork-urlbar-hidden]:not([bork-urlbar-peek]) #urlbar {
+  transform: translateY(calc(-1 * var(--bork-navbar-height, 32px)))
     !important;
 }

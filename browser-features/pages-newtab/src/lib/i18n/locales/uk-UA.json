@@ -1,5 +1,5 @@
 {
-    "title": "Домівка Derp",
+    "title": "Домівка Bork",
     "topSites": {
         "addSite": "Додати сайт",
         "addNewSite": "Додати новий сайт",
@@ -27,7 +27,7 @@
         "randomImage": "Випадкове зображення",
         "customImage": "Користувацьке зображення",
         "folderImages": "Зображення з папки",
-        "floorpImages": "Зображення Derp",
+        "floorpImages": "Зображення Bork",
         "currentImage": "Поточне зображення:",
         "imageRecommendation": "Рекомендація: Використовуйте зображення з роздільною здатністю 1920x1080 або вище.",
         "currentFolder": "Поточна тека:",
@@ -35,9 +35,9 @@
         "selected": "Вибрані",
         "enableSlideshow": "Увімкнути слайд-шоу",
         "slideshowInterval": "Інтервал (секунди)",
-        "floorpStart": "Домівка Derp",
-        "disableFloorpStart": "Вимкнути Домівку Derp (використовувати класичну about:newtab)",
-        "disableFloorpStartDescription": "Якщо цю опцію увімкнути, Домівка Derp буде замінена класичною новою вкладкою/домашньою сторінкою Firefox.",
+        "floorpStart": "Домівка Bork",
+        "disableFloorpStart": "Вимкнути Домівку Bork (використовувати класичну about:newtab)",
+        "disableFloorpStartDescription": "Якщо цю опцію увімкнути, Домівка Bork буде замінена класичною новою вкладкою/домашньою сторінкою Firefox.",
         "restartRequired": "Для повного застосування змін необхідно перезапустити браузер.",
         "firefoxLayout": "Використовувати старий макет (як Домівка Firefox)"
     },

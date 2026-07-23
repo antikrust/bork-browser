@@ -120,11 +120,11 @@ function getUpdateType(oldVersion: string, newVersion: string): UpdateType {
 
 /**
  * The published update manifest: updates/update.xml on the repo's main
- * branch, refreshed by tools/release/build-derp-packages.sh on every
+ * branch, refreshed by tools/release/build-bork-packages.sh on every
  * package run. No update server — GitHub raw serving is the endpoint.
  */
 function getUpdateXmlUrl(): string {
-  return "https://raw.githubusercontent.com/100mountains/derp/main/updates/update.xml";
+  return "https://raw.githubusercontent.com/100mountains/bork/main/updates/update.xml";
 }
 
 /**

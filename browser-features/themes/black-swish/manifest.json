@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Black Swish",
   "version": "1.0.1",
-  "description": "derp built-in theme — Black Swish. Black chrome, with swish.",
+  "description": "bork built-in theme — Black Swish. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "black-swish@themes.derp"
+      "id": "black-swish@themes.bork"
     }
   },
   "theme": {

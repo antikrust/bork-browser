@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Ember",
   "version": "1.0.1",
-  "description": "derp built-in theme — Ember. Black chrome, with swish.",
+  "description": "bork built-in theme — Ember. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "ember@themes.derp"
+      "id": "ember@themes.bork"
     }
   },
   "theme": {

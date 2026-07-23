@@ -9,9 +9,9 @@
  * Gecko 152 renamed a large set of chrome CSS variables (see
  * `gecko-152-var-aliases.css.ts`) AND made the built-in-theme signals that
  * user style sheets historically relied on unreliable. The alias file covers
- * the renames; this file covers the rest. derp ships a single interface (its
+ * the renames; this file covers the rest. bork ships a single interface (its
  * engine is the flattened, in-tree descendant of Lepton — see
- * `skin/derp/css/engine-chrome.css`), so every layer here applies to it:
+ * `skin/bork/css/engine-chrome.css`), so every layer here applies to it:
  *
  *   1. `GECKO_152_COLOR_FIX_CSS` — theme/LWT color stabilization: dialogs
  *      going black and the chrome collapsing to a single color hit any
@@ -101,10 +101,10 @@ export const GECKO_152_COLOR_FIX_CSS = `
 `;
 
 /**
- * Engine-specific compatibility for derp's single interface.
+ * Engine-specific compatibility for bork's single interface.
  *
  * Why this exists (Floorp Issue #2489): the engine CSS
- * (`skin/derp/css/engine-chrome.css`, the flattened Lepton descendant)
+ * (`skin/bork/css/engine-chrome.css`, the flattened Lepton descendant)
  * detects built-in light/dark themes through three brittle mechanisms that
  * Gecko 152 no longer populates reliably:
  *
@@ -207,7 +207,7 @@ export const LEPTON_COMPAT_152_CSS = `
  *
  * They originally lived inside the vendored engine CSS and were hosted here
  * to survive the (since removed) daily upstream sync. The engine
- * (`skin/derp/css/engine-chrome.css`) is now flattened and owned in-tree,
+ * (`skin/bork/css/engine-chrome.css`) is now flattened and owned in-tree,
  * so this is simply their permanent home; the `url()` references resolve
  * identically because this sheet is injected into the same document and the
  * relative `../icons` path is rewritten by `replaceIconPaths()` at

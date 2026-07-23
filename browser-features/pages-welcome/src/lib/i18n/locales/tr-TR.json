@@ -5,8 +5,8 @@
         "languageSupport": "Dil Desteği",
         "features": "Özellikler",
         "featureIntroduction": "Özellik Tanıtımı",
-        "hub": "Derp Hub",
-        "hubIntro": "Derp Hub Hakkında",
+        "hub": "Bork Hub",
+        "hubIntro": "Bork Hub Hakkında",
         "customize": "Kişiselleştir",
         "initialSettings": "İlk Ayarlar",
         "complete": "Tamamla",
@@ -14,25 +14,25 @@
         "next": "Sıradaki"
     },
     "hubPage": {
-        "title": "Derp Hub Hakkında",
-        "subtitle": "Derp'a özgü ayarlar için merkezi bir yer.",
-        "sectionTitle": "Derp Hub",
-        "description": "Derp Hub, Derp’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:preferences’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
+        "title": "Bork Hub Hakkında",
+        "subtitle": "Bork'a özgü ayarlar için merkezi bir yer.",
+        "sectionTitle": "Bork Hub",
+        "description": "Bork Hub, Bork’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:preferences’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
         "openHub": "Aç about:preferences",
         "openPreferences": "Ayarlar'ı aç (about:preferences)",
-        "tip": "İpucu: Derp Hub'a Firefox ayarları kenar çubuğundan da erişebilirsiniz.",
+        "tip": "İpucu: Bork Hub'a Firefox ayarları kenar çubuğundan da erişebilirsiniz.",
         "features": {
-            "dedicated": "Özel Derp ayar merkezi",
+            "dedicated": "Özel Bork ayar merkezi",
             "accessible": "about:preferences veya Firefox ayarlarından ulaşılabilir",
-            "centralized": "Derp'a özgü tüm seçenekler tek bir yerde"
+            "centralized": "Bork'a özgü tüm seçenekler tek bir yerde"
         }
     },
     "customize": {
-        "title": "Derp'u Kişiselleştirin",
-        "description": "Tercih ettiğiniz ayarlara göre kişiselleştirin. Bunları daha sonra Derp Hub veya ayarlar sayfasından her zaman değiştirebilirsiniz.",
+        "title": "Bork'u Kişiselleştirin",
+        "description": "Tercih ettiğiniz ayarlara göre kişiselleştirin. Bunları daha sonra Bork Hub veya ayarlar sayfasından her zaman değiştirebilirsiniz.",
         "appearance": {
             "title": "Görünüm Ayarları",
-            "description": "Derp'un görünümünü tercihinize göre kişiselleştirebilirsiniz. Açık veya koyu bir tema seçin ya da sistem ayarlarınıza göre otomatik olarak geçiş yapmasını sağlayın."
+            "description": "Bork'un görünümünü tercihinize göre kişiselleştirebilirsiniz. Açık veya koyu bir tema seçin ya da sistem ayarlarınıza göre otomatik olarak geçiş yapmasını sağlayın."
         },
         "themes": {
             "light": "Aydınlık",
@@ -51,28 +51,28 @@
             "noEnginesFound": "Arama motoru bulunamadı."
         },
         "floorpHub": {
-            "title": "Derp Hub",
-            "description": "Derp Hub, Derp’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:preferences’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
+            "title": "Bork Hub",
+            "description": "Bork Hub, Bork’a özel ayarlar için tasarlanmış bir merkezdir. ‘about:preferences’ adresini ziyaret ederek açabilirsiniz. Ayrıca Firefox’un ‘about:preferences’ adresindeki ayarlar sayfasının sol kenar çubuğundan da ulaşabilirsiniz.",
             "openHub": "Aç about:preferences",
             "openPreferences": "Ayarlar'ı aç (about:preferences)"
         }
     },
     "finish": {
         "title": "Kurulum Tamamlandı!",
-        "subtitle": "Tebrikler! Derp kurulumunu tamamladınız. Rahat ve güvenli bir internet tarama deneyiminin keyfini çıkarın.",
+        "subtitle": "Tebrikler! Bork kurulumunu tamamladınız. Rahat ve güvenli bir internet tarama deneyiminin keyfini çıkarın.",
         "nextSteps": {
             "title": "Sonraki Adımlar (İsteğe Bağlı)",
             "setDefault": "Varsayılan Tarayıcı Olarak Ayarla",
             "documentation": "Dokümantasyon"
         },
-        "getStarted": "Derp ile Başlayın",
+        "getStarted": "Bork ile Başlayın",
         "hint": "Daha ayrıntılı ayarlar için, sağ üstteki menü düğmesindeki Ayarlar seçeneği aracılığıyla özelleştirebilirsiniz."
     },
     "welcomePage": {
-        "welcome": "Derp'a hoş geldiniz!",
-        "description": "Derp, gizlilik ve güvenliği vurgulayan hızlı ve kullanıcı dostu bir web tarayıcısıdır. Bu kılavuz size Derp'un ana özelliklerini ve ayarlarını tanıtacaktır.",
+        "welcome": "Bork'a hoş geldiniz!",
+        "description": "Bork, gizlilik ve güvenliği vurgulayan hızlı ve kullanıcı dostu bir web tarayıcısıdır. Bu kılavuz size Bork'un ana özelliklerini ve ayarlarını tanıtacaktır.",
         "readyToStart": "Hazır olduğunuzda, devam etmek için aşağıdaki düğmeye tıklayın.",
-        "features": "Derp Özellikleri",
+        "features": "Bork Özellikleri",
         "privacy": "Gizlilik",
         "privacyDesc": "Verilerinizi korur",
         "speed": "Hız",
@@ -82,28 +82,28 @@
         "start": "Başlayın"
     },
     "localizationPage": {
-        "title": "Derp sizin dilinizi konuşur",
+        "title": "Bork sizin dilinizi konuşur",
         "subtitle": "Dil ayarlarını kontrol edin ve gerekirse değiştirin",
         "languageSettings": "Dil Ayarları",
         "languageChanged": "Dil Değişti!",
         "currentLanguageInfo": "Güncel Dil Bilgileri",
         "systemLanguage": "Sistem Dili",
-        "floorpLanguage": "Derp Dili",
+        "floorpLanguage": "Bork Dili",
         "selectLanguage": "Dil Seçiniz",
         "useSystemLanguage": "Sistem Dilini Kullanın",
         "multilingual": "Çoklu dil desteği",
         "chooseLanguage": "Çok çeşitli diller arasından seçim yapın",
-        "languageChangeNotice": "Dili değiştirmek, Derp'u yeniden başlatmaya gerek duymadan seçilen dili uygulayacaktır. Bazı eklentiler dil değişikliklerini desteklemeyebilir."
+        "languageChangeNotice": "Dili değiştirmek, Bork'u yeniden başlatmaya gerek duymadan seçilen dili uygulayacaktır. Bazı eklentiler dil değişikliklerini desteklemeyebilir."
     },
     "featuresPage": {
-        "title": "Derp'un Ana Özellikleri",
-        "subtitle": "Derp birçok kullanışlı özellikle birlikte gelir. Onlara bir göz atın!",
+        "title": "Bork'un Ana Özellikleri",
+        "subtitle": "Bork birçok kullanışlı özellikle birlikte gelir. Onlara bir göz atın!",
         "panelSidebar": {
             "title": "Panel Kenar Çubuğu",
             "description": "Gezinirken sağ taraftaki kenar çubuğundan kullanışlı özelliklere erişin. Kenar çubuğuna web panelleri, not alma işlevleri, eklentiler, yer imleri vb. yerleştirebilirsiniz.",
             "features": [
                 "Web sitelerini kenar çubuğuna sabitleyin",
-                "Arama yaparken Derp Notlar ile hızlıca not alın",
+                "Arama yaparken Bork Notlar ile hızlıca not alın",
                 "Kapsayıcıları destekler"
             ]
         },
@@ -139,19 +139,19 @@
     },
     "finishPage": {
         "title": "Kurulum Tamamlandı!",
-        "subtitle": "Tebrikler! Derp kurulumunu tamamladınız. Rahat ve güvenli bir internet tarama deneyiminin keyfini çıkarın.",
+        "subtitle": "Tebrikler! Bork kurulumunu tamamladınız. Rahat ve güvenli bir internet tarama deneyiminin keyfini çıkarın.",
         "nextSteps": "Sonraki Adımlar (İsteğe Bağlı)",
         "defaultBrowser": "Varsayılan Tarayıcı Olarak Ayarla",
         "support": "Destek",
         "documentation": "Dokümantasyon",
-        "getStarted": "Derp ile Başlayın",
+        "getStarted": "Bork ile Başlayın",
         "hint": "Daha detaylı ayarlar için, sağ üstteki menü düğmesindeki Ayarlar kısmını kullanabilirsiniz.",
         "resourcesLabel": "Kaynaklar",
-        "defaultBrowserSuccess": "Derp varsayılan tarayıcınız olarak ayarlandı!"
+        "defaultBrowserSuccess": "Bork varsayılan tarayıcınız olarak ayarlandı!"
     },
     "whatsNew": {
-        "title": "Derp {{version}} sürümüne hoş geldiniz!",
-        "subtitle": "Derp'taki yeniliklere göz atın!",
+        "title": "Bork {{version}} sürümüne hoş geldiniz!",
+        "subtitle": "Bork'taki yeniliklere göz atın!",
         "tags": {
             "settings": "Ayarlar",
             "productivity": "Üretkenlik",
@@ -162,8 +162,8 @@
         "footer": {
             "follow": "Takip Et",
             "privacy": "Gizlilik & Şartlar",
-            "about": "Derp Hakkında",
-            "copyright": "© {{year}} Derp Projesi. Tüm hakları saklıdır."
+            "about": "Bork Hakkında",
+            "copyright": "© {{year}} Bork Projesi. Tüm hakları saklıdır."
         }
     }
 }

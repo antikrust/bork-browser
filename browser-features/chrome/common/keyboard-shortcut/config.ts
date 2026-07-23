@@ -20,7 +20,7 @@ import { clearLegacyConfig, migrateLegacyConfig } from "./migration.ts";
 import { isRight } from "fp-ts/Either";
 
 /**
- * derp's chrome controls sit on the platform's "with Alt" chord: Cmd+Alt on
+ * bork's chrome controls sit on the platform's "with Alt" chord: Cmd+Alt on
  * macOS, Ctrl+Alt everywhere else. Matching window-drag, which has always
  * branched this way - meta on Windows is the Windows key, which is not a
  * shortcut anyone wants to press.
@@ -54,7 +54,7 @@ const createDefaultShortcuts = (): Record<string, ShortcutConfig> => {
       modifiers: { alt: false, ctrl: false, meta: false, shift: false },
       action: "floorp-toggle-command-palette",
     },
-    // derp chrome controls all live on Alt+Cmd (same family as the
+    // bork chrome controls all live on Alt+Cmd (same family as the
     // Alt+Cmd window drag). Plain keys fire while typing in web pages,
     // and plain Cmd+Z/A/S are undo / select-all / save.
     "floorp-toggle-zen-mode": {
@@ -62,37 +62,37 @@ const createDefaultShortcuts = (): Record<string, ShortcutConfig> => {
       modifiers: { ...CHROME_CHORD },
       action: "floorp-toggle-zen-mode",
     },
-    "derp-toggle-urlbar": {
+    "bork-toggle-urlbar": {
       key: "A",
       modifiers: { ...CHROME_CHORD },
-      action: "derp-toggle-urlbar",
+      action: "bork-toggle-urlbar",
     },
-    "derp-toggle-panel-sidebar": {
+    "bork-toggle-panel-sidebar": {
       key: "S",
       modifiers: { ...CHROME_CHORD },
-      action: "derp-toggle-panel-sidebar",
+      action: "bork-toggle-panel-sidebar",
     },
-    "derp-toggle-workspaces-rail": {
+    "bork-toggle-workspaces-rail": {
       key: "W",
       modifiers: { ...CHROME_CHORD },
-      action: "derp-toggle-workspaces-rail",
+      action: "bork-toggle-workspaces-rail",
     },
   };
 };
 
 /**
- * Earlier derp builds shipped these as bare Z/A/S, which fire while typing
+ * Earlier bork builds shipped these as bare Z/A/S, which fire while typing
  * in web content. Saved configs win over defaults, so upgrade any entry
  * still matching the old bare-key shape to the current chord.
  */
-const migrateBareDerpKeys = (
+const migrateBareBorkKeys = (
   shortcuts: Record<string, ShortcutConfig>,
 ): Record<string, ShortcutConfig> => {
   const defaults = createDefaultShortcuts();
   const oldBareKeys: Record<string, string> = {
     "floorp-toggle-zen-mode": "Z",
-    "derp-toggle-urlbar": "A",
-    "derp-toggle-panel-sidebar": "S",
+    "bork-toggle-urlbar": "A",
+    "bork-toggle-panel-sidebar": "S",
   };
   const result = { ...shortcuts };
   for (const [id, oldKey] of Object.entries(oldBareKeys)) {
@@ -112,7 +112,7 @@ const migrateBareDerpKeys = (
 
 /**
  * The chrome chords shipped as Cmd+Alt on every platform, so a Windows or
- * Linux profile that has run derp before holds meta+alt - the Windows key.
+ * Linux profile that has run bork before holds meta+alt - the Windows key.
  * Rewrite those to the platform chord, but only where the entry still matches
  * the shipped chord exactly, so a shortcut the user rebound is left alone.
  */
@@ -145,7 +145,7 @@ const normalizeConfig = (
   return {
     ...defaultConfig,
     ...config,
-    shortcuts: migrateChromeChordPlatform(migrateBareDerpKeys({
+    shortcuts: migrateChromeChordPlatform(migrateBareBorkKeys({
       // Merge so new default shortcuts reach profiles that saved an older
       // config. Caveat: a default the user deleted (rather than rebound)
       // comes back — acceptable until configs carry a schema version.

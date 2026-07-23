@@ -11,7 +11,7 @@ Scope and safety:
 - Pixel-mode (`DOM_DELTA_PIXEL`) events only — plain mouse wheels never see the guard.
 - Capture-phase listener on `#tabbrowser-tabs`, ahead of the strip's own listeners; drops use `preventDefault + stopImmediatePropagation`.
 - `floorp.tabstrip.wheelguard` (int bitfield: 1 axis | 2 reversal | 4 recentre; default 7; `0` = stock behavior with zero interception). If you'd rather land this opt-in, flipping `GUARD_DEFAULT` to 0 is a one-line change.
-- Per-rule counters exposed at `globalThis.__derpWheelGuard` so any machine can confirm or rule out each mechanism in one gesture.
+- Per-rule counters exposed at `globalThis.__borkWheelGuard` so any machine can confirm or rule out each mechanism in one gesture.
 
 Validation honesty: mechanisms verified by synthetic momentum streams (`sendWheelEvent` with `WHEEL_EVENT_CAUSED_BY_MOMENTUM`) against the shipped FF152 runtime, plus live validation on one macOS MacBook trackpad (counters in a single real session: reversal 217, recentre 28, axis 7; snap-back gone with all rules active, present with pref 0). Not yet exercised on Windows precision touchpads or Linux; the rules are inert for non-pixel input by construction.
 

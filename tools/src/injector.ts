@@ -13,7 +13,7 @@ import { BIN_DIR, PROD_BIN_DIR, PROJECT_ROOT } from "./defines.ts";
 const logger = new Logger("injector");
 
 /**
- * derp: default extension pack, delivered via the enterprise-policy file the
+ * bork: default extension pack, delivered via the enterprise-policy file the
  * browser reads from <app>/distribution/policies.json. "normal_installed"
  * auto-installs on first run (downloaded from AMO) but stays user-removable.
  */
@@ -24,12 +24,12 @@ const DEFAULT_POLICIES = {
     },
     // The runtime's compiled-in update URL is Mozilla's aus5 server, which
     // doesn't serve this product — every check is a no-op ping. Updates are
-    // derp's own check instead (chrome/common/update-check reads
+    // bork's own check instead (chrome/common/update-check reads
     // updates/update.xml from the repo's main branch).
     DisableAppUpdate: true,
     // Blocking is uBlock Origin alone: Ghostery and Privacy Badger were
     // ~wholly redundant on top of it (Ghostery's one distinct feature,
-    // consent auto-reject, is covered natively — derp-defaults enables
+    // consent auto-reject, is covered natively — bork-defaults enables
     // cookiebanners.service.mode 1). Fewer defaults, fewer "which blocker
     // broke this site" mysteries.
     ExtensionSettings: {
@@ -48,7 +48,7 @@ const DEFAULT_POLICIES = {
 };
 
 /**
- * derp theme pack: the static WebExtension themes in browser-features/themes/
+ * bork theme pack: the static WebExtension themes in browser-features/themes/
  * are zipped into <app>/distribution/extensions/<gecko-id>.xpi, which Firefox
  * auto-installs into new profiles (user-visible in about:addons, removable).
  * The runtime does not enforce add-on signing, so plain zips are enough.

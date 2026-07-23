@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0
 #
-# derp release packaging: prebuilt Floorp-runtime + production feature
+# bork release packaging: prebuilt Floorp-runtime + production feature
 # overlay -> per-platform archives. No mach, no compilation — the noraneko
 # layer is platform-independent web content, so every platform ships the
 # same overlay on its own runtime binary.
@@ -20,19 +20,19 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
-RUNTIME_TAG="${DERP_RUNTIME_TAG:-daily-977}"
+RUNTIME_TAG="${BORK_RUNTIME_TAG:-daily-977}"
 RUNTIME_URL="https://github.com/Floorp-Projects/Floorp-runtime/releases/download/${RUNTIME_TAG}"
 
 # Runtimes we build ourselves live in a private repo and are fetched with an
 # authenticated `gh` download. Any file NOT listed in OWN_RUNTIME_FILES falls
 # back to the upstream Floorp-runtime release above. As more platforms get
 # built by us, add their artifact filenames to OWN_RUNTIME_FILES.
-OWN_RUNTIME_REPO="${DERP_OWN_RUNTIME_REPO:-100mountains/derp-runtime}"
-OWN_RUNTIME_TAG="${DERP_OWN_RUNTIME_TAG:-derp-runtime-152.0.7-1}"
-OWN_RUNTIME_FILES="${DERP_OWN_RUNTIME_FILES:-floorp-linux-x86_64-moz-artifact.tar.xz floorp-windows-x86_64-moz-artifact.zip}"
+OWN_RUNTIME_REPO="${BORK_OWN_RUNTIME_REPO:-100mountains/bork-runtime}"
+OWN_RUNTIME_TAG="${BORK_OWN_RUNTIME_TAG:-bork-runtime-152.0.7-1}"
+OWN_RUNTIME_FILES="${BORK_OWN_RUNTIME_FILES:-floorp-linux-x86_64-moz-artifact.tar.xz floorp-windows-x86_64-moz-artifact.zip}"
 
-log() { printf '\033[34m[derp-release]\033[0m %s\n' "$*"; }
-fail() { printf '\033[31m[derp-release] %s\033[0m\n' "$*" >&2; exit 1; }
+log() { printf '\033[34m[bork-release]\033[0m %s\n' "$*"; }
+fail() { printf '\033[31m[bork-release] %s\033[0m\n' "$*" >&2; exit 1; }
 
 # Empty a staging directory and recreate it.
 #
@@ -101,20 +101,20 @@ overlay() {
   bash tools/release/brand-icons.sh "$approot"
 
   # Vendor name: the published 152.0.7-1 runtimes were compiled before the
-  # runtime source vendor fix (derp-runtime 6d606025f65: -vendor-short-name and
-  # MOZ_APP_VENDOR -> Derp), so their loose brand.ftl still says "Ablaze" — which
-  # the About dialog renders as "Derp is designed by Ablaze". These branding files
+  # runtime source vendor fix (bork-runtime 6d606025f65: -vendor-short-name and
+  # MOZ_APP_VENDOR -> Bork), so their loose brand.ftl still says "Ablaze" — which
+  # the About dialog renders as "Bork is designed by Ablaze". These branding files
   # are loose (chrome-format=flat), so correct them here until the runtimes are
   # rebuilt from the fixed source (mac natively; linux/windows on the build PC).
-  log "correcting vendor name (Ablaze -> Derp)"
+  log "correcting vendor name (Ablaze -> Bork)"
   find "$approot/browser" \( -name brand.ftl -o -name brand.properties \) \
-    -exec perl -i -pe 's/Ablaze/Derp/g' {} +
+    -exec perl -i -pe 's/Ablaze/Bork/g' {} +
   # application.ini too (Vendor=Ablaze): shown by about:support and used in
   # the profile path on Windows/Linux (AppData\Vendor\Name, ~/.vendor) — fine
   # to change pre-release, but a profile-moving change once users exist.
   # macOS profiles key on the app name only, so existing mac profiles keep.
   [ -f "$approot/application.ini" ] &&
-    perl -i -pe 's/^Vendor=Ablaze$/Vendor=Derp/' "$approot/application.ini"
+    perl -i -pe 's/^Vendor=Ablaze$/Vendor=Bork/' "$approot/application.ini"
 
   strip_ai_bundle "$approot"
 
@@ -123,7 +123,7 @@ overlay() {
 
 # The local AI inference stack: ONNX Runtime, HuggingFace transformers,
 # llama.cpp (wllama), an OpenAI client, and the model-hub downloader that
-# feeds them. derp ships none of it — the prefs are off, but off is not the
+# feeds them. bork ships none of it — the prefs are off, but off is not the
 # same as absent, and we do not want an LLM runtime sitting on disk.
 #
 # Translation survives this: it uses Bergamot, downloaded separately from
@@ -176,9 +176,9 @@ build_linux() {
   overlay "$approot"
   log "linux: packing"
   mkdir -p dist/linux
-  COPYFILE_DISABLE=1 tar --no-xattrs -czf dist/linux/Derp-linux-x86_64.tar.gz -C "$(dirname "$approot")" \
+  COPYFILE_DISABLE=1 tar --no-xattrs -czf dist/linux/Bork-linux-x86_64.tar.gz -C "$(dirname "$approot")" \
     "$(basename "$approot")"
-  log "linux: dist/linux/Derp-linux-x86_64.tar.gz"
+  log "linux: dist/linux/Bork-linux-x86_64.tar.gz"
 }
 
 build_windows() {
@@ -202,23 +202,23 @@ build_windows() {
   log "windows: packing"
   mkdir -p dist/windows
   (cd "$(dirname "$approot")" && zip -qr9 - "$(basename "$approot")") \
-    > dist/windows/Derp-windows-x86_64.zip
-  log "windows: dist/windows/Derp-windows-x86_64.zip"
+    > dist/windows/Bork-windows-x86_64.zip
+  log "windows: dist/windows/Bork-windows-x86_64.zip"
 }
 
 build_mac() {
-  local app="build/release/mac/Derp.app"
+  local app="build/release/mac/Bork.app"
   local res="$app/Contents/Resources"
   reset_dir build/release/mac
 
-  if [ -n "${DERP_MAC_RUNTIME_APP:-}" ]; then
+  if [ -n "${BORK_MAC_RUNTIME_APP:-}" ]; then
     # Ship a runtime WE just compiled: copy the raw runtime app and run the same
     # overlay() the linux/windows lanes use (patches + noraneko + xhtml + prefs +
-    # policies + icons + vendor). A freshly built runtime is already derp-branded
+    # policies + icons + vendor). A freshly built runtime is already bork-branded
     # with the correct compiled vendor, so no loose-file vendor patch is needed.
-    [ -d "$DERP_MAC_RUNTIME_APP" ] || fail "DERP_MAC_RUNTIME_APP not found: $DERP_MAC_RUNTIME_APP"
-    log "mac: assembling from fresh runtime ($DERP_MAC_RUNTIME_APP)"
-    cp -R "$DERP_MAC_RUNTIME_APP" "$app"
+    [ -d "$BORK_MAC_RUNTIME_APP" ] || fail "BORK_MAC_RUNTIME_APP not found: $BORK_MAC_RUNTIME_APP"
+    log "mac: assembling from fresh runtime ($BORK_MAC_RUNTIME_APP)"
+    cp -R "$BORK_MAC_RUNTIME_APP" "$app"
     [ -f "$res/chrome.manifest" ] || fail "mac: no chrome.manifest under $res (unexpected runtime layout)"
     overlay "$res"
     find "$app" -name "*.map" -delete
@@ -245,11 +245,11 @@ build_mac() {
 
     # This lane assembles from the local runtime tree and never routes through
     # overlay(), so apply the same loose-file vendor correction here: the tree's
-    # brand.ftl still says "Ablaze" ("Derp is designed by Ablaze" in About) until
+    # brand.ftl still says "Ablaze" ("Bork is designed by Ablaze" in About) until
     # the mac runtime is rebuilt from the fixed source.
-    log "mac: correcting vendor name (Ablaze -> Derp)"
+    log "mac: correcting vendor name (Ablaze -> Bork)"
     find "$res/browser" \( -name brand.ftl -o -name brand.properties \) \
-      -exec perl -i -pe 's/Ablaze/Derp/g' {} +
+      -exec perl -i -pe 's/Ablaze/Bork/g' {} +
   fi
 
   log "mac: signing (ad-hoc) and packing"
@@ -260,9 +260,9 @@ build_mac() {
   xattr -cr "$app"
   codesign --force --deep -s - "$app"
   mkdir -p dist/macos
-  hdiutil create -volname "Derp" -srcfolder "$app" -ov -format UDZO \
-    dist/macos/Derp-macOS-universal.dmg > /dev/null
-  log "mac: dist/macos/Derp-macOS-universal.dmg"
+  hdiutil create -volname "Bork" -srcfolder "$app" -ov -format UDZO \
+    dist/macos/Bork-macOS-universal.dmg > /dev/null
+  log "mac: dist/macos/Bork-macOS-universal.dmg"
 }
 
 usage() {
@@ -301,7 +301,7 @@ cat > updates/update.xml <<EOF
   <update type="minor"
           displayVersion="${PKG_VERSION}"
           appVersion2="${PKG_VERSION}"
-          detailsURL="https://therob.lol/derp/"/>
+          detailsURL="https://therob.lol/bork/"/>
 </updates>
 EOF
 log "updates/update.xml -> ${PKG_VERSION} (commit + push to announce the release)"

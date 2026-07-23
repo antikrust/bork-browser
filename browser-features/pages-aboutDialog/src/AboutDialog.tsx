@@ -375,7 +375,7 @@ export function AboutDialog() {
             alt=""
             aria-hidden="true"
           />
-          <h1 class="ad-name">Derp</h1>
+          <h1 class="ad-name">Bork</h1>
           <div class="ad-version">
             {t("aboutDialog.version")} {version || "…"}
             {channelBadge && (
@@ -397,7 +397,7 @@ export function AboutDialog() {
                 class="ad-community-item"
                 onClick={(e) => {
                   e.preventDefault();
-                  openExternalUrl("https://github.com/100mountains/derp");
+                  openExternalUrl("https://github.com/100mountains/bork");
                 }}
               >
                 <span class="ad-community-icon">
@@ -429,7 +429,7 @@ export function AboutDialog() {
                 class="ad-help-link"
                 onClick={(e) => {
                   e.preventDefault();
-                  openExternalUrl("https://github.com/100mountains/derp");
+                  openExternalUrl("https://github.com/100mountains/bork");
                 }}
               >
                 {t("aboutDialog.help.repository")}

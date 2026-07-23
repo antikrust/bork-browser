@@ -123,12 +123,12 @@ export class NRSettingsParent extends JSWindowActorParent {
           if (!win) return { ok: false, error: "no browser window" };
           const done = new Promise((resolve) => {
             win.addEventListener(
-              "derp-vivaldi-import-done",
+              "bork-vivaldi-import-done",
               (e: CustomEvent) => resolve(e.detail),
               { once: true },
             );
           });
-          win.dispatchEvent(new win.CustomEvent("derp-vivaldi-import"));
+          win.dispatchEvent(new win.CustomEvent("bork-vivaldi-import"));
           return { ok: true, result: await done };
         } catch (e) {
           console.error("[NRSettingsParent] workspace import failed", e);

@@ -46,14 +46,14 @@ export function UrlbarCopyButton() {
 
   return (
     <xul:hbox
-      id="derp-urlbar-copy"
+      id="bork-urlbar-copy"
       class="urlbar-page-action"
       role="button"
       title={tooltip()}
       copied={copied() ? "true" : undefined}
       onClick={copy}
     >
-      <xul:image id="derp-urlbar-copy-image" class="urlbar-icon" />
+      <xul:image id="bork-urlbar-copy-image" class="urlbar-icon" />
     </xul:hbox>
   );
 }

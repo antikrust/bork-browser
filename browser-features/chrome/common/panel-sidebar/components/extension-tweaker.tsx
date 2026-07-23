@@ -265,16 +265,16 @@ export function ExtensionTweaker() {
   return (
     <>
       <xul:vbox
-        id="derp-ext-tweaker"
+        id="bork-ext-tweaker"
         data-open={open() ? "true" : "false"}
       >
         {/* Single grid item: the row track animates 0fr -> 1fr, so the
             column slides to its real content height (a max-height tween
             spans a mostly-invisible range and reads as a pop). */}
-        <xul:vbox class="derp-ext-tweaker-inner">
+        <xul:vbox class="bork-ext-tweaker-inner">
           <xul:toolbarbutton
-            class="panel-sidebar-panel derp-ext-tweaker-item"
-            id="derp-ext-tweaker-manage"
+            class="panel-sidebar-panel bork-ext-tweaker-item"
+            id="bork-ext-tweaker-manage"
             image="chrome://global/skin/icons/settings.svg"
             tooltiptext="Manage extensions"
             onCommand={() => {
@@ -285,18 +285,18 @@ export function ExtensionTweaker() {
           <For each={extensions()}>
             {(info) => (
               <xul:toolbarbutton
-                class="panel-sidebar-panel derp-ext-tweaker-item"
-                id={`derp-ext-tweaker-${
+                class="panel-sidebar-panel bork-ext-tweaker-item"
+                id={`bork-ext-tweaker-${
                   info.id.replace(/[^A-Za-z0-9_-]/g, "_")
                 }`}
                 image={info.iconUrl}
                 tooltiptext={info.name}
                 data-ext-id={info.id}
-                context="derp-ext-tweaker-menu"
+                context="bork-ext-tweaker-menu"
                 onCommand={() =>
                   openExtensionAction(
                     info,
-                    `derp-ext-tweaker-${
+                    `bork-ext-tweaker-${
                       info.id.replace(/[^A-Za-z0-9_-]/g, "_")
                     }`,
                   )}
@@ -307,7 +307,7 @@ export function ExtensionTweaker() {
       </xul:vbox>
       <xul:popupset>
         <xul:menupopup
-          id="derp-ext-tweaker-menu"
+          id="bork-ext-tweaker-menu"
           onPopupShowing={onMenuShowing}
         >
           <xul:menuitem

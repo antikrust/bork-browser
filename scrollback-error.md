@@ -7,7 +7,7 @@ session, all caught, user confirmed the snap-back is gone.
 ## 2026-07-17 RESOLUTION
 
 **Cause found, fix shipped, mechanism proven synthetically.** It is stock
-Firefox toolkit behavior, not derp code: `arrowscrollbox.on_wheel` maps
+Firefox toolkit behavior, not bork code: `arrowscrollbox.on_wheel` maps
 vertical (`deltaY`-dominant) pixel wheel events onto horizontal scrolling
 ("vertical wheel scrolls a horizontal scrollbox"), behind only a 2-event
 axis filter (`_prevMouseScrolls`, length 2). On release, the macOS momentum
@@ -71,7 +71,7 @@ recentre passes on real selection change, re-arms after next wheel).
 `floorp.tabstrip.wheelguard` = 1 axis quarantine + 2 reversal hold +
 4 recentre latch; default 7 (all), 0 = stock. Readout after a repro
 attempt:
-`deno task dev-tool eval 'JSON.stringify(globalThis.__derpWheelGuard)'` —
+`deno task dev-tool eval 'JSON.stringify(globalThis.__borkWheelGuard)'` —
 axisDropped / reversalDropped / recentresSuppressed say which mechanism
 fired on that gesture.
 
@@ -80,7 +80,7 @@ and `axisDropped` > 0, hypothesis (a) (vertical tail) is confirmed; if
 `reversalDropped` carried the load instead, the tail was same-axis
 reversed. Either way the fix covers both. The old open items below are
 kept for history; hypotheses 3 (scroll-snap: none exists on the strip in
-this runtime or the derp skin) and 4 (untrusted dispatchers: none exist in
+this runtime or the bork skin) and 4 (untrusted dispatchers: none exist in
 the tree) were eliminated by inspection.
 
 ---
@@ -99,11 +99,11 @@ gesture. Happens with real trackpad input on macOS; never reproduced with
 synthetic events.
 
 - Machine: macOS (Darwin 24.5), trackpad (momentum scrolling).
-- Build: derp (Floorp 12 fork), FF152 runtime, stage mode
+- Build: bork (Floorp 12 fork), FF152 runtime, stage mode
   (`deno task feles-build stage --marionette`).
-- Row 2 (derp's stack bar) is NOT involved — user confirmed the jump is the
+- Row 2 (bork's stack bar) is NOT involved — user confirmed the jump is the
   top row; probes confirmed no programmatic scrolls of the top strip from
-  derp code.
+  bork code.
 
 ## Hard evidence collected
 
@@ -180,8 +180,8 @@ Re-establishing (a) vs (b) is the highest-value next measurement.
 
 ## What is established
 
-1. No derp code scrolls the top strip. The only scroll-into-view derp has
-   targets `#derp-stack-bar` (row 2) and fires only on drops.
+1. No bork code scrolls the top strip. The only scroll-into-view bork has
+   targets `#bork-stack-bar` (row 2) and fires only on drops.
 2. No Firefox scroll-to-selected call moves it (wrap no-ops it; probes show
    0px movement from that path).
 3. The snap-back is delivered to the strip as a **stream of reversed,

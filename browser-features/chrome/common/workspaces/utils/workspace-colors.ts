@@ -5,7 +5,7 @@
 
 /**
  * The workspace colour palette — the SAME set the tab-group/stack editor
- * offers: Firefox's nine builtin group colours followed by derp's extra
+ * offers: Firefox's nine builtin group colours followed by bork's extra
  * row (tab-stacks/styles.css). Values are literals rather than var()
  * references because two consumers have no access to the chrome
  * document's variables: the modal-child page (React, its own document)

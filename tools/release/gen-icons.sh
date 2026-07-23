@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0
 #
-# Build derp's icon set from browser-features/branding/logo.png.
+# Build bork's icon set from browser-features/branding/logo.png.
 #
 # The app icon is the face from the 'p' at every size, and only the face. The
-# eyes are the part that reads at a glance; "derp" set across 64px of Dock is
+# eyes are the part that reads at a glance; "bork" set across 64px of Dock is
 # a smudge. The wordmark still gets used where there is room for it — the
 # welcome page, the help topbar and the About dialog — just not here.
 #
@@ -31,7 +31,7 @@ OUT="browser-features/branding"
 FACE_SIZE=128
 FACE_Y=442
 FACE_X=731
-FACE="$(mktemp -t derp-face).png"
+FACE="$(mktemp -t bork-face).png"
 trap 'rm -f "$FACE"' EXIT
 sips -c "$FACE_SIZE" "$FACE_SIZE" --cropOffset "$FACE_Y" "$FACE_X" \
   "$SRC" --out "$FACE" >/dev/null
@@ -41,7 +41,7 @@ sips -c "$FACE_SIZE" "$FACE_SIZE" --cropOffset "$FACE_Y" "$FACE_X" \
 swift tools/release/face-alpha.swift "$FACE" >/dev/null
 
 echo "building icns"
-ISET="$(mktemp -d -t derp-iconset)/derp.iconset"
+ISET="$(mktemp -d -t bork-iconset)/bork.iconset"
 mkdir -p "$ISET"
 for spec in \
   icon_16x16:16 icon_16x16@2x:32 \

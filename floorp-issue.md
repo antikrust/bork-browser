@@ -11,7 +11,7 @@ With the tab strip overflowing, scroll the strip away from the selected tab and 
 
 ## Status: still investigating
 
-We instrumented a fork ([100mountains/derp](https://github.com/100mountains/derp)) and found **three candidate mechanisms** in stock toolkit/browser code that Floorp inherits from the runtime. We also ship a mitigation that removes the symptom on this machine.
+We instrumented a fork ([100mountains/bork](https://github.com/100mountains/bork)) and found **three candidate mechanisms** in stock toolkit/browser code that Floorp inherits from the runtime. We also ship a mitigation that removes the symptom on this machine.
 
 What we have **not** established is which of the three actually drives what the user sees, or whether all three are needed. The evidence differs per candidate and is noted below. Filing now because the code paths look general rather than Floorp-specific, and someone may recognise them.
 
@@ -52,7 +52,7 @@ This may also be why the behaviour resists synthetic reproduction: a vertical-do
 
 ## Mitigation we currently ship
 
-[`browser-features/chrome/common/tab-strip-wheel-guard/`](https://github.com/100mountains/derp/tree/main/browser-features/chrome/common/tab-strip-wheel-guard) (commit [`52088a676f`](https://github.com/100mountains/derp/commit/52088a676f)) — a capture-phase wheel filter ahead of the strip's listeners plus a wrap on `ensureElementIsVisible`:
+[`browser-features/chrome/common/tab-strip-wheel-guard/`](https://github.com/100mountains/bork/tree/main/browser-features/chrome/common/tab-strip-wheel-guard) (commit [`52088a676f`](https://github.com/100mountains/bork/commit/52088a676f)) — a capture-phase wheel filter ahead of the strip's listeners plus a wrap on `ensureElementIsVisible`:
 
 1. **Axis quarantine** — vertical-dominant pixel events may not continue a gapless (<400 ms) horizontal-dominant stream. Deliberate vertical scrolling over the strip still works, since it starts its own stream.
 2. **Reversal hold** — a same-axis direction reversal inside a gapless stream is dropped while it stays under the run's peak envelope. A decaying tail jitters but never climbs back above its entry peak; a live finger reversing enters near zero and clears its own peak within an event or two, which releases the hold.

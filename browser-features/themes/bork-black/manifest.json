@@ -1,11 +1,11 @@
 {
   "manifest_version": 2,
-  "name": "Derp Black",
+  "name": "Bork Black",
   "version": "1.0.1",
-  "description": "derp built-in theme — Derp Black. Black chrome.",
+  "description": "bork built-in theme — Bork Black. Black chrome.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "derp-black@themes.derp"
+      "id": "bork-black@themes.bork"
     }
   },
   "theme": {

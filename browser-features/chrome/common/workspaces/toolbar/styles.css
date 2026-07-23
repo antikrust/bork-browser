@@ -175,7 +175,7 @@ panel:has(#workspacesToolbarButtonPanel) {
   overflow: hidden !important;
 }
 
-.derp-workspaces-chooser-icon {
+.bork-workspaces-chooser-icon {
   width: 16px;
   height: 16px;
   margin-inline-end: 6px;
@@ -191,7 +191,7 @@ panel:has(#workspacesToolbarButtonPanel) {
   padding-inline-start: 4px !important;
 }
 
-.derp-workspaces-chooser-chevron {
+.bork-workspaces-chooser-chevron {
   width: 8px;
   height: 8px;
   margin-inline-start: 3px;
@@ -663,16 +663,16 @@ panel:has(#workspacesToolbarButtonPanel) {
    since it would resize content that no longer shows. The #sidebar-main
    box itself stays Firefox's: SidebarController decides when the slot
    shows and where it sits. */
-:root[derp-workspaces-rail] #sidebar-main > sidebar-main {
+:root[bork-workspaces-rail] #sidebar-main > sidebar-main {
   display: none !important;
 }
-:root[derp-workspaces-rail] #sidebar-launcher-splitter {
+:root[bork-workspaces-rail] #sidebar-launcher-splitter {
   display: none !important;
 }
 
-#derp-workspaces-rail {
-  /* derp's indigo accent, marking the active workspace. */
-  --derp-rail-accent: #6366f1;
+#bork-workspaces-rail {
+  /* bork's indigo accent, marking the active workspace. */
+  --bork-rail-accent: #6366f1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -692,11 +692,11 @@ panel:has(#workspacesToolbarButtonPanel) {
    in-flow (it pushes content), so it slides from behind the window edge
    and the page eases right instead of jumping. */
 @media (prefers-reduced-motion: no-preference) {
-  #derp-workspaces-rail {
-    animation: derp-rail-ease-in 200ms ease-out;
+  #bork-workspaces-rail {
+    animation: bork-rail-ease-in 200ms ease-out;
   }
 
-  @keyframes derp-rail-ease-in {
+  @keyframes bork-rail-ease-in {
     from {
       margin-inline-start: -35px;
       opacity: 0;
@@ -707,7 +707,7 @@ panel:has(#workspacesToolbarButtonPanel) {
     }
   }
 
-  /* Ease out on hide: [derp-rail-closing] holds the slot owned (native
+  /* Ease out on hide: [bork-rail-closing] holds the slot owned (native
      launcher still hidden) while the RAIL collapses its width, then it
      unmounts (workspaces-rail.tsx). Only the rail is animated — its width
      is explicit (35px), which interpolates; #sidebar-main is width:auto
@@ -716,12 +716,12 @@ panel:has(#workspacesToolbarButtonPanel) {
      blanket `transition: ... !important` rules in engine-chrome.css (the
      flattened lepton skin), which would otherwise replace this list and
      turn the slide into a snap. */
-  #derp-workspaces-rail {
+  #bork-workspaces-rail {
     transition: width 200ms ease, min-width 200ms ease, max-width 200ms ease,
       opacity 200ms ease !important;
   }
 
-  :root[derp-rail-closing] #derp-workspaces-rail {
+  :root[bork-rail-closing] #bork-workspaces-rail {
     width: 0 !important;
     min-width: 0 !important;
     max-width: 0 !important;
@@ -731,7 +731,7 @@ panel:has(#workspacesToolbarButtonPanel) {
   }
 }
 
-.derp-workspaces-rail-list {
+.bork-workspaces-rail-list {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -744,7 +744,7 @@ panel:has(#workspacesToolbarButtonPanel) {
   scrollbar-width: thin;
 }
 
-.derp-workspaces-rail-footer {
+.bork-workspaces-rail-footer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -783,8 +783,8 @@ panel:has(#workspacesToolbarButtonPanel) {
    not box-shadow — the drag insertion lines above use box-shadow and the
    two must not fight on the active button.) */
 .workspace-rail-button[data-checked="true"] {
-  background-color: color-mix(in srgb, var(--derp-rail-accent) 25%, transparent);
-  outline: 1px solid var(--derp-rail-accent);
+  background-color: color-mix(in srgb, var(--bork-rail-accent) 25%, transparent);
+  outline: 1px solid var(--bork-rail-accent);
   outline-offset: -1px;
 }
 

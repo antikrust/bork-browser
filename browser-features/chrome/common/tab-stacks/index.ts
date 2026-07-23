@@ -165,10 +165,10 @@ export default class TabStacks extends NoraComponentBase {
     const asb = (gb.tabContainer as unknown as {
       arrowScrollbox?: XULElement & {
         ensureElementIsVisible: (el: Element, instant?: boolean) => void;
-        __derpEnsureWrapped?: boolean;
+        __borkEnsureWrapped?: boolean;
       };
     }).arrowScrollbox;
-    if (asb && !asb.__derpEnsureWrapped) {
+    if (asb && !asb.__borkEnsureWrapped) {
       const orig = asb.ensureElementIsVisible.bind(asb);
       asb.ensureElementIsVisible = (el: Element, instant?: boolean) => {
         try {
@@ -184,10 +184,10 @@ export default class TabStacks extends NoraComponentBase {
         }
         return orig(el, instant);
       };
-      asb.__derpEnsureWrapped = true;
+      asb.__borkEnsureWrapped = true;
       onCleanup(() => {
         asb.ensureElementIsVisible = orig;
-        asb.__derpEnsureWrapped = false;
+        asb.__borkEnsureWrapped = false;
       });
     }
 
@@ -228,7 +228,7 @@ export default class TabStacks extends NoraComponentBase {
       dragAndDropElements?: DragItem[];
       tabDragAndDrop?: {
         _animateTabMove?: (event: DragEvent) => void;
-        __derpAnimateWrapped?: boolean;
+        __borkAnimateWrapped?: boolean;
       };
     };
     const correctStackDrag = (event: DragEvent) => {
@@ -248,7 +248,7 @@ export default class TabStacks extends NoraComponentBase {
         !dragged.classList?.contains?.("tabbrowser-tab")
       ) {
         // Group-label and split-view drags keep native behavior wholesale.
-        tabsEl.removeAttribute("data-derp-stack-droptarget");
+        tabsEl.removeAttribute("data-bork-stack-droptarget");
         return;
       }
 
@@ -258,8 +258,8 @@ export default class TabStacks extends NoraComponentBase {
         ? de
         : de?.closest?.("tab-group") ?? null;
       tabsEl.toggleAttribute(
-        "data-derp-stack-droptarget",
-        deGroup?.getAttribute?.("data-derp-stack") === "true",
+        "data-bork-stack-droptarget",
+        deGroup?.getAttribute?.("data-bork-stack") === "true",
       );
 
       // Hold the reorder shift while the cursor is over a stack chip.
@@ -273,7 +273,7 @@ export default class TabStacks extends NoraComponentBase {
       }
       const chipGroup = (event.target as Element | null)
         ?.closest?.(".tab-group-label-container")
-        ?.closest?.("tab-group[data-derp-stack]") as StackGroup | null;
+        ?.closest?.("tab-group[data-bork-stack]") as StackGroup | null;
       if (!chipGroup || (dragged.group as unknown) === chipGroup) return;
       const labelEl = ((chipGroup as unknown as { labelElement?: DragItem })
         .labelElement ??
@@ -318,7 +318,7 @@ export default class TabStacks extends NoraComponentBase {
       }
     };
     const tdd = tabsEl.tabDragAndDrop;
-    if (tdd?._animateTabMove && !tdd.__derpAnimateWrapped) {
+    if (tdd?._animateTabMove && !tdd.__borkAnimateWrapped) {
       const origAnimate = tdd._animateTabMove.bind(tdd);
       tdd._animateTabMove = (event: DragEvent) => {
         origAnimate(event);
@@ -328,10 +328,10 @@ export default class TabStacks extends NoraComponentBase {
           console.error("[tab-stacks] stack drag correction failed:", e);
         }
       };
-      tdd.__derpAnimateWrapped = true;
+      tdd.__borkAnimateWrapped = true;
       onCleanup(() => {
         tdd._animateTabMove = origAnimate;
-        tdd.__derpAnimateWrapped = false;
+        tdd.__borkAnimateWrapped = false;
       });
     }
 
@@ -379,19 +379,19 @@ export default class TabStacks extends NoraComponentBase {
     const tddStart = tdd as
       | (typeof tdd & {
         startTabDrag?: StartTabDragFn;
-        __derpGhostWrapped?: boolean;
+        __borkGhostWrapped?: boolean;
       })
       | undefined;
-    if (tddStart?.startTabDrag && !tddStart.__derpGhostWrapped) {
+    if (tddStart?.startTabDrag && !tddStart.__borkGhostWrapped) {
       const origStartTabDrag = tddStart.startTabDrag.bind(tddStart);
       tddStart.startTabDrag = (event, tab, opts) => {
         origStartTabDrag(event, tab, opts);
         if (!opts?.fromTabList) killTabDragGhost(event);
       };
-      tddStart.__derpGhostWrapped = true;
+      tddStart.__borkGhostWrapped = true;
       onCleanup(() => {
         tddStart.startTabDrag = origStartTabDrag;
-        tddStart.__derpGhostWrapped = false;
+        tddStart.__borkGhostWrapped = false;
         ghostBlank?.remove();
         ghostBlank = null;
       });
@@ -407,13 +407,13 @@ export default class TabStacks extends NoraComponentBase {
     type PreviewPanel = {
       activate?: (target: unknown) => void;
       deactivate?: (target?: unknown, opts?: { force?: boolean }) => void;
-      __derpNoStackPreview?: boolean;
+      __borkNoStackPreview?: boolean;
     };
     const wrapPreviewPanel = (
       panel: PreviewPanel | null | undefined,
     ): PreviewPanel | null | undefined => {
       if (
-        !panel || panel.__derpNoStackPreview ||
+        !panel || panel.__borkNoStackPreview ||
         typeof panel.activate !== "function"
       ) {
         return panel;
@@ -427,7 +427,7 @@ export default class TabStacks extends NoraComponentBase {
         const groupEl = el?.tagName?.toLowerCase?.() === "tab-group"
           ? el
           : el?.closest?.("tab-group") ?? el?.group ?? null;
-        if (groupEl?.getAttribute?.("data-derp-stack") === "true") {
+        if (groupEl?.getAttribute?.("data-bork-stack") === "true") {
           try {
             panel.deactivate?.(target, { force: true });
           } catch {
@@ -437,7 +437,7 @@ export default class TabStacks extends NoraComponentBase {
         }
         return origActivate(target);
       };
-      panel.__derpNoStackPreview = true;
+      panel.__borkNoStackPreview = true;
       return panel;
     };
     const tabsElPP = tabsEl as XULElement & {
@@ -486,10 +486,10 @@ export default class TabStacks extends NoraComponentBase {
       if (event.button !== 0) return;
       const target = event.target as Element | null;
       // Chip close button: closes the whole stack (all member tabs).
-      const closeEl = target?.closest?.(".derp-stack-close");
+      const closeEl = target?.closest?.(".bork-stack-close");
       if (closeEl) {
         const group = closeEl.closest(
-          "tab-group[data-derp-stack]",
+          "tab-group[data-bork-stack]",
         ) as StackGroup | null;
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -512,7 +512,7 @@ export default class TabStacks extends NoraComponentBase {
       if (!labelContainer) return;
       // Only groups we own — split-view groups keep native label behavior.
       const group = labelContainer.closest(
-        "tab-group[data-derp-stack]",
+        "tab-group[data-bork-stack]",
       ) as StackGroup | null;
       if (!group) return;
       // mousedown passes through untouched: the native group-label drag
@@ -555,14 +555,14 @@ export default class TabStacks extends NoraComponentBase {
       // Let the proxy for the new position render first.
       setTimeout(() => {
         try {
-          const bar = document?.getElementById("derp-stack-bar") as
+          const bar = document?.getElementById("bork-stack-bar") as
             | (XULElement & {
               ensureElementIsVisible?: (el: Element, instant?: boolean) => void;
             })
             | null;
           const proxy = bar?.querySelector(
-            `.derp-stack-tab[data-derp-drag-id="${
-              tab.getAttribute("data-derp-tab-id")
+            `.bork-stack-tab[data-bork-drag-id="${
+              tab.getAttribute("data-bork-tab-id")
             }"]`,
           );
           if (bar && proxy) bar.ensureElementIsVisible?.(proxy, true);
@@ -587,10 +587,10 @@ export default class TabStacks extends NoraComponentBase {
       const trigger = popup.triggerNode as
         | (Element & { tab?: StackTab | null })
         | null;
-      const proxy = trigger?.closest?.(".derp-stack-tab");
+      const proxy = trigger?.closest?.(".bork-stack-tab");
       if (!trigger || !proxy) return;
       const tab = findTabByDragId(
-        proxy.getAttribute("data-derp-drag-id") ?? "",
+        proxy.getAttribute("data-bork-drag-id") ?? "",
       );
       if (tab) trigger.tab = tab;
     };
@@ -601,7 +601,7 @@ export default class TabStacks extends NoraComponentBase {
         | (Element & { tab?: StackTab | null })
         | null;
       // Don't leave a tab reference on the node once the menu is gone.
-      if (trigger && trigger.closest?.(".derp-stack-tab")) trigger.tab = null;
+      if (trigger && trigger.closest?.(".bork-stack-tab")) trigger.tab = null;
     };
     document.addEventListener("popupshowing", onTabContextShowing, true);
     document.addEventListener("popuphidden", onTabContextHidden, true);
@@ -621,7 +621,7 @@ export default class TabStacks extends NoraComponentBase {
       const popup = event.target as Element & { triggerNode?: Node | null };
       if (!(popup instanceof Element) || popup.id !== "tabContextMenu") return;
       const trigger = popup.triggerNode as Element | null;
-      if (!trigger?.closest?.(".derp-stack-tab")) return;
+      if (!trigger?.closest?.(".bork-stack-tab")) return;
       const item = document?.getElementById(MOVE_TO_GROUP_ID) as
         | (XULElement & { hidden: boolean })
         | null;
@@ -651,7 +651,7 @@ export default class TabStacks extends NoraComponentBase {
     // group labels (no context= attribute on the label chain), so the
     // feature owns one: right-click on any group label/chip opens it.
     // Split-view groups are excluded — they keep native behavior wholesale.
-    const KIND_MENU_ID = "derp-stack-kind-menu";
+    const KIND_MENU_ID = "bork-stack-kind-menu";
     const doc = document as Document & {
       createXULElement: (tag: string) => XULElement;
     };
@@ -786,7 +786,7 @@ export default class TabStacks extends NoraComponentBase {
       const container = panel.querySelector?.(".tab-group-editor-swatches");
       if (!container) return;
       try {
-        if (!container.querySelector("[data-derp-extra-swatch]")) {
+        if (!container.querySelector("[data-bork-extra-swatch]")) {
           for (const c of EXTRA_GROUP_COLORS) {
             const input = document.createElement(
               "input",
@@ -795,10 +795,10 @@ export default class TabStacks extends NoraComponentBase {
             input.type = "radio";
             input.name = "tab-group-color";
             input.value = c.name;
-            input.setAttribute("data-derp-extra-swatch", "true");
+            input.setAttribute("data-bork-extra-swatch", "true");
             const label = document.createElement("label") as HTMLElement;
             label.classList.add("tab-group-editor-swatch");
-            label.setAttribute("data-derp-extra-swatch", "true");
+            label.setAttribute("data-bork-extra-swatch", "true");
             (label as HTMLElement & { htmlFor: string }).htmlFor = input.id;
             label.title = c.label;
             label.style.setProperty(
@@ -820,7 +820,7 @@ export default class TabStacks extends NoraComponentBase {
         const color = menu?.activeGroup?.color ?? null;
         for (
           const r of container.querySelectorAll(
-            "input[data-derp-extra-swatch]",
+            "input[data-bork-extra-swatch]",
           ) as NodeListOf<HTMLInputElement>
         ) {
           r.checked = !!color && r.value === color;
@@ -873,7 +873,7 @@ export default class TabStacks extends NoraComponentBase {
     const onTabDragStart = (event: DragEvent) => {
       const t = event.target as Element | null;
       if (
-        t?.closest?.(".tabbrowser-tab") || t?.closest?.(".derp-stack-tab")
+        t?.closest?.(".tabbrowser-tab") || t?.closest?.(".bork-stack-tab")
       ) {
         tabDragActive = true;
       }
@@ -895,7 +895,7 @@ export default class TabStacks extends NoraComponentBase {
     const endTabDrag = () => {
       clearDropIndicators();
       clearChipHighlight();
-      tabsEl.removeAttribute("data-derp-stack-droptarget");
+      tabsEl.removeAttribute("data-bork-stack-droptarget");
       // TabGrouped from a drop arrives before dragend; clear on a delay,
       // then reconcile the bar with wherever selection actually landed.
       setTimeout(() => {
@@ -915,7 +915,7 @@ export default class TabStacks extends NoraComponentBase {
       const group = tab.group;
       if (!group) return;
       if (
-        (group as unknown as Element).getAttribute?.("data-derp-stack") !==
+        (group as unknown as Element).getAttribute?.("data-bork-stack") !==
           "true"
       ) {
         // Dropped into a plain group: native scrolls the strip to the
@@ -958,12 +958,12 @@ export default class TabStacks extends NoraComponentBase {
     // Deliberate join: dropping a row-1 tab ON the chip adds it to the
     // stack. With the member tabs zero-width, the native drop math almost
     // never resolves to "join" by itself, so the chip performs it.
-    const PROXY_TYPE = "application/x-derp-stack-tab";
+    const PROXY_TYPE = "application/x-bork-stack-tab";
     const onChipDrop = (event: DragEvent) => {
       if (event.dataTransfer?.types?.includes(PROXY_TYPE)) return;
       const target = event.target as Element | null;
       const lc = target?.closest?.(".tab-group-label-container");
-      const group = (lc?.closest?.("tab-group[data-derp-stack]") ??
+      const group = (lc?.closest?.("tab-group[data-bork-stack]") ??
         null) as StackGroup | null;
       if (!group) return;
       const dt = event.dataTransfer as
@@ -1051,20 +1051,20 @@ export default class TabStacks extends NoraComponentBase {
       }
     };
     const clearChipHighlight = () => {
-      for (const el of document.querySelectorAll("[data-derp-drop-into]")) {
-        el.removeAttribute("data-derp-drop-into");
+      for (const el of document.querySelectorAll("[data-bork-drop-into]")) {
+        el.removeAttribute("data-bork-drop-into");
       }
     };
     // Dragging a row-1 tab over a stack chip lights the WHOLE chip cell
     // (not a thin insertion underline): the gesture means "drop to join
     // this stack", which is a cell-level action, not an insertion point.
     // mozSourceNode is readable during dragover (unlike getData); a proxy's
-    // source is a .derp-stack-tab, not a .tabbrowser-tab, so this fires for
+    // source is a .bork-stack-tab, not a .tabbrowser-tab, so this fires for
     // native tab drags only — exactly the join case.
     const onChipDragOverHighlight = (event: DragEvent) => {
       const target = event.target as Element | null;
       const chip = target?.closest?.(".tab-group-label-container")
-        ?.closest?.("tab-group[data-derp-stack]");
+        ?.closest?.("tab-group[data-bork-stack]");
       clearChipHighlight();
       if (!chip) return;
       const dt = event.dataTransfer as
@@ -1076,7 +1076,7 @@ export default class TabStacks extends NoraComponentBase {
       if (!src || (src.group as unknown as Element) === chip) return;
       event.preventDefault();
       clearDropIndicators();
-      chip.setAttribute("data-derp-drop-into", "true");
+      chip.setAttribute("data-bork-drop-into", "true");
     };
     // Row-1 insertion targets for proxy drags: ungrouped tabs AND whole
     // groups. A stack chip (or a plain group) is one atomic cell — a proxy
@@ -1110,7 +1110,7 @@ export default class TabStacks extends NoraComponentBase {
         const lcRect = lc?.getBoundingClientRect();
         if (!lc || !lcRect || lcRect.width === 0) continue;
         let right = lcRect.right;
-        if (ge.getAttribute("data-derp-stack") !== "true") {
+        if (ge.getAttribute("data-bork-stack") !== "true") {
           // Plain group: the cell spans the label plus its visible tabs.
           for (const t of g.tabs) {
             if (t.hidden) continue;
@@ -1141,7 +1141,7 @@ export default class TabStacks extends NoraComponentBase {
     const onProxyDragOver = (event: DragEvent) => {
       if (!event.dataTransfer?.types?.includes(PROXY_TYPE)) return;
       const t = event.target as Element | null;
-      const inBar = t?.closest?.("#derp-stack-bar");
+      const inBar = t?.closest?.("#bork-stack-bar");
       const inStrip = t?.closest?.("#tabbrowser-tabs");
       if (!inBar && !inStrip) {
         clearDropIndicators();
@@ -1158,7 +1158,7 @@ export default class TabStacks extends NoraComponentBase {
       // Insertion indicator on the nearest cell edge, like the top row.
       clearDropIndicators();
       if (inBar) {
-        const proxies = [...inBar.querySelectorAll(".derp-stack-tab")];
+        const proxies = [...inBar.querySelectorAll(".bork-stack-tab")];
         for (const proxy of proxies) {
           const r = proxy.getBoundingClientRect();
           if (event.clientX < r.x + r.width / 2) {
@@ -1174,13 +1174,13 @@ export default class TabStacks extends NoraComponentBase {
           | (DataTransfer & { mozSourceNode?: Node | null })
           | null;
         const srcProxy = (dt?.mozSourceNode as Element | null)?.closest?.(
-          ".derp-stack-tab",
+          ".bork-stack-tab",
         );
         const srcTab = findTabByDragId(
-          srcProxy?.getAttribute("data-derp-drag-id") ?? "",
+          srcProxy?.getAttribute("data-bork-drag-id") ?? "",
         );
         const hoverChip = t?.closest?.(".tab-group-label-container")
-          ?.closest?.("tab-group[data-derp-stack]");
+          ?.closest?.("tab-group[data-bork-stack]");
         if (hoverChip && hoverChip === (srcTab?.group as unknown as Element)) {
           return;
         }
@@ -1235,18 +1235,18 @@ export default class TabStacks extends NoraComponentBase {
       event.preventDefault();
       event.stopImmediatePropagation();
       try {
-        const inBar = target?.closest?.("#derp-stack-bar");
+        const inBar = target?.closest?.("#bork-stack-bar");
         if (inBar) {
           // Reorder within the stack: place before the first proxy whose
           // midpoint lies right of the drop.
           const bar = inBar as Element;
-          const proxies = [...bar.querySelectorAll(".derp-stack-tab")];
+          const proxies = [...bar.querySelectorAll(".bork-stack-tab")];
           let placed = false;
           for (const proxy of proxies) {
             const r = proxy.getBoundingClientRect();
             if (event.clientX < r.x + r.width / 2) {
               const other = findTabByDragId(
-                proxy.getAttribute("data-derp-drag-id") ?? "",
+                proxy.getAttribute("data-bork-drag-id") ?? "",
               );
               if (other && other !== tab) {
                 gb.moveTabBefore?.(tab, other);
@@ -1258,7 +1258,7 @@ export default class TabStacks extends NoraComponentBase {
           if (!placed) {
             const last = proxies[proxies.length - 1];
             const other = findTabByDragId(
-              last?.getAttribute("data-derp-drag-id") ?? "",
+              last?.getAttribute("data-bork-drag-id") ?? "",
             );
             if (other && other !== tab) gb.moveTabAfter?.(tab, other);
           }
@@ -1269,7 +1269,7 @@ export default class TabStacks extends NoraComponentBase {
           // stack chip at the end. Only releasing ON the tab's own chip
           // label is a no-op — you did not drag anywhere.
           const ownLabel = target?.closest?.(".tab-group-label-container");
-          const ownChip = ownLabel?.closest?.("tab-group[data-derp-stack]");
+          const ownChip = ownLabel?.closest?.("tab-group[data-bork-stack]");
           if (ownChip && (ownChip === (tab.group as unknown as Element))) {
             return;
           }
@@ -1360,7 +1360,7 @@ export default class TabStacks extends NoraComponentBase {
 
   /**
    * Classify groups and keep chips informative. Only groups we MARK with
-   * data-derp-stack get stack behavior (CSS hiding, forced expansion, chip
+   * data-bork-stack get stack behavior (CSS hiding, forced expansion, chip
    * click handling). Split-view binds its panes with tab groups too — those
    * must be left completely alone or the two features fight (runaway
    * revive/expand loop, mangled tabs, eventual crash).
@@ -1384,9 +1384,9 @@ export default class TabStacks extends NoraComponentBase {
     for (const group of gb.tabGroups) {
       try {
         if (this.isSplitViewGroup(group)) {
-          group.removeAttribute("data-derp-stack");
-          group.querySelector(".derp-stack-close")?.remove();
-          group.querySelector(".derp-stack-icon")?.remove();
+          group.removeAttribute("data-bork-stack");
+          group.querySelector(".bork-stack-close")?.remove();
+          group.querySelector(".bork-stack-icon")?.remove();
           for (
             const sel of [
               ".tab-group-label-container",
@@ -1399,10 +1399,10 @@ export default class TabStacks extends NoraComponentBase {
         }
         if (getGroupKind(group.id) === "group") {
           // Plain tab group by user choice: native presentation end to
-          // end. All stack CSS/behavior is scoped to [data-derp-stack].
-          group.removeAttribute("data-derp-stack");
-          group.querySelector(".derp-stack-close")?.remove();
-          group.querySelector(".derp-stack-icon")?.remove();
+          // end. All stack CSS/behavior is scoped to [data-bork-stack].
+          group.removeAttribute("data-bork-stack");
+          group.querySelector(".bork-stack-close")?.remove();
+          group.querySelector(".bork-stack-icon")?.remove();
           // An unnamed group's label holds a zero-width space rather than
           // nothing at all, so :empty never matches it and the flex gap
           // still reserves room for that invisible character — which is
@@ -1411,7 +1411,7 @@ export default class TabStacks extends NoraComponentBase {
           const plainLabel = group.querySelector(".tab-group-label");
           const visibleName = plainLabel?.textContent
             ?.replace(/[\s\u200B-\u200D\uFEFF]/g, "") ?? "";
-          group.toggleAttribute("data-derp-unnamed", !visibleName);
+          group.toggleAttribute("data-bork-unnamed", !visibleName);
 
           // Stock's "+N" badge counts every tab in the group, which assumes
           // they are all on the strip. Workspaces breaks that assumption: a
@@ -1441,7 +1441,7 @@ export default class TabStacks extends NoraComponentBase {
             | null;
           if (lp && typeof lp.scrollWidth === "number") {
             lp.toggleAttribute(
-              "data-derp-cropped",
+              "data-bork-cropped",
               lp.scrollWidth > (lp.clientWidth ?? 0) + 1,
             );
           }
@@ -1455,7 +1455,7 @@ export default class TabStacks extends NoraComponentBase {
           }
           continue;
         }
-        group.setAttribute("data-derp-stack", "true");
+        group.setAttribute("data-bork-stack", "true");
         // Every stack carries a name. Unnamed stacks used to derive the
         // chip title from a member tab — but real pages retitle themselves
         // on focus (SPAs, notification counters), so the chip appeared to
@@ -1486,15 +1486,15 @@ export default class TabStacks extends NoraComponentBase {
           (document as Document & {
             createXULElement: (tag: string) => XULElement;
           }).createXULElement("image");
-        if (labelEl && !labelEl.querySelector(".derp-stack-icon")) {
+        if (labelEl && !labelEl.querySelector(".bork-stack-icon")) {
           const icon = makeImage();
-          icon.classList.add("derp-stack-icon");
+          icon.classList.add("bork-stack-icon");
           icon.setAttribute("src", STACK_ICON);
           labelEl.appendChild(icon);
         }
-        if (labelEl && !labelEl.querySelector(".derp-stack-close")) {
+        if (labelEl && !labelEl.querySelector(".bork-stack-close")) {
           const close = makeImage();
-          close.classList.add("derp-stack-close");
+          close.classList.add("bork-stack-close");
           close.setAttribute("src", "chrome://global/skin/icons/close.svg");
           close.setAttribute("tooltiptext", "Close stack");
           labelEl.appendChild(close);
@@ -1503,13 +1503,13 @@ export default class TabStacks extends NoraComponentBase {
           group.collapsed = false;
         }
         const label = group.querySelector(".tab-group-label");
-        label?.setAttribute("data-derp-count", String(group.tabs.length));
+        label?.setAttribute("data-bork-count", String(group.tabs.length));
         // The label always exists now (auto-named above); the member-tab
         // fallback only covers the beat between group creation and the
         // auto-name landing. Bound either way; the chip fades the rest.
         const chipTitle = group.label || getGroupDisplayTitle(group);
         label?.setAttribute(
-          "data-derp-title",
+          "data-bork-title",
           chipTitle.length > 60 ? `${chipTitle.slice(0, 60)}…` : chipTitle,
         );
       } catch {

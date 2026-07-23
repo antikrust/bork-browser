@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Ghost",
   "version": "1.0.1",
-  "description": "derp built-in theme — Ghost. Black chrome, with swish.",
+  "description": "bork built-in theme — Ghost. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "ghost@themes.derp"
+      "id": "ghost@themes.bork"
     }
   },
   "theme": {

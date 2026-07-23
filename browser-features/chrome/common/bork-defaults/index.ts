@@ -17,13 +17,13 @@ const { AppConstants } = ChromeUtils.importESModule(
   "resource://gre/modules/AppConstants.sys.mjs",
 );
 
-const SEARCH_APPLIED_PREF = "derp.search.defaultApplied";
+const SEARCH_APPLIED_PREF = "bork.search.defaultApplied";
 const DEFAULT_ENGINE = "DuckDuckGo";
 
 /**
  * about: pages are separate documents, so no chrome stylesheet reaches
  * them — the sidebar's downloads panel and the settings pages stayed on
- * Firefox's own dark grey instead of the derp black. Registered through
+ * Firefox's own dark grey instead of the bork black. Registered through
  * the style sheet service, the only route into privileged documents (also
  * why extensions like Dark Reader can never touch them).
  *
@@ -49,7 +49,7 @@ const darkContentSheetUri = Services.io.newURI(
 );
 
 /**
- * Register (or drop) the about:-page sheet with Dark Derp. The sheet is
+ * Register (or drop) the about:-page sheet with Dark Bork. The sheet is
  * process-wide rather than per-window, so both calls are guarded — every
  * window runs this, and the pref is global.
  */
@@ -67,7 +67,7 @@ function applyDarkContentSheet(on: boolean): void {
 }
 
 /** Our name, as it should read wherever a product name is shown. */
-const BRAND_NAME = "Derp";
+const BRAND_NAME = "Bork";
 
 /**
  * The macOS application menu items that embed the product name. nsMenuBarX
@@ -81,14 +81,14 @@ const MAC_APP_MENU_IDS = [
 
 
 /**
- * derp runtime defaults that can't be expressed as plain prefs:
+ * bork runtime defaults that can't be expressed as plain prefs:
  * - DuckDuckGo as the default search engine (applied once per profile,
  *   user's later choice is respected).
  * - Extension toolbar buttons live in the unified extensions panel
  *   (puzzle button) instead of cluttering the nav bar.
  */
 @noraComponent(import.meta.hot)
-export default class DerpDefaults extends NoraComponentBase {
+export default class BorkDefaults extends NoraComponentBase {
   init(): void {
     this.rescueOffscreenWindow();
     void this.applyDefaultSearch();
@@ -102,7 +102,7 @@ export default class DerpDefaults extends NoraComponentBase {
     try {
       Services.prefs.getDefaultBranch("").setIntPref("ui.tooltipDelay", 300);
     } catch (e) {
-      console.error("[derp-defaults] tooltip delay tune failed:", e);
+      console.error("[bork-defaults] tooltip delay tune failed:", e);
     }
     // Native cookie-banner auto-reject, on by default: mode 1 clicks
     // "reject all" ONLY where the banner offers it (never auto-accepts —
@@ -114,27 +114,27 @@ export default class DerpDefaults extends NoraComponentBase {
       defaults.setIntPref("cookiebanners.service.mode", 1);
       defaults.setIntPref("cookiebanners.service.mode.privateBrowsing", 1);
     } catch (e) {
-      console.error("[derp-defaults] cookie banner mode failed:", e);
+      console.error("[bork-defaults] cookie banner mode failed:", e);
     }
   }
 
   /**
-   * Dark Derp: derp.theme.dark.enabled paints the tab-strip surfaces
-   * black with the swish curves (skin/derp/css/derp.css keys off the
-   * data-derp-dark root attribute). A skin variant, not a WebExtension
+   * Dark Bork: bork.theme.dark.enabled paints the tab-strip surfaces
+   * black with the swish curves (skin/bork/css/bork.css keys off the
+   * data-bork-dark root attribute). A skin variant, not a WebExtension
    * theme — the theme pack recolours all chrome and tramples the tab
    * group palette; this touches the strip alone. Live: flipping the pref
    * restyles every window without a restart.
    */
   private applyDarkVariant(): void {
-    const PREF = "derp.theme.dark.enabled";
+    const PREF = "bork.theme.dark.enabled";
     const apply = () => {
       try {
         const on = Services.prefs.getBoolPref(PREF, false);
-        document.documentElement?.toggleAttribute("data-derp-dark", on);
+        document.documentElement?.toggleAttribute("data-bork-dark", on);
         applyDarkContentSheet(on);
       } catch (e) {
-        console.error("[derp-defaults] dark variant toggle failed:", e);
+        console.error("[bork-defaults] dark variant toggle failed:", e);
       }
     };
     apply();
@@ -248,7 +248,7 @@ export default class DerpDefaults extends NoraComponentBase {
         }
       } catch (e) {
         console.error(
-          "[derp-defaults] window-local openPreferences failed, using stock:",
+          "[bork-defaults] window-local openPreferences failed, using stock:",
           e,
         );
         return orig(paneID, extraArgs);
@@ -257,11 +257,11 @@ export default class DerpDefaults extends NoraComponentBase {
   }
 
   /**
-   * Put our name in the macOS application menu ("About Derp", "Hide Derp",
-   * "Quit Derp").
+   * Put our name in the macOS application menu ("About Bork", "Hide Bork",
+   * "Quit Bork").
    *
    * These labels come from menubar.ftl via `-brand-shorter-name`, which the
-   * branding patch sets to Derp — but only for en-US, the one locale whose
+   * branding patch sets to Bork — but only for en-US, the one locale whose
    * files ship in the runtime. Under any other negotiated locale (en-GB here,
    * with or without a language pack installed) that lookup does not land and
    * Gecko falls back to the app name compiled into the runtime binary, which
@@ -278,8 +278,8 @@ export default class DerpDefaults extends NoraComponentBase {
     if (AppConstants.platform !== "macosx") return;
     try {
       const doc = (globalThis as unknown as Window).document;
-      // With --with-app-basename=Derp the compiled name is now Derp, so these
-      // items are native "About Derp" — EXCEPT under a non-en-US locale whose
+      // With --with-app-basename=Bork the compiled name is now Bork, so these
+      // items are native "About Bork" — EXCEPT under a non-en-US locale whose
       // language pack ships its own branding. A Floorp-repackaged Mozilla
       // langpack (e.g. en-GB, carried over from a Floorp profile) reinjects
       // "Floorp"; a stock Mozilla one injects "Firefox". Strip both plus the
@@ -346,7 +346,7 @@ export default class DerpDefaults extends NoraComponentBase {
         }
       }
     } catch (e) {
-      console.error("[derp-defaults] Failed to brand the app menu:", e);
+      console.error("[bork-defaults] Failed to brand the app menu:", e);
     }
   }
 
@@ -378,7 +378,7 @@ export default class DerpDefaults extends NoraComponentBase {
           w.screenY + w.outerHeight < sy + margin;
         if (offscreen) {
           console.log(
-            `[derp-defaults] window opened offscreen (x=${w.screenX} y=${w.screenY}) — rescuing`,
+            `[bork-defaults] window opened offscreen (x=${w.screenX} y=${w.screenY}) — rescuing`,
           );
           w.moveTo(sx + margin, sy + margin);
           if (w.outerWidth < 500 || w.outerHeight < 350) {
@@ -386,7 +386,7 @@ export default class DerpDefaults extends NoraComponentBase {
           }
         }
       } catch (e) {
-        console.error("[derp-defaults] offscreen rescue failed:", e);
+        console.error("[bork-defaults] offscreen rescue failed:", e);
       }
     }, 1500);
   }
@@ -414,7 +414,7 @@ export default class DerpDefaults extends NoraComponentBase {
       Services.prefs.setBoolPref(SEARCH_APPLIED_PREF, true);
       this.logger.info(`Default search engine set to ${DEFAULT_ENGINE}`);
     } catch (e) {
-      console.error("[derp-defaults] Failed to set default search:", e);
+      console.error("[bork-defaults] Failed to set default search:", e);
     }
   }
 
@@ -428,7 +428,7 @@ export default class DerpDefaults extends NoraComponentBase {
       try {
         CustomizableUI.addWidgetToArea(id, addonsArea);
       } catch (e) {
-        console.error(`[derp-defaults] Failed to move widget ${id}:`, e);
+        console.error(`[bork-defaults] Failed to move widget ${id}:`, e);
       }
     };
 
@@ -445,7 +445,7 @@ export default class DerpDefaults extends NoraComponentBase {
       CustomizableUI.addListener(listener);
     } catch (e) {
       console.error(
-        "[derp-defaults] Failed to relocate extension buttons:",
+        "[bork-defaults] Failed to relocate extension buttons:",
         e,
       );
     }

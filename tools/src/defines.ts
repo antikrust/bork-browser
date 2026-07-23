@@ -69,9 +69,9 @@ export const BIN_PATH = path.join(BIN_DIR, BRANDING.base_name);
 export const PROD_BIN_DIR = "../obj-artifact-build-output/dist/bin";
 
 /**
- * The macOS runtime binary is derp-branded at build time (the surrounding
+ * The macOS runtime binary is bork-branded at build time (the surrounding
  * folder and .app name stay Floorp), so the executable may be named either
- * "derp" (current runtimes) or the base name (older ones). Probed at call
+ * "bork" (current runtimes) or the base name (older ones). Probed at call
  * time, not module load: extraction happens after imports in the same run,
  * so a constant would be resolved against a not-yet-extracted tree.
  */
@@ -86,7 +86,7 @@ export function resolveBinPathExe(): string {
     "Contents",
     "MacOS",
   );
-  for (const name of ["derp", BRANDING.base_name]) {
+  for (const name of ["bork", BRANDING.base_name]) {
     try {
       Deno.statSync(path.join(macosDir, name));
       return path.join(macosDir, name);

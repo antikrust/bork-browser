@@ -4,12 +4,12 @@
     "tooltiptext": "Reopen the last closed tab {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Derp-specific settings such as the panel sidebar, Workspaces, and mouse gestures are managed in Derp Hub.",
-    "openButton": "Open Derp Hub"
+    "message": "Bork-specific settings such as the panel sidebar, Workspaces, and mouse gestures are managed in Bork Hub.",
+    "openButton": "Open Bork Hub"
   },
   "floorpStartWarning": {
-    "message": "To change the \"Home\" setting, disable Derp Start from Derp Hub (about:hub#/features/design).",
-    "openButton": "Open Derp Hub — Design"
+    "message": "To change the \"Home\" setting, disable Bork Start from Bork Hub (about:hub#/features/design).",
+    "openButton": "Open Bork Hub — Design"
   },
   "workspaces": {
     "modal": {
@@ -196,7 +196,7 @@
       "floorp-toggle-zen-mode": "Toggle Zen Mode",
       "floorp-toggle-command-palette": "Toggle Command Palette",
       "floorp-open-settings": "Open Settings",
-      "floorp-open-hub": "Open Derp Hub",
+      "floorp-open-hub": "Open Bork Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode",
       "floorp-copy-page-url-as-markdown": "Copy Page URL as Markdown",
       "floorp-split-view-open-left": "Split View Left",
@@ -225,8 +225,8 @@
       "gecko-restore-last-tab": "Reopen the last closed tab",
       "floorp-toggle-zen-mode": "Toggle Zen Mode to hide all UI elements for distraction-free browsing",
       "floorp-toggle-command-palette": "Open or close the command palette to search and execute commands",
-      "floorp-open-settings": "Opens the Derp settings page",
-      "floorp-open-hub": "Opens the Derp Hub page",
+      "floorp-open-settings": "Opens the Bork settings page",
+      "floorp-open-hub": "Opens the Bork Hub page",
       "floorp-toggle-share-mode": "Toggle Share Mode to minimize UI for screen sharing and presentations",
       "floorp-copy-page-url-as-markdown": "Copy the current page title and URL as Markdown link format: [Title](URL)",
       "floorp-split-view-open-left": "Open the current tab in a split view on the left side",
@@ -322,7 +322,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "Add to Derp",
+      "addToFloorp": "Add to Bork",
       "installing": "Installing...",
       "success": "Added!",
       "error": "Error occurred",
@@ -330,7 +330,7 @@
     },
     "error": {
       "title": "Installation Error",
-      "compatibilityNote": "This extension may not be compatible with Firefox/Derp.",
+      "compatibilityNote": "This extension may not be compatible with Firefox/Bork.",
       "alreadyInstalled": "This extension is already installed ({{name}})",
       "downloadFailed": "Failed to download CRX file",
       "conversionFailed": "Failed to convert extension: {{error}}",
@@ -352,7 +352,7 @@
       "downloadFailed": "Download failed",
       "signatureVerifyFailed": "Failed to verify extension signature",
       "corruptOrIncompatible": "Extension is corrupted or incompatible",
-      "incompatible": "This extension is not compatible with Derp",
+      "incompatible": "This extension is not compatible with Bork",
       "blocked": "This extension is blocked",
       "timeout": "Extension installation timed out",
       "installFailed": "Extension installation failed",
@@ -372,7 +372,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Derp Hub"
+      "title": "Bork Hub"
     }
   },
   "splitView": {
@@ -421,7 +421,7 @@
       "tools": "Tools",
       "downloads": "Downloads",
       "workspace": "Workspaces",
-      "floorp": "Derp",
+      "floorp": "Bork",
       "media": "Media",
       "open-tabs": "Open Tabs",
       "switcher": "Switcher",

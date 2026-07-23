@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0
 #
-# Install derp's icons into a runtime tree.
+# Install bork's icons into a runtime tree.
 #
 # Icons are binary, so tools/patches cannot carry them the way it carries the
 # brand strings — they have to be copied in after the runtime is unpacked.

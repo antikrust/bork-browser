@@ -4,7 +4,7 @@
 
 #bsb-context-add,
 #bsb-context-link-add {
-  --menuitem-image: url("chrome://noraneko-skin/content/derp/icons/movetowindow-16.svg");
+  --menuitem-image: url("chrome://noraneko-skin/content/bork/icons/movetowindow-16.svg");
 }
 
 #undo-closed-tab {
@@ -15,7 +15,7 @@
   list-style-image: url("chrome://floorp/skin/icons/verticaltab.svg");
 }
 
-/* derp: vertical tabs are removed from the browser (sidebar.verticalTabs is
+/* bork: vertical tabs are removed from the browser (sidebar.verticalTabs is
    locked false at startup). Hide EVERY native entry that offers the mode —
    the toolbar context menu AND the sidebar context menu (the first sweep
    missed the sidebar one) — clicking them could only fail against the

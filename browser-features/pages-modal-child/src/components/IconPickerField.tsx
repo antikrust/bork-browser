@@ -55,7 +55,7 @@ const materialDataUriCache = new Map<string, string>();
 const materialToDataUri = (raw: string, name: string): string => {
   const themed = raw
     .replace(/(<svg[^>]*?)\sfill="[^"]*"/, "$1")
-    .replace(/<svg /, `<svg fill="context-fill" data-derp-icon-name="material:${name}" `);
+    .replace(/<svg /, `<svg fill="context-fill" data-bork-icon-name="material:${name}" `);
   return `data:image/svg+xml;utf8,${encodeURIComponent(themed)}`;
 };
 
@@ -116,7 +116,7 @@ const lucideToDataUri = (Icon: LucideIconComponent, name: string): string => {
     .replaceAll('fill="currentColor"', 'fill="context-fill"')
     // The picked name rides inside the stored SVG so the picker can show
     // which of the thousands of icons this is when the form reopens.
-    .replace(/<svg /, `<svg data-derp-icon-name="${name}" `);
+    .replace(/<svg /, `<svg data-bork-icon-name="${name}" `);
   try {
     return `data:image/svg+xml;base64,${btoa(themed)}`;
   } catch {
@@ -132,7 +132,7 @@ const iconNameFromValue = (value: string): string | null => {
     const meta = value.slice(0, comma);
     const body = value.slice(comma + 1);
     const text = meta.includes("base64") ? atob(body) : decodeURIComponent(body);
-    const match = text.match(/data-derp-icon-name="([^"]+)"/);
+    const match = text.match(/data-bork-icon-name="([^"]+)"/);
     return match ? match[1] : null;
   } catch {
     return null;

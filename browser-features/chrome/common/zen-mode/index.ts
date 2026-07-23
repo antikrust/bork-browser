@@ -30,9 +30,9 @@ export default class ZenMode extends NoraComponentBase {
     // Feature switch (fault-finding, 2026-07-16): zen mode is off. The
     // sticky floorp.zenmode.enabled state plus the delayed auto-retract
     // matches the "sat there a bit, then everything went away" reports.
-    // Code kept — set derp.zen.enabled=true (and unlock
+    // Code kept — set bork.zen.enabled=true (and unlock
     // floorp.zenmode.enabled in override.ini) to bring it back.
-    if (!Services.prefs.getBoolPref("derp.zen.enabled", false)) {
+    if (!Services.prefs.getBoolPref("bork.zen.enabled", false)) {
       const clearSticky = () => {
         try {
           Services.prefs.clearUserPref("floorp.zenmode.enabled");
@@ -53,7 +53,7 @@ export default class ZenMode extends NoraComponentBase {
       root?.removeAttribute("zenmode-reveal-top");
       root?.removeAttribute("zenmode-reveal-bottom");
       root?.removeAttribute("zenmode-reveal-side");
-      this.logger.info("Zen mode switched off (derp.zen.enabled=false)");
+      this.logger.info("Zen mode switched off (bork.zen.enabled=false)");
       return;
     }
 

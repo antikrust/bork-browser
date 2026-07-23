@@ -377,14 +377,14 @@
   list-style-image: url("chrome://global/skin/icons/settings.svg");
 }
 
-/* derp additions to the bottom cluster */
-#derp-sidebar-reopen-icon {
+/* bork additions to the bottom cluster */
+#bork-sidebar-reopen-icon {
   list-style-image: url("chrome://global/skin/icons/undo.svg");
 }
-#derp-sidebar-account-icon {
+#bork-sidebar-account-icon {
   list-style-image: url("chrome://browser/skin/fxa/avatar-empty.svg");
 }
-#derp-sidebar-menu-icon {
+#bork-sidebar-menu-icon {
   list-style-image: url("chrome://browser/skin/menu.svg");
 }
 
@@ -392,11 +392,11 @@
    context-fill, and .panel-sidebar-panel already fills currentColor, so
    colour alone does it). Extensions and passwords were picked by hand;
    the rest stay in the same family. */
-#derp-sidebar-reopen-icon {
+#bork-sidebar-reopen-icon {
   color: #d98b6f; /* terracotta */
 }
 
-#derp-sidebar-account-icon {
+#bork-sidebar-account-icon {
   color: #cf8f9e; /* dusty rose */
 }
 
@@ -439,7 +439,7 @@
    real height — a genuine slide both ways. (A max-height tween spends
    most of its time in an invisible range and reads as a pop.) The box is
    pinned to the bottom of the sidebar, so growth reads as sliding up. */
-#derp-ext-tweaker {
+#bork-ext-tweaker {
   display: grid;
   grid-template-rows: 0fr;
   /* !important: lepton blanket-sets `transition: background-color 1s
@@ -448,16 +448,16 @@
   transition: grid-template-rows 0.2s ease !important;
 }
 
-#derp-ext-tweaker[data-open="true"] {
+#bork-ext-tweaker[data-open="true"] {
   grid-template-rows: 1fr;
 }
 
-#derp-ext-tweaker > .derp-ext-tweaker-inner {
+#bork-ext-tweaker > .bork-ext-tweaker-inner {
   overflow: hidden;
   min-height: 0;
 }
 
-#derp-ext-tweaker .derp-ext-tweaker-item > .toolbarbutton-icon {
+#bork-ext-tweaker .bork-ext-tweaker-item > .toolbarbutton-icon {
   width: var(--panel-icon-size, 20px);
   height: var(--panel-icon-size, 20px);
 }

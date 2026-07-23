@@ -5,7 +5,7 @@
 
 /* Notes sits in the panel sidebar beside black chrome, where daisyUI's
    stock dark base (a lifted blue-grey) read as a lighter slab. Only the
-   three base surfaces move to the derp blacks — every other daisyUI
+   three base surfaces move to the bork blacks — every other daisyUI
    colour stays as it is. */
 @media (prefers-color-scheme: dark) {
   :root {

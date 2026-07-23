@@ -17,9 +17,9 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 PAGE = ROOT / "tools" / "release" / "site" / "index.html"
 ARTIFACTS = [
-    "macos/Derp-macOS-universal.dmg",
-    "linux/Derp-linux-x86_64.tar.gz",
-    "windows/Derp-windows-x86_64.zip",
+    "macos/Bork-macOS-universal.dmg",
+    "linux/Bork-linux-x86_64.tar.gz",
+    "windows/Bork-windows-x86_64.zip",
 ]
 
 

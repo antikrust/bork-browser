@@ -4,12 +4,12 @@
     "tooltiptext": "Перевідкрити останню закриту вкладку {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Керування унікальними функціями Derp — бічною панеллю, робочими просторами та жестами миші — здійснюється через Derp Hub.",
-    "openButton": "Перейти до Derp Hub"
+    "message": "Керування унікальними функціями Bork — бічною панеллю, робочими просторами та жестами миші — здійснюється через Bork Hub.",
+    "openButton": "Перейти до Bork Hub"
   },
   "floorpStartWarning": {
-    "message": "Щоб змінити налаштування \"Головної сторінки\", вимкніть Derp Start у Derp Hub (about:hub#/features/design).",
-    "openButton": "Відкрити Derp Hub — Зовнішній вигляд"
+    "message": "Щоб змінити налаштування \"Головної сторінки\", вимкніть Bork Start у Bork Hub (about:hub#/features/design).",
+    "openButton": "Відкрити Bork Hub — Зовнішній вигляд"
   },
   "workspaces": {
     "modal": {
@@ -196,7 +196,7 @@
       "floorp-toggle-zen-mode": "Toggle Zen Mode",
       "floorp-toggle-command-palette": "Toggle Command Palette",
       "floorp-open-settings": "Open Settings",
-      "floorp-open-hub": "Перейти до Derp Hub",
+      "floorp-open-hub": "Перейти до Bork Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode",
       "floorp-copy-page-url-as-markdown": "Copy Page URL as Markdown",
       "floorp-split-view-open-left": "Split View Left",
@@ -225,8 +225,8 @@
       "gecko-restore-last-tab": "Відкрити останню закриту вкладку",
       "floorp-toggle-zen-mode": "Toggle Zen Mode to hide all UI elements for distraction-free browsing",
       "floorp-toggle-command-palette": "Open or close the command palette to search and execute commands",
-      "floorp-open-settings": "Opens the Derp settings page",
-      "floorp-open-hub": "Opens the Derp Hub page",
+      "floorp-open-settings": "Opens the Bork settings page",
+      "floorp-open-hub": "Opens the Bork Hub page",
       "floorp-toggle-share-mode": "Toggle Share Mode to minimize UI for screen sharing and presentations",
       "floorp-copy-page-url-as-markdown": "Copy the current page title and URL as Markdown link format: [Title](URL)",
       "floorp-split-view-open-left": "Open the current tab in a split view on the left side",
@@ -322,7 +322,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "Додати до Derp",
+      "addToFloorp": "Додати до Bork",
       "installing": "Встановлення...",
       "success": "Додано!",
       "error": "Error occurred",
@@ -330,7 +330,7 @@
     },
     "error": {
       "title": "Installation Error",
-      "compatibilityNote": "Це розширення може бути несумісним із Firefox/Derp.",
+      "compatibilityNote": "Це розширення може бути несумісним із Firefox/Bork.",
       "alreadyInstalled": "This extension is already installed ({{name}})",
       "downloadFailed": "Failed to download CRX file",
       "conversionFailed": "Failed to convert extension: {{error}}",
@@ -352,7 +352,7 @@
       "downloadFailed": "Download failed",
       "signatureVerifyFailed": "Failed to verify extension signature",
       "corruptOrIncompatible": "Extension is corrupted or incompatible",
-      "incompatible": "Це розширення несумісне з Derp",
+      "incompatible": "Це розширення несумісне з Bork",
       "blocked": "This extension is blocked",
       "timeout": "Extension installation timed out",
       "installFailed": "Extension installation failed",
@@ -372,7 +372,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Derp Hub"
+      "title": "Bork Hub"
     }
   },
   "splitView": {
@@ -421,7 +421,7 @@
       "tools": "Tools",
       "downloads": "Завантаження",
       "workspace": "Робочі області",
-      "floorp": "Derp",
+      "floorp": "Bork",
       "media": "Media",
       "open-tabs": "Open Tabs",
       "switcher": "Switcher",

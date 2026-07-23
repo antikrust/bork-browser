@@ -1,4 +1,4 @@
-import { setupDerpPanes } from "./derp-panes.ts";
+import { setupBorkPanes } from "./bork-panes.ts";
 
 interface FirefoxWindow extends Window {
   gBrowser: {
@@ -112,8 +112,8 @@ type FloorpHubWarningElements = {
 
 const defaultWarningTexts: FloorpHubWarningTexts = {
   message:
-    "Derp-specific settings such as the panel sidebar, Workspaces, and mouse gestures are managed in Derp Hub.",
-  buttonLabel: "Open Derp Hub",
+    "Bork-specific settings such as the panel sidebar, Workspaces, and mouse gestures are managed in Bork Hub.",
+  buttonLabel: "Open Bork Hub",
 };
 
 // Note: localized fallback maps removed for preferences — preferences will
@@ -305,7 +305,7 @@ function injectFloorpHubWarningStyles(): void {
     }
 
     /*
-     * derp: vertical tabs are removed from the browser entirely
+     * bork: vertical tabs are removed from the browser entirely
      * (sidebar.verticalTabs is locked false at startup), so hide the native
      * horizontal/vertical tab-orientation picker in the Browser Layout
      * group. Unconditional — no body-class gate. The picker's
@@ -440,7 +440,7 @@ const FLOORP_START_WARNING_IDS = {
 
 const defaultStartWarningTexts: FloorpHubWarningTexts = {
   message:
-    'To change the "Home" setting, disable Derp Start under Tab & Appearance.',
+    'To change the "Home" setting, disable Bork Start under Tab & Appearance.',
   buttonLabel: "Open Tab & Appearance",
 };
 
@@ -544,8 +544,8 @@ function createFloorpStartWarning(): void {
         "http://localhost:5183/#/features/design";
       return;
     }
-    // The Derp Start toggle lives in this page's own Tab & Appearance pane.
-    location.hash = "#derpDesign";
+    // The Bork Start toggle lives in this page's own Tab & Appearance pane.
+    location.hash = "#borkDesign";
   });
 
   container.appendChild(message);
@@ -796,11 +796,11 @@ ensureI18NInitialized();
 ensureFloorpStartWarning();
 initHideNewTabPage();
 
-// derp panes: native categories inside about:preferences, replacing the hub
-// pane-by-pane (see derp-panes.ts — statically imported so tsdown inlines it
+// bork panes: native categories inside about:preferences, replacing the hub
+// pane-by-pane (see bork-panes.ts — statically imported so tsdown inlines it
 // into this subscript bundle).
 try {
-  setupDerpPanes();
+  setupBorkPanes();
 } catch (e) {
-  console.error("[derp-panes] setup failed:", e);
+  console.error("[bork-panes] setup failed:", e);
 }

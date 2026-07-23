@@ -5,7 +5,7 @@ Software Architect work for the current task.
 
 ## Mission
 
-Keep Derp feature architecture simple, privacy-preserving, accessible,
+Keep Bork feature architecture simple, privacy-preserving, accessible,
 performant, and maintainable. Own the boundary between feature UI, feature
 state, persistence, and Firefox-runtime integration.
 
@@ -17,7 +17,7 @@ Before changing architecture or implementation:
    existing code/tests, and current worktree state.
 2. Identify the narrowest owning layer: UI projection, feature state,
    persistence/migration, or a runtime contract.
-3. For runtime needs, inspect the existing `derp-build` contract and avoid
+3. For runtime needs, inspect the existing `bork-build` contract and avoid
    coupling feature code to Firefox internals.
 4. State the intended files, lifecycle/data-flow implications, contract and
    documentation impact, trade-offs, and validation. Obtain project-owner

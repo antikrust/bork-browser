@@ -1,5 +1,5 @@
 {
-    "title": "Derp Start",
+    "title": "Bork Start",
     "topSites": {
         "addSite": "Añadir sitio",
         "addNewSite": "Añadir nuevo sitio",
@@ -27,7 +27,7 @@
         "randomImage": "Imagen al azar",
         "customImage": "Imagen personalizada",
         "folderImages": "Imágenes desde la carpeta",
-        "floorpImages": "Imágenes de Derp",
+        "floorpImages": "Imágenes de Bork",
         "currentImage": "Current image:",
         "imageRecommendation": "Recommended: 1920x1080 or higher",
         "currentFolder": "Current folder:",
@@ -35,9 +35,9 @@
         "selected": "Seleccionado",
         "enableSlideshow": "Activar presentación",
         "slideshowInterval": "Slideshow Interval",
-        "floorpStart": "Derp Start",
-        "disableFloorpStart": "Desactivar Derp Start (usar about:newtab clásico)",
-        "disableFloorpStartDescription": "Cuando se activa, Derp Start será reemplazado por la clásica pestaña nueva / página de inicio de Firefox.",
+        "floorpStart": "Bork Start",
+        "disableFloorpStart": "Desactivar Bork Start (usar about:newtab clásico)",
+        "disableFloorpStartDescription": "Cuando se activa, Bork Start será reemplazado por la clásica pestaña nueva / página de inicio de Firefox.",
         "restartRequired": "Es necesario reiniciar el navegador para que surta efecto.",
         "firefoxLayout": "Usar diseño heredado (como Firefox Home)"
     },

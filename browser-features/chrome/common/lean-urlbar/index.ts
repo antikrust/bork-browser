@@ -17,11 +17,11 @@ import {
   togglePanelSidebar,
 } from "./sidebar-toggle.ts";
 
-const AUTOHIDE_ENABLED_PREF = "derp.urlbar.autohide.enabled";
-const SIDEBAR_TOGGLE_ENABLED_PREF = "derp.sidebar.toggle.enabled";
-const HIDDEN_PREF = "derp.urlbar.hidden";
-const HIDDEN_ATTR = "derp-urlbar-hidden";
-const PEEK_ATTR = "derp-urlbar-peek";
+const AUTOHIDE_ENABLED_PREF = "bork.urlbar.autohide.enabled";
+const SIDEBAR_TOGGLE_ENABLED_PREF = "bork.sidebar.toggle.enabled";
+const HIDDEN_PREF = "bork.urlbar.hidden";
+const HIDDEN_ATTR = "bork-urlbar-hidden";
+const PEEK_ATTR = "bork-urlbar-peek";
 
 /**
  * "Lean" address bar: the nav bar can be toggled away entirely (bound to
@@ -100,7 +100,7 @@ export default class LeanUrlbar extends NoraComponentBase {
         const nav = document?.getElementById("nav-bar");
         const h = nav?.getBoundingClientRect().height ?? 0;
         if (h > 0) {
-          root.style.setProperty("--derp-navbar-height", `${Math.ceil(h)}px`);
+          root.style.setProperty("--bork-navbar-height", `${Math.ceil(h)}px`);
         }
         root.setAttribute(HIDDEN_ATTR, "");
       } else {
@@ -148,7 +148,7 @@ export default class LeanUrlbar extends NoraComponentBase {
     // Actions for the keyboard-shortcut / mouse-gesture systems.
     gestureActions.registerActions([
       {
-        name: "derp-toggle-urlbar",
+        name: "bork-toggle-urlbar",
         fn: () => {
           // Stays registered so the shortcut binding resolves, but does
           // nothing while the feature switch is off.
@@ -160,11 +160,11 @@ export default class LeanUrlbar extends NoraComponentBase {
         },
       },
       {
-        name: "derp-toggle-panel-sidebar",
+        name: "bork-toggle-panel-sidebar",
         fn: () => {
           // Registered so the shortcut binding resolves; inert while the
           // feature switch is off. The toggle itself is shared with the
-          // derp-panel-sidebar-button navbar widget (sidebar-toggle.ts).
+          // bork-panel-sidebar-button navbar widget (sidebar-toggle.ts).
           if (!sidebarToggleEnabled) return;
           togglePanelSidebar(window);
         },

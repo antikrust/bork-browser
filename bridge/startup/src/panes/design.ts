@@ -6,7 +6,7 @@
 /**
  * Appearance pane — port of the hub's design settings page
  * (pages-settings/src/app/design): interface options, tab bar position,
- * tab behavior, tab sleep exclusions and UI customization. derp ships a
+ * tab behavior, tab sleep exclusions and UI customization. bork ships a
  * single interface design, so there is no design picker — the Interface
  * group carries only the favicon-color toggle.
  *
@@ -15,18 +15,18 @@
  * field — the same effective writes the hub's dataManager produced with its
  * object spreads. Two standalone bool prefs ride along, mirroring the hub's
  * defaults: floorp.splitView.dragToSplitCreate.enabled (default true) and
- * derp.tabs.hoverReload.enabled (default false). Tab sleep exclusions are
+ * bork.tabs.hoverReload.enabled (default false). Tab sleep exclusions are
  * their own JSON pref, floorp.tabs.sleep.exclusion ({enabled, patterns}).
  *
  * The hub's engine sub-page (the userChrome.* toggles) was retired with the
  * design picker.
  *
  * Text mirrors the hub's en-US strings; i18n wiring is a follow-up for all
- * derp panes at once.
+ * bork panes at once.
  */
 
 import {
-  addDerpPane,
+  addBorkPane,
   buttonRow,
   checkboxRow,
   doc,
@@ -42,13 +42,13 @@ const DESIGN_PREF = "floorp.design.configs";
 // Standalone prefs the hub's dataManager read/wrote next to the JSON blob.
 const SPLIT_VIEW_DND_CREATE_PREF = "floorp.splitView.dragToSplitCreate.enabled";
 const DEFAULT_SPLIT_VIEW_DND_CREATE = true;
-const HOVER_RELOAD_PREF = "derp.tabs.hoverReload.enabled";
+const HOVER_RELOAD_PREF = "bork.tabs.hoverReload.enabled";
 const DEFAULT_HOVER_RELOAD = false;
 
 const TAB_SLEEP_EXCLUSION_PREF = "floorp.tabs.sleep.exclusion";
 
 const RESTART_NOTE =
-  "A restart of Derp is required to completely enable or disable this UI customization feature.";
+  "A restart of Bork is required to completely enable or disable this UI customization feature.";
 
 /* ------------------------------------------------------------------ */
 /* floorp.design.configs — nested field access                         */
@@ -158,7 +158,7 @@ function prefCheckbox(
       try {
         Services.prefs.setBoolPref(pref, checked);
       } catch (e) {
-        console.error("[derp-panes]", id, "pref write failed:", e);
+        console.error("[bork-panes]", id, "pref write failed:", e);
       }
     },
   });
@@ -235,7 +235,7 @@ function numberRow(spec: NumberRowSpec): Element {
     try {
       spec.onChange(v);
     } catch (e) {
-      console.error("[derp-panes]", spec.id, "number change failed:", e);
+      console.error("[bork-panes]", spec.id, "number change failed:", e);
     }
   });
   line.appendChild(input);
@@ -291,7 +291,7 @@ function sleepExclusionGroup(): Element {
   const initial = readSleepExclusion();
 
   const textarea = doc.createElement("textarea");
-  textarea.id = "derp-design-sleep-patterns";
+  textarea.id = "bork-design-sleep-patterns";
   textarea.rows = 6;
   textarea.placeholder = "Enter URL pattern (e.g., example.com, *.google.com)";
   textarea.style.width = "100%";
@@ -301,7 +301,7 @@ function sleepExclusionGroup(): Element {
   textarea.value = initial.patterns.join("\n");
 
   const applyRow = buttonRow(
-    "derp-design-sleep-apply",
+    "bork-design-sleep-apply",
     "Apply",
     () => {
       const patterns: string[] = [];
@@ -325,7 +325,7 @@ function sleepExclusionGroup(): Element {
   };
 
   const enabledRow = checkboxRow({
-    id: "derp-design-sleep-enabled",
+    id: "bork-design-sleep-enabled",
     label: "Enable tab sleep exclusion",
     checked: () => readSleepExclusion().enabled,
     onChange: (checked) => {
@@ -363,22 +363,22 @@ function sleepExclusionGroup(): Element {
 function build(root: Element): void {
   root.appendChild(paneHeader(
     "Tab & Appearance",
-    "Customize toolbar positions, tab bar style, and Derp's appearance.",
+    "Customize toolbar positions, tab bar style, and Bork's appearance.",
   ));
 
   /* ---- Interface ---- */
   root.appendChild(groupboxOf("Interface", [
-    // Dark Derp is skin-level (data-derp-dark root attribute via
-    // derp-defaults' pref observer), NOT an addon theme — this is its only
-    // UI. Off = the normal Derp look. Takes effect instantly.
+    // Dark Bork is skin-level (data-bork-dark root attribute via
+    // bork-defaults' pref observer), NOT an addon theme — this is its only
+    // UI. Off = the normal Bork look. Takes effect instantly.
     prefCheckbox(
-      "derp-design-dark-derp",
-      "derp.theme.dark.enabled",
+      "bork-design-dark-bork",
+      "bork.theme.dark.enabled",
       false,
-      "Dark Derp (black tab strip, panels and toolbar)",
+      "Dark Bork (black tab strip, panels and toolbar)",
     ),
     designCheckbox(
-      "derp-design-favicon-color",
+      "bork-design-favicon-color",
       ["globalConfigs", "faviconColor"],
       "Use Favicon Color for Navigation Bar Background",
     ),
@@ -388,25 +388,25 @@ function build(root: Element): void {
   root.appendChild(groupboxOf("Tab Bar", [
     sectionHeader("Position", "Choose the tab bar position."),
     radioGroup(
-      "derp-design-tabbar-position",
+      "bork-design-tabbar-position",
       [
         {
-          id: "derp-design-tabbar-position-default",
+          id: "bork-design-tabbar-position-default",
           label: "Default",
           value: "default",
         },
         {
-          id: "derp-design-tabbar-position-hide",
+          id: "bork-design-tabbar-position-hide",
           label: "Hide Tab Bar",
           value: "hide-horizontal-tabbar",
         },
         {
-          id: "derp-design-tabbar-position-below-navbar",
+          id: "bork-design-tabbar-position-below-navbar",
           label: "Show Tab Bar at Bottom of Navigation Bar",
           value: "bottom-of-navigation-toolbar",
         },
         {
-          id: "derp-design-tabbar-position-window-bottom",
+          id: "bork-design-tabbar-position-window-bottom",
           label: "Show Tab Bar at Bottom of Window",
           value: "bottom-of-window",
         },
@@ -418,12 +418,12 @@ function build(root: Element): void {
 
   /* ---- Tabs ---- */
   const reverseScrollRow = designCheckbox(
-    "derp-design-tab-scroll-reverse",
+    "bork-design-tab-scroll-reverse",
     ["tab", "tabScroll", "reverse"],
     "Reverse tab scroll",
   );
   const wrapScrollRow = designCheckbox(
-    "derp-design-tab-scroll-wrap",
+    "bork-design-tab-scroll-wrap",
     ["tab", "tabScroll", "wrap"],
     "Loop tab scroll",
   );
@@ -434,7 +434,7 @@ function build(root: Element): void {
     setRowCheckboxDisabled(wrapScrollRow, !enabled);
   };
   const scrollRow = checkboxRow({
-    id: "derp-design-tab-scroll",
+    id: "bork-design-tab-scroll",
     label: "Switch tabs by scrolling",
     checked: () => designBool(["tab", "tabScroll", "enabled"], false),
     onChange: (checked) => {
@@ -457,20 +457,20 @@ function build(root: Element): void {
       "Specify where new tabs open. Following Firefox's behavior will vary the position based on how you open links.",
     ),
     radioGroup(
-      "derp-design-tab-open-position",
+      "bork-design-tab-open-position",
       [
         {
-          id: "derp-design-tab-open-default",
+          id: "bork-design-tab-open-default",
           label: "Follow Firefox's behavior",
           value: "-1",
         },
         {
-          id: "derp-design-tab-open-last",
+          id: "bork-design-tab-open-last",
           label: "Open at the end of the tab bar",
           value: "0",
         },
         {
-          id: "derp-design-tab-open-next",
+          id: "bork-design-tab-open-next",
           label: "Open next to the current tab",
           value: "1",
         },
@@ -479,29 +479,29 @@ function build(root: Element): void {
       (value) => setDesignValue(["tab", "tabOpenPosition"], Number(value)),
     ),
     designCheckbox(
-      "derp-design-tab-pin-title",
+      "bork-design-tab-pin-title",
       ["tab", "tabPinTitle"],
       "Show pinned tab titles",
     ),
     prefCheckbox(
-      "derp-design-tab-drag-split",
+      "bork-design-tab-drag-split",
       SPLIT_VIEW_DND_CREATE_PREF,
       DEFAULT_SPLIT_VIEW_DND_CREATE,
       "Allow creating split view by dragging tabs",
     ),
     prefCheckbox(
-      "derp-design-tab-hover-reload",
+      "bork-design-tab-hover-reload",
       HOVER_RELOAD_PREF,
       DEFAULT_HOVER_RELOAD,
       "Show a reload button when resting the pointer on a tab",
     ),
     designCheckbox(
-      "derp-design-tab-double-click-close",
+      "bork-design-tab-double-click-close",
       ["tab", "tabDubleClickToClose"],
       "Close tab by double-clicking",
     ),
     numberRow({
-      id: "derp-design-tab-min-width",
+      id: "bork-design-tab-min-width",
       label: "Minimum tab width",
       hint: "60px - 300px",
       min: 60,
@@ -510,7 +510,7 @@ function build(root: Element): void {
       onChange: (value) => setDesignValue(["tab", "tabMinWidth"], value),
     }),
     numberRow({
-      id: "derp-design-tab-min-height",
+      id: "bork-design-tab-min-height",
       label: "Minimum tab height",
       hint: "20px - 100px",
       min: 20,
@@ -531,7 +531,7 @@ function build(root: Element): void {
       ? [
         sectionHeader("Multirow Tab"),
         designCheckbox(
-          "derp-design-multirow-newtab-inside",
+          "bork-design-multirow-newtab-inside",
           ["uiCustomization", "multirowTab", "newtabInsideEnabled"],
           "Show new tab button inside tab bar",
         ),
@@ -542,11 +542,11 @@ function build(root: Element): void {
     sectionHeader("Navigation Bar"),
     labelLine("Position (Experiment)"),
     radioGroup(
-      "derp-design-navbar-position",
+      "bork-design-navbar-position",
       [
-        { id: "derp-design-navbar-position-top", label: "Top", value: "top" },
+        { id: "bork-design-navbar-position-top", label: "Top", value: "top" },
         {
-          id: "derp-design-navbar-position-bottom",
+          id: "bork-design-navbar-position-bottom",
           label: "Bottom",
           value: "bottom",
         },
@@ -557,61 +557,61 @@ function build(root: Element): void {
     ),
     noteText(RESTART_NOTE),
     designCheckbox(
-      "derp-design-search-bar-top",
+      "bork-design-search-bar-top",
       ["uiCustomization", "navbar", "searchBarTop"],
       "Move page inside search bar",
     ),
     sectionHeader("Display"),
     designCheckbox(
-      "derp-design-disable-fullscreen-notification",
+      "bork-design-disable-fullscreen-notification",
       ["uiCustomization", "display", "disableFullscreenNotification"],
       "Disable fullscreen notification",
     ),
     designCheckbox(
-      "derp-design-delete-browser-border",
+      "bork-design-delete-browser-border",
       ["uiCustomization", "display", "deleteBrowserBorder"],
       "Round the corners of pages",
     ),
     designCheckbox(
-      "derp-design-disable-qr-button",
+      "bork-design-disable-qr-button",
       ["uiCustomization", "qrCode", "disableButton"],
       "Disable QR code button",
     ),
     sectionHeader("New Tab"),
     designCheckbox(
-      "derp-design-disable-floorp-start",
+      "bork-design-disable-floorp-start",
       ["uiCustomization", "disableFloorpStart"],
-      "Disable Derp Start",
+      "Disable Bork Start",
       RESTART_NOTE,
     ),
     sectionHeader("Special Features"),
     designCheckbox(
-      "derp-design-optimize-tst",
+      "bork-design-optimize-tst",
       ["uiCustomization", "special", "optimizeForTreeStyleTab"],
       "Optimize for Tree Style Tab",
     ),
     designCheckbox(
-      "derp-design-hide-nav-buttons",
+      "bork-design-hide-nav-buttons",
       ["uiCustomization", "special", "hideForwardBackwardButton"],
       "Hide Forward/Backward Button",
     ),
     designCheckbox(
-      "derp-design-stg-workspaces",
+      "bork-design-stg-workspaces",
       ["uiCustomization", "special", "stgLikeWorkspaces"],
       "Simple Tab Groups like workspaces",
     ),
     sectionHeader("Bookmark Bar"),
     labelLine("Position (Experiment)"),
     radioGroup(
-      "derp-design-bookmark-bar-position",
+      "bork-design-bookmark-bar-position",
       [
         {
-          id: "derp-design-bookmark-bar-position-top",
+          id: "bork-design-bookmark-bar-position-top",
           label: "Top",
           value: "top",
         },
         {
-          id: "derp-design-bookmark-bar-position-bottom",
+          id: "bork-design-bookmark-bar-position-bottom",
           label: "Bottom",
           value: "bottom",
         },
@@ -621,7 +621,7 @@ function build(root: Element): void {
         setDesignValue(["uiCustomization", "bookmarkBar", "position"], value),
     ),
     designCheckbox(
-      "derp-design-bookmark-bar-focus-expand",
+      "bork-design-bookmark-bar-focus-expand",
       ["uiCustomization", "bookmarkBar", "focusExpand"],
       "Expand bookmark bar on focus",
     ),
@@ -634,9 +634,9 @@ const ICON = "data:image/svg+xml," + encodeURIComponent(
 );
 
 export function registerDesignPane(): void {
-  const ok = addDerpPane({
-    category: "paneDerpDesign",
-    categoryId: "category-derp-design",
+  const ok = addBorkPane({
+    category: "paneBorkDesign",
+    categoryId: "category-bork-design",
     label: "Tab & Appearance",
     icon: ICON,
     build,

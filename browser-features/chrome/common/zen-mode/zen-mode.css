@@ -99,7 +99,7 @@
    The rail needs no anchor: it is the first item in the row and stays at
    the start edge on its own.
 
-   35px is the icon strip's width by design — derp.css states it where it
+   35px is the icon strip's width by design — bork.css states it where it
    sizes the rail to match ("Same width as the right panel's icon column
    (35px) — the two rails mirror each other"). A constant, not a cached
    measurement: nothing re-takes it, so there is nothing to go stale, and
@@ -113,7 +113,7 @@
 :root[zenmode] #panel-sidebar-box {
   position: absolute !important;
   inset-block: 0 !important;
-  inset-inline-end: var(--derp-panel-strip-width, 35px) !important;
+  inset-inline-end: var(--bork-panel-strip-width, 35px) !important;
 }
 
 /* The splitter is a resize handle for a panel you are not resizing while

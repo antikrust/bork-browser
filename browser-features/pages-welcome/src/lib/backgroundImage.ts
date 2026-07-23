@@ -1,4 +1,4 @@
-// The same derp wallpapers the Start page uses, so onboarding looks like the
+// The same bork wallpapers the Start page uses, so onboarding looks like the
 // browser it is setting up rather than a plain form.
 //
 // Vite hands back different module shapes for globbed assets depending on the

@@ -17,7 +17,7 @@
  *
  * One row per action from the hub's list (shared with mouse gestures),
  * plus rows for any extra action ids already present in the saved config
- * (e.g. derp's own chrome chords, which the feature registers dynamically).
+ * (e.g. bork's own chrome chords, which the feature registers dynamically).
  * "Set" enters record mode: a capturing keydown listener on the pane
  * document records modifiers+key, Escape (or clicking elsewhere) cancels,
  * and a combo already assigned to another action is refused with an inline
@@ -25,7 +25,7 @@
  */
 
 import {
-  addDerpPane,
+  addBorkPane,
   checkboxRow,
   doc,
   ensureBoolPref,
@@ -267,7 +267,7 @@ const ACTIONS: readonly ActionOption[] = [
   { id: "floorp-toggle-zen-mode", label: "Toggle Zen Mode" },
   { id: "floorp-toggle-command-palette", label: "Toggle Command Palette" },
   { id: "floorp-open-settings", label: "Open Settings" },
-  { id: "floorp-open-hub", label: "Open Derp Hub" },
+  { id: "floorp-open-hub", label: "Open Bork Hub" },
   { id: "floorp-toggle-share-mode", label: "Toggle Share Mode" },
   {
     id: "floorp-copy-page-url-as-markdown",
@@ -287,23 +287,23 @@ const ACTIONS: readonly ActionOption[] = [
   },
 ];
 
-/** derp registers these into the action registry at runtime; the hub's
+/** bork registers these into the action registry at runtime; the hub's
  * list never knew them, but their saved bindings deserve visible rows. */
 const EXTRA_ACTION_LABELS: Record<string, string> = {
-  "derp-toggle-urlbar": "Toggle Address Bar",
-  "derp-toggle-panel-sidebar": "Toggle Panel Sidebar",
+  "bork-toggle-urlbar": "Toggle Address Bar",
+  "bork-toggle-panel-sidebar": "Toggle Panel Sidebar",
 };
 
 function humanize(id: string): string {
   return id
-    .replace(/^(gecko|floorp|derp)-/, "")
+    .replace(/^(gecko|floorp|bork)-/, "")
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 
 /** The hub's 93 actions, plus any action ids present in the saved config
- * that the list does not know (derp's dynamic registrations). */
+ * that the list does not know (bork's dynamic registrations). */
 function allActions(): ActionOption[] {
   const known = new Set(ACTIONS.map((a) => a.id));
   const extras = Object.keys(readShortcuts())
@@ -509,7 +509,7 @@ function build(root: Element): void {
   root.appendChild(groupboxOf("Basic Settings", [
     deemphasized("Configure basic keyboard shortcut settings"),
     checkboxRow({
-      id: "derp-shortcuts-enabled",
+      id: "bork-shortcuts-enabled",
       label: "Enable custom keyboard shortcuts",
       description:
         "When enabled, you can customize keyboard shortcuts for various " +
@@ -567,9 +567,9 @@ const ICON = "data:image/svg+xml," + encodeURIComponent(
 );
 
 export function registerShortcutsPane(): void {
-  const ok = addDerpPane({
-    category: "paneDerpShortcuts",
-    categoryId: "category-derp-shortcuts",
+  const ok = addBorkPane({
+    category: "paneBorkShortcuts",
+    categoryId: "category-bork-shortcuts",
     label: "Keyboard Shortcuts",
     icon: ICON,
     build,

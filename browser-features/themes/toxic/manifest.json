@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Toxic",
   "version": "1.0.1",
-  "description": "derp built-in theme — Toxic. Black chrome, with swish.",
+  "description": "bork built-in theme — Toxic. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "toxic@themes.derp"
+      "id": "toxic@themes.bork"
     }
   },
   "theme": {

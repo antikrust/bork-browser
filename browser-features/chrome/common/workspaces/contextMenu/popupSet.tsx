@@ -37,7 +37,7 @@ export class WorkspacesPopupContextMenu {
    * show for ANY present checked attribute, so false = attribute gone).
    */
   private ensureToolbarWorkspacesMenu(): void {
-    const MENU_ID = "derp-workspaces-toolbar-menu";
+    const MENU_ID = "bork-workspaces-toolbar-menu";
     const CHOOSER_ID = "workspaces-toolbar-button";
     const toolbarMenu = document?.getElementById("toolbar-context-menu");
     if (!toolbarMenu || document?.getElementById(MENU_ID)) return;

@@ -8,7 +8,7 @@ The role instructions under `agents/` complement this repository guide. Choose
 the smallest suitable role and read its document before beginning work:
 
 - [Project Lead](agents/project-lead.md) coordinates work that genuinely spans
-  multiple roles or the Derp feature layer and its runtime.
+  multiple roles or the Bork feature layer and its runtime.
 - [Software Architect](agents/software-architect.md) owns feature boundaries,
   state and lifecycle design, runtime contracts, and architecture notes.
 - [Research Architect](agents/research-architect.md) owns exploratory
@@ -22,8 +22,8 @@ project owner explicitly asks. Significant architectural, behavioural,
 security, visual-identity, or release changes require project-owner approval
 before implementation.
 
-Derp owns product features, including tab stacks, feature UI, feature state,
-and feature-specific preferences and migration. The companion `derp-build`
+Bork owns product features, including tab stacks, feature UI, feature state,
+and feature-specific preferences and migration. The companion `bork-build`
 repository owns the Firefox-derived runtime, its build, packaging, signing,
 and upstream synchronization. Do not patch Firefox internals directly for a
 feature-layer concern. When a feature needs runtime support, agree a minimal,

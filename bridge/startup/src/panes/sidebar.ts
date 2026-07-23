@@ -13,11 +13,11 @@
  * unloads on close).
  *
  * Text mirrors the hub's en-US strings; i18n wiring is a follow-up for all
- * derp panes at once.
+ * bork panes at once.
  */
 
 import {
-  addDerpPane,
+  addBorkPane,
   doc,
   groupboxOf,
   log,
@@ -55,7 +55,7 @@ function readPanels(): PanelEntry[] {
     const data = (parsed as { data?: unknown }).data;
     return Array.isArray(data) ? data as PanelEntry[] : [];
   } catch (e) {
-    console.error("[derp-panes] failed to parse panel sidebar data:", e);
+    console.error("[bork-panes] failed to parse panel sidebar data:", e);
     return [];
   }
 }
@@ -204,7 +204,7 @@ function build(root: Element): void {
   ));
 
   const listBox = doc.createXULElement("vbox");
-  listBox.id = "derp-sidebar-panel-list";
+  listBox.id = "bork-sidebar-panel-list";
   renderPanels(listBox);
   root.appendChild(groupboxOf("Panel List", [
     noteText(
@@ -224,7 +224,7 @@ function build(root: Element): void {
       } catch { /* already gone */ }
     });
   } catch (e) {
-    console.error("[derp-panes] panel list observer failed:", e);
+    console.error("[bork-panes] panel list observer failed:", e);
   }
 }
 
@@ -237,9 +237,9 @@ const ICON = "data:image/svg+xml," + encodeURIComponent(
 );
 
 export function registerSidebarPane(): void {
-  const ok = addDerpPane({
-    category: "paneDerpSidebar",
-    categoryId: "category-derp-sidebar",
+  const ok = addBorkPane({
+    category: "paneBorkSidebar",
+    categoryId: "category-bork-sidebar",
     label: "Panel Sidebar",
     icon: ICON,
     build,

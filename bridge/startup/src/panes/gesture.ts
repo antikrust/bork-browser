@@ -17,11 +17,11 @@
  * (pages-settings/src/app/gesture/useAvailableActions.ts) — the
  * settings-facing view of the mouse-gesture feature's action registry
  * (chrome/common/mouse-gesture/utils/actions.ts). Text mirrors the hub's
- * en-US strings; i18n wiring is a follow-up for all derp panes at once.
+ * en-US strings; i18n wiring is a follow-up for all bork panes at once.
  */
 
 import {
-  addDerpPane,
+  addBorkPane,
   checkboxRow,
   doc,
   ensureBoolPref,
@@ -246,7 +246,7 @@ const ACTIONS: readonly ActionOption[] = [
   { id: "floorp-toggle-zen-mode", label: "Toggle Zen Mode" },
   { id: "floorp-toggle-command-palette", label: "Toggle Command Palette" },
   { id: "floorp-open-settings", label: "Open Settings" },
-  { id: "floorp-open-hub", label: "Open Derp Hub" },
+  { id: "floorp-open-hub", label: "Open Bork Hub" },
   { id: "floorp-toggle-share-mode", label: "Toggle Share Mode" },
   {
     id: "floorp-copy-page-url-as-markdown",
@@ -398,7 +398,7 @@ function isPatternDuplicate(pattern: GestureDirection[]): boolean {
 
 function buildGeneralGroup(): Element {
   const enableRow = checkboxRow({
-    id: "derp-gesture-enabled",
+    id: "bork-gesture-enabled",
     label: "Enable mouse gestures",
     description: "Allows you to control your browser with mouse movements",
     preference: ENABLED_PREF,
@@ -410,7 +410,7 @@ function buildGeneralGroup(): Element {
   });
 
   const rockerRow = checkboxRow({
-    id: "derp-gesture-rocker",
+    id: "bork-gesture-rocker",
     label: "Enable rocker gestures",
     description:
       "Right-click and move left to go back, right-click and move right to go forward. (Experimental)",
@@ -427,7 +427,7 @@ function buildGeneralGroup(): Element {
 
   const menuOptions = ACTIONS.map((a) => ({ label: a.label, value: a.id }));
   const leftRightRow = menulistRow(
-    "derp-gesture-rocker-leftright",
+    "bork-gesture-rocker-leftright",
     "Left → Right",
     menuOptions,
     () => readConfig().rockerActions.leftRight,
@@ -438,7 +438,7 @@ function buildGeneralGroup(): Element {
     "Hold left button, then click right button",
   );
   const rightLeftRow = menulistRow(
-    "derp-gesture-rocker-rightleft",
+    "bork-gesture-rocker-rightleft",
     "Right → Left",
     menuOptions,
     () => readConfig().rockerActions.rightLeft,
@@ -456,7 +456,7 @@ function buildGeneralGroup(): Element {
   }
 
   const wheelRow = checkboxRow({
-    id: "derp-gesture-wheel",
+    id: "bork-gesture-wheel",
     label: "Enable wheel gestures",
     checked: () => readConfig().wheelGesturesEnabled,
     onChange: (checked) =>
@@ -522,7 +522,7 @@ function buildTrailGroup(): Element {
   const config = readConfig();
 
   const showTrailRow = checkboxRow({
-    id: "derp-gesture-show-trail",
+    id: "bork-gesture-show-trail",
     label: "Show gesture trail",
     description: "Draw a line following your mouse movements",
     checked: () => readConfig().showTrail,
@@ -537,7 +537,7 @@ function buildTrailGroup(): Element {
   if (showTrailCheckbox) gated.push({ el: showTrailCheckbox });
 
   const showLabelRow = checkboxRow({
-    id: "derp-gesture-show-label",
+    id: "bork-gesture-show-label",
     label: "Show gesture label",
     description: "Display the action name during gesture",
     checked: () => readConfig().showLabel,
@@ -783,9 +783,9 @@ const ICON = "data:image/svg+xml," + encodeURIComponent(
 );
 
 export function registerGesturePane(): void {
-  const ok = addDerpPane({
-    category: "paneDerpGestures",
-    categoryId: "category-derp-gestures",
+  const ok = addBorkPane({
+    category: "paneBorkGestures",
+    categoryId: "category-bork-gestures",
     label: "Mouse Gestures",
     icon: ICON,
     build,

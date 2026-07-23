@@ -96,11 +96,11 @@ export default defineConfig({
   plugins: [
     // deno(),
 
-    // TEMP(derp): log every incoming request so we can tell whether the
+    // TEMP(bork): log every incoming request so we can tell whether the
     // browser's privileged module fetches reach this server at all.
     // Remove once the dev loader is confirmed working.
     {
-      name: "derp_request_logger",
+      name: "bork_request_logger",
       apply: "serve",
       configureServer(server) {
         server.middlewares.use((req, _res, next) => {

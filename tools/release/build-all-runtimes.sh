@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0
 #
-# build-all-runtimes.sh — build the derp/Gecko runtime for every platform and
-# publish the artifacts to the derp-runtime release, so the derp release pipeline
-# (build-derp-packages.sh) ships on runtimes WE built.
+# build-all-runtimes.sh — build the bork/Gecko runtime for every platform and
+# publish the artifacts to the bork-runtime release, so the bork release pipeline
+# (build-bork-packages.sh) ships on runtimes WE built.
 #
 # This encodes the proven per-platform recipes (see BUILD.md for the full story
 # and every gotcha). The three build environments differ:
@@ -17,13 +17,13 @@
 #
 # Hosts and paths are NOT hardcoded — copy tools/release/hosts.env.example to
 # tools/release/hosts.env and fill in your own (that file is gitignored). Each
-# value is also overridable via its DERP_* environment variable.
+# value is also overridable via its BORK_* environment variable.
 #
 # Usage:
 #   build-all-runtimes.sh <release-tag> [all|mac|linux|windows]
 #
 # Example:
-#   build-all-runtimes.sh derp-runtime-152.0.7-2 all
+#   build-all-runtimes.sh bork-runtime-152.0.7-2 all
 #
 # Prereqs: gh authed for the runtime repo; ssh access to your build host; the VM
 # present and reachable. Each lane checks its own tools.
@@ -31,25 +31,25 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-TAG="${1:?release tag required, e.g. derp-runtime-152.0.7-2}"
+TAG="${1:?release tag required, e.g. bork-runtime-152.0.7-2}"
 WHICH="${2:-all}"
 
 # Local infra config (build hosts, paths). Copy tools/release/hosts.env.example
 # to tools/release/hosts.env and fill in your own; every value is also overridable
 # directly via the environment. hosts.env is gitignored.
-HOSTS_ENV="${DERP_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
+HOSTS_ENV="${BORK_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
 # shellcheck source=/dev/null
 [ -f "$HOSTS_ENV" ] && source "$HOSTS_ENV"
 
-RUNTIME_REPO="${DERP_RUNTIME_REPO:-100mountains/derp-runtime}"
-BUILD_HOST="${DERP_BUILD_HOST:-your-linux-build-host}"        # SSH alias or user@host
-MAC_BUILD_DIR="${DERP_MAC_BUILD_DIR:-$HOME/derp-build}"        # runtime tree on this Mac
-LINUX_BUILD_DIR="${DERP_LINUX_BUILD_DIR:-/path/to/derp-runtime-build}"  # on the Linux host
-WIN_BUILD_DIR="${DERP_WIN_BUILD_DIR:-/path/to/derp-winbuild}"  # VM helpers, on the Linux host
+RUNTIME_REPO="${BORK_RUNTIME_REPO:-100mountains/bork-runtime}"
+BUILD_HOST="${BORK_BUILD_HOST:-your-linux-build-host}"        # SSH alias or user@host
+MAC_BUILD_DIR="${BORK_MAC_BUILD_DIR:-$HOME/bork-build}"        # runtime tree on this Mac
+LINUX_BUILD_DIR="${BORK_LINUX_BUILD_DIR:-/path/to/bork-runtime-build}"  # on the Linux host
+WIN_BUILD_DIR="${BORK_WIN_BUILD_DIR:-/path/to/bork-winbuild}"  # VM helpers, on the Linux host
 PUBLISH="$ROOT/tools/release/publish-runtime-artifact.sh"
 
 # --- shared build knobs (proven) --------------------------------------------
-# --enable-chrome-format=flat : derp's patcher edits loose chrome; without this
+# --enable-chrome-format=flat : bork's patcher edits loose chrome; without this
 #                               the package ships omni.ja and patching fails.
 # --disable-debug-symbols     : halves the gkrust LLVM codegen peak; without it
 #                               gkrust OOMs on 22-32 GB boxes (hit on linux+win).
@@ -62,8 +62,8 @@ fail() { printf '\033[31m[build-all] %s\033[0m\n' "$*" >&2; exit 1; }
 build_mac() {
   log "mac: native build on this machine"
   local base="$MAC_BUILD_DIR"
-  local src="$base/derp-runtime-mac"
-  [ -f "$src/mach" ] || fail "mac source missing at $src (clone derp-runtime there first)"
+  local src="$base/bork-runtime-mac"
+  [ -f "$src/mach" ] || fail "mac source missing at $src (clone bork-runtime there first)"
   local sdk; sdk="$(xcrun --sdk macosx --show-sdk-path)"
   [ -d "$sdk" ] || fail "no macOS SDK (need Xcode >= 26.4)"
 
@@ -86,7 +86,7 @@ build_linux() {
   ssh "$BUILD_HOST" "bash -s '$LINUX_BUILD_DIR'" <<'REMOTE'
 set -euo pipefail
 BUILD_DIR="$1"
-cd "$BUILD_DIR/derp-runtime"
+cd "$BUILD_DIR/bork-runtime"
 source "$BUILD_DIR/buildenv.sh"
 export MOZCONFIG="$BUILD_DIR/mozconfig-linux-x86_64"
 ./mach build
@@ -120,4 +120,4 @@ case "$WHICH" in
 esac
 
 log "done. Artifacts published to $RUNTIME_REPO@$TAG."
-log "The derp release pipeline (build-derp-packages.sh) fetches them via OWN_RUNTIME_FILES."
+log "The bork release pipeline (build-bork-packages.sh) fetches them via OWN_RUNTIME_FILES."

@@ -84,7 +84,7 @@ const defaultData: PanelSidebarData = {
       extensionId: undefined,
     },
     {
-      id: "default-panel-derp-help",
+      id: "default-panel-bork-help",
       url: "chrome://noraneko-help/content/index.html",
       width: 0,
       icon: undefined,

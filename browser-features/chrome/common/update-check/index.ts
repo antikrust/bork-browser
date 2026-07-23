@@ -21,11 +21,11 @@ import type {
  * URL asks Mozilla's server about a product it doesn't serve.
  */
 
-const LAST_CHECK_PREF = "derp.update.lastCheck";
-const NOTIFIED_PREF = "derp.update.notifiedVersion";
+const LAST_CHECK_PREF = "bork.update.lastCheck";
+const NOTIFIED_PREF = "bork.update.notifiedVersion";
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const STARTUP_DELAY_MS = 60_000;
-const FALLBACK_DOWNLOAD_URL = "https://therob.lol/derp/";
+const FALLBACK_DOWNLOAD_URL = "https://therob.lol/bork/";
 
 @noraComponent(import.meta.hot)
 export default class UpdateCheck extends NoraComponentBase {
@@ -63,8 +63,8 @@ export default class UpdateCheck extends NoraComponentBase {
     const box = (globalThis as { gNotificationBox?: NotificationBoxLike })
       .gNotificationBox;
     if (!box) return;
-    box.appendNotification("derp-update-available", {
-      label: `Derp ${version} is available.`,
+    box.appendNotification("bork-update-available", {
+      label: `Bork ${version} is available.`,
       priority: box.PRIORITY_INFO_MEDIUM,
     }, [
       {

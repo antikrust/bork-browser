@@ -11,7 +11,7 @@ import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
  * its right edge; clicking it reloads that tab (the chip reloads its
  * whole stack) without selecting anything.
  *
- * The delay is a JS timer stamping [derp-show-refresh] on the hovered
+ * The delay is a JS timer stamping [bork-show-refresh] on the hovered
  * element rather than a CSS transition-delay: pointer-events cannot be
  * delayed in CSS, so a pure-CSS version would have an invisible but
  * clickable button at the tab's right edge during the delay window,
@@ -19,15 +19,15 @@ import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
  */
 
 const HOVER_DELAY_MS = 700;
-const STAMP = "derp-show-refresh";
+const STAMP = "bork-show-refresh";
 /** Off by default — hover-reload is a taste thing, not for everyone. */
-const ENABLED_PREF = "derp.tabs.hoverReload.enabled";
+const ENABLED_PREF = "bork.tabs.hoverReload.enabled";
 /** Root attribute the CSS keys off; kept in sync with the pref. */
-const ROOT_ATTR = "derp-hover-reload";
+const ROOT_ATTR = "bork-hover-reload";
 const HOVER_SELECTOR = [
   "#tabbrowser-tabs .tabbrowser-tab:not([pinned])",
-  ".derp-stack-tab",
-  "tab-group[data-derp-stack] .tab-group-label-container",
+  ".bork-stack-tab",
+  "tab-group[data-bork-stack] .tab-group-label-container",
 ].join(", ");
 
 const RELOAD_ICON = "chrome://global/skin/icons/reload.svg";
@@ -59,9 +59,9 @@ export default class TabRefresh extends NoraComponentBase {
     const inject = (tab: TabLike) => {
       try {
         const content = tab.querySelector(".tab-content");
-        if (!content || content.querySelector(".derp-tab-refresh")) return;
+        if (!content || content.querySelector(".bork-tab-refresh")) return;
         const btn = doc.createXULElement("image");
-        btn.classList.add("derp-tab-refresh");
+        btn.classList.add("bork-tab-refresh");
         btn.setAttribute("src", RELOAD_ICON);
         btn.setAttribute("tooltiptext", "Reload tab");
         // Tabs select on mousedown — swallow it so a reload click never

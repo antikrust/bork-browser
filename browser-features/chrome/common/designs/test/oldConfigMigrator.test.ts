@@ -41,12 +41,12 @@ function withIntPrefs(prefs: [string, number][], fn: () => void): void {
 // Tests — getOldInterfaceConfig
 // ---------------------------------------------------------------------------
 
-function testInterfaceDefaultDerp(): void {
+function testInterfaceDefaultBork(): void {
   withIntPref("floorp.browser.user.interface", 0, () => {
     assertEquals(
       getOldInterfaceConfig(),
-      "derp",
-      "default (0, no legacy pref) should return derp",
+      "bork",
+      "default (0, no legacy pref) should return bork",
     );
   });
 }
@@ -60,7 +60,7 @@ function testInterfaceCase3DefaultLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "derp",
+        "bork",
         "interface=3, lepton=0 should return lepton",
       );
     },
@@ -76,7 +76,7 @@ function testInterfaceCase3PhotonNowLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "derp",
+        "bork",
         "legacy photon (3, 1) collapses to lepton",
       );
     },
@@ -92,7 +92,7 @@ function testInterfaceCase3ProtonfixNowLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "derp",
+        "bork",
         "legacy protonfix (3, 3) collapses to lepton",
       );
     },
@@ -103,7 +103,7 @@ function testInterfaceCase8FluerialNowLepton(): void {
   withIntPref("floorp.browser.user.interface", 8, () => {
     assertEquals(
       getOldInterfaceConfig(),
-      "derp",
+      "bork",
       "legacy fluerial (8) collapses to lepton",
     );
   });
@@ -201,12 +201,12 @@ function testTabbarPositionBottomWindow(): void {
 // Tests — edge cases (invalid / unknown values)
 // ---------------------------------------------------------------------------
 
-function testInterfaceInvalidValueReturnsDerp(): void {
+function testInterfaceInvalidValueReturnsBork(): void {
   withIntPref("floorp.browser.user.interface", 99, () => {
     assertEquals(
       getOldInterfaceConfig(),
-      "derp",
-      "invalid interface value should default to derp",
+      "bork",
+      "invalid interface value should default to bork",
     );
   });
 }
@@ -220,7 +220,7 @@ function testInterfaceCase3InvalidLeptonReturnsLepton(): void {
     () => {
       assertEquals(
         getOldInterfaceConfig(),
-        "derp",
+        "bork",
         "interface=3, lepton=99 should default to lepton",
       );
     },
@@ -253,7 +253,7 @@ function testTabbarPositionInvalidValueReturnsDefault(): void {
 
 export function runAllTests(): void {
   const tests: TestCase[] = [
-    { name: "interface default → derp", fn: testInterfaceDefaultDerp },
+    { name: "interface default → bork", fn: testInterfaceDefaultBork },
     {
       name: "interface 3+0 → lepton",
       fn: testInterfaceCase3DefaultLepton,
@@ -280,8 +280,8 @@ export function runAllTests(): void {
     },
     // Edge cases
     {
-      name: "interface invalid → derp",
-      fn: testInterfaceInvalidValueReturnsDerp,
+      name: "interface invalid → bork",
+      fn: testInterfaceInvalidValueReturnsBork,
     },
     {
       name: "interface 3+invalid → lepton",

@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Blood Moon",
   "version": "1.0.1",
-  "description": "derp built-in theme — Blood Moon. Black chrome, with swish.",
+  "description": "bork built-in theme — Blood Moon. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "blood-moon@themes.derp"
+      "id": "blood-moon@themes.bork"
     }
   },
   "theme": {

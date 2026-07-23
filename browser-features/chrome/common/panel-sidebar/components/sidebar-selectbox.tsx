@@ -21,9 +21,9 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
     >
       <xul:toolbarbutton
         class="panel-sidebar-panel"
-        id="derp-sidebar-menu-icon"
+        id="bork-sidebar-menu-icon"
         onCommand={() => {
-          const anchor = document?.getElementById("derp-sidebar-menu-icon");
+          const anchor = document?.getElementById("bork-sidebar-menu-icon");
           const panelUI = (globalThis as unknown as {
             PanelUI?: {
               showSubView: (viewId: string, anchor: Element) => void;
@@ -54,7 +54,7 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
       <xul:vbox id="panel-sidebar-bottomButtonBox">
         <xul:toolbarbutton
           class="panel-sidebar-panel"
-          id="derp-sidebar-reopen-icon"
+          id="bork-sidebar-reopen-icon"
           onCommand={() => {
             try {
               (globalThis as unknown as { undoCloseTab?: () => void })
@@ -66,10 +66,10 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
         />
         <xul:toolbarbutton
           class="panel-sidebar-panel"
-          id="derp-sidebar-account-icon"
+          id="bork-sidebar-account-icon"
           onCommand={() => {
             const anchor = document?.getElementById(
-              "derp-sidebar-account-icon",
+              "bork-sidebar-account-icon",
             );
             const panelUI = (globalThis as unknown as {
               PanelUI?: {
@@ -88,7 +88,7 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
             }
           }}
         />
-        {/* derp: inline extension tweaker — the icon column slides up out
+        {/* bork: inline extension tweaker — the icon column slides up out
             of this box in place of the stock unified-extensions popup. */}
         <ExtensionTweaker />
         <xul:toolbarbutton

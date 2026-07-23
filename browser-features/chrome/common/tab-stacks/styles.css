@@ -5,13 +5,13 @@
 
 /* ===== Row 1: a stack's member tabs are represented by the chip alone.
    Everything below is scoped to groups tab-stacks explicitly owns
-   ([data-derp-stack]); split-view's groups render natively. ===== */
+   ([data-bork-stack]); split-view's groups render natively. ===== */
 /* visibility:collapse only removes width in XUL box layout; the strip
    is flexbox, where it acts like plain hidden and the invisible tabs
    still claim their flex size (a giant blank gap in sparse strips).
    Zero every box metric instead — the tabs stay rendered for Firefox's
    tab machinery but take no space. */
-#tabbrowser-tabs tab-group[data-derp-stack] > .tabbrowser-tab {
+#tabbrowser-tabs tab-group[data-bork-stack] > .tabbrowser-tab {
   visibility: collapse !important;
   flex: 0 0 0 !important;
   min-width: 0 !important;
@@ -23,7 +23,7 @@
 
 /* Group chip styled as a normal tab: the stack's current tab title with the
    count on the right. The native group color stays as the marker. */
-tab-group[data-derp-stack] .tab-group-label-container {
+tab-group[data-bork-stack] .tab-group-label-container {
   align-items: center !important;
 }
 
@@ -38,7 +38,7 @@ tab-group[data-derp-stack] .tab-group-label-container {
    { margin-inline-start: 4px !important }` — an id-level !important that
    outranks a plain tab-group selector, so the chip sat 4px right of the
    previous tab's background edge with a dead strip between them. */
-#tabbrowser-tabs tab-group[data-derp-stack] > .tab-group-label-container {
+#tabbrowser-tabs tab-group[data-bork-stack] > .tab-group-label-container {
   /* Exactly a tab's flex: `flex: 100 100` (basis 0) is what .tabbrowser-tab
      uses, so the chip grows and shrinks in lockstep with its neighbours.
      Basis auto sized the chip to its full title text instead — a fresh
@@ -63,7 +63,7 @@ tab-group[data-derp-stack] .tab-group-label-container {
 /* Close button (injected): absolute overlay at the chip's left edge —
    same side as the tabs' favicon-hover close, and being out of flow it
    can never change the chip's size on hover. Closes the whole stack. */
-tab-group[data-derp-stack] .derp-stack-close {
+tab-group[data-bork-stack] .bork-stack-close {
   display: none;
   position: absolute;
   /* 6px + the chip's 1px border = the tabs' 7px favicon offset. */
@@ -82,7 +82,7 @@ tab-group[data-derp-stack] .derp-stack-close {
 
 /* Chip glyph occupies the X's exact box and yields to it on hover —
    the same icon<->close swap tabs get. */
-tab-group[data-derp-stack] .derp-stack-icon {
+tab-group[data-bork-stack] .bork-stack-icon {
   position: absolute;
   /* 6px + the chip's 1px border = the tabs' 7px favicon offset. */
   inset-inline-start: 6px;
@@ -100,15 +100,15 @@ tab-group[data-derp-stack] .derp-stack-icon {
   stroke: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
 }
 
-tab-group[data-derp-stack] .tab-group-label-container:hover .derp-stack-icon {
+tab-group[data-bork-stack] .tab-group-label-container:hover .bork-stack-icon {
   display: none;
 }
 
-tab-group[data-derp-stack] .tab-group-label-container:hover .derp-stack-close {
+tab-group[data-bork-stack] .tab-group-label-container:hover .bork-stack-close {
   display: flex;
 }
 
-tab-group[data-derp-stack] .derp-stack-close:hover {
+tab-group[data-bork-stack] .bork-stack-close:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -123,18 +123,18 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   display: none !important;
 }
 
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tabbrowser-tab .tab-background {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tabbrowser-tab .tab-background {
   background-color: color-mix(in srgb, var(--tab-group-color-invert, currentColor) 16%, transparent) !important;
 }
 
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tabbrowser-tab[visuallyselected] .tab-background {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tabbrowser-tab[visuallyselected] .tab-background {
   background-color: color-mix(in srgb, var(--tab-group-color-invert, currentColor) 32%, transparent) !important;
 }
 
 /* Native label pill on plain groups sat ~4px low, like the chip used
    to — same seat as the tabs. Sized so an unnamed group is a tidy square
    around the glyph rather than a bare colour swatch. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label {
   margin-top: 1px !important;
   margin-bottom: auto !important;
   display: inline-flex !important;
@@ -159,15 +159,15 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
 /* Fade the tail like a tab label — but only when the text actually
    overflows (index.ts marks that): the label box hugs its content, so an
    unconditional fade would eat the end of every short name. */
-#tabbrowser-tabs tab-group:not([data-derp-stack])
-  .tab-group-label[data-derp-cropped] {
+#tabbrowser-tabs tab-group:not([data-bork-stack])
+  .tab-group-label[data-bork-cropped] {
   mask-image: linear-gradient(to left, transparent, black 1.5em);
 }
 
 /* Same layers glyph as the stack chips, so both group kinds read as tab
    containers at a glance. Mask + currentColor keeps it legible on any
    group colour. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label::before {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label::before {
   content: "";
   display: inline-block;
   width: 15px;
@@ -183,9 +183,9 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
 /* Unnamed group: the label holds a zero-width space rather than nothing, so
    :empty never matches it and the 4px flex gap still reserves room for that
    invisible character — which is what made the chip wider than it is tall.
-   index.ts marks these with data-derp-unnamed; here it becomes a true square
+   index.ts marks these with data-bork-unnamed; here it becomes a true square
    with the glyph centred in it. */
-#tabbrowser-tabs tab-group[data-derp-unnamed]:not([data-derp-stack])
+#tabbrowser-tabs tab-group[data-bork-unnamed]:not([data-bork-stack])
   .tab-group-label {
   min-width: 24px;
   padding: 2px !important;
@@ -203,8 +203,8 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
    light-dark() expression stock uses for the label — hardcoding
    --tab-group-color made the count noticeably darker than the chip in dark
    mode, where that expression resolves to the inverted variant instead. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label-container,
-#tabbrowser-tabs tab-group:not([data-derp-stack])
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label-container,
+#tabbrowser-tabs tab-group:not([data-bork-stack])
   .tab-group-overflow-count-container {
   /* A wash of the group colour, not the solid native cell: the solid
      bright invert forced dark text (unreadable against the compact
@@ -219,7 +219,7 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   );
   align-items: center;
   justify-content: center;
-  min-height: var(--derp-tab-height, 30px);
+  min-height: var(--bork-tab-height, 30px);
   padding: 0 !important;
   /* Stock puts a 4px margin on the left of the label container and nothing on
      the right, which reads as the cell being padded on one side only. */
@@ -228,7 +228,7 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
 
 /* The container carries the colour now, so the label must not paint its own —
    two stacked backgrounds is what made the icon box read as a separate tile. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label {
   background-color: transparent !important;
   margin: 0 !important;
   min-height: 0;
@@ -241,19 +241,19 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
    label, the count and every member title alike; `inherit !important`
    still overrides native's own label colour (which assumes the solid
    cell). The glyph paints with currentColor and follows for free. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label,
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-overflow-count {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label,
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-overflow-count {
   color: inherit !important;
 }
 
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-overflow-count {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-overflow-count {
   padding: 0 6px 0 2px !important;
   margin: 0 !important;
 }
 
 /* The underline is stock's group-line indicator. With the whole cell coloured
    it has nothing left to distinguish, and just looks like an artefact. */
-#tabbrowser-tabs tab-group:not([data-derp-stack])
+#tabbrowser-tabs tab-group:not([data-bork-stack])
   .tab-group-overflow-count-container::after {
   content: none !important;
 }
@@ -265,15 +265,15 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
    both cells together: hovering anywhere on a collapsed group brightens
    the pair; on an expanded group (no count cell) the label cell brightens
    by itself. */
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label-hover-highlight {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label-hover-highlight {
   background: none !important;
   box-shadow: none !important;
   outline: none !important;
 }
 
-#tabbrowser-tabs tab-group:not([data-derp-stack]) .tab-group-label-container:hover,
-#tabbrowser-tabs tab-group[collapsed]:not([data-derp-stack]):hover > .tab-group-label-container,
-#tabbrowser-tabs tab-group[collapsed]:not([data-derp-stack]):hover > .tab-group-overflow-count-container {
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label-container:hover,
+#tabbrowser-tabs tab-group[collapsed]:not([data-bork-stack]):hover > .tab-group-label-container,
+#tabbrowser-tabs tab-group[collapsed]:not([data-bork-stack]):hover > .tab-group-overflow-count-container {
   background-color: color-mix(
     in srgb,
     light-dark(var(--tab-group-color), var(--tab-group-color-invert)) 45%,
@@ -281,7 +281,7 @@ tab-group[data-derp-stack] .derp-stack-close:hover {
   );
 }
 
-tab-group[data-derp-stack] .tab-group-label {
+tab-group[data-bork-stack] .tab-group-label {
   /* Hide the native group-name text; our ::before shows name/tab title. */
   font-size: 0 !important;
   position: relative !important;
@@ -291,11 +291,11 @@ tab-group[data-derp-stack] .tab-group-label {
   border-radius: 4px !important;
   /* Title clears the (hover-shown) close button at the left edge. */
   padding: 0 9px 0 25px !important;
-  /* Exactly the tab's selection box: --derp-tab-height, top-aligned. The
+  /* Exactly the tab's selection box: --bork-tab-height, top-aligned. The
      row is 2px taller than that box, so filling the row made the chip a
      hair taller than its neighbours. */
-  min-height: var(--derp-tab-height, 30px);
-  max-height: var(--derp-tab-height, 30px);
+  min-height: var(--bork-tab-height, 30px);
+  max-height: var(--bork-tab-height, 30px);
   /* Width comes from the group box (which flexes like a tab). */
   flex: 1 1 auto !important;
   min-width: 0;
@@ -319,7 +319,7 @@ tab-group[data-derp-stack] .tab-group-label {
    the group [hasactivetab], so no JS is needed. Match a selected tab's
    22% currentColor wash exactly, and brighten the group-colour border, so
    an active stack reads with the same visual language as a selected tab. */
-#tabbrowser-tabs tab-group[data-derp-stack][hasactivetab] .tab-group-label {
+#tabbrowser-tabs tab-group[data-bork-stack][hasactivetab] .tab-group-label {
   background-color: color-mix(in srgb, currentColor 22%, transparent) !important;
   border-color: color-mix(
     in srgb,
@@ -329,20 +329,20 @@ tab-group[data-derp-stack] .tab-group-label {
 }
 
 /* No native 2px group underline beneath the chip. */
-tab-group[data-derp-stack] .tab-group-label-container::after {
+tab-group[data-bork-stack] .tab-group-label-container::after {
   display: none !important;
 }
 
 /* No separator lines flanking a stack chip — each tab paints 1px lines
    at both edges via .tab-stack::before/::after right-borders; next to
    the chip's colored border they read as doubled lines. */
-.tabbrowser-tab:has(+ tab-group[data-derp-stack]) .tab-stack::after,
-tab-group[data-derp-stack] + .tabbrowser-tab .tab-stack::before {
+.tabbrowser-tab:has(+ tab-group[data-bork-stack]) .tab-stack::after,
+tab-group[data-bork-stack] + .tabbrowser-tab .tab-stack::before {
   border-right: none !important;
 }
 
-tab-group[data-derp-stack] .tab-group-label::before {
-  content: attr(data-derp-title);
+tab-group[data-bork-stack] .tab-group-label::before {
+  content: attr(data-bork-title);
   font-size: 12px;
   flex: 1 1 auto;
   text-align: start;
@@ -354,8 +354,8 @@ tab-group[data-derp-stack] .tab-group-label::before {
   mask-image: linear-gradient(to left, transparent, black 1em);
 }
 
-tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
-  content: attr(data-derp-count);
+tab-group[data-bork-stack] .tab-group-label[data-bork-count]::after {
+  content: attr(data-bork-count);
   font-size: 11px;
   opacity: 0.7;
   margin-inline-start: auto;
@@ -373,20 +373,20 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   z-index: 2;
 }
 
-#derp-stack-bar {
+#bork-stack-bar {
   background: transparent;
   border-bottom: 1px solid var(--chrome-content-separator-color, rgba(0, 0, 0, 0.2));
   padding: 0 8px;
-  /* Match row 1 exactly: a 32px row whose cells are --derp-tab-height,
+  /* Match row 1 exactly: a 32px row whose cells are --bork-tab-height,
      leaving the same 1px above/below the top row's tabs have. */
-  min-height: calc(var(--derp-tab-height, 30px) + 2px);
-  max-height: calc(var(--derp-tab-height, 30px) + 2px);
+  min-height: calc(var(--bork-tab-height, 30px) + 2px);
+  max-height: calc(var(--bork-tab-height, 30px) + 2px);
   position: relative;
   z-index: 1;
-  animation: derp-stack-bar-in 0.1s ease-out;
+  animation: bork-stack-bar-in 0.1s ease-out;
 }
 
-@keyframes derp-stack-bar-in {
+@keyframes bork-stack-bar-in {
   from {
     margin-top: -30px;
     opacity: 0.4;
@@ -400,8 +400,8 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 /* Same scroll-arrow containers as the tab strip. When the bar is NOT
    overflowing the buttons stay exactly as tuned (transparent spacers —
    the + button's alignment was measured against them). */
-#derp-stack-bar::part(scrollbutton-up),
-#derp-stack-bar::part(scrollbutton-down) {
+#bork-stack-bar::part(scrollbutton-up),
+#bork-stack-bar::part(scrollbutton-down) {
   padding-inline: 2px !important;
   margin-inline: 0 !important;
   border-inline: none !important;
@@ -412,8 +412,8 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
    none of it and fell back to bare toolkit chevrons with clipped pills
    flush against the glyph. Scoped to [overflowing] so the tuned
    not-overflowing spacing above is untouched. */
-#derp-stack-bar[overflowing]::part(scrollbutton-up),
-#derp-stack-bar[overflowing]::part(scrollbutton-down) {
+#bork-stack-bar[overflowing]::part(scrollbutton-up),
+#bork-stack-bar[overflowing]::part(scrollbutton-down) {
   --arrowscrollbox-scrollicon-border-radius: var(--tab-border-radius);
   --arrowscrollbox-scrollicon-hover-background-color: var(
     --toolbarbutton-background-color-hover
@@ -430,7 +430,7 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
    and only then overflow into the scroll arrows. The explicit basis
    matters — with basis auto the cropped labels measure near zero and
    everything compresses without ever overflowing. */
-.derp-stack-tab {
+.bork-stack-tab {
   flex: 0 1 180px !important;
   min-width: var(--tab-min-width, 76px) !important;
   max-width: 200px;
@@ -438,17 +438,17 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 
 /* Inline address edit: the cell eases wider and hands its space to a
    text input; width is transitioned so it opens and closes smoothly. */
-.derp-stack-tab {
+.bork-stack-tab {
   transition: flex-basis 0.14s ease-out, max-width 0.14s ease-out;
 }
 
-.derp-stack-tab[data-editing="true"] {
+.bork-stack-tab[data-editing="true"] {
   flex: 0 0 340px !important;
   max-width: 340px !important;
   background: rgba(255, 255, 255, 0.09);
 }
 
-.derp-stack-url-input {
+.bork-stack-url-input {
   appearance: none;
   width: 100%;
   min-width: 0;
@@ -463,25 +463,25 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 
 /* Rectangular cells like the top row: flush edges, no radius, full row
    height; the hover paints the whole block. */
-.derp-stack-tab {
+.bork-stack-tab {
   border-radius: 0;
   padding: 0 10px 0 6px;
   margin-inline-end: 0;
   /* Same box as a row-1 tab, centred in the row. */
   align-self: center;
-  height: var(--derp-tab-height, 30px);
+  height: var(--bork-tab-height, 30px);
   cursor: default;
   position: relative;
 }
 
 /* The top row's hover grey, as a plain rectangle. */
-.derp-stack-tab:hover {
+.bork-stack-tab:hover {
   background: rgba(255, 255, 255, 0.09);
 }
 
 /* Separator lines between cells at the exact boundary, near full
    height — same as the lines the top row draws between tabs. */
-.derp-stack-tab::after {
+.bork-stack-tab::after {
   content: "";
   position: absolute;
   inset-inline-end: 0;
@@ -493,20 +493,20 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 
 /* No boundary line touching a filled (hovered/selected) cell — same as
    the top row, where separators yield around the active tab. */
-.derp-stack-tab:hover::after,
-.derp-stack-tab[data-selected="true"]::after,
-.derp-stack-tab:has(+ .derp-stack-tab:hover)::after,
-.derp-stack-tab:has(+ .derp-stack-tab[data-selected="true"])::after {
+.bork-stack-tab:hover::after,
+.bork-stack-tab[data-selected="true"]::after,
+.bork-stack-tab:has(+ .bork-stack-tab:hover)::after,
+.bork-stack-tab:has(+ .bork-stack-tab[data-selected="true"])::after {
   background: transparent;
 }
 
 /* Drop-position indicator during proxy drags (box-shadow tracks the
    rounded corners; ::before/::after are taken by the separators). */
-.derp-stack-tab[data-drop-side="before"] {
+.bork-stack-tab[data-drop-side="before"] {
   box-shadow: inset 2px 0 0 var(--focus-outline-color, #0a84ff);
 }
 
-.derp-stack-tab[data-drop-side="after"] {
+.bork-stack-tab[data-drop-side="after"] {
   box-shadow: inset -2px 0 0 var(--focus-outline-color, #0a84ff);
 }
 
@@ -518,7 +518,7 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
    the strip is flaky — same trick as the workspaces rows). */
 /* Ghost mirrors a row-2 cell: same rectangle, height, padding and type —
    it is a tab being dragged, so it should look like one. */
-.derpStackDragGhost {
+.borkStackDragGhost {
   position: fixed;
   top: -1000px;
   left: -1000px;
@@ -537,7 +537,7 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   text-overflow: ellipsis;
 }
 
-.derp-stack-tab[data-selected="true"] {
+.bork-stack-tab[data-selected="true"] {
   background: var(
     --tab-selected-bgcolor,
     var(--toolbarbutton-active-background, rgba(128, 128, 128, 0.3))
@@ -545,18 +545,18 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 }
 
 /* Favicon swaps to a close button on hover — same manner as row-1 tabs */
-.derp-stack-tab-iconbox {
+.bork-stack-tab-iconbox {
   width: 16px;
   height: 16px;
   margin-inline-end: 6px;
 }
 
-.derp-stack-tab-icon {
+.bork-stack-tab-icon {
   width: 16px;
   height: 16px;
 }
 
-.derp-stack-tab-close {
+.bork-stack-tab-close {
   display: none;
   width: 14px;
   height: 14px;
@@ -581,20 +581,20 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   background-color: var(--tab-selected-bgcolor, rgba(70, 70, 75, 0.9));
 }
 
-.derp-stack-tab-close:hover {
+.bork-stack-tab-close:hover {
   border: none !important;
   background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-.derp-stack-tab:hover .derp-stack-tab-icon {
+.bork-stack-tab:hover .bork-stack-tab-icon {
   display: none;
 }
 
-.derp-stack-tab:hover .derp-stack-tab-close {
+.bork-stack-tab:hover .bork-stack-tab-close {
   display: flex;
 }
 
-.derp-stack-tab-label {
+.bork-stack-tab-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -605,7 +605,7 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 /* Row-2 "+": square and full-height like the cells, no border/appearance
    (the native toolbarbutton draws both). The label's own line box sat the
    glyph ~2px low — line-height 1 + centring fixes that. */
-#derp-stack-newtab {
+#bork-stack-newtab {
   appearance: none !important;
   border: none !important;
   border-radius: 0 !important;
@@ -621,12 +621,12 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   font-weight: 600;
 }
 
-#derp-stack-newtab:hover {
+#bork-stack-newtab:hover {
   background-color: rgba(255, 255, 255, 0.09) !important;
 }
 
-#derp-stack-newtab .toolbarbutton-text,
-#derp-stack-newtab label {
+#bork-stack-newtab .toolbarbutton-text,
+#bork-stack-newtab label {
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1 !important;
@@ -635,7 +635,7 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
 
 /* ===== Hover-to-reload (stamped by the tab-refresh feature) ===== */
 /* Cell: reload glyph at the right edge, mirror of the left-side close. */
-.derp-stack-tab .derp-stack-tab-refresh {
+.bork-stack-tab .bork-stack-tab-refresh {
   /* Opacity, not display: it fades in like the row-1 glyph instead of
      popping. */
   opacity: 0;
@@ -657,20 +657,20 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
   transition: opacity 0.18s ease;
 }
 
-/* Same option gate as row 1 (derp.tabs.hoverReload.enabled). */
-:root[derp-hover-reload] .derp-stack-tab[derp-show-refresh] .derp-stack-tab-refresh {
+/* Same option gate as row 1 (bork.tabs.hoverReload.enabled). */
+:root[bork-hover-reload] .bork-stack-tab[bork-show-refresh] .bork-stack-tab-refresh {
   opacity: 1;
   pointer-events: auto;
 }
 
-.derp-stack-tab .derp-stack-tab-refresh:hover {
+.bork-stack-tab .bork-stack-tab-refresh:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Drag-over-chip: light the whole cell ("drop to join this stack") — set
    by onChipDragOverHighlight in index.ts. Replaces the thin insertion
    underline for the join gesture. */
-#tabbrowser-tabs tab-group[data-derp-stack][data-derp-drop-into] .tab-group-label {
+#tabbrowser-tabs tab-group[data-bork-stack][data-bork-drop-into] .tab-group-label {
   background-color: color-mix(
     in srgb,
     var(--focus-outline-color, #0a84ff) 35%,
@@ -686,7 +686,7 @@ tab-group[data-derp-stack] .tab-group-label[data-derp-count]::after {
    The chip highlight above is the one true join signal. The attribute is
    maintained by the _animateTabMove wrapper in index.ts; plain groups keep
    the native underline. */
-#tabbrowser-tabs[data-derp-stack-droptarget] .tabbrowser-tab .tab-group-line {
+#tabbrowser-tabs[data-bork-stack-droptarget] .tabbrowser-tab .tab-group-line {
   display: none !important;
 }
 

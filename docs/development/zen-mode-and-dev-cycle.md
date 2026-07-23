@@ -92,7 +92,7 @@ Each window's `registerActions` therefore **overwrites** the previous
 window's closure. `GestureActionFn` is `(win: Window) => void` for exactly
 this reason — always use the passed `win`, never close over the registering
 window. Per-window hooks are published on each window as
-`gDerpPanelToggles`.
+`gBorkPanelToggles`.
 
 The keyboard controller itself is scrupulous about this: it holds a
 `targetWindow` and calls `fn(this.targetWindow)`. Bugs here come from
@@ -134,7 +134,7 @@ The page ports are baked into an installed app's
 
 ### What does not hot-reload
 
-- **Skin CSS** (`skin/derp/css/*.css`) is a `chrome://` stylesheet. It needs
+- **Skin CSS** (`skin/bork/css/*.css`) is a `chrome://` stylesheet. It needs
   a full restage.
 - **`zen-mode.css`** is imported with `?inline`, so its text is baked into
   the module at evaluation. `dev-tool rebuild` will not apply changes to it
@@ -198,6 +198,6 @@ windows a last-registration-wins bug can pass by coincidence.
   for computed style and `getAnimations()` over sampling a transition.
 - `auto → 0` does not interpolate. Collapsing something whose natural size
   is `auto` needs a measured number published first (this is why the nav bar
-  hide sets `--derp-navbar-height` before hiding).
+  hide sets `--bork-navbar-height` before hiding).
 - `#urlbar` renders in the top layer: it does not inherit the nav bar's
   opacity and does not collapse with it.

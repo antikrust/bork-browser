@@ -81,7 +81,7 @@ export default function FinishPage() {
                                     <Twitter className="mr-1" size={14} />
                                     X（Twitter）
                                 </a>
-                                <a href="https://github.com/100mountains/derp" target="_blank" className="btn btn-outline btn-sm">
+                                <a href="https://github.com/100mountains/bork" target="_blank" className="btn btn-outline btn-sm">
                                     <HelpCircle className="mr-1" size={14} />
                                     {t('finishPage.support')}
                                 </a>

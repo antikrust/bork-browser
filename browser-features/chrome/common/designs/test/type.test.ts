@@ -18,7 +18,7 @@ function makeValidConfig(): Record<string, unknown> {
   return {
     globalConfigs: {
       faviconColor: false,
-      userInterface: "derp",
+      userInterface: "bork",
       appliedUserJs: "",
     },
     tabbar: {
@@ -62,7 +62,7 @@ function testValidConfigDecodes(): void {
 }
 
 function testAllUserInterfaceValues(): void {
-  const uiValues = ["derp"];
+  const uiValues = ["bork"];
   for (const ui of uiValues) {
     const config = makeValidConfig();
     (config.globalConfigs as Record<string, unknown>).userInterface = ui;

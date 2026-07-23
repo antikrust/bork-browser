@@ -434,7 +434,7 @@ export class MouseGestureController {
    * a plain right-click can leave isGestureActive stuck true with no further
    * event to clear it. While it is stuck every wheel event is claimed as a
    * tab-switch gesture and preventDefault'd, so scrolling stops working — but
-   * only on derp's own pages, because those load in-process and their wheel
+   * only on bork's own pages, because those load in-process and their wheel
    * events reach this window listener while ordinary web content, being
    * out-of-process, never does. That asymmetry is why the symptom looks like
    * it belongs to the internal pages rather than to the gesture handler.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate derp's help pages.
+"""Generate bork's help pages.
 
 Static HTML with no build step, so it can be served straight from source at
 chrome://noraneko-help/content/. The pages have to read well in the panel
@@ -44,14 +44,14 @@ SECTIONS = [
     ("Getting started", [
         ("importing", "Importing from another browser", "download",
          "Bring your passwords, bookmarks, history and cookies across — and, from Vivaldi, your workspaces and the tabs inside them.",
-         [("What derp can import",
-           ["derp reads the browsers already installed on your computer and offers whatever each one holds. Vivaldi, Chrome, Edge, Opera and Safari are all supported.",
-            "Passwords, bookmarks, browsing history and cookies come across in one pass. Importing passwords asks your operating system for permission to unlock the other browser's password store — that prompt comes from macOS or Windows, not from derp."]),
+         [("What bork can import",
+           ["bork reads the browsers already installed on your computer and offers whatever each one holds. Vivaldi, Chrome, Edge, Opera and Safari are all supported.",
+            "Passwords, bookmarks, browsing history and cookies come across in one pass. Importing passwords asks your operating system for permission to unlock the other browser's password store — that prompt comes from macOS or Windows, not from bork."]),
           ("Vivaldi workspaces",
-           ["derp recreates your Vivaldi workspaces here, reading Vivaldi's own session data, so a workspace holding twenty tabs arrives as a workspace holding twenty tabs, with their titles.",
+           ["bork recreates your Vivaldi workspaces here, reading Vivaldi's own session data, so a workspace holding twenty tabs arrives as a workspace holding twenty tabs, with their titles.",
             "Tabs are restored without loading, so importing a large profile does not start a hundred page loads at once. Workspaces whose name you already use are skipped, which means running the import twice tops up rather than duplicating."]),
           ("Where to find it",
-           ["The import step appears during first-run setup, as one of the pages you walk through the first time derp opens.",
+           ["The import step appears during first-run setup, as one of the pages you walk through the first time bork opens.",
             "Afterwards it lives in the Hub, under Workspaces: an Import from Vivaldi card appears there whenever a Vivaldi profile is present on the computer. Open the Hub from the menu, or go to about:hub."])]),
     ]),
     ("Finding things", [
@@ -61,7 +61,7 @@ SECTIONS = [
            ["F2 opens the palette. Type and it filters as you go; Enter runs the highlighted entry, Escape closes it. Typing something that looks like an address offers to navigate there.",
             "Entries are grouped by what they act on: navigation, tabs, open tabs, zoom, bookmarks, history, downloads, search, scrolling, sidebar, window, workspaces, media and tools, with the things you have used recently floating to the top."]),
           ("Why it is here",
-           ["derp hides a lot of chrome by default. The palette is the fallback for anything whose button is not on screen, which makes running with the address bar and toolbars hidden practical rather than awkward."])]),
+           ["bork hides a lot of chrome by default. The palette is the fallback for anything whose button is not on screen, which makes running with the address bar and toolbars hidden practical rather than awkward."])]),
         ("address-bar", "Working without the address bar", "urlbar",
          "The address bar can be hidden entirely; double-clicking a tab is how you navigate instead.",
          [("Hiding it",
@@ -97,14 +97,14 @@ SECTIONS = [
         ("start-page", "Start page", "start",
          "The page new tabs open on: your sites, a clock, a search box and a wallpaper.",
          [("Your sites",
-           ["The tiles are the sites you added and nothing else — derp does not fill the page from your browsing history. Add site puts one there; right-click a tile to pin, dismiss or block it.",
+           ["The tiles are the sites you added and nothing else — bork does not fill the page from your browsing history. Add site puts one there; right-click a tile to pin, dismiss or block it.",
             "Dismiss simply takes a tile off. Block also remembers the address so it is not offered again, and blocked sites can be brought back from the settings panel."]),
           ("Wallpapers",
-           ["The page ships a set of derp wallpapers and picks one per session; you can supply your own image instead. The same wallpapers sit behind first-run setup."])]),
+           ["The page ships a set of bork wallpapers and picks one per session; you can supply your own image instead. The same wallpapers sit behind first-run setup."])]),
         ("hub", "The Hub", "hub",
-         "derp's own settings, separate from Firefox's preferences.",
+         "bork's own settings, separate from Firefox's preferences.",
          [("What lives there",
-           ["Anything derp adds is configured in the Hub: workspaces, tab stacks, the panel sidebar, mouse gestures, keyboard shortcuts, web apps, the start page and the design settings. Importing from another browser is there too.",
+           ["Anything bork adds is configured in the Hub: workspaces, tab stacks, the panel sidebar, mouse gestures, keyboard shortcuts, web apps, the start page and the design settings. Importing from another browser is there too.",
             "Open it from the menu or by going to about:hub. Firefox's own preferences stay where they were, at about:preferences, and the Hub is reachable from that page's sidebar."])]),
         ("share-mode", "Share mode", "eye-off",
          "Blanks the parts of the window that would give away more than you meant to share.",
@@ -126,20 +126,20 @@ SECTIONS = [
         ("mouse-gestures", "Mouse gestures", "pointer",
          "Hold the right mouse button and draw to run a command.",
          [("Drawing a gesture",
-           ["Hold the right mouse button and draw a shape, then release. derp matches the shape against your configured gestures and runs the matching command.",
+           ["Hold the right mouse button and draw a shape, then release. bork matches the shape against your configured gestures and runs the matching command.",
             "Sensitivity and the shape-to-command mapping are configurable."]),
           ("Wheel gestures",
            ["With the right button held, the scroll wheel moves between tabs."])]),
         ("keyboard-shortcuts", "Keyboard shortcuts", "keyboard",
-         "The shortcuts derp adds on top of Firefox's, and how to change them.",
-         [("derp's own keys",
+         "The shortcuts bork adds on top of Firefox's, and how to change them.",
+         [("bork's own keys",
            ["The chrome controls sit on Alt+Cmd (Ctrl+Alt on Windows and Linux) rather than bare keys, so they cannot fire while you are typing into a page.",
             "Alt+Cmd+A hides or shows the address bar. Alt+Cmd+S hides or shows the panel sidebar. Alt+Cmd+Z toggles zen mode. Holding Alt+Cmd and dragging moves the window from anywhere on it, with no title bar needed."]),
           ("Navigating without an address bar",
            ["Double-click a tab and it opens into a text field: type a URL, press Enter to go, Escape to back out. Tabs in a stack's second row behave the same way. With the address bar hidden this is how you navigate.",
             "Back and forward stay on Cmd+Left and Cmd+Right, as in Firefox; Cmd+[ and Cmd+] work too."]),
           ("Changing shortcuts",
-           ["derp's shortcuts are listed and editable in the Hub, alongside Firefox's own. Conflicts are flagged as you assign them."])]),
+           ["bork's shortcuts are listed and editable in the Hub, alongside Firefox's own. Conflicts are flagged as you assign them."])]),
     ]),
     ("Extras", [
         ("containers", "Containers", "shield",
@@ -157,7 +157,7 @@ SECTIONS = [
          "Separate browsers on one machine, each with its own tabs, extensions and history.",
          [("Managing profiles",
            ["The profile manager creates, switches between and deletes profiles. Where workspaces separate tabs inside one browser, profiles separate everything — settings, extensions, history and logins.",
-            "Note that derp shares the profile location with Floorp, so if both are installed they see the same profiles."])]),
+            "Note that bork shares the profile location with Floorp, so if both are installed they see the same profiles."])]),
         ("qr-codes", "QR codes", "qr",
          "Turns the page you are on into a QR code to pick up on a phone.",
          [("Generating one",
@@ -166,23 +166,23 @@ SECTIONS = [
          "Where the tabs go and how much room they take.",
          [("Layouts",
            ["The tab bar can run horizontally, vertically down the side, or across multiple rows when there are more tabs than fit, and it can sit above or below the address bar.",
-            "derp adds a second row of its own for tab stacks — that is the stack's tabs, not a layout setting, and it appears only while a stack is active."])]),
+            "bork adds a second row of its own for tab stacks — that is the stack's tabs, not a layout setting, and it appears only while a stack is active."])]),
         ("themes", "Themes and appearance", "palette",
-         "Light, dark and the compact look derp ships with.",
+         "Light, dark and the compact look bork ships with.",
          [("Changing the look",
-           ["Theme and interface density are in the Hub's design settings, alongside Firefox's own theme handling. derp's compact skin is the default and tightens the toolbar and tab strip against stock Firefox.",
+           ["Theme and interface density are in the Hub's design settings, alongside Firefox's own theme handling. bork's compact skin is the default and tightens the toolbar and tab strip against stock Firefox.",
             "Firefox themes from addons.mozilla.org install and work as they normally would."])]),
         ("web-apps", "Web apps", "app",
          "Installs a site as a standalone desktop application.",
          [("Installing a site",
            ["A site installed as a web app opens in its own window with no tab strip or address bar, and can be pinned to the taskbar or dock like any other application. Firefox extensions still apply inside it."])]),
         ("extensions", "Extensions and Manifest V2", "puzzle",
-         "derp runs Manifest V2 extensions, so the full uBlock Origin works rather than the reduced Lite version.",
+         "bork runs Manifest V2 extensions, so the full uBlock Origin works rather than the reduced Lite version.",
          [("Why this matters",
            ["Chrome's move to Manifest V3 removed the blocking request API that content blockers rely on, capping filter lists and weakening what a blocker can do. Chrome-based browsers inherit that limit.",
-            "derp is built on Firefox, which still supports Manifest V2. The complete uBlock Origin runs here with its full filtering, not the declawed Lite build."]),
+            "bork is built on Firefox, which still supports Manifest V2. The complete uBlock Origin runs here with its full filtering, not the declawed Lite build."]),
           ("Installing extensions",
-           ["Extensions install from addons.mozilla.org as they would in Firefox. derp ships uBlock Origin, Ghostery, Privacy Badger and Dark Reader by default."])]),
+           ["Extensions install from addons.mozilla.org as they would in Firefox. bork ships uBlock Origin, Ghostery, Privacy Badger and Dark Reader by default."])]),
     ]),
 ]
 
@@ -219,7 +219,7 @@ def shell(title, current, breadcrumb, body, toc=None):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} — derp help</title>
+<title>{title} — bork help</title>
 <link rel="stylesheet" href="help.css">
 </head>
 <body>
@@ -228,7 +228,7 @@ def shell(title, current, breadcrumb, body, toc=None):
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
          stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
-  <a class="brand" href="index.html"><img class="brand-mark" src="logo.png" alt="derp help"></a>
+  <a class="brand" href="index.html"><img class="brand-mark" src="logo.png" alt="bork help"></a>
 </header>
 <div class="layout">
   {nav_html(current)}
@@ -272,8 +272,8 @@ def build():
                 f'<div><div class="card-title">{title}</div>'
                 f'<div class="card-sum">{summary}</div></div></a>')
         cards.append("</div>")
-    home_body = ('<h1>derp help</h1>'
-                 '<p class="lede">Documentation for the features derp adds on top '
+    home_body = ('<h1>bork help</h1>'
+                 '<p class="lede">Documentation for the features bork adds on top '
                  'of Firefox.</p>' + "".join(cards))
     (OUT / "index.html").write_text(
         shell("Help", "index", crumb(("Help", None)), home_body), encoding="utf-8")

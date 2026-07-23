@@ -9,7 +9,7 @@ export type StreamAxis = "h" | "v";
 export type GuardedScrollbox = XULElement & {
   isRTLScrollbox?: boolean;
   ensureElementIsVisible: (el: Element, instant?: boolean) => void;
-  __derpRecentreWrapped?: boolean;
+  __borkRecentreWrapped?: boolean;
 };
 
 /** Minimal shape of the gBrowser global the guard reads. */
@@ -25,7 +25,7 @@ export interface DroppedRun {
   endedAt: number;
 }
 
-/** Readout published at globalThis.__derpWheelGuard — the elimination
+/** Readout published at globalThis.__borkWheelGuard — the elimination
  * readout: after a reproduction attempt, non-zero counters mean the guard
  * engaged on that gesture. */
 export interface WheelGuardReadout {

@@ -73,7 +73,7 @@ export class PanelSidebarElem {
     if (owner) runWithOwner(owner, execEffect);
     else createRoot(execEffect);
 
-    // Vertical tabs are removed from derp, so the sidebar always tracks the
+    // Vertical tabs are removed from bork, so the sidebar always tracks the
     // toolbar token (the vertical-tabs mode used the toolbox token instead).
     //
     // FALLBACK ORDERING MATTERS: on Gecko 152 the legacy --toolbar-bgcolor and

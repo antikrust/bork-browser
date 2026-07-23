@@ -12,11 +12,11 @@ import { noraComponent, NoraComponentBase } from "#features-chrome/utils/base";
  * their own copy of this behaviour in stack-bar.tsx.
  */
 
-const EDIT_ATTR = "derp-editing";
+const EDIT_ATTR = "bork-editing";
 // Width transitions live on a separate attribute that outlasts the edit,
 // so the ease-back animates; a blanket transition on all tabs would
 // fight the native open/close animations.
-const ANIM_ATTR = "derp-edit-anim";
+const ANIM_ATTR = "bork-edit-anim";
 
 type BrowserLike = {
   currentURI?: { spec?: string };
@@ -100,7 +100,7 @@ export default class TabInlineEdit extends NoraComponentBase {
         "http://www.w3.org/1999/xhtml",
         "input",
       ) as HTMLInputElement;
-      input.className = "derp-tab-url-input";
+      input.className = "bork-tab-url-input";
       input.style.left = `${Math.round(tabRect.x - stripRect.x)}px`;
       input.style.top = `${Math.round(tabRect.y - stripRect.y) + 1}px`;
       input.style.height = `${Math.round(tabRect.height)}px`;
@@ -160,7 +160,7 @@ export default class TabInlineEdit extends NoraComponentBase {
 
     const onDblClick = (event: MouseEvent) => {
       const target = event.target as Element | null;
-      if (!target || target.closest?.(".derp-tab-url-input")) return;
+      if (!target || target.closest?.(".bork-tab-url-input")) return;
       const tab = target.closest?.(
         "#tabbrowser-tabs .tabbrowser-tab:not([pinned])",
       ) as TabLike | null;

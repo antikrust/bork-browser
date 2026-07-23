@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Green on Black",
   "version": "1.0.1",
-  "description": "derp built-in theme — Green on Black. Black chrome, with swish.",
+  "description": "bork built-in theme — Green on Black. Black chrome, with swish.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "green-black@themes.derp"
+      "id": "green-black@themes.bork"
     }
   },
   "theme": {

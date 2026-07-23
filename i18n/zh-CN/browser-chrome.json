@@ -4,12 +4,12 @@
     "tooltiptext": "重新打开上次关闭的选项卡 {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Derp 特定设置，如面板侧边栏、工作空间和鼠标手势，都在 Derp Hub 中管理。",
-    "openButton": "打开 Derp Hub"
+    "message": "Bork 特定设置，如面板侧边栏、工作空间和鼠标手势，都在 Bork Hub 中管理。",
+    "openButton": "打开 Bork Hub"
   },
   "floorpStartWarning": {
-    "message": "要更改 \"主页 \"设置，请在 Derp Hub (about:hub#/features/design) 中禁用 Derp Start。",
-    "openButton": "打开 Derp Hub - 设计"
+    "message": "要更改 \"主页 \"设置，请在 Bork Hub (about:hub#/features/design) 中禁用 Bork Start。",
+    "openButton": "打开 Bork Hub - 设计"
   },
   "workspaces": {
     "modal": {
@@ -196,7 +196,7 @@
       "floorp-toggle-zen-mode": "Toggle Zen Mode",
       "floorp-toggle-command-palette": "Toggle Command Palette",
       "floorp-open-settings": "Open Settings",
-      "floorp-open-hub": "打开 Derp Hub",
+      "floorp-open-hub": "打开 Bork Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode",
       "floorp-copy-page-url-as-markdown": "Copy Page URL as Markdown",
       "floorp-split-view-open-left": "Split View Left",
@@ -225,8 +225,8 @@
       "gecko-restore-last-tab": "重新打开上次关闭的标签页",
       "floorp-toggle-zen-mode": "Toggle Zen Mode to hide all UI elements for distraction-free browsing",
       "floorp-toggle-command-palette": "Open or close the command palette to search and execute commands",
-      "floorp-open-settings": "Opens the Derp settings page",
-      "floorp-open-hub": "Opens the Derp Hub page",
+      "floorp-open-settings": "Opens the Bork settings page",
+      "floorp-open-hub": "Opens the Bork Hub page",
       "floorp-toggle-share-mode": "Toggle Share Mode to minimize UI for screen sharing and presentations",
       "floorp-copy-page-url-as-markdown": "Copy the current page title and URL as Markdown link format: [Title](URL)",
       "floorp-split-view-open-left": "Open the current tab in a split view on the left side",
@@ -322,7 +322,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "添加到 Derp 浏览器",
+      "addToFloorp": "添加到 Bork 浏览器",
       "installing": "正在安装……",
       "success": "添加成功！",
       "error": "错误",
@@ -330,7 +330,7 @@
     },
     "error": {
       "title": "安装错误",
-      "compatibilityNote": "此扩展程序可能与 Firefox/Derp 不兼容。",
+      "compatibilityNote": "此扩展程序可能与 Firefox/Bork 不兼容。",
       "alreadyInstalled": "此扩展程序已安装 ({{name}})",
       "downloadFailed": "下载 CRX 文件失败",
       "conversionFailed": "Failed to convert extension: {{error}}",
@@ -352,7 +352,7 @@
       "downloadFailed": "Download failed",
       "signatureVerifyFailed": "Failed to verify extension signature",
       "corruptOrIncompatible": "Extension is corrupted or incompatible",
-      "incompatible": "This extension is not compatible with Derp",
+      "incompatible": "This extension is not compatible with Bork",
       "blocked": "This extension is blocked",
       "timeout": "Extension installation timed out",
       "installFailed": "Extension installation failed",
@@ -372,7 +372,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Derp 中心"
+      "title": "Bork 中心"
     }
   },
   "splitView": {
@@ -421,7 +421,7 @@
       "tools": "Tools",
       "downloads": "下载",
       "workspace": "工作区",
-      "floorp": "Derp",
+      "floorp": "Bork",
       "media": "Media",
       "open-tabs": "Open Tabs",
       "switcher": "Switcher",

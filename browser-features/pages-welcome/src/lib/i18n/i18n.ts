@@ -36,7 +36,7 @@ export const initializeI18n = async () => {
       interpolation: {
         escapeValue: false,
         defaultVariables: {
-          productName: "Derp",
+          productName: "Bork",
         },
       },
       react: {

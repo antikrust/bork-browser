@@ -1,5 +1,5 @@
 {
-    "title": "Начальная страница Derp",
+    "title": "Начальная страница Bork",
     "topSites": {
         "addSite": "Добавить сайт",
         "addNewSite": "Добавить новый сайт",
@@ -27,7 +27,7 @@
         "randomImage": "Случайное изображение",
         "customImage": "Своё изображение",
         "folderImages": "Изображения из папки",
-        "floorpImages": "Изображения Derp",
+        "floorpImages": "Изображения Bork",
         "currentImage": "Текущее изображение:",
         "imageRecommendation": "Рекомендация: используйте изображения с разрешением 1920x1080 или выше.",
         "currentFolder": "Текущая папка:",
@@ -35,9 +35,9 @@
         "selected": "Выбрано",
         "enableSlideshow": "Включить слайд-шоу",
         "slideshowInterval": "Интервал (секунды)",
-        "floorpStart": "Начальная страница Derp",
-        "disableFloorpStart": "Отключить начальную страницу Derp (использовать классический about:newtab)",
-        "disableFloorpStartDescription": "Когда включено, то запуск начальной страницы Derp будет заменён классической новой вкладкой / домашней страницей Firefox.",
+        "floorpStart": "Начальная страница Bork",
+        "disableFloorpStart": "Отключить начальную страницу Bork (использовать классический about:newtab)",
+        "disableFloorpStartDescription": "Когда включено, то запуск начальной страницы Bork будет заменён классической новой вкладкой / домашней страницей Firefox.",
         "restartRequired": "Требуется перезапуск браузера для вступления в полную силу.",
         "firefoxLayout": "Использовать устаревший внешний вид (как домашняя страница Firefox)"
     },

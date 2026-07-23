@@ -4,9 +4,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * Framework for injecting derp settings panes as first-class citizens of
+ * Framework for injecting bork settings panes as first-class citizens of
  * about:preferences. Each pane lives in its own module under panes/ and is
- * registered from derp-panes.ts.
+ * registered from bork-panes.ts.
  *
  * The page's native machinery is used throughout: `register_module()` for
  * routing (an unregistered category THROWS in gotoPref — this is why the old
@@ -35,13 +35,13 @@ export interface PrefsWindow extends Window {
 export const win = window as unknown as PrefsWindow;
 export const doc = document!;
 
-export const log = (...args: unknown[]) => console.log("[derp-panes]", ...args);
+export const log = (...args: unknown[]) => console.log("[bork-panes]", ...args);
 
 /* ------------------------------------------------------------------ */
 /* Pane registration                                                   */
 /* ------------------------------------------------------------------ */
 
-export interface DerpPaneSpec {
+export interface BorkPaneSpec {
   /** Internal category name — must start with "pane". */
   category: string;
   /** Element id for the category list item. */
@@ -57,7 +57,7 @@ export interface DerpPaneSpec {
   init?: () => void;
 }
 
-export function addDerpPane(spec: DerpPaneSpec): boolean {
+export function addBorkPane(spec: BorkPaneSpec): boolean {
   const categories = doc.getElementById("categories");
   const mainPrefPane = doc.getElementById("mainPrefPane");
   if (!categories || !mainPrefPane || !win.register_module) {
@@ -78,7 +78,7 @@ export function addDerpPane(spec: DerpPaneSpec): boolean {
   item.setAttribute("role", "none");
   item.textContent = spec.label;
 
-  // Cluster derp categories above the hub link (while it still exists),
+  // Cluster bork categories above the hub link (while it still exists),
   // otherwise at the end of the list.
   const hubLink = doc.getElementById("category-nora-link");
   if (hubLink) categories.insertBefore(item, hubLink);
@@ -91,7 +91,7 @@ export function addDerpPane(spec: DerpPaneSpec): boolean {
   try {
     spec.build(root);
   } catch (e) {
-    console.error("[derp-panes]", spec.category, "build failed:", e);
+    console.error("[bork-panes]", spec.category, "build failed:", e);
   }
   mainPrefPane.appendChild(root);
 
@@ -104,7 +104,7 @@ export function addDerpPane(spec: DerpPaneSpec): boolean {
       try {
         spec.init?.();
       } catch (e) {
-        console.error("[derp-panes]", spec.category, "init failed:", e);
+        console.error("[bork-panes]", spec.category, "init failed:", e);
       }
     },
     handleSubcategory: () => false,
@@ -113,8 +113,8 @@ export function addDerpPane(spec: DerpPaneSpec): boolean {
   // Direct navigation on a cold load races our registration (the page's own
   // init runs gotoPref before this script adds the category and lands on a
   // fallback pane). Now that the category exists, honor the hash — in both
-  // the internal form (#paneDerpX) and the friendly form the page itself
-  // generates (#derpX = strip "pane", lowercase first letter).
+  // the internal form (#paneBorkX) and the friendly form the page itself
+  // generates (#borkX = strip "pane", lowercase first letter).
   const friendly = spec.category.replace(/^pane/, "");
   const friendlyHash = `#${friendly.charAt(0).toLowerCase()}${friendly.slice(1)}`;
   if (location.hash === `#${spec.category}` || location.hash === friendlyHash) {
@@ -233,7 +233,7 @@ export function radioGroup(
     try {
       onChange(v);
     } catch (e) {
-      console.error("[derp-panes]", id, "radio change failed:", e);
+      console.error("[bork-panes]", id, "radio change failed:", e);
     }
   });
   if (cur) (group as unknown as { value: string }).value = cur;
@@ -277,7 +277,7 @@ export function menulistRow(
     try {
       onChange((list as unknown as { value: string }).value);
     } catch (e) {
-      console.error("[derp-panes]", id, "menulist change failed:", e);
+      console.error("[bork-panes]", id, "menulist change failed:", e);
     }
   });
   line.append(lab, list);
@@ -331,7 +331,7 @@ export function ensureBoolPref(id: string): void {
     const prefs = win.Preferences;
     if (prefs && !prefs.get(id)) prefs.add({ id, type: "bool" });
   } catch (e) {
-    console.error("[derp-panes] ensureBoolPref failed:", id, e);
+    console.error("[bork-panes] ensureBoolPref failed:", id, e);
   }
 }
 

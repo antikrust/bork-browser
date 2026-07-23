@@ -4,7 +4,7 @@ import panelSidebarSvg from "../features/assets/panelsidebar.svg";
 import workspacesSvg from "../features/assets/workspaces.svg";
 import pwaSvg from "../features/assets/pwa.svg";
 import mouseGestureSvg from "../features/assets/mousegesture.svg";
-import derpLogo from "../../assets/logo.png";
+import borkLogo from "../../assets/logo.png";
 import headerCover from "./header-cover.webp";
 import {
   ArrowRight,
@@ -56,7 +56,7 @@ export default function WhatsNewPage() {
     const previousTitle = globalThis.document.title;
     const nextTitle = t("whatsNew.documentTitle", {
       version,
-      defaultValue: `Derp – What's New`,
+      defaultValue: `Bork – What's New`,
     });
     globalThis.document.title = nextTitle;
 
@@ -450,7 +450,7 @@ export default function WhatsNewPage() {
             tag={t("whatsNew.tags.settings")}
             title={t("hubPage.sectionTitle")}
             description={t("hubPage.description")}
-            image={derpLogo}
+            image={borkLogo}
             bullets={[
               t("hubPage.features.dedicated"),
               t("hubPage.features.accessible"),
@@ -532,7 +532,7 @@ export default function WhatsNewPage() {
               </h3>
               <div className="flex gap-4">
                 <a
-                  href="https://github.com/100mountains/derp"
+                  href="https://github.com/100mountains/bork"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
@@ -541,7 +541,7 @@ export default function WhatsNewPage() {
                   <Github size={24} />
                 </a>
                 <a
-                  href="https://therob.lol/derp/"
+                  href="https://therob.lol/bork/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
@@ -557,15 +557,15 @@ export default function WhatsNewPage() {
               <div className="flex items-center gap-2">
                 <img
                   src="chrome://branding/content/icon128.png"
-                  alt="Derp"
+                  alt="Bork"
                   className="w-6 h-6"
                 />
-                <span className="text-white font-medium">Derp</span>
+                <span className="text-white font-medium">Bork</span>
               </div>
 
               <div className="flex flex-wrap gap-6 text-sm">
                 <a
-                  href="https://github.com/100mountains/derp"
+                  href="https://github.com/100mountains/bork"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"

@@ -60,7 +60,7 @@ function makeConfig(
 // ---------------------------------------------------------------------------
 
 function testLeptonReturnsUserjs(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
+  const result = getCSSFromConfig(makeConfig("bork"));
   assert(result.userjs !== null, "lepton should have non-null userjs");
   assert(
     result.userjs!.length > 0,
@@ -69,7 +69,7 @@ function testLeptonReturnsUserjs(): void {
 }
 
 function testLeptonNoUseTabColorAsToolbarColor(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
+  const result = getCSSFromConfig(makeConfig("bork"));
   assertEquals(
     result.useTabColorAsToolbarColor,
     undefined,
@@ -78,7 +78,7 @@ function testLeptonNoUseTabColorAsToolbarColor(): void {
 }
 
 function testLeptonHasExpectedStyleEntries(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
+  const result = getCSSFromConfig(makeConfig("bork"));
   // Production: chromeStyles = [engineChrome, engineContent] (2).
   // Dev:        chromeStylesRaw = [engineChrome, LEPTON_COMPAT, navBar] (3).
   // Both branches must carry Lepton's chrome + content sheets; the Gecko 152
@@ -101,12 +101,12 @@ function getChromeInlineCss(
   return getCSSFromConfig(makeConfig(ui)).chromeStylesRaw?.join("\n") ?? "";
 }
 
-function testLeptonDerpNavBarCssIncludesPersonalToolbar(): void {
+function testLeptonBorkNavBarCssIncludesPersonalToolbar(): void {
   // Each theme must actually WIRE the shared nav-bar CSS into its
   // chromeStylesRaw (content assertions are then made against
   // `navBarBackgroundColorCSS` directly, to avoid false matches from the
   // vendored Lepton sheet which legitimately contains many selectors).
-  for (const theme of ["derp"] as const) {
+  for (const theme of ["bork"] as const) {
     const css = getChromeInlineCss(theme);
     assert(
       css.includes("#PersonalToolbar"),
@@ -135,7 +135,7 @@ function testLeptonDerpNavBarCssIncludesPersonalToolbar(): void {
 function testNavBarCssIsLwtAware(): void {
   // The nav-bar CSS is shared across the Lepton family. Assert it is wired into
   // every theme's chromeStylesRaw first...
-  for (const theme of ["derp"] as const) {
+  for (const theme of ["bork"] as const) {
     assert(
       getChromeInlineCss(theme).includes("nav-bar") === false ||
         getChromeInlineCss(theme).includes("--floorp-chrome-surface-color"),
@@ -249,31 +249,31 @@ function testNavBarCssIsLwtAware(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Tests — derp theme
+// Tests — bork theme
 // ---------------------------------------------------------------------------
 
-function testDerpReturnsUserjs(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
-  assert(result.userjs !== null, "derp should have non-null userjs");
+function testBorkReturnsUserjs(): void {
+  const result = getCSSFromConfig(makeConfig("bork"));
+  assert(result.userjs !== null, "bork should have non-null userjs");
 }
 
-function testDerpHasContentStyles(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
+function testBorkHasContentStyles(): void {
+  const result = getCSSFromConfig(makeConfig("bork"));
   const hasContentStyles = (result.styles?.length ?? 0) > 0 ||
     (result.stylesRaw?.length ?? 0) > 0;
   assert(
     hasContentStyles,
-    "derp should have content styles (styles or stylesRaw)",
+    "bork should have content styles (styles or stylesRaw)",
   );
 }
 
-function testDerpHasChromeStyles(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
+function testBorkHasChromeStyles(): void {
+  const result = getCSSFromConfig(makeConfig("bork"));
   const hasChromeStyles = (result.chromeStyles?.length ?? 0) > 0 ||
     (result.chromeStylesRaw?.length ?? 0) > 0;
   assert(
     hasChromeStyles,
-    "derp should have chrome styles (chromeStyles or chromeStylesRaw)",
+    "bork should have chrome styles (chromeStyles or chromeStylesRaw)",
   );
 }
 
@@ -283,8 +283,8 @@ function testDerpHasChromeStyles(): void {
 
 function testAllThemesReturnNonNullResult(): void {
   const themes: TFloorpDesignConfigs["globalConfigs"]["userInterface"][] = [
-    "derp",
-    "derp",
+    "bork",
+    "bork",
   ];
   for (const theme of themes) {
     const result = getCSSFromConfig(makeConfig(theme));
@@ -302,7 +302,7 @@ function testAllThemesReturnNonNullResult(): void {
 function testProductionPathsUseChromeProtocol(): void {
   // In production mode, styles should use chrome:// URLs
   // We verify the structural pattern: if chromeStyles exist, they should be chrome:// URLs
-  const result = getCSSFromConfig(makeConfig("derp"));
+  const result = getCSSFromConfig(makeConfig("bork"));
   if (result.chromeStyles) {
     for (const url of result.chromeStyles) {
       assert(
@@ -338,19 +338,19 @@ export async function runAllTests(): Promise<void> {
       fn: testLeptonHasExpectedStyleEntries,
     },
     {
-      name: "lepton/derp navBar CSS includes PersonalToolbar",
-      fn: testLeptonDerpNavBarCssIncludesPersonalToolbar,
+      name: "lepton/bork navBar CSS includes PersonalToolbar",
+      fn: testLeptonBorkNavBarCssIncludesPersonalToolbar,
     },
     {
-      name: "lepton/derp navBar CSS is LWT-aware",
+      name: "lepton/bork navBar CSS is LWT-aware",
       fn: testNavBarCssIsLwtAware,
     },
-    // derp
-    { name: "derp returns userjs", fn: testDerpReturnsUserjs },
-    { name: "derp has content styles", fn: testDerpHasContentStyles },
-    { name: "derp has chrome styles", fn: testDerpHasChromeStyles },
-    { name: "derp has both style types", fn: testDerpHasBothStyleTypes },
-    { name: "derp has iconBasePath in dev", fn: testDerpHasIconBasePathInDev },
+    // bork
+    { name: "bork returns userjs", fn: testBorkReturnsUserjs },
+    { name: "bork has content styles", fn: testBorkHasContentStyles },
+    { name: "bork has chrome styles", fn: testBorkHasChromeStyles },
+    { name: "bork has both style types", fn: testBorkHasBothStyleTypes },
+    { name: "bork has iconBasePath in dev", fn: testBorkHasIconBasePathInDev },
     // structural
     {
       name: "all themes return non-null result",
@@ -376,19 +376,19 @@ export async function runAllTests(): Promise<void> {
 // Additional Tests — FCSS edge cases and invariants
 // ---------------------------------------------------------------------------
 
-function testDerpHasIconBasePathInDev(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
+function testBorkHasIconBasePathInDev(): void {
+  const result = getCSSFromConfig(makeConfig("bork"));
   // In dev mode, iconBasePath should be present
   // In production, it's undefined (chrome:// URLs don't need it)
   const hasIconPath = result.iconBasePath !== undefined;
   assert(
     hasIconPath || result.chromeStyles !== undefined,
-    "derp should have iconBasePath in dev or chromeStyles in prod",
+    "bork should have iconBasePath in dev or chromeStyles in prod",
   );
 }
 
 function testLeptonHasIconBasePathInDev(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
+  const result = getCSSFromConfig(makeConfig("bork"));
   const hasIconPath = result.iconBasePath !== undefined;
   assert(
     hasIconPath || result.chromeStyles !== undefined,
@@ -396,9 +396,9 @@ function testLeptonHasIconBasePathInDev(): void {
   );
 }
 
-function testDerpHasBothStyleTypes(): void {
-  const result = getCSSFromConfig(makeConfig("derp"));
-  // derp (compact Lepton) carries both chrome styles and content styles.
+function testBorkHasBothStyleTypes(): void {
+  const result = getCSSFromConfig(makeConfig("bork"));
+  // bork (compact Lepton) carries both chrome styles and content styles.
   const hasChromeStyles = (result.chromeStyles?.length ?? 0) > 0 ||
     (result.chromeStylesRaw?.length ?? 0) > 0;
   const hasContentStyles = (result.styles?.length ?? 0) > 0 ||
@@ -407,14 +407,14 @@ function testDerpHasBothStyleTypes(): void {
   assertEquals(
     hasChromeStyles && hasContentStyles,
     true,
-    "derp should have both chrome and content styles",
+    "bork should have both chrome and content styles",
   );
 }
 
 function testUserjsContentNonEmpty(): void {
   const themesWithUserjs: Array<
     TFloorpDesignConfigs["globalConfigs"]["userInterface"]
-  > = ["derp"];
+  > = ["bork"];
 
   for (const theme of themesWithUserjs) {
     const result = getCSSFromConfig(makeConfig(theme));
@@ -433,7 +433,7 @@ function testProductionThemesCanCombineChromeStylesAndRaw(): void {
 
   const themes: Array<
     TFloorpDesignConfigs["globalConfigs"]["userInterface"]
-  > = ["derp"];
+  > = ["bork"];
 
   for (const theme of themes) {
     const result = getCSSFromConfig(makeConfig(theme));

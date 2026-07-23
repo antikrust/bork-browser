@@ -29,7 +29,7 @@
  * name. This is a single, Floorp-wide shim rather than touching 50+ call
  * sites, because:
  *   - the rename is mechanical (same semantics, different spelling),
- *   - it keeps the interface-engine CSS (skin/derp/css/) untouched,
+ *   - it keeps the interface-engine CSS (skin/bork/css/) untouched,
  *   - it lets Floorp migrate component by component over time.
  *
  * The aliases are declared WITHOUT !important and only set a value when the

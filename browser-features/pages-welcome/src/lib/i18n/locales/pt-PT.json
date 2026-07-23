@@ -5,8 +5,8 @@
         "languageSupport": "Apoio linguístico",
         "features": "Caraterísticas",
         "featureIntroduction": "Introdução à funcionalidade",
-        "hub": "Derp Hub",
-        "hubIntro": "About Derp Hub",
+        "hub": "Bork Hub",
+        "hubIntro": "About Bork Hub",
         "customize": "Personalizar",
         "initialSettings": "Definições iniciais",
         "complete": "Completo",
@@ -14,25 +14,25 @@
         "next": "Seguinte"
     },
     "hubPage": {
-        "title": "About Derp Hub",
-        "subtitle": "A central place for Derp-specific settings.",
-        "sectionTitle": "Derp Hub",
-        "description": "Derp Hub is a dedicated settings center for Derp-specific options. You can open it by navigating to 'about:preferences'. It can also be accessed from the left sidebar of Firefox's settings page at 'about:preferences'.",
+        "title": "About Bork Hub",
+        "subtitle": "A central place for Bork-specific settings.",
+        "sectionTitle": "Bork Hub",
+        "description": "Bork Hub is a dedicated settings center for Bork-specific options. You can open it by navigating to 'about:preferences'. It can also be accessed from the left sidebar of Firefox's settings page at 'about:preferences'.",
         "openHub": "Open about:preferences",
         "openPreferences": "Open Settings (about:preferences)",
-        "tip": "Tip: You can also access Derp Hub from the Firefox settings sidebar.",
+        "tip": "Tip: You can also access Bork Hub from the Firefox settings sidebar.",
         "features": {
-            "dedicated": "Dedicated Derp settings center",
+            "dedicated": "Dedicated Bork settings center",
             "accessible": "Accessible from about:preferences or Firefox settings",
-            "centralized": "All Derp-specific options in one place"
+            "centralized": "All Bork-specific options in one place"
         }
     },
     "customize": {
-        "title": "Personalizar Derp",
-        "description": "Personalize com as suas definições preferidas. Pode sempre alterá-las mais tarde a partir do Derp Hub ou da página de definições.",
+        "title": "Personalizar Bork",
+        "description": "Personalize com as suas definições preferidas. Pode sempre alterá-las mais tarde a partir do Bork Hub ou da página de definições.",
         "appearance": {
             "title": "Definições de aparência",
-            "description": "Pode personalizar o aspeto do Derp de acordo com as suas preferências. Escolha um tema claro ou escuro, ou faça-o mudar automaticamente com base nas definições do sistema."
+            "description": "Pode personalizar o aspeto do Bork de acordo com as suas preferências. Escolha um tema claro ou escuro, ou faça-o mudar automaticamente com base nas definições do sistema."
         },
         "themes": {
             "light": "Claro",
@@ -51,28 +51,28 @@
             "noEnginesFound": "Não foram encontrados motores de busca."
         },
         "floorpHub": {
-            "title": "Derp Hub",
-            "description": "Derp Hub is a dedicated settings center for Derp-specific options. You can open it by navigating to 'about:preferences'. It can also be accessed from the left sidebar of Firefox's settings page at 'about:preferences'.",
+            "title": "Bork Hub",
+            "description": "Bork Hub is a dedicated settings center for Bork-specific options. You can open it by navigating to 'about:preferences'. It can also be accessed from the left sidebar of Firefox's settings page at 'about:preferences'.",
             "openHub": "Open about:preferences",
             "openPreferences": "Open Settings (about:preferences)"
         }
     },
     "finish": {
         "title": "Configuração concluída!",
-        "subtitle": "Parabéns! Concluiu a configuração do Derp. Desfrute de uma experiência de navegação na Internet confortável e segura.",
+        "subtitle": "Parabéns! Concluiu a configuração do Bork. Desfrute de uma experiência de navegação na Internet confortável e segura.",
         "nextSteps": {
             "title": "Próximas etapas (opcional)",
             "setDefault": "Definir como navegador predefinido",
             "documentation": "Documentação"
         },
-        "getStarted": "Começar a utilizar o Derp",
+        "getStarted": "Começar a utilizar o Bork",
         "hint": "Para obter definições mais detalhadas, pode personalizar através da opção Definições no botão de menu no canto superior direito."
     },
     "welcomePage": {
-        "welcome": "Bem-vindo ao Derp!",
-        "description": "O Derp é um navegador Web rápido e fácil de utilizar que privilegia a privacidade e a segurança. Este guia irá apresentar-lhe as principais caraterísticas e definições do Derp.",
+        "welcome": "Bem-vindo ao Bork!",
+        "description": "O Bork é um navegador Web rápido e fácil de utilizar que privilegia a privacidade e a segurança. Este guia irá apresentar-lhe as principais caraterísticas e definições do Bork.",
         "readyToStart": "Quando estiver pronto, clique no botão abaixo para prosseguir.",
-        "features": "Características do Derp",
+        "features": "Características do Bork",
         "privacy": "Privacidade",
         "privacyDesc": "Protege os seus dados",
         "speed": "Velocidade",
@@ -82,28 +82,28 @@
         "start": "Vamos começar"
     },
     "localizationPage": {
-        "title": "A Derp fala a sua língua",
+        "title": "A Bork fala a sua língua",
         "subtitle": "Verifique as definições de idioma e altere se necessário",
         "languageSettings": "Definições de idioma",
         "languageChanged": "Idioma alterado!",
         "currentLanguageInfo": "Informações sobre a língua atual",
         "systemLanguage": "Língua do sistema",
-        "floorpLanguage": "Idioma do Derp",
+        "floorpLanguage": "Idioma do Bork",
         "selectLanguage": "Selecionar idioma",
         "useSystemLanguage": "Usar idioma do sistema",
         "multilingual": "Suporte multilingue",
         "chooseLanguage": "Escolha entre uma vasta gama de línguas",
-        "languageChangeNotice": "A alteração do idioma aplicará o novo idioma sem reiniciar o Derp. Alguns add-ons podem não suportar alterações de idioma."
+        "languageChangeNotice": "A alteração do idioma aplicará o novo idioma sem reiniciar o Bork. Alguns add-ons podem não suportar alterações de idioma."
     },
     "featuresPage": {
-        "title": "Características principais do Derp",
-        "subtitle": "O Derp inclui muitas funcionalidades úteis. Veja o resumo das funcionalidades!",
+        "title": "Características principais do Bork",
+        "subtitle": "O Bork inclui muitas funcionalidades úteis. Veja o resumo das funcionalidades!",
         "panelSidebar": {
             "title": "Painel Barra lateral",
             "description": "Aceda a funcionalidades convenientes a partir da barra lateral à direita enquanto navega. Pode colocar painéis Web, funções de tomada de notas, add-ons, marcadores, etc. na barra lateral.",
             "features": [
                 "Fixar sites na barra lateral",
-                "Tome notas rapidamente com o Derp Notes enquanto navega",
+                "Tome notas rapidamente com o Bork Notes enquanto navega",
                 "Suporta contentores"
             ]
         },
@@ -139,19 +139,19 @@
     },
     "finishPage": {
         "title": "Configuração concluída!",
-        "subtitle": "Parabéns! Concluiu a configuração do Derp. Agora pode desfrutar de uma navegação confortável e segura na Internet.",
+        "subtitle": "Parabéns! Concluiu a configuração do Bork. Agora pode desfrutar de uma navegação confortável e segura na Internet.",
         "nextSteps": "Próximas etapas (opcional)",
         "defaultBrowser": "Definir como navegador predefinido",
         "support": "Apoio",
         "documentation": "Documentação",
-        "getStarted": "Comece com o Derp",
+        "getStarted": "Comece com o Bork",
         "hint": "Para obter definições mais detalhadas, pode personalizar através da opção Definições no botão de menu no canto superior direito.",
         "resourcesLabel": "Recursos",
-        "defaultBrowserSuccess": "O Derp foi definido como o seu navegador predefinido!"
+        "defaultBrowserSuccess": "O Bork foi definido como o seu navegador predefinido!"
     },
     "whatsNew": {
-        "title": "Bem-vindo ao Derp {{version}}!",
-        "subtitle": "Veja o que há de novo no Derp!",
+        "title": "Bem-vindo ao Bork {{version}}!",
+        "subtitle": "Veja o que há de novo no Bork!",
         "tags": {
             "settings": "Definições",
             "productivity": "Produtividade",
@@ -162,8 +162,8 @@
         "footer": {
             "follow": "Seguir",
             "privacy": "Privacidade e Termos",
-            "about": "Sobre o Derp",
-            "copyright": "© {{year}} Projectos Derp. Todos os direitos reservados."
+            "about": "Sobre o Bork",
+            "copyright": "© {{year}} Projectos Bork. Todos os direitos reservados."
         }
     }
 }

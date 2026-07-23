@@ -4,12 +4,12 @@
     "tooltiptext": "Buka kembali tab yang baru saja ditutup {{shortcut}}"
   },
   "floorpHubWarning": {
-    "message": "Pengaturan spesifik Derp seperti bilah sisi, Ruang Kerja, dan gestur tetikus dikelola di Derp Hub.",
-    "openButton": "Buka Derp Hub"
+    "message": "Pengaturan spesifik Bork seperti bilah sisi, Ruang Kerja, dan gestur tetikus dikelola di Bork Hub.",
+    "openButton": "Buka Bork Hub"
   },
   "floorpStartWarning": {
-    "message": "Untuk mengubah pengaturan \"Home\", nonaktifkan Derp Start dari Derp Hub (about:hub#/features/design).",
-    "openButton": "Buka Derp Hub — Desain"
+    "message": "Untuk mengubah pengaturan \"Home\", nonaktifkan Bork Start dari Bork Hub (about:hub#/features/design).",
+    "openButton": "Buka Bork Hub — Desain"
   },
   "workspaces": {
     "modal": {
@@ -196,7 +196,7 @@
       "floorp-toggle-zen-mode": "Toggle Zen Mode",
       "floorp-toggle-command-palette": "Toggle Command Palette",
       "floorp-open-settings": "Buka Pengaturan",
-      "floorp-open-hub": "Buka Derp Hub",
+      "floorp-open-hub": "Buka Bork Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode",
       "floorp-copy-page-url-as-markdown": "Salin URL Halaman sebagai Markdown",
       "floorp-split-view-open-left": "Split View Left",
@@ -225,8 +225,8 @@
       "gecko-restore-last-tab": "Reopen the last closed tab",
       "floorp-toggle-zen-mode": "Toggle Zen Mode to hide all UI elements for distraction-free browsing",
       "floorp-toggle-command-palette": "Open or close the command palette to search and execute commands",
-      "floorp-open-settings": "Membuka halaman pengaturan Derp",
-      "floorp-open-hub": "Membuka halaman Derp Hub",
+      "floorp-open-settings": "Membuka halaman pengaturan Bork",
+      "floorp-open-hub": "Membuka halaman Bork Hub",
       "floorp-toggle-share-mode": "Toggle Share Mode to minimize UI for screen sharing and presentations",
       "floorp-copy-page-url-as-markdown": "Menyalin judul dan URL halaman saat ini dengan format tautan Markdown: [Judul](URL)",
       "floorp-split-view-open-left": "Open the current tab in a split view on the left side",
@@ -322,7 +322,7 @@
   },
   "chromeWebStore": {
     "button": {
-      "addToFloorp": "Tambahkan ke Derp",
+      "addToFloorp": "Tambahkan ke Bork",
       "installing": "Memasang …",
       "success": "Ditambahkan!",
       "error": "Terjadi galat",
@@ -330,7 +330,7 @@
     },
     "error": {
       "title": "Galat pemasangan",
-      "compatibilityNote": "Ekstensi ini mungkin tidak kompatibel dengan Firefox/Derp.",
+      "compatibilityNote": "Ekstensi ini mungkin tidak kompatibel dengan Firefox/Bork.",
       "alreadyInstalled": "Ekstensi ini sudah terpasang ({{name}})",
       "downloadFailed": "Gagal mengunduh berkas CRX",
       "conversionFailed": "Gagal mengonversi ekstensi: {{error}}",
@@ -352,7 +352,7 @@
       "downloadFailed": "Unduhan gagal",
       "signatureVerifyFailed": "Gagal memverifikasi tanda tangan ekstensi",
       "corruptOrIncompatible": "Ekstensi rusak atau tak kompatibel",
-      "incompatible": "Ekstensi ini tidak kompatibel dengan Derp",
+      "incompatible": "Ekstensi ini tidak kompatibel dengan Bork",
       "blocked": "Ekstensi ini diblokir",
       "timeout": "Extension installation timed out",
       "installFailed": "Pemasangan ekstensi gagal",
@@ -372,7 +372,7 @@
   },
   "hub": {
     "menu": {
-      "title": "Derp Hub"
+      "title": "Bork Hub"
     }
   },
   "splitView": {
@@ -421,7 +421,7 @@
       "tools": "Tools",
       "downloads": "Unduhan",
       "workspace": "Ruang Kerja",
-      "floorp": "Derp",
+      "floorp": "Bork",
       "media": "Media",
       "open-tabs": "Open Tabs",
       "switcher": "Switcher",

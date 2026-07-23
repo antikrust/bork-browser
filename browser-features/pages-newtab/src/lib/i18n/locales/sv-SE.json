@@ -1,5 +1,5 @@
 {
-    "title": "Derp Start",
+    "title": "Bork Start",
     "topSites": {
         "addSite": "Lägg till webbplats",
         "addNewSite": "Lägg till ny webbplats",
@@ -27,7 +27,7 @@
         "randomImage": "Slumpmässig bild",
         "customImage": "Anpassad bild",
         "folderImages": "Bilder från mapp",
-        "floorpImages": "Derp bilder",
+        "floorpImages": "Bork bilder",
         "currentImage": "Nuvarande bild:",
         "imageRecommendation": "Rekommenderas: 1920x1080 eller högre",
         "currentFolder": "Nuvarande mapp:",
@@ -35,9 +35,9 @@
         "selected": "Vald",
         "enableSlideshow": "Aktivera bildspel",
         "slideshowInterval": "Slideshow Interval",
-        "floorpStart": "Derp Start",
-        "disableFloorpStart": "Inaktivera Derp Start (använd klassisk about:newtab)",
-        "disableFloorpStartDescription": "När aktiverad, Derp Start kommer att ersättas av den klassiska Firefox ny fliken / startsidan.",
+        "floorpStart": "Bork Start",
+        "disableFloorpStart": "Inaktivera Bork Start (använd klassisk about:newtab)",
+        "disableFloorpStartDescription": "När aktiverad, Bork Start kommer att ersättas av den klassiska Firefox ny fliken / startsidan.",
         "restartRequired": "Kräver omstart av webbläsaren för att få full effekt.",
         "firefoxLayout": "Använd äldre layout (som Firefox Home)"
     },

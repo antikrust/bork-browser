@@ -1,16 +1,16 @@
 # BUGS
 
-Known real bugs that affect **derp**, tracked from upstream Floorp.
+Known real bugs that affect **bork**, tracked from upstream Floorp.
 
-derp inherits Floorp's feature layer (`browser-features/`) and forked from
+bork inherits Floorp's feature layer (`browser-features/`) and forked from
 `Floorp-Projects/Floorp` at the #2536 merge (`27ed010972`). Anything fixed
 upstream after that point is missing here until ported — but *missing the fix*
-is not the same as *having the bug*: derp has rewritten large parts of
+is not the same as *having the bug*: bork has rewritten large parts of
 workspaces, split-view, tab-stacks and the tabbar, so each item below was
-checked against derp's current tree, not assumed.
+checked against bork's current tree, not assumed.
 
 Verification here is **static** unless a line says otherwise — "present" means
-derp's code still has the vulnerable pattern / lacks the fix path, not that the
+bork's code still has the vulnerable pattern / lacks the fix path, not that the
 symptom was reproduced in a running build. Confidence is labelled per item.
 Runtime repro is the obvious next step for the behavioural ones.
 
@@ -18,12 +18,12 @@ Assessed 2026-07-19 against upstream through PR #2567.
 
 ---
 
-## Fixed in derp
+## Fixed in bork
 
 ### Web-panel findbar does nothing (Ctrl+F in a sidebar web panel)
 - **Upstream:** [#2560](https://github.com/Floorp-Projects/Floorp/pull/2560) (merged)
-- **derp status:** **fixed 2026-07-19 (`4b707fae42`)** — ported verbatim from
-  upstream. Was real: derp had no find handling in panel-sidebar at all, so
+- **bork status:** **fixed 2026-07-19 (`4b707fae42`)** — ported verbatim from
+  upstream. Was real: bork had no find handling in panel-sidebar at all, so
   find commands fell through to browser.xhtml's `gBrowser`-dependent handler,
   which a web-panel window does not satisfy.
 - **Fix:** `WebPanelFindController` owns a lazy XUL findbar bound to the panel
@@ -39,7 +39,7 @@ Assessed 2026-07-19 against upstream through PR #2567.
 - **Upstream:** [#2570](https://github.com/Floorp-Projects/Floorp/issues/2570)
   (reported by us 2026-07-21), fix offered as
   [#2571](https://github.com/Floorp-Projects/Floorp/pull/2571)
-- **derp status:** **fixed 2026-07-21 (`6f0849ea55`)** — the persistence
+- **bork status:** **fixed 2026-07-21 (`6f0849ea55`)** — the persistence
   `createEffect` in `workspaces/data/config.ts` serialized
   `JSON.stringify(unwrap(configStore))`; `unwrap()` reads the raw target, so
   the effect tracked no dependencies and fired exactly once at startup. Every
@@ -51,13 +51,13 @@ Assessed 2026-07-19 against upstream through PR #2567.
   flat, so every top-level key is read through the proxy and tracked.
   `data.ts` was already correct: it calls `trackStore()` before its
   `unwrap()`, which is why workspace *data* persisted while *config* didn't.
-- **Verified:** live in derp — rail/name toggles now survive restarts.
+- **Verified:** live in bork — rail/name toggles now survive restarts.
 
-## Present in derp — fix exists upstream, port available
+## Present in bork — fix exists upstream, port available
 
 ### PWA install/launch follows the selected tab, not the invoking browser
 - **Upstream:** [#2562](https://github.com/Floorp-Projects/Floorp/pull/2562) (merged)
-- **derp status:** present. `pwa/ssbManager.ts` resolves the container from
+- **bork status:** present. `pwa/ssbManager.ts` resolves the container from
   `globalThis.gBrowser.selectedBrowser` (line ~68) — the exact anti-pattern the
   PR replaces. If the selected tab changes during the install await, or the app
   is invoked for a non-selected browser, install/launch can bind to the wrong
@@ -70,21 +70,21 @@ Assessed 2026-07-19 against upstream through PR #2567.
 
 ### Split-view can strand native tab-drag state
 - **Upstream:** [#2561](https://github.com/Floorp-Projects/Floorp/pull/2561) (merged)
-- **derp status:** present. No `native-tab-drag-recovery.ts` under
-  `split-view/components/`; derp ships split-view. A drag interrupted the wrong
+- **bork status:** present. No `native-tab-drag-recovery.ts` under
+  `split-view/components/`; bork ships split-view. A drag interrupted the wrong
   way (closing/detached tab, lost mouseup) can leave Gecko's `movingtab` state
   or a half-formed split behind.
 - **Fix:** let Gecko's bubble-phase `dragend` finalise first; recover only
   after identity/API checks and a null native drag session; retry transient
   sessions up to 1s then fail closed; UI-only finaliser for closing/detached
   tabs.
-- **Confidence:** medium (behavioural; fix file absent but derp's split-view is
+- **Confidence:** medium (behavioural; fix file absent but bork's split-view is
   heavily diverged, so the surrounding code differs — a port is not a
   drop-in). Worth a runtime repro before porting.
 
 ### Workspace replacement-tab container validated via a spoofable DOM attribute
 - **Upstream:** [#2563](https://github.com/Floorp-Projects/Floorp/pull/2563) (merged)
-- **derp status:** present. `workspacesTabManager.tsx` reads
+- **bork status:** present. `workspacesTabManager.tsx` reads
   `tab.getAttribute("usercontextid")` (lines ~350 and ~549) to decide whether
   Firefox's keep-alive replacement tab is in the right container. That
   attribute is mutable and can disagree with the real origin; there is no
@@ -97,66 +97,66 @@ Assessed 2026-07-19 against upstream through PR #2567.
 
 ### Lepton right sidebar clipped on Gecko 152
 - **Upstream:** [#2557](https://github.com/Floorp-Projects/Floorp/pull/2557) (merged)
-- **derp status:** likely present. No handling of Gecko 152's presence-only
-  `sidebar-positionend` attribute anywhere under `designs/`; derp runs the
+- **bork status:** likely present. No handling of Gecko 152's presence-only
+  `sidebar-positionend` attribute anywhere under `designs/`; bork runs the
   FF152 runtime and ships the design layer. Upstream reported a clipped 42px
   sidebar in Lepton overlap mode with the sidebar on the right.
 - **Fix:** recognise the presence-only `sidebar-positionend` attribute while
   keeping the legacy `positionend` selector for older Gecko.
-- **Confidence:** medium — depends on derp exposing Lepton overlap mode with a
+- **Confidence:** medium — depends on bork exposing Lepton overlap mode with a
   right-positioned sidebar; the code path is simply absent, so if that config
-  is reachable it clips. Cosmetic. **Confirm derp ships this Lepton mode before
+  is reachable it clips. Cosmetic. **Confirm bork ships this Lepton mode before
   porting.**
 
 ---
 
-## Open upstream, no fix yet — plausibly affects derp
+## Open upstream, no fix yet — plausibly affects bork
 
-These are reported against Floorp and unfixed anywhere. derp shares the
+These are reported against Floorp and unfixed anywhere. bork shares the
 implicated code, so they plausibly reproduce here, but none is verified in
-derp — each needs a runtime repro.
+bork — each needs a runtime repro.
 
 ### Tab width and scrolling break when split tabs are enabled (horizontal mode)
 - **Upstream:** [#2565](https://github.com/Floorp-Projects/Floorp/issues/2565) (open)
-- **derp status:** unverified. Touches split-view + the horizontal tabbar,
-  both heavily modified in derp — could behave the same, better, or worse.
-- **Confidence:** plausible; needs repro. If derp reproduces, it interacts with
-  derp's own tabbar/tab-stacks work and is worth a close look.
+- **bork status:** unverified. Touches split-view + the horizontal tabbar,
+  both heavily modified in bork — could behave the same, better, or worse.
+- **Confidence:** plausible; needs repro. If bork reproduces, it interacts with
+  bork's own tabbar/tab-stacks work and is worth a close look.
 
 ### Moving a tab stack in Split View to a new window leaves the last tab unloaded
 - **Upstream:** [#2567](https://github.com/Floorp-Projects/Floorp/issues/2567) (open, no fix)
-- **derp status:** **not confirmed in derp** — investigated 2026-07-19, left
+- **bork status:** **not confirmed in bork** — investigated 2026-07-19, left
   as-is. The repro needs a specific multi-window state (per the reporter, it
   *only* happens when the original window already holds another Split View),
   then a stack dragged/moved to a new window, then the last tab checked for
-  loaded vs lazy. derp's split-view has no clean programmatic activation entry
+  loaded vs lazy. bork's split-view has no clean programmatic activation entry
   point (it is driven through selection / drag / context menu), so the state
-  cannot be reliably assembled blind via Marionette, and derp's split-view is
-  heavily diverged from upstream, so upstream reproducing does not imply derp
+  cannot be reliably assembled blind via Marionette, and bork's split-view is
+  heavily diverged from upstream, so upstream reproducing does not imply bork
   does. `gBrowser.replaceTabWithWindow(tab)` is the move primitive; the likely
   locus if it is real here is tab adoption across windows interacting with
   split-view session-restore (`split-view/patches/session-restore.ts`) and the
   `floorpSplitViewGroupId` persistence patch.
 - **Next step:** a **visual** repro (loaded vs lazy is obvious on screen). No
-  fix should be written until the bug is confirmed present in derp. Reporter is
+  fix should be written until the bug is confirmed present in bork. Reporter is
   on Fedora Linux; behaviour may differ on macOS.
-- **Confidence:** real upstream; unconfirmed in derp.
+- **Confidence:** real upstream; unconfirmed in bork.
 
 ---
 
-## Assessed and NOT a derp bug — recorded so we don't re-chase
+## Assessed and NOT a bork bug — recorded so we don't re-chase
 
 ### Closing a tab in an all-new-tab workspace switches to another workspace
 - **Upstream:** [#2564](https://github.com/Floorp-Projects/Floorp/issues/2564)
   (open upstream), [#2563 area]
-- **derp status:** **already fixed in derp**, independently. `handleTabClose`
+- **bork status:** **already fixed in bork**, independently. `handleTabClose`
   stays in the current workspace with a fresh/adopted tab instead of jumping to
-  another workspace (see the "derp: stay in the current workspace" comment in
-  `workspacesTabManager.tsx`). Upstream still has it; derp does not.
+  another workspace (see the "bork: stay in the current workspace" comment in
+  `workspacesTabManager.tsx`). Upstream still has it; bork does not.
 
 ### Mouse-gesture wheel double-finalise / residual context menu
 - **Upstream:** [#2559](https://github.com/Floorp-Projects/Floorp/pull/2559) (merged)
-- **derp status:** **independently handled**, not clearly a derp bug. derp's
+- **bork status:** **independently handled**, not clearly a bork bug. bork's
   `mouse-gesture/controller.ts` already suppresses the residual context menu
   (`isContextMenuPrevented` + prevention timeout) and recovers stuck gesture
   state on popup-shown. The specific "one interaction = one command" latch may
@@ -165,6 +165,6 @@ derp — each needs a runtime repro.
 
 ### About-dialog strings not localised
 - **Upstream:** [#2558](https://github.com/Floorp-Projects/Floorp/pull/2558) (merged)
-- **derp status:** largely moot. derp has rebranded the About surfaces; the
-  untranslated upstream literals are not derp's copy. No action unless derp
+- **bork status:** largely moot. bork has rebranded the About surfaces; the
+  untranslated upstream literals are not bork's copy. No action unless bork
   wants ja-JP parity on its own About text.

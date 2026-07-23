@@ -241,7 +241,7 @@ function testSynthesizedAliasesAreEmittedCorrectly(): void {
 
 /** The three Lepton-backed designs must include the compat CSS inline. */
 function testLeptonThemesIncludeCompatCss(): void {
-  for (const theme of ["derp"] as const) {
+  for (const theme of ["bork"] as const) {
     const css = getInlineChromeCss(theme);
     assert(
       css.includes("Floorp Lepton compat"),
@@ -252,10 +252,10 @@ function testLeptonThemesIncludeCompatCss(): void {
 
 /**
  * The shared color-fix layer (embedded in LEPTON_COMPAT_CSS) must reach every
- * surviving skinned theme — lepton and derp.
+ * surviving skinned theme — lepton and bork.
  */
 function testAllSkinnedThemesIncludeColorFix(): void {
-  for (const theme of ["derp"] as const) {
+  for (const theme of ["bork"] as const) {
     const css = getInlineChromeCss(theme);
     assert(
       css.includes("Floorp Gecko 152 color fix"),
@@ -446,7 +446,7 @@ function testBundledCompatIsColorPlusLeptonPlusIcons(): void {
 /** The icon patches ride along with the Lepton family only (the IDs are
  *  Lepton-scoped). */
 function testLeptonThemesIncludeFloorpIconPatches(): void {
-  for (const theme of ["derp"] as const) {
+  for (const theme of ["bork"] as const) {
     const css = getInlineChromeCss(theme);
     assert(
       css.includes("#usercssloader-menu"),
