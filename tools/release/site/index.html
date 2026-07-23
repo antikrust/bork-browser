@@ -5,111 +5,739 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>bork browser — a Firefox fork with Manifest V2 and Vivaldi workspace import</title>
 <meta name="description" content="bork is a compact Firefox 152 fork. Keeps Manifest V2 so the full uBlock Origin still works, imports your Vivaldi workspaces and their tabs, Vivaldi-style tab stacks, zen mode, and no AI features.">
+<meta property="og:title" content="bork browser">
+<meta property="og:description" content="A compact fork of Floorp 12 (Firefox 152). Manifest V2, no AI, no telemetry.">
+<meta property="og:image" content="https://borkbrowser.online/assets/fox-og.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="assets/bricolage-latin.woff2" crossorigin>
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; margin: 0; }
-  body {
-    background: #16181d; color: #d6d9de;
-    font: 16px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif;
-    max-width: 720px; margin: 0 auto; padding: 48px 20px 80px;
-  }
-  h1 { font-size: 2.4rem; letter-spacing: -0.02em; color: #fff; }
-  h1 span { color: #6fb3d2; }
-  .sub { color: #aeb4bd; font-size: 1.1rem; margin: 8px 0 2px; }
-  .tag { color: #8a919c; margin: 6px 0 36px; }
-  .dl { display: block; background: #1e2129; border: 1px solid #2c313c;
-        border-radius: 10px; padding: 18px 20px; margin: 14px 0;
-        text-decoration: none; color: inherit; transition: border-color .15s; }
-  .dl:hover { border-color: #6fb3d2; }
-  .dl b { color: #fff; font-size: 1.05rem; }
-  .dl small { float: right; color: #8a919c; }
-  .dl code { display: block; margin-top: 6px; font-size: .72rem;
-             color: #5c6470; word-break: break-all; }
-  h2 { font-size: 1.05rem; color: #aeb4bd; margin: 40px 0 10px; }
-  p, li { color: #a7adb6; font-size: .95rem; }
-  ul { padding-left: 20px; }
-  code.inline { background: #22262f; padding: 1px 6px; border-radius: 4px;
-                font-size: .85em; }
-  a { color: #6fb3d2; }
-  footer { margin-top: 48px; font-size: .8rem; color: #5c6470; }
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('assets/bricolage-latin.woff2') format('woff2');
+  font-weight: 300 800;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --ink:      #0b0908;
+  --ink-3:    #17140f;
+  --paper:    #ece7e0;
+  --soft:     #b8afa3;
+  --muted:    #8d8478;
+  --line:     rgba(236, 231, 224, .12);
+  --line-2:   rgba(236, 231, 224, .22);
+  --amber:    #e2802f;
+  --amber-lt: #f3ac68;
+  --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, -apple-system,
+             "Segoe UI", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --wrap: 1120px;
+  --gap: clamp(56px, 9vw, 130px);
+}
+
+* { box-sizing: border-box; margin: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation: none !important; transition: none !important; }
+}
+
+body {
+  background: var(--ink);
+  color: var(--soft);
+  font-family: var(--display);
+  font-size: 17px;
+  line-height: 1.65;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a { color: var(--amber-lt); text-decoration-thickness: 1px;
+    text-underline-offset: 3px; }
+a:hover { color: var(--paper); }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px;
+                 border-radius: 3px; }
+
+.wrap { width: 100%; max-width: var(--wrap); margin: 0 auto;
+        padding: 0 clamp(20px, 5vw, 40px); }
+
+/* ---------- grain ---------- */
+.grain::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: .5; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: fixed; inset: 0 0 auto 0; z-index: 50;
+  transition: background .35s ease, backdrop-filter .35s ease,
+              border-color .35s ease;
+  border-bottom: 1px solid transparent;
+}
+.topbar.stuck {
+  background: rgba(11, 9, 8, .82);
+  backdrop-filter: saturate(150%) blur(14px);
+  -webkit-backdrop-filter: saturate(150%) blur(14px);
+  border-bottom-color: var(--line);
+}
+.bar { display: flex; align-items: center; gap: 24px; height: 62px; }
+.mark {
+  font-size: 1.15rem; font-weight: 700; letter-spacing: -.03em;
+  color: var(--paper); text-decoration: none;
+}
+.mark::after {
+  content: ""; display: inline-block; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--amber); margin-left: 5px;
+  vertical-align: 2px;
+}
+.bar nav { margin-left: auto; display: flex; gap: clamp(14px, 3vw, 28px); }
+.bar nav a {
+  color: var(--soft); text-decoration: none; font-size: .88rem;
+}
+.bar nav a:hover { color: var(--paper); }
+@media (max-width: 560px) { .bar nav a.opt { display: none; } }
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative; isolation: isolate;
+  min-height: 100svh; display: flex; align-items: flex-end;
+  padding: 100px 0 clamp(48px, 9vh, 96px);
+  overflow: hidden;
+}
+.hero-media { position: absolute; inset: 0; z-index: -3; }
+.hero-media img {
+  width: 100%; height: 100%; object-fit: cover;
+  object-position: 62% 52%;
+  filter: saturate(.92) contrast(1.04) brightness(.92);
+}
+.hero-scrim {
+  position: absolute; inset: 0; z-index: -2;
+  background:
+    linear-gradient(90deg, rgba(8,7,6,.92) 0%, rgba(8,7,6,.72) 34%,
+                    rgba(8,7,6,.18) 62%, rgba(8,7,6,.42) 100%),
+    linear-gradient(180deg, rgba(8,7,6,.78) 0%, rgba(8,7,6,.14) 30%,
+                    rgba(8,7,6,.55) 74%, var(--ink) 100%);
+}
+.hero-grain { position: absolute; inset: 0; z-index: -1; }
+@media (max-width: 760px) {
+  .hero-scrim { background:
+    linear-gradient(180deg, rgba(8,7,6,.82) 0%, rgba(8,7,6,.3) 26%,
+                    rgba(8,7,6,.72) 66%, var(--ink) 100%); }
+  .hero-media img { object-position: 66% 45%; }
+}
+
+.hero-copy { position: relative; }
+h1 {
+  font-size: clamp(3.4rem, 12vw, 7.5rem);
+  line-height: .92; letter-spacing: -.045em; font-weight: 700;
+  color: var(--paper);
+  text-shadow: 0 2px 40px rgba(0,0,0,.55);
+}
+h1 span { color: var(--amber-lt); }
+.sub {
+  color: var(--paper); font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+  margin-top: 18px; letter-spacing: -.01em;
+  text-shadow: 0 1px 24px rgba(0,0,0,.6);
+}
+.tag {
+  color: var(--soft); font-size: clamp(.95rem, 2vw, 1.1rem);
+  margin-top: 2px; text-shadow: 0 1px 24px rgba(0,0,0,.6);
+}
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 13px 26px; border-radius: 999px;
+  background: var(--paper); color: #14110e;
+  font-weight: 600; font-size: .95rem; letter-spacing: -.01em;
+  text-decoration: none; border: 1px solid var(--paper);
+  transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+.btn:hover { background: var(--amber-lt); border-color: var(--amber-lt);
+             color: #14110e; transform: translateY(-1px); }
+.btn.ghost {
+  background: rgba(11,9,8,.35); color: var(--paper);
+  border-color: rgba(236,231,224,.4);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.btn.ghost:hover { background: rgba(236,231,224,.14); color: var(--paper);
+                   border-color: var(--paper); }
+
+/* ---------- generic sections ---------- */
+.section { padding: var(--gap) 0; position: relative; }
+.eyebrow {
+  font-size: .74rem; font-weight: 600; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 30px;
+  display: flex; align-items: center; gap: 14px;
+}
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+h2.head {
+  font-weight: 600; font-size: clamp(1.6rem, 3.4vw, 2.35rem);
+  line-height: 1.12; letter-spacing: -.03em; color: var(--paper);
+  margin-bottom: 14px;
+}
+h3 { font-size: 1.3rem; font-weight: 600; letter-spacing: -.025em;
+     color: var(--paper); line-height: 1.2; }
+p + p { margin-top: 14px; }
+
+/* ---------- downloads (three divided columns) ---------- */
+.downloads { padding-top: clamp(40px, 6vw, 72px); }
+.dlgrid { display: grid; grid-template-columns: repeat(3, 1fr); }
+.dlcol {
+  padding: 0 clamp(18px, 3vw, 34px);
+  border-left: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.dlcol:first-child { border-left: 0; padding-left: 0; }
+.dlcol:last-child { padding-right: 0; }
+@media (max-width: 860px) {
+  .dlgrid { grid-template-columns: 1fr; }
+  .dlcol { border-left: 0; border-top: 1px solid var(--line);
+           padding: 30px 0 0; }
+  .dlcol:first-child { border-top: 0; padding-top: 0; }
+}
+.dlhead { display: flex; align-items: center; gap: 12px; }
+.oslogo { width: 26px; height: 26px; color: var(--paper); flex: none; }
+.youpill {
+  margin-left: auto; font-size: .68rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--amber-lt);
+  border: 1px solid rgba(226,128,47,.45); border-radius: 999px;
+  padding: 3px 10px; white-space: nowrap;
+}
+/* The card carries the frame and the hover, not the <a> inside it — the copy
+   button is a sibling of that <a> (the sum it copies has to stay inside the
+   anchor for update-site-sums.py) and would otherwise sit still while the
+   card lifted away underneath it. */
+.dlcard {
+  position: relative;
+  border: 1px solid var(--line-2); border-radius: 16px;
+  background: linear-gradient(180deg, rgba(236,231,224,.035),
+                              rgba(236,231,224,.012));
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.dlcard:hover {
+  border-color: rgba(226,128,47,.7);
+  background: linear-gradient(180deg, rgba(226,128,47,.12),
+                              rgba(226,128,47,.03));
+  transform: translateY(-2px);
+}
+.dlcard:hover b { color: var(--amber-lt); }
+a.dl {
+  display: flex; flex-direction: column; gap: 12px; padding: 20px;
+  color: inherit; text-decoration: none; border-radius: inherit;
+}
+.dl-top { display: flex; flex-direction: column; gap: 3px; }
+a.dl b {
+  font-size: 1.15rem; font-weight: 700; letter-spacing: -.02em;
+  color: var(--paper); transition: color .2s ease;
+}
+a.dl small { font-size: .82rem; color: var(--muted); }
+.dl-sum {
+  display: block; border: 1px solid var(--line); border-radius: 10px;
+  background: rgba(0, 0, 0, .28); padding: 10px 52px 10px 12px;
+}
+a.dl code {
+  font-family: var(--mono); font-size: .62rem; line-height: 1.6;
+  color: #6d655b; word-break: break-all; display: block;
+}
+/* pinned to the sum panel's own inner corner: 20px card padding + 10px panel
+   padding, so it reads as part of the strip rather than loose on the card */
+.copy {
+  position: absolute; right: 30px; bottom: 30px; z-index: 3;
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border: 1px solid var(--line-2); border-radius: 8px;
+  background: rgba(11,9,8,.55); color: var(--muted);
+  cursor: pointer; transition: color .15s, border-color .15s,
+                              background .15s;
+}
+.copy:hover { color: var(--paper); background: rgba(11,9,8,.9); }
+.copy svg { width: 14px; height: 14px; }
+.copy .tick { display: none; }
+.copy.done { color: var(--amber-lt); border-color: rgba(226,128,47,.5); }
+.copy.done .clip { display: none; }
+.copy.done .tick { display: block; }
+.dlfoot {
+  margin-top: 26px; font-size: .82rem; color: var(--muted);
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
+}
+
+/* ---------- manifesto ---------- */
+.manifesto .grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: clamp(24px, 4vw, 52px);
+}
+.manifesto .cell { display: flex; flex-direction: column; gap: 14px; }
+.manifesto .lead {
+  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+  line-height: 1.45; letter-spacing: -.022em; color: var(--paper);
+  max-width: 24ch;
+}
+.manifesto .note {
+  font-size: .92rem; line-height: 1.6; color: var(--muted); max-width: 40ch;
+}
+.num { font-family: var(--mono); font-size: .68rem; color: var(--amber);
+       letter-spacing: .14em; text-transform: uppercase; }
+@media (max-width: 860px) {
+  .manifesto .grid { grid-template-columns: 1fr; }
+  .manifesto .lead { max-width: 30ch; }
+}
+
+/* ---------- screenshots ---------- */
+.shotnav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+.shotnav button {
+  font-family: inherit; font-size: .86rem; letter-spacing: -.01em;
+  padding: 9px 18px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line-2); background: transparent;
+  color: var(--soft); transition: all .18s ease;
+}
+.shotnav button:hover { color: var(--paper); }
+.shotnav button[aria-selected="true"] {
+  background: var(--paper); border-color: var(--paper); color: #14110e;
+  font-weight: 600;
+}
+figure.shot { margin: 0; }
+.shots > figure + figure { margin-top: 40px; }
+.js .shots > figure + figure { margin-top: 0; }
+.shotframe {
+  position: relative; border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--line-2); background: var(--ink-3);
+  box-shadow: 0 40px 90px -40px rgba(0,0,0,.9),
+              0 2px 0 rgba(236,231,224,.05) inset;
+  aspect-ratio: 16 / 10;
+}
+.shotframe img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.shotframe.pending::after {
+  content: attr(data-pending);
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: .8rem; letter-spacing: .16em; text-transform: uppercase;
+  color: #57503f;
+}
+figure.shot figcaption {
+  margin-top: 16px; font-size: .92rem; color: var(--muted); max-width: 62ch;
+}
+figure.shot figcaption b { color: var(--paper); font-weight: 600; }
+
+/* ---------- prose / two-up ---------- */
+.twoup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+         gap: clamp(30px, 5vw, 70px); }
+@media (max-width: 800px) { .twoup { grid-template-columns: 1fr; } }
+.prose { max-width: 62ch; }
+.prose p { font-size: 1.02rem; line-height: 1.7; color: var(--soft); }
+.prose b { color: var(--paper); font-weight: 600; }
+
+/* ---------- keys ---------- */
+.keys { list-style: none; padding: 0; display: grid; gap: 0;
+        border-top: 1px solid var(--line); }
+.keys li {
+  display: grid; grid-template-columns: minmax(150px, 210px) 1fr;
+  gap: clamp(12px, 3vw, 34px); align-items: baseline;
+  padding: 15px 4px; border-bottom: 1px solid var(--line);
+  font-size: .97rem; color: var(--soft);
+}
+.keys li > b:first-child {
+  font-family: var(--mono); font-size: .82rem; font-weight: 500;
+  color: var(--paper); letter-spacing: 0;
+  background: rgba(236,231,224,.07);
+  border: 1px solid var(--line-2); border-radius: 7px;
+  padding: 4px 9px; justify-self: start; white-space: nowrap;
+}
+.keys li b { color: var(--paper); font-weight: 600; }
+@media (max-width: 620px) { .keys li { grid-template-columns: 1fr; gap: 8px; } }
+
+/* ---------- installing ---------- */
+.steps { list-style: none; padding: 0; display: grid;
+         gap: clamp(16px, 2.5vw, 22px);
+         grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 860px) { .steps { grid-template-columns: 1fr; } }
+.steps li {
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px; font-size: .93rem; line-height: 1.65;
+  background: rgba(236,231,224,.02);
+}
+.steps li b { color: var(--paper); font-weight: 600; }
+code.inline {
+  font-family: var(--mono); background: rgba(236,231,224,.07);
+  border: 1px solid var(--line); padding: 2px 6px; border-radius: 5px;
+  font-size: .82em; color: var(--paper); word-break: break-word;
+}
+
+/* ---------- more + footer ---------- */
+.more ul { list-style: none; padding: 0; }
+.more li { font-size: 1.02rem; }
+footer { border-top: 1px solid var(--line);
+         padding: 40px 0 60px; margin-top: var(--gap); }
+.sign { font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 600;
+        letter-spacing: -.03em; color: var(--paper); }
+.credit { margin-top: 22px; font-size: .78rem; line-height: 1.7;
+          color: #6b6459; max-width: 66ch; }
+.credit a { color: #8d8478; }
 </style>
 </head>
-<body>
-  <h1>bork <span>browser</span></h1>
-  <p class="sub">bork based on floorp</p>
-  <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
+<body id="top">
 
-  <p>NO AI (No ONNX runtime, no transformers.js, no wllama, no openai.mjs, no
-  model hub, and both MLEngine actors removed. browser.ml.enable is set to
-  false.)</p>
-  <p>No telemetry, no data sharing, no crash reports, fuck all that noise.</p>
-  <p>Does Workspaces, Tab Stacks, Tab Groups, Zen mode, split view, mouse
-  gestures, side panels (notes, downloads, a local translator), a command
-  palette on F2, an address bar that hides completely, and chromium
-  plugins.</p>
+<header class="topbar" id="topbar">
+  <div class="wrap bar">
+    <a class="mark" href="#top">bork</a>
+    <nav>
+      <a href="#downloads">download</a>
+      <a class="opt" href="#screens">screens</a>
+      <a class="opt" href="#keys">keys</a>
+      <a href="https://github.com/100mountains/bork">github</a>
+    </nav>
+  </div>
+</header>
 
-  <h2>why this exists</h2>
-  <p>Chrome's move to <b>Manifest V3</b> deliberately broke full-strength
-  content blocking. bork is built on Firefox, which still runs
-  <b>Manifest V2 extensions</b>, so the complete <b>uBlock Origin</b> — not
-  the declawed Lite version — keeps working exactly as it always did.</p>
-  <h2>coming from Vivaldi?</h2>
-  <p>bork <b>imports your Vivaldi workspaces</b>, including which tabs live in
-  which workspace — it reads Vivaldi's own session data, so a workspace with
-  twenty tabs arrives as a workspace with twenty tabs. Passwords, bookmarks,
-  history and cookies import too, from Vivaldi, Chrome, Edge or Safari.</p>
+<!-- ============================= hero ============================= -->
+<section class="hero">
+  <div class="hero-media">
+    <img src="assets/fox-hero-1440.webp"
+         srcset="assets/fox-hero-800.webp 800w,
+                 assets/fox-hero-1440.webp 1440w,
+                 assets/fox-hero-2560.webp 2560w"
+         sizes="100vw"
+         alt="A red fox in low evening light at the edge of a reed bed"
+         fetchpriority="high" decoding="async">
+  </div>
+  <div class="hero-scrim"></div>
+  <div class="hero-grain grain"></div>
 
-  <a class="dl" href="downloads/Bork-macOS-universal.dmg">
-    <b>macOS</b> <small>Apple silicon (arm64) · 160 MB</small>
-    <code>sha256 9601575da3e37506bf61575136d8a2b573688c3bf5982777ac94900af6efec40</code>
-  </a>
-  <a class="dl" href="downloads/Bork-linux-x86_64.tar.gz">
-    <b>Linux</b> <small>x86_64 · 120 MB</small>
-    <code>sha256 fc8a8074428cc78039deca6364a27eb4aecdef12e146d66e94b1e516278ec1ee</code>
-  </a>
-  <a class="dl" href="downloads/Bork-windows-x86_64.zip">
-    <b>Windows</b> <small>x86_64 · 141 MB</small>
-    <code>sha256 f54f2bf31259479efdd23c0b3101482387b691cd102771c3073039e755f1556d</code>
-  </a>
+  <div class="wrap hero-copy">
+    <h1>bork <span>browser</span></h1>
+    <p class="sub">bork based on floorp</p>
+    <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
+    <div class="hero-cta">
+      <a class="btn" href="#downloads">download</a>
+      <a class="btn ghost" href="#screens">see it</a>
+    </div>
+  </div>
+</section>
 
-  <h2>getting around</h2>
-  <p>bork is built to work with the chrome out of the way. These are the
-  macOS keys:</p>
-  <ul>
-    <li><b>⌘⌥ + drag</b> — move the window from anywhere on it, no title bar
-      needed</li>
-    <li><b>⌘⌥A</b> — hide or show the address bar</li>
-    <li><b>⌘⌥S</b> — hide or show the panel sidebar</li>
-    <li><b>⌘⌥W</b> — hide or show the workspaces rail</li>
-    <li><b>⌘⌥Z</b> — zen mode: toolbars and status bar retract, leaving the
-      page</li>
-    <li><b>Double-click a tab</b> — type a URL straight into it. With the
-      address bar hidden this is how you navigate; Enter goes, Escape backs
-      out. Tabs in a stack's second row do the same.</li>
-    <li><b>⌘←</b> and <b>⌘→</b> — back and forward (⌘[ and ⌘] also work)</li>
-  </ul>
-  <p>The chrome controls sit on ⌘⌥ rather than bare keys so they cannot fire
-  while you are typing into a page. On <b>Windows and Linux the same controls
-  are Ctrl+Alt</b> — Ctrl+Alt+A, Ctrl+Alt+S, Ctrl+Alt+W, Ctrl+Alt+Z, and
-  Ctrl+Alt+drag to move the window.</p>
+<!-- =========================== downloads =========================== -->
+<section class="section downloads" id="downloads">
+  <div class="wrap">
+    <h2 class="eyebrow">get bork</h2>
 
-  <h2>installing</h2>
-  <ul>
-    <li><b>macOS:</b> open the DMG, drag Bork to Applications. These builds
-      are self-signed — first launch is right-click → Open.</li>
-    <li><b>Linux:</b> <code class="inline">tar -xzf Bork-linux-x86_64.tar.gz
-      &amp;&amp; ./floorp/floorp</code></li>
-    <li><b>Windows:</b> unzip anywhere, run
-      <code class="inline">floorp.exe</code>. SmartScreen will grumble —
-      More info → Run anyway.</li>
-  </ul>
+    <div class="dlgrid">
 
-  <h2>more</h2>
-  <ul>
-    <li>Source, issues and the full story:
-      <a href="https://github.com/100mountains/bork">github.com/100mountains/bork</a></li>
-  </ul>
+      <div class="dlcol" data-os="mac">
+        <div class="dlhead">
+          <svg class="oslogo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11Z"/></svg>
+          <h3>Mac</h3>
+          <span class="youpill" hidden>your platform</span>
+        </div>
+        <div class="dlcard">
+          <a class="dl" href="downloads/Bork-macOS-universal.dmg">
+            <span class="dl-top">
+              <b>macOS</b> <small>Apple silicon (arm64) · 183 MB</small>
+            </span>
+            <span class="dl-sum">
+              <code>sha256 35f1b82c9592f3c8fd4a7827501d3c6deccaeee62fb4bae66e62a62c7dacca6b</code>
+            </span>
+          </a>
+          <button class="copy" type="button" aria-label="Copy the macOS sha256">
+            <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+        </div>
+      </div>
 
-  <footer>Thats it. Fuckoff now.</footer>
+      <div class="dlcol" data-os="linux">
+        <div class="dlhead">
+          <svg class="oslogo" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 1.7c-2.6 0-4.3 2-4.3 4.6 0 1.5.15 2.4-.5 3.6-.85 1.6-2.1 2.9-2.7 4.5-.45 1.2-.3 2.2.35 2.6.55.35 1.3.15 1.75-.3.25 1.5 1.2 2.75 2.55 3.5 2 1.05 4.5 1.05 6.5 0 1.35-.75 2.3-2 2.55-3.5.45.45 1.2.65 1.75.3.65-.4.8-1.4.35-2.6-.6-1.6-1.85-2.9-2.7-4.5-.65-1.2-.5-2.1-.5-3.6 0-2.6-1.7-4.6-4.3-4.6Z"/>
+            <ellipse cx="10.3" cy="6.6" rx="1.15" ry="1.5" fill="#0b0908"/>
+            <ellipse cx="13.7" cy="6.6" rx="1.15" ry="1.5" fill="#0b0908"/>
+            <circle cx="10.5" cy="6.9" r=".5" fill="currentColor"/>
+            <circle cx="13.5" cy="6.9" r=".5" fill="currentColor"/>
+            <path fill="#e2802f" d="M12 8.1c1.5 0 2.5.9 2.5 1.75S13.2 11.4 12 11.4s-2.5-.7-2.5-1.55S10.5 8.1 12 8.1Z"/>
+          </svg>
+          <h3>Linux</h3>
+          <span class="youpill" hidden>your platform</span>
+        </div>
+        <div class="dlcard">
+          <a class="dl" href="downloads/Bork-linux-x86_64.tar.gz">
+            <span class="dl-top">
+              <b>Linux</b> <small>x86_64 · 120 MB</small>
+            </span>
+            <span class="dl-sum">
+              <code>sha256 c805ac83a2dd029618965ad3efef51f10fa860111b2d9ec06b2caf7ee577f0be</code>
+            </span>
+          </a>
+          <button class="copy" type="button" aria-label="Copy the Linux sha256">
+            <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="dlcol" data-os="win">
+        <div class="dlhead">
+          <svg class="oslogo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.7 10.3 4.7v6.9H3V5.7Zm8.7-1.15L21 3.3v8.3h-9.3V4.55ZM3 12.9h7.3v6.9L3 18.8v-5.9Zm8.7 0H21v8.4l-9.3-1.3v-7.1Z"/></svg>
+          <h3>Windows</h3>
+          <span class="youpill" hidden>your platform</span>
+        </div>
+        <div class="dlcard">
+          <a class="dl" href="downloads/Bork-windows-x86_64.zip">
+            <span class="dl-top">
+              <b>Windows</b> <small>x86_64 · 141 MB</small>
+            </span>
+            <span class="dl-sum">
+              <code>sha256 b44a28fdeaa8b8d871c6955ad2ad660ef2532e04cb1e98ca2c0501f32822c508</code>
+            </span>
+          </a>
+          <button class="copy" type="button" aria-label="Copy the Windows sha256">
+            <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="dlfoot">
+      <span>every sum on one page: <a href="downloads/SHA256SUMS.txt">SHA256SUMS.txt</a></span>
+      <span>installing notes are <a href="#installing">further down</a></span>
+    </p>
+  </div>
+</section>
+
+<!-- =========================== manifesto =========================== -->
+<section class="section manifesto">
+  <div class="wrap">
+    <div class="grid">
+      <div class="cell">
+        <span class="num">taken out</span>
+        <p class="lead">NO AI</p>
+        <p class="note">(No ONNX runtime, no transformers.js, no wllama, no
+        openai.mjs, no model hub, and both MLEngine actors removed.
+        browser.ml.enable is set to false.)</p>
+      </div>
+      <div class="cell">
+        <span class="num">taken out</span>
+        <p class="lead">No telemetry, no data sharing, no crash reports, fuck
+        all that noise.</p>
+      </div>
+      <div class="cell">
+        <span class="num">left in</span>
+        <p class="lead">Does Workspaces, Tab Stacks, Tab Groups, Zen mode,
+        split view, mouse gestures, side panels (notes, downloads, a local
+        translator), a command palette on F2, an address bar that hides
+        completely, and chromium plugins.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ screens ============================ -->
+<section class="section screens" id="screens">
+  <div class="wrap">
+    <h2 class="eyebrow">screens</h2>
+
+    <div class="shotstage" id="shotstage">
+      <div class="shotnav" role="tablist" aria-label="bork window modes"></div>
+      <div class="shots">
+
+        <figure class="shot" id="shot-tabs" data-label="just tabs">
+          <div class="shotframe pending" data-pending="screenshot pending">
+            <img src="assets/shot-tabs.webp" alt="bork with only the tab strip showing" loading="lazy" width="1760" height="1100">
+          </div>
+          <figcaption><b>Just the tabs.</b> Address bar hidden with ⌘⌥A,
+          sidebar and workspaces rail off. Double-click any tab to type a URL
+          straight into it.</figcaption>
+        </figure>
+
+        <figure class="shot" id="shot-sidebars" data-label="sidebars">
+          <div class="shotframe pending" data-pending="screenshot pending">
+            <img src="assets/shot-sidebars.webp" alt="bork with the panel sidebar and the workspaces rail open" loading="lazy" width="1760" height="1100">
+          </div>
+          <figcaption><b>Sidebars on.</b> The panel sidebar — notes, downloads,
+          the local translator — on one edge, the workspaces rail on the
+          other.</figcaption>
+        </figure>
+
+        <figure class="shot" id="shot-zen" data-label="zen mode">
+          <div class="shotframe pending" data-pending="screenshot pending">
+            <img src="assets/shot-zen.webp" alt="bork in zen mode with all chrome retracted" loading="lazy" width="1760" height="1100">
+          </div>
+          <figcaption><b>Zen mode.</b> ⌘⌥Z retracts the toolbars and the status
+          bar and leaves the page.</figcaption>
+        </figure>
+
+        <figure class="shot" id="shot-workspaces" data-label="workspaces &amp; groups">
+          <div class="shotframe pending" data-pending="screenshot pending">
+            <img src="assets/shot-workspaces.webp" alt="bork showing workspaces and a tab stack" loading="lazy" width="1760" height="1100">
+          </div>
+          <figcaption><b>Workspaces and tab groups.</b> Vivaldi-style tab stacks
+          with a second row, and workspaces that keep their own tabs.</figcaption>
+        </figure>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== why ============================== -->
+<section class="section">
+  <div class="wrap twoup">
+    <div class="prose">
+      <h2 class="head">why this exists</h2>
+      <p>Chrome's move to <b>Manifest V3</b> deliberately broke full-strength
+      content blocking. bork is built on Firefox, which still runs
+      <b>Manifest V2 extensions</b>, so the complete <b>uBlock Origin</b> — not
+      the declawed Lite version — keeps working exactly as it always did.</p>
+    </div>
+    <div class="prose">
+      <h2 class="head">coming from Vivaldi?</h2>
+      <p>bork <b>imports your Vivaldi workspaces</b>, including which tabs live
+      in which workspace — it reads Vivaldi's own session data, so a workspace
+      with twenty tabs arrives as a workspace with twenty tabs. Passwords,
+      bookmarks, history and cookies import too, from Vivaldi, Chrome, Edge or
+      Safari.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== keys ============================== -->
+<section class="section" id="keys">
+  <div class="wrap">
+    <h2 class="eyebrow">getting around</h2>
+    <div class="prose" style="margin-bottom:30px">
+      <p>bork is built to work with the chrome out of the way. These are the
+      macOS keys:</p>
+    </div>
+    <ul class="keys">
+      <li><b>⌘⌥ + drag</b> <span>move the window from anywhere on it, no title
+        bar needed</span></li>
+      <li><b>⌘⌥A</b> <span>hide or show the address bar</span></li>
+      <li><b>⌘⌥S</b> <span>hide or show the panel sidebar</span></li>
+      <li><b>⌘⌥W</b> <span>hide or show the workspaces rail</span></li>
+      <li><b>⌘⌥Z</b> <span>zen mode: toolbars and status bar retract, leaving
+        the page</span></li>
+      <li><b>Double-click a tab</b> <span>type a URL straight into it. With the
+        address bar hidden this is how you navigate; Enter goes, Escape backs
+        out. Tabs in a stack's second row do the same.</span></li>
+      <li><b>⌘← and ⌘→</b> <span>back and forward (⌘[ and ⌘] also work)</span></li>
+    </ul>
+    <div class="prose" style="margin-top:30px">
+      <p>The chrome controls sit on ⌘⌥ rather than bare keys so they cannot fire
+      while you are typing into a page. On <b>Windows and Linux the same
+      controls are Ctrl+Alt</b> — Ctrl+Alt+A, Ctrl+Alt+S, Ctrl+Alt+W,
+      Ctrl+Alt+Z, and Ctrl+Alt+drag to move the window.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ installing ========================== -->
+<section class="section" id="installing">
+  <div class="wrap">
+    <h2 class="eyebrow">installing</h2>
+    <ul class="steps">
+      <li><b>macOS:</b> open the DMG, drag Bork to Applications. These builds
+        are self-signed — first launch is right-click → Open.</li>
+      <li><b>Linux:</b> <code class="inline">tar -xzf Bork-linux-x86_64.tar.gz
+        &amp;&amp; ./floorp/floorp</code></li>
+      <li><b>Windows:</b> unzip anywhere, run
+        <code class="inline">floorp.exe</code>. SmartScreen will grumble —
+        More info → Run anyway.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================== more ============================== -->
+<section class="section more">
+  <div class="wrap">
+    <h2 class="eyebrow">more</h2>
+    <ul>
+      <li>Source, issues and the full story:
+        <a href="https://github.com/100mountains/bork">github.com/100mountains/bork</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="sign">Thats it. Fuckoff now.</p>
+    <p class="credit">
+      Hero photograph: <a href="https://commons.wikimedia.org/wiki/File:Red_fox_2025_05_30.jpg">Red fox</a>
+      by Alexis Lours, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>,
+      via Wikimedia Commons. Type is
+      <a href="https://github.com/ateliertriay/bricolage">Bricolage Grotesque</a>,
+      SIL Open Font License.
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var d = document;
+
+  /* the bar goes solid once you leave the hero */
+  var bar = d.getElementById('topbar');
+  var onScroll = function () { bar.classList.toggle('stuck', scrollY > 60); };
+  onScroll();
+  addEventListener('scroll', onScroll, { passive: true });
+
+  /* mark the visitor's own platform in the downloads grid */
+  var ua = navigator.userAgent, os = null;
+  if (/Mac|iPhone|iPad/.test(ua)) os = 'mac';
+  else if (/Windows/.test(ua)) os = 'win';
+  else if (/Linux|X11|CrOS/.test(ua)) os = 'linux';
+  if (os) {
+    var col = d.querySelector('.dlcol[data-os="' + os + '"]');
+    if (col) col.querySelector('.youpill').hidden = false;
+  }
+
+  /* copy a download's sha256 — the sums live inside the <a>, so the button
+     is a sibling sitting on top of it rather than a child of it */
+  Array.prototype.forEach.call(d.querySelectorAll('.copy'), function (btn) {
+    btn.addEventListener('click', function () {
+      var code = btn.parentNode.querySelector('code');
+      if (!code) return;
+      var sum = code.textContent.replace(/^\s*sha256\s+/, '').trim();
+      var done = function () {
+        btn.classList.add('done');
+        setTimeout(function () { btn.classList.remove('done'); }, 1600);
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(sum).then(done, function () {});
+      } else {
+        var t = d.createElement('textarea');
+        t.value = sum; d.body.appendChild(t); t.select();
+        try { d.execCommand('copy'); done(); } catch (e) {}
+        d.body.removeChild(t);
+      }
+    });
+  });
+
+  /* screenshot switcher. Without JS every shot simply stacks down the page. */
+  var stage = d.getElementById('shotstage');
+  var figs = Array.prototype.slice.call(stage.querySelectorAll('figure.shot'));
+  var nav = stage.querySelector('.shotnav');
+  if (figs.length > 1) {
+    d.documentElement.classList.add('js');
+    var show = function (n) {
+      figs.forEach(function (fig, i) { fig.hidden = i !== n; });
+      Array.prototype.forEach.call(nav.children, function (b, i) {
+        b.setAttribute('aria-selected', i === n ? 'true' : 'false');
+      });
+    };
+    figs.forEach(function (fig, i) {
+      var b = d.createElement('button');
+      b.type = 'button';
+      b.textContent = fig.dataset.label;
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-controls', fig.id);
+      b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      b.addEventListener('click', function () { show(i); });
+      nav.appendChild(b);
+      fig.hidden = i !== 0;
+    });
+  }
+})();
+</script>
 </body>
 </html>
