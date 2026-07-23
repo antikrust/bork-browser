@@ -24,30 +24,12 @@ export const [zenModeEnabled, setZenModeEnabled] = createRootHMR(
   import.meta.hot,
 );
 
-function measureAndSetCSSVariables() {
-  const root = document!.documentElement as HTMLElement;
-
-  // Only the panel sidebar still uses measured retract distances (its
-  // two boxes share one window edge, so the self-sizing transform trick
-  // the toolbox/statusbar use doesn't compose for them). Only record
-  // elements that are actually rendered: a toggled-off sidebar
-  // (display:none) measures 0, and recording that poisons the distances
-  // — the side reveal then slides out an empty zero-based husk. A hidden
-  // element's vars simply keep their last (or default) value, which is
-  // correct: its retract math is moot while it has no box.
-  const setIfRendered = (id: string, prop: string, axis: "w" | "h") => {
-    const el = document!.getElementById(id);
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const size = axis === "w" ? rect.width : rect.height;
-    if (size > 0) {
-      root.style.setProperty(prop, `${size}px`);
-    }
-  };
-
-  setIfRendered("panel-sidebar-box", "--zenmode-sidebar-width", "w");
-  setIfRendered("panel-sidebar-select-box", "--zenmode-selectbox-width", "w");
-}
+// No sizes are measured here any more. Nothing retracts by a distance:
+// the toolbox and status bar travel under their own height, and the side
+// chrome does not travel at all — the page is lifted over it instead (see
+// zen-mode.css). That removed the two sidebar width variables, the resize
+// observer that kept them true, and the rebase attribute that suppressed
+// the slide while they were re-taken.
 
 function setupPrefSync() {
   createEffect(() => {
@@ -55,8 +37,6 @@ function setupPrefSync() {
     Services.prefs.setBoolPref(ZENMODE_PREF, enabled);
 
     if (enabled) {
-      // Measure element sizes before hiding so animations have correct distances
-      measureAndSetCSSVariables();
       document!.documentElement!.setAttribute("zenmode", "");
     } else {
       document!.documentElement!.removeAttribute("zenmode");
@@ -138,9 +118,6 @@ function setupHoverReveal() {
       topHideTimer = setTimeout(tryHideTop, HIDE_DELAY_MS);
       return;
     }
-    // Refresh the sidebar's measured distances opportunistically; the
-    // toolbox needs none (it retracts by its own height via transform).
-    measureAndSetCSSVariables();
     document!.documentElement!.removeAttribute("zenmode-reveal-top");
     topHideTimer = null;
   };
@@ -184,7 +161,6 @@ function setupHoverReveal() {
         if (clientY < rect.top) {
           clearBottomTimer();
           bottomHideTimer = setTimeout(() => {
-            measureAndSetCSSVariables();
             document!.documentElement!.removeAttribute("zenmode-reveal-bottom");
             bottomHideTimer = null;
           }, HIDE_DELAY_MS);
@@ -201,21 +177,23 @@ function setupHoverReveal() {
     } else if (
       document!.documentElement!.hasAttribute("zenmode-reveal-side")
     ) {
-      const panelSidebar = document!.getElementById("panel-sidebar-box");
-      const panelSelectBox = document!.getElementById(
-        "panel-sidebar-select-box",
-      );
-      const insideSidebar = (panelSidebar &&
-        clientX >= panelSidebar.getBoundingClientRect().left &&
-        clientX <= panelSidebar.getBoundingClientRect().right) ||
-        (panelSelectBox &&
-          clientX >= panelSelectBox.getBoundingClientRect().left &&
-          clientX <= panelSelectBox.getBoundingClientRect().right);
+      // The rail is revealed by the same attribute, so it counts as "the
+      // side" too — without it, moving onto a revealed rail reads as
+      // having left the region and retracts the thing under the pointer.
+      // These boxes never move now, so their rects are their resting
+      // ones whether revealed or not, which is exactly what this test
+      // wants: it asks where the chrome lives, not where it has slid to.
+      const within = (el: HTMLElement | null) =>
+        !!el && clientX >= el.getBoundingClientRect().left &&
+        clientX <= el.getBoundingClientRect().right;
+      const insideSidebar =
+        within(document!.getElementById("panel-sidebar-box")) ||
+        within(document!.getElementById("panel-sidebar-select-box")) ||
+        within(document!.getElementById("sidebar-main"));
 
       if (!insideSidebar) {
         clearSideTimer();
         sideHideTimer = setTimeout(() => {
-          measureAndSetCSSVariables();
           document!.documentElement!.removeAttribute("zenmode-reveal-side");
           sideHideTimer = null;
         }, HIDE_DELAY_MS);
@@ -313,42 +291,13 @@ export function initZenModeState() {
   setupPrefSync();
   setupHoverReveal();
 
-  // Keep the retract distance honest while zen is active: the toolbox's
-  // natural height changes under zen (address-bar hide/unhide, stack bar
-  // mounting), and a stale --zenmode-toolbox-height either over-pulls
-  // the toolbox (page top cut off) or under-pulls it (blank strip above
-  // the content). Margins animate, heights don't, so the observer stays
-  // quiet during zen's own retract/reveal transitions.
-  if (typeof ResizeObserver !== "undefined") {
-    const observer = new ResizeObserver(() => {
-      if (!zenModeEnabled()) return;
-      // Snap to the new distance without playing the slide transition —
-      // the chrome is off-screen and the toggle should be invisible.
-      const root = document!.documentElement!;
-      root.setAttribute("zenmode-rebase", "");
-      measureAndSetCSSVariables();
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          root.removeAttribute("zenmode-rebase");
-        });
-      });
-    });
-    // Toolbox and statusbar retract by their own size now (translate
-    // -100%/100%) and need no observation. The sidebar boxes remain
-    // measured: watch them so their first real layout after boot (and
-    // splitter drags) true the variables up — the CSS defaults are a few
-    // px off the real sizes, visible as a small hop on early toggles.
-    for (
-      const id of [
-        "panel-sidebar-select-box",
-        "panel-sidebar-box",
-      ]
-    ) {
-      const el = document!.getElementById(id);
-      if (el) observer.observe(el);
-    }
-    onCleanup(() => observer.disconnect());
-  }
+  // The resize observer that used to live here is gone with the distances
+  // it kept honest. Nothing caches a size now: the toolbox and status bar
+  // retract under their own height, and the side chrome stays put while
+  // the page is lifted over it. A splitter drag or a late first layout
+  // changes a box's size and that is simply the size it is — there is no
+  // second copy of it to go stale, and so nothing to re-take, and no
+  // rebase frame to hide the re-taking.
 
   // Disable zen mode when entering toolbar customization
   const customizeObserver = new MutationObserver(() => {

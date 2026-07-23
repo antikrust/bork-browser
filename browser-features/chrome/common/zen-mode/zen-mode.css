@@ -42,48 +42,51 @@
   display: none !important;
 }
 
-/* Floorp panel sidebar — slide out via negative margin. Kept on the
-   measured-margin mechanism (unlike the toolbox/statusbar): its two
-   boxes share one window edge, so out-of-flow positioning would need a
-   measured offset between them — the same cache disease this rewrite
-   removes. Their sizes are static (fixed icon strip, splitter-set panel
-   width), and the resize observer trues the variables up the moment the
-   boxes first lay out. */
-:root[zenmode] #panel-sidebar-box {
-  margin-inline-start: calc(
-    -1 * var(--zenmode-sidebar-width, 250px)
-  ) !important;
+/* ===== The side chrome: the page covers it, it does not move =====
+
+   #browser is one flex row, and the rail, Firefox's sidebar, the panel
+   sidebar cluster and #tabbrowser-tabbox are all siblings in it. So any
+   change to a sibling's width or margin resizes the content area — on
+   every frame, if it is animated. That is the entire reason zen used to
+   drag the page sideways, and it is a property of the mechanism, not a
+   bug in the easing: no amount of scoping a transition can stop an
+   in-flow box from reflowing its siblings while it travels.
+
+   Nothing at the sides moves any more. The content is lifted out of the
+   flow to cover the window, and the chrome stays exactly where it is
+   underneath — transparent and untouchable. Revealing fades it back in,
+   in its own resting position, over the top of the page.
+
+   Nothing is measured, because there is no retract distance to measure:
+   the boxes never leave their slots. That removes the whole cache
+   apparatus this file used to need — the two width variables, the resize
+   observer that trued them up, and the rebase attribute that suppressed
+   the slide while it did. It is the same result the toolbox and status
+   bar get by retracting under their own height, and self-sizing for the
+   same reason.
+
+   It also puts the side edges out of reach of the blanket
+   `transition: ... !important` rules in engine-chrome.css, which apply
+   `transition: all` to #sidebar-main whatever this sheet says. Opacity is
+   free to animate: it cannot reflow anything. */
+:root[zenmode] #tabbrowser-tabbox {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+}
+
+/* Held above the content rather than behind it, so the fade is visible in
+   both directions — dropped behind at the same moment opacity started
+   falling, the retract would simply cut out. pointer-events keeps the
+   invisible boxes from swallowing clicks meant for the page. */
+:root[zenmode] #sidebar-main,
+:root[zenmode] #panel-sidebar-box,
+:root[zenmode] #panel-sidebar-select-box,
+:root[zenmode] #panel-sidebar-splitter {
   opacity: 0 !important;
   pointer-events: none !important;
-  transition:
-    margin-inline-start 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.25s ease !important;
-}
-
-:root[zenmode] #panel-sidebar-select-box {
-  margin-inline-start: calc(
-    -1 * var(--zenmode-selectbox-width, 40px)
-  ) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transition:
-    margin-inline-start 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.25s ease !important;
-}
-
-/* The splitter exists only while a panel is open (translate, docs, …)
-   and was never part of the retract — its few grey pixels stayed at the
-   window edge when zen hid a sidebar with an open panel. No measured
-   margin needed: display removes its space outright. */
-:root[zenmode]:not([zenmode-reveal-side]) #panel-sidebar-splitter {
-  display: none !important;
-}
-
-/* Re-basing a measured sidebar distance (first layout after boot,
-   splitter drag) must snap, not slide. */
-:root[zenmode][zenmode-rebase] #panel-sidebar-box,
-:root[zenmode][zenmode-rebase] #panel-sidebar-select-box {
-  transition: none !important;
+  z-index: 2 !important;
+  transition: opacity 0.25s ease !important;
 }
 
 /* Status bar — out of flow at the window bottom, slides down by its own
@@ -137,15 +140,15 @@
   transition-delay: 0.15s !important;
 }
 
-/* Reveal panel sidebar on edge hover — slide back in */
-:root[zenmode][zenmode-reveal-side] #panel-sidebar-box {
-  margin-inline-start: 0 !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-
-:root[zenmode][zenmode-reveal-side] #panel-sidebar-select-box {
-  margin-inline-start: 0 !important;
+/* Reveal the side chrome on edge hover — it fades in where it already
+   sits, over the page. The rail is in the same list as the panel sidebar
+   because one attribute covers both edges (the hover test treats either
+   window edge as "the side"), and because it is the same kind of thing:
+   a box at a window edge that zen hides. */
+:root[zenmode][zenmode-reveal-side] #sidebar-main,
+:root[zenmode][zenmode-reveal-side] #panel-sidebar-box,
+:root[zenmode][zenmode-reveal-side] #panel-sidebar-select-box,
+:root[zenmode][zenmode-reveal-side] #panel-sidebar-splitter {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
