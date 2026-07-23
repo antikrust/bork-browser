@@ -162,7 +162,14 @@ export class WorkspaceManageModal {
             defaultValue: "Search icons…",
           }),
           value: workspace.icon || "",
-          required: true,
+          // NOT required: the default workspace is created with icon: null and
+          // presents as the fixed "Workspaces" entry, so its icon field is
+          // empty. With required:true, react-hook-form's handleSubmit refuses
+          // to fire on an empty icon — so Save silently did nothing on the
+          // default workspace (and any icon-less one), blocking colour/name
+          // edits too. An icon is optional in the data model; keep it optional
+          // here.
+          required: false,
           // Picker offers the Lucide library only (monochrome, follows UI
           // text color). The bundled colored icon set stays resolvable so
           // existing workspaces keep their icons, but is no longer offered.

@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { For } from "solid-js";
+import i18next from "i18next";
 import { panelSidebarData } from "../data/data";
 import { PanelSidebarButton } from "./sidebar-panel-button";
 import { showPanelSidebarAddModal } from "./panel-sidebar-modal";
@@ -55,10 +56,23 @@ export function SidebarSelectbox(props: { ctx: CPanelSidebar }) {
         <xul:toolbarbutton
           class="panel-sidebar-panel"
           id="bork-sidebar-reopen-icon"
+          tooltiptext={i18next.t("undo-closed-tab.tooltiptext", {
+            shortcut: "(Ctrl+Shift+T)",
+            defaultValue: "Reopen the last closed tab (Ctrl+Shift+T)",
+          })}
           onCommand={() => {
             try {
-              (globalThis as unknown as { undoCloseTab?: () => void })
-                .undoCloseTab?.();
+              // Bare `undoCloseTab()` is not a window global in FF152 — the old
+              // globalThis.undoCloseTab?.() resolved to undefined and the ?.()
+              // silently no-opped, so the button did nothing. Reopen via
+              // SessionWindowUI, the same call the undo-closed-tab toolbar
+              // button uses.
+              const browserWindow = Services.wm.getMostRecentWindow(
+                "navigator:browser",
+              ) as Window | null;
+              (globalThis as unknown as {
+                SessionWindowUI: { undoCloseTab: (w: Window | null) => void };
+              }).SessionWindowUI.undoCloseTab(browserWindow);
             } catch (e) {
               console.error("[panel-sidebar] Failed to reopen tab:", e);
             }
