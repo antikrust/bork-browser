@@ -64,13 +64,6 @@ a:hover { color: var(--paper); }
 .wrap { width: 100%; max-width: var(--wrap); margin: 0 auto;
         padding: 0 clamp(20px, 5vw, 40px); }
 
-/* ---------- grain ---------- */
-.grain::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  opacity: .5; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
 /* ---------- top bar ---------- */
 .topbar {
   position: fixed; inset: 0 0 auto 0; z-index: 50;
@@ -97,74 +90,61 @@ a:hover { color: var(--paper); }
 .bar nav { margin-left: auto; display: flex; gap: clamp(14px, 3vw, 28px); }
 .bar nav a {
   color: var(--soft); text-decoration: none; font-size: .88rem;
+  transition: color .16s ease;
 }
-.bar nav a:hover { color: var(--paper); }
+.bar nav a:hover { color: var(--amber-lt); }
 @media (max-width: 560px) { .bar nav a.opt { display: none; } }
 
-/* ---------- hero ---------- */
+/* ---------- hero ----------
+   Headline and the three downloads share one screen over the photo — the
+   whole point of the page is visible before any scroll, so the hero sizes
+   to its content (a min-height floor, not a full-viewport lock) and the
+   downloads live inside it rather than in a section below the fold. */
 .hero {
   position: relative; isolation: isolate;
-  min-height: 100svh; display: flex; align-items: flex-end;
-  padding: 100px 0 clamp(48px, 9vh, 96px);
+  min-height: 100svh; display: flex; flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(88px, 12vh, 128px) 0 clamp(36px, 6vh, 64px);
   overflow: hidden;
 }
 .hero-media { position: absolute; inset: 0; z-index: -3; }
 .hero-media img {
   width: 100%; height: 100%; object-fit: cover;
-  object-position: 62% 52%;
-  filter: saturate(.92) contrast(1.04) brightness(.92);
+  object-position: 66% 46%;
+  filter: saturate(.98) contrast(1.05) brightness(.98);
 }
 .hero-scrim {
   position: absolute; inset: 0; z-index: -2;
   background:
-    linear-gradient(90deg, rgba(8,7,6,.92) 0%, rgba(8,7,6,.72) 34%,
-                    rgba(8,7,6,.18) 62%, rgba(8,7,6,.42) 100%),
-    linear-gradient(180deg, rgba(8,7,6,.78) 0%, rgba(8,7,6,.14) 30%,
-                    rgba(8,7,6,.55) 74%, var(--ink) 100%);
+    linear-gradient(90deg, rgba(8,7,6,.86) 0%, rgba(8,7,6,.5) 34%,
+                    rgba(8,7,6,.06) 62%, rgba(8,7,6,.22) 100%),
+    linear-gradient(180deg, rgba(8,7,6,.5) 0%, rgba(8,7,6,.06) 30%,
+                    rgba(8,7,6,.48) 80%, var(--ink) 100%);
 }
-.hero-grain { position: absolute; inset: 0; z-index: -1; }
 @media (max-width: 760px) {
   .hero-scrim { background:
-    linear-gradient(180deg, rgba(8,7,6,.82) 0%, rgba(8,7,6,.3) 26%,
-                    rgba(8,7,6,.72) 66%, var(--ink) 100%); }
-  .hero-media img { object-position: 66% 45%; }
+    linear-gradient(180deg, rgba(8,7,6,.7) 0%, rgba(8,7,6,.28) 32%,
+                    rgba(8,7,6,.68) 70%, var(--ink) 100%); }
+  .hero-media img { object-position: 66% 42%; }
 }
 
 .hero-copy { position: relative; }
 h1 {
-  font-size: clamp(3.4rem, 12vw, 7.5rem);
+  font-size: clamp(3rem, 10vw, 6.4rem);
   line-height: .92; letter-spacing: -.045em; font-weight: 700;
   color: var(--paper);
-  text-shadow: 0 2px 40px rgba(0,0,0,.55);
+  text-shadow: 0 2px 40px rgba(0,0,0,.6);
 }
 h1 span { color: var(--amber-lt); }
 .sub {
-  color: var(--paper); font-size: clamp(1.1rem, 2.4vw, 1.45rem);
-  margin-top: 18px; letter-spacing: -.01em;
-  text-shadow: 0 1px 24px rgba(0,0,0,.6);
+  color: var(--paper); font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  margin-top: 16px; letter-spacing: -.01em;
+  text-shadow: 0 1px 24px rgba(0,0,0,.65);
 }
 .tag {
-  color: var(--soft); font-size: clamp(.95rem, 2vw, 1.1rem);
-  margin-top: 2px; text-shadow: 0 1px 24px rgba(0,0,0,.6);
+  color: var(--soft); font-size: clamp(.92rem, 2vw, 1.05rem);
+  margin-top: 2px; text-shadow: 0 1px 24px rgba(0,0,0,.65);
 }
-.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
-.btn {
-  display: inline-flex; align-items: center; gap: 9px;
-  padding: 13px 26px; border-radius: 999px;
-  background: var(--paper); color: #14110e;
-  font-weight: 600; font-size: .95rem; letter-spacing: -.01em;
-  text-decoration: none; border: 1px solid var(--paper);
-  transition: transform .18s ease, background .18s ease, color .18s ease;
-}
-.btn:hover { background: var(--amber-lt); border-color: var(--amber-lt);
-             color: #14110e; transform: translateY(-1px); }
-.btn.ghost {
-  background: rgba(11,9,8,.35); color: var(--paper);
-  border-color: rgba(236,231,224,.4);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-}
-.btn.ghost:hover { background: rgba(236,231,224,.14); color: var(--paper);
-                   border-color: var(--paper); }
 
 /* ---------- generic sections ---------- */
 .section { padding: var(--gap) 0; position: relative; }
@@ -185,12 +165,12 @@ h3 { font-size: 1.3rem; font-weight: 600; letter-spacing: -.025em;
 p + p { margin-top: 14px; }
 
 /* ---------- downloads (three divided columns) ---------- */
-.downloads { padding-top: clamp(40px, 6vw, 72px); }
+.hero-downloads { position: relative; margin-top: clamp(28px, 5vh, 48px); }
 .dlgrid { display: grid; grid-template-columns: repeat(3, 1fr); }
 .dlcol {
   padding: 0 clamp(18px, 3vw, 34px);
-  border-left: 1px solid var(--line);
-  display: flex; flex-direction: column; gap: 18px;
+  border-left: 1px solid var(--line-2);
+  display: flex; flex-direction: column; gap: 16px;
 }
 .dlcol:first-child { border-left: 0; padding-left: 0; }
 .dlcol:last-child { padding-right: 0; }
@@ -214,18 +194,18 @@ p + p { margin-top: 14px; }
    card lifted away underneath it. */
 .dlcard {
   position: relative;
-  border: 1px solid var(--line-2); border-radius: 16px;
-  background: linear-gradient(180deg, rgba(236,231,224,.035),
-                              rgba(236,231,224,.012));
-  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+  border: 1px solid var(--line-2); border-radius: 8px;
+  /* sits on the photo — tint dark and blur what shows through so the
+     mono sha stays legible over the fur/reeds behind it */
+  background: rgba(11, 9, 8, .5);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  /* hover is restrained on purpose: only the border colour shifts, and
+     the arch line lights up. Nothing moves, nothing floods. */
+  transition: border-color .2s ease;
 }
-.dlcard:hover {
-  border-color: rgba(226,128,47,.7);
-  background: linear-gradient(180deg, rgba(226,128,47,.12),
-                              rgba(226,128,47,.03));
-  transform: translateY(-2px);
-}
-.dlcard:hover b { color: var(--amber-lt); }
+.dlcard:hover { border-color: var(--amber); }
+.dlcard:hover small { color: var(--amber-lt); }
 a.dl {
   display: flex; flex-direction: column; gap: 12px; padding: 20px;
   color: inherit; text-decoration: none; border-radius: inherit;
@@ -261,65 +241,113 @@ a.dl code {
 .copy.done .clip { display: none; }
 .copy.done .tick { display: block; }
 .dlfoot {
-  margin-top: 26px; font-size: .82rem; color: var(--muted);
+  margin-top: 22px; font-size: .8rem; color: var(--soft);
   display: flex; flex-wrap: wrap; gap: 6px 18px;
+  text-shadow: 0 1px 12px rgba(0,0,0,.7);
+}
+@media (max-height: 720px) {
+  /* short viewports: let the first screen breathe rather than clip */
+  .hero { min-height: auto; }
 }
 
-/* ---------- manifesto ---------- */
-.manifesto .grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: clamp(24px, 4vw, 52px);
+/* ---------- features / no (stacked, flat — no backgrounds at all) ---------- */
+.manifesto .block { position: relative; }
+.manifesto .block + .block { margin-top: clamp(48px, 8vw, 96px); }
+.block-label {
+  font-size: .74rem; font-weight: 600; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 32px; display: flex; align-items: center; gap: 14px;
 }
-.manifesto .cell { display: flex; flex-direction: column; gap: 14px; }
-.manifesto .lead {
-  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
-  line-height: 1.45; letter-spacing: -.022em; color: var(--paper);
-  max-width: 24ch;
+.block-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.block.no .block-label { color: var(--amber); }
+
+/* feature grid — 4 across, amber-ticked, no borders */
+.feats { list-style: none; padding: 0; display: grid;
+         grid-template-columns: repeat(4, 1fr);
+         gap: clamp(28px, 3.2vw, 50px) clamp(20px, 3vw, 44px);
+         align-items: start; }
+@media (max-width: 900px) { .feats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .feats { grid-template-columns: 1fr; } }
+.feats li {
+  display: grid; grid-template-columns: auto 1fr; gap: .55em;
+  align-items: start;
+  font-size: 1.25rem; font-weight: 500; line-height: 1.2;
+  letter-spacing: -.015em; color: var(--paper);
 }
-.manifesto .note {
-  font-size: .92rem; line-height: 1.6; color: var(--muted); max-width: 40ch;
+/* square bullet sized in em so it grows with the feature it marks */
+.feats .sq {
+  width: .4em; height: .4em; margin-top: .44em; background: var(--amber);
 }
-.num { font-family: var(--mono); font-size: .68rem; color: var(--amber);
-       letter-spacing: .14em; text-transform: uppercase; }
-@media (max-width: 860px) {
-  .manifesto .grid { grid-template-columns: 1fr; }
-  .manifesto .lead { max-width: 30ch; }
+.feats .hl { color: var(--amber-lt); }
+/* the flagship four — grand, two-tone, sized like the No headings */
+.feats li.big {
+  font-size: clamp(1.55rem, 3vw, 2.2rem); font-weight: 700;
+  letter-spacing: -.03em; line-height: 1.05;
+}
+
+/* NO — headings then the growing chant */
+.no-item + .no-item { margin-top: clamp(30px, 4vw, 44px); }
+.no-head {
+  font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700;
+  letter-spacing: -.035em; line-height: 1.05; color: var(--paper);
+}
+.no-head span { color: var(--amber-lt); }
+.no-detail {
+  margin-top: 12px; font-size: .84rem; line-height: 1.7;
+  color: var(--muted); font-family: var(--mono); letter-spacing: -.01em;
+  max-width: 60ch;
+}
+/* the "No telemetry…" line: same smaller mono style as the NO AI detail */
+.no-sub {
+  margin-top: 12px; font-size: .84rem; line-height: 1.7;
+  color: var(--muted); font-family: var(--mono); letter-spacing: -.01em;
+  max-width: 60ch;
+}
+/* even vertical spacing (a fixed gap, not proportional leading, so the small
+   words aren't bunched tighter than the big ones) and dead-centre columns */
+.chant {
+  list-style: none; padding: 0; margin: clamp(64px, 10vw, 132px) 0 0;
+  width: 100%; display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: clamp(10px, 1.4vw, 24px);
+  font-weight: 700; letter-spacing: -.04em; line-height: 1;
+  color: var(--paper);
+}
+.chant li { display: block; }
+.chant li:nth-child(1) { font-size: clamp(1.6rem, 5vw, 2.6rem); color: var(--muted); }
+.chant li:nth-child(2) { font-size: clamp(2.4rem, 8vw, 4.2rem); color: var(--soft); }
+.chant li:nth-child(3) { font-size: clamp(3.6rem, 12vw, 6.4rem); color: var(--paper); }
+.chant li.noise {
+  font-size: clamp(5rem, 18vw, 10.5rem); color: var(--amber-lt);
+  text-transform: uppercase;
+  filter: url(#noise-distort);
+  text-shadow: 3px 0 rgba(255,40,90,.45), -3px 0 rgba(40,190,255,.4);
 }
 
 /* ---------- screenshots ---------- */
-.shotnav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
-.shotnav button {
-  font-family: inherit; font-size: .86rem; letter-spacing: -.01em;
-  padding: 9px 18px; border-radius: 999px; cursor: pointer;
-  border: 1px solid var(--line-2); background: transparent;
-  color: var(--soft); transition: all .18s ease;
+.shots { display: flex; flex-direction: column; gap: clamp(48px, 8vw, 96px); }
+figure.shot {
+  margin: 0; display: grid; gap: clamp(20px, 4vw, 48px);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  align-items: center;
 }
-.shotnav button:hover { color: var(--paper); }
-.shotnav button[aria-selected="true"] {
-  background: var(--paper); border-color: var(--paper); color: #14110e;
-  font-weight: 600;
+figure.shot:nth-child(even) { grid-template-columns: minmax(220px, 340px) minmax(0, 1fr); }
+figure.shot:nth-child(even) .shotframe { order: 2; }
+@media (max-width: 780px) {
+  figure.shot, figure.shot:nth-child(even) { grid-template-columns: 1fr; }
+  figure.shot:nth-child(even) .shotframe { order: 0; }
 }
-figure.shot { margin: 0; }
-.shots > figure + figure { margin-top: 40px; }
-.js .shots > figure + figure { margin-top: 0; }
 .shotframe {
-  position: relative; border-radius: 14px; overflow: hidden;
+  border-radius: 14px; overflow: hidden;
   border: 1px solid var(--line-2); background: var(--ink-3);
   box-shadow: 0 40px 90px -40px rgba(0,0,0,.9),
               0 2px 0 rgba(236,231,224,.05) inset;
-  aspect-ratio: 16 / 10;
 }
-.shotframe img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.shotframe.pending::after {
-  content: attr(data-pending);
-  position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: .8rem; letter-spacing: .16em; text-transform: uppercase;
-  color: #57503f;
+.shotframe img { width: 100%; height: auto; display: block; }
+figure.shot figcaption { font-size: .98rem; color: var(--soft); }
+figure.shot figcaption b {
+  display: block; color: var(--paper); font-weight: 600;
+  font-size: 1.25rem; letter-spacing: -.02em; margin-bottom: 8px;
 }
-figure.shot figcaption {
-  margin-top: 16px; font-size: .92rem; color: var(--muted); max-width: 62ch;
-}
-figure.shot figcaption b { color: var(--paper); font-weight: 600; }
 
 /* ---------- prose / two-up ---------- */
 .twoup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -379,6 +407,14 @@ footer { border-top: 1px solid var(--line);
 </head>
 <body id="top">
 
+<!-- displacement filter that warps the word "noise" in the No section -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <filter id="noise-distort">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.045" numOctaves="2" seed="11" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
 <header class="topbar" id="topbar">
   <div class="wrap bar">
     <a class="mark" href="#top">bork</a>
@@ -403,24 +439,14 @@ footer { border-top: 1px solid var(--line);
          fetchpriority="high" decoding="async">
   </div>
   <div class="hero-scrim"></div>
-  <div class="hero-grain grain"></div>
 
   <div class="wrap hero-copy">
     <h1>bork <span>browser</span></h1>
     <p class="sub">bork based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
-    <div class="hero-cta">
-      <a class="btn" href="#downloads">download</a>
-      <a class="btn ghost" href="#screens">see it</a>
-    </div>
   </div>
-</section>
 
-<!-- =========================== downloads =========================== -->
-<section class="section downloads" id="downloads">
-  <div class="wrap">
-    <h2 class="eyebrow">get bork</h2>
-
+  <div class="wrap hero-downloads" id="downloads">
     <div class="dlgrid">
 
       <div class="dlcol" data-os="mac">
@@ -486,7 +512,7 @@ footer { border-top: 1px solid var(--line);
               <b>Windows</b> <small>x86_64 · 141 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 b44a28fdeaa8b8d871c6955ad2ad660ef2532e04cb1e98ca2c0501f32822c508</code>
+              <code>sha256 583e3a18eb3d00e8caa3c295e5cfb147d81d2bfdef2c3a97466901ec96248471</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Windows sha256">
@@ -508,26 +534,46 @@ footer { border-top: 1px solid var(--line);
 <!-- =========================== manifesto =========================== -->
 <section class="section manifesto">
   <div class="wrap">
-    <div class="grid">
-      <div class="cell">
-        <span class="num">taken out</span>
-        <p class="lead">NO AI</p>
-        <p class="note">(No ONNX runtime, no transformers.js, no wllama, no
+    <div class="block features">
+      <h2 class="block-label">Features</h2>
+      <ul class="feats">
+        <li class="big"><span class="sq" aria-hidden="true"></span><span class="ft"><span class="hl">Workspaces</span></span></li>
+        <li class="big"><span class="sq" aria-hidden="true"></span><span class="ft">Tab <span class="hl">Stacks</span></span></li>
+        <li class="big"><span class="sq" aria-hidden="true"></span><span class="ft">Tab <span class="hl">Groups</span></span></li>
+        <li class="big"><span class="sq" aria-hidden="true"></span><span class="ft">Zen <span class="hl">mode</span></span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Split view</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Mouse gestures</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Side panels</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Command palette</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">URLs directly on tabs</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Chromium plugins</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Notes</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Local translator</span></li>
+      </ul>
+    </div>
+
+    <div class="block no">
+      <h2 class="block-label">NO TO THIS SHIT</h2>
+
+      <div class="no-item">
+        <p class="no-head">NO <span>AI</span></p>
+        <p class="no-detail">No ONNX runtime, no transformers.js, no wllama, no
         openai.mjs, no model hub, and both MLEngine actors removed.
-        browser.ml.enable is set to false.)</p>
+        browser.ml.enable is set to false.</p>
       </div>
-      <div class="cell">
-        <span class="num">taken out</span>
-        <p class="lead">No telemetry, no data sharing, no crash reports, fuck
-        all that noise.</p>
+
+      <div class="no-item">
+        <p class="no-head">No <span>data sharing</span></p>
+        <p class="no-sub">No telemetry, no crash reports, no extra accounts, no
+        hassling you.</p>
       </div>
-      <div class="cell">
-        <span class="num">left in</span>
-        <p class="lead">Does Workspaces, Tab Stacks, Tab Groups, Zen mode,
-        split view, mouse gestures, side panels (notes, downloads, a local
-        translator), a command palette on F2, an address bar that hides
-        completely, and chromium plugins.</p>
-      </div>
+
+      <ul class="chant" aria-label="fuck all that noise">
+        <li>fuck</li>
+        <li>all</li>
+        <li>that</li>
+        <li class="noise">noise</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -537,45 +583,54 @@ footer { border-top: 1px solid var(--line);
   <div class="wrap">
     <h2 class="eyebrow">screens</h2>
 
-    <div class="shotstage" id="shotstage">
-      <div class="shotnav" role="tablist" aria-label="bork window modes"></div>
-      <div class="shots">
+    <div class="shots">
 
-        <figure class="shot" id="shot-tabs" data-label="just tabs">
-          <div class="shotframe pending" data-pending="screenshot pending">
-            <img src="assets/shot-tabs.webp" alt="bork with only the tab strip showing" loading="lazy" width="1760" height="1100">
-          </div>
-          <figcaption><b>Just the tabs.</b> Address bar hidden with ⌘⌥A,
-          sidebar and workspaces rail off. Double-click any tab to type a URL
-          straight into it.</figcaption>
-        </figure>
+      <figure class="shot">
+        <div class="shotframe">
+          <img src="assets/shot-workspaces.webp" alt="bork's new tab page with the workspaces rail down the left and the panel sidebar on the right" loading="lazy" width="2944" height="2166">
+        </div>
+        <figcaption><b>Workspaces and the sidebars</b>The workspaces rail runs
+        down the left — one icon per workspace, imported from Vivaldi with
+        their own glyphs — and the panel sidebar (notes, downloads, the local
+        translator) sits on the right. ⌘⌥W and ⌘⌥S hide either one.</figcaption>
+      </figure>
 
-        <figure class="shot" id="shot-sidebars" data-label="sidebars">
-          <div class="shotframe pending" data-pending="screenshot pending">
-            <img src="assets/shot-sidebars.webp" alt="bork with the panel sidebar and the workspaces rail open" loading="lazy" width="1760" height="1100">
-          </div>
-          <figcaption><b>Sidebars on.</b> The panel sidebar — notes, downloads,
-          the local translator — on one edge, the workspaces rail on the
-          other.</figcaption>
-        </figure>
+      <figure class="shot">
+        <div class="shotframe">
+          <img src="assets/shot-full.webp" alt="bork with tabs and tab groups across the top" loading="lazy" width="3548" height="2090">
+        </div>
+        <figcaption><b>Tabs and tab groups</b>Tabs and Vivaldi-style groups
+        across the top, the address bar tucked away. Double-click any tab to
+        type a URL straight into it — Enter goes, Escape backs out.</figcaption>
+      </figure>
 
-        <figure class="shot" id="shot-zen" data-label="zen mode">
-          <div class="shotframe pending" data-pending="screenshot pending">
-            <img src="assets/shot-zen.webp" alt="bork in zen mode with all chrome retracted" loading="lazy" width="1760" height="1100">
-          </div>
-          <figcaption><b>Zen mode.</b> ⌘⌥Z retracts the toolbars and the status
-          bar and leaves the page.</figcaption>
-        </figure>
+      <figure class="shot">
+        <div class="shotframe">
+          <img src="assets/shot-zen.webp" alt="bork in zen mode showing a page edge to edge with no toolbars" loading="lazy" width="3548" height="2090">
+        </div>
+        <figcaption><b>Zen mode</b>⌘⌥Z pulls the toolbars and the status bar
+        away and leaves nothing but the page — edge to edge, no chrome at
+        all. Hit it again to bring everything back.</figcaption>
+      </figure>
 
-        <figure class="shot" id="shot-workspaces" data-label="workspaces &amp; groups">
-          <div class="shotframe pending" data-pending="screenshot pending">
-            <img src="assets/shot-workspaces.webp" alt="bork showing workspaces and a tab stack" loading="lazy" width="1760" height="1100">
-          </div>
-          <figcaption><b>Workspaces and tab groups.</b> Vivaldi-style tab stacks
-          with a second row, and workspaces that keep their own tabs.</figcaption>
-        </figure>
+      <figure class="shot">
+        <div class="shotframe">
+          <img src="assets/shot-minimal.webp" alt="bork with the address bar hidden, only the tab strip above the page" loading="lazy" width="2944" height="2166">
+        </div>
+        <figcaption><b>Address bar gone</b>⌘⌥A hides the address bar
+        completely, so the tab strip is the only thing between you and the
+        page. Everything still works — you just navigate from the tabs.</figcaption>
+      </figure>
 
-      </div>
+      <figure class="shot">
+        <div class="shotframe">
+          <img src="assets/shot-tabs.webp" alt="bork with the workspaces rail, tab strip, tab groups, address bar and panel sidebar all showing at once" loading="lazy" width="3548" height="2090">
+        </div>
+        <figcaption><b>Everything on at once</b>Tabs and groups up top, the
+        workspaces rail on the left, the panel sidebar on the right. Turn on
+        as much or as little of it as you want with ⌘⌥W and ⌘⌥S.</figcaption>
+      </figure>
+
     </div>
   </div>
 </section>
@@ -712,31 +767,6 @@ footer { border-top: 1px solid var(--line);
       }
     });
   });
-
-  /* screenshot switcher. Without JS every shot simply stacks down the page. */
-  var stage = d.getElementById('shotstage');
-  var figs = Array.prototype.slice.call(stage.querySelectorAll('figure.shot'));
-  var nav = stage.querySelector('.shotnav');
-  if (figs.length > 1) {
-    d.documentElement.classList.add('js');
-    var show = function (n) {
-      figs.forEach(function (fig, i) { fig.hidden = i !== n; });
-      Array.prototype.forEach.call(nav.children, function (b, i) {
-        b.setAttribute('aria-selected', i === n ? 'true' : 'false');
-      });
-    };
-    figs.forEach(function (fig, i) {
-      var b = d.createElement('button');
-      b.type = 'button';
-      b.textContent = fig.dataset.label;
-      b.setAttribute('role', 'tab');
-      b.setAttribute('aria-controls', fig.id);
-      b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
-      b.addEventListener('click', function () { show(i); });
-      nav.appendChild(b);
-      fig.hidden = i !== 0;
-    });
-  }
 })();
 </script>
 </body>
