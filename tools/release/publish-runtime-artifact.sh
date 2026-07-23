@@ -56,7 +56,12 @@ case "$ext" in
 esac
 
 workdir="$(dirname "$artifact")"
-cp -f "$artifact" "$workdir/$canonical"
+# The artifact may already carry the canonical name — the usage example above
+# passes exactly that, and the build host stores the windows zip under it. `cp`
+# a file onto itself exits 1, which would abort the whole publish under `set -e`.
+if [ ! "$artifact" -ef "$workdir/$canonical" ]; then
+  cp -f "$artifact" "$workdir/$canonical"
+fi
 ( cd "$workdir" && sha256sum "$canonical" > "$canonical.sha256" )
 log "prepared $canonical + .sha256"
 

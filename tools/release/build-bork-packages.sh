@@ -20,6 +20,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+# Local infra config (site URL for the update manifest); hosts.env is gitignored.
+HOSTS_ENV="${BORK_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
+# shellcheck source=/dev/null
+[ -f "$HOSTS_ENV" ] && source "$HOSTS_ENV"
+SITE_URL="${BORK_SITE_URL:-https://example.com/bork/}"
+
 RUNTIME_TAG="${BORK_RUNTIME_TAG:-daily-977}"
 RUNTIME_URL="https://github.com/Floorp-Projects/Floorp-runtime/releases/download/${RUNTIME_TAG}"
 
@@ -146,21 +152,39 @@ strip_ai_bundle() {
   log "AI bundle: ${before}K -> $(du -sk "$ml" | cut -f1)K (translation kept)"
 }
 
+# Resolve a runtime artifact to a local path, downloading if we do not have it.
+# Sets RUNTIME_FILE to the path the caller should use.
+#
+# The cache is keyed by TAG as well as filename. It used to be filename only,
+# which meant a rebuilt runtime published under a new tag was silently ignored:
+# the old artifact was already sitting in build/runtimes/ under the same
+# canonical name, so the download was skipped and the package shipped the
+# superseded binary. That is how a runtime carrying a startup-crash fix could be
+# built, published, and still not reach the package.
 fetch_runtime() {
-  local file="$1"
-  mkdir -p build/runtimes
-  [ -f "build/runtimes/$file" ] && return
+  local file="$1" tag dir
 
   if printf '%s\n' $OWN_RUNTIME_FILES | grep -qxF "$file"; then
-    log "downloading $file from our runtime (${OWN_RUNTIME_REPO}@${OWN_RUNTIME_TAG})"
-    gh release download "$OWN_RUNTIME_TAG" --repo "$OWN_RUNTIME_REPO" \
-      --pattern "$file" --dir build/runtimes \
+    tag="$OWN_RUNTIME_TAG"
+  else
+    tag="$RUNTIME_TAG"
+  fi
+  dir="build/runtimes/$tag"
+  mkdir -p "$dir"
+  RUNTIME_FILE="$dir/$file"
+  [ -f "$RUNTIME_FILE" ] && { log "using cached $file ($tag)"; return; }
+
+  if [ "$tag" = "$OWN_RUNTIME_TAG" ]; then
+    log "downloading $file from our runtime (${OWN_RUNTIME_REPO}@${tag})"
+    gh release download "$tag" --repo "$OWN_RUNTIME_REPO" \
+      --pattern "$file" --dir "$dir" \
       || fail "gh runtime download failed: $file (is gh authed for ${OWN_RUNTIME_REPO}?)"
   else
-    log "downloading $file (upstream ${RUNTIME_TAG})"
-    curl -sL -o "build/runtimes/$file" "${RUNTIME_URL}/${file}" \
+    log "downloading $file (upstream ${tag})"
+    curl -sL -o "$RUNTIME_FILE" "${RUNTIME_URL}/${file}" \
       || fail "download failed: $file"
   fi
+  [ -s "$RUNTIME_FILE" ] || fail "downloaded artifact is empty: $RUNTIME_FILE"
 }
 
 build_linux() {
@@ -168,7 +192,7 @@ build_linux() {
   fetch_runtime "$file"
   log "linux: extracting"
   reset_dir build/release/linux
-  tar -xJf "build/runtimes/$file" -C build/release/linux
+  tar -xJf "$RUNTIME_FILE" -C build/release/linux
   local approot
   approot="$(dirname "$(find build/release/linux -path '*browser/chrome/browser/content/browser/browser.xhtml' | head -1)")"
   approot="${approot%/browser/chrome/browser/content/browser}"
@@ -186,7 +210,7 @@ build_windows() {
   fetch_runtime "$file"
   log "windows: extracting"
   reset_dir build/release/windows
-  unzip -q "build/runtimes/$file" -d build/release/windows
+  unzip -q "$RUNTIME_FILE" -d build/release/windows
   # moz artifact zips can nest the payload one zip deeper
   local nested
   nested="$(find build/release/windows -maxdepth 2 -name '*.zip' | head -1)"
@@ -218,7 +242,13 @@ build_mac() {
     # with the correct compiled vendor, so no loose-file vendor patch is needed.
     [ -d "$BORK_MAC_RUNTIME_APP" ] || fail "BORK_MAC_RUNTIME_APP not found: $BORK_MAC_RUNTIME_APP"
     log "mac: assembling from fresh runtime ($BORK_MAC_RUNTIME_APP)"
-    cp -R "$BORK_MAC_RUNTIME_APP" "$app"
+    # -L, not -R alone: mach's dist/*.app is a symlink FARM (~7k links) pointing
+    # back into the runtime source checkout, because chrome-format=flat leaves
+    # loose chrome as links rather than copies. Copying the links and then
+    # patching writes straight through them into the Gecko source tree — which
+    # corrupts the checkout and makes the NEXT build die on "Ignoring previously
+    # applied (or reversed) patch". Dereference so the package owns real files.
+    cp -RL "$BORK_MAC_RUNTIME_APP" "$app"
     [ -f "$res/chrome.manifest" ] || fail "mac: no chrome.manifest under $res (unexpected runtime layout)"
     overlay "$res"
     find "$app" -name "*.map" -delete
@@ -301,7 +331,7 @@ cat > updates/update.xml <<EOF
   <update type="minor"
           displayVersion="${PKG_VERSION}"
           appVersion2="${PKG_VERSION}"
-          detailsURL="https://therob.lol/bork/"/>
+          detailsURL="${SITE_URL}"/>
 </updates>
 EOF
 log "updates/update.xml -> ${PKG_VERSION} (commit + push to announce the release)"

@@ -20,6 +20,8 @@
 #                    the Gecko runtimes (rebuild is the long part; skip when only
 #                    the feature layer changed).
 #   --no-upload    : build packages but do not rsync to the download site.
+#   --install      : after the mac lane packages, install it to ~/Applications.
+#                    Refuses while a copy is running rather than clobbering it.
 #
 # Example (feature-layer-only ship, reusing the current runtime):
 #   production-build.sh bork-runtime-152.0.7-1 --skip-runtime all
@@ -37,11 +39,13 @@ cd "$ROOT"
 TAG="${1:?runtime tag required (e.g. bork-runtime-152.0.7-1)}"; shift || true
 SKIP_RUNTIME=0
 UPLOAD=1
+INSTALL=0
 LANES=()
 for a in "$@"; do
   case "$a" in
     --skip-runtime) SKIP_RUNTIME=1 ;;
     --no-upload)    UPLOAD=0 ;;
+    --install)      INSTALL=1 ;;
     mac|linux|windows) LANES+=("$a") ;;
     all) LANES=(mac linux windows) ;;
     *) echo "unknown arg: $a" >&2; exit 1 ;;
@@ -72,9 +76,53 @@ fi
 # Point the release packager at our runtime tag.
 export BORK_OWN_RUNTIME_TAG="$TAG"
 
+# Which runtime the mac lane ships.
+#
+# Unlike linux/windows, the mac lane does not consume the published tag at all —
+# build-bork-packages.sh either copies $BORK_MAC_RUNTIME_APP or falls back to the
+# dev tree at _dist/bin/floorp/Floorp.app. That fallback is a trap: it is whatever
+# the last dev cycle left behind, so a runtime fix can be built, committed and
+# published and the mac package still ships the old binary. That is exactly how a
+# runtime whose XUL still registered the since-deleted SSB command-line handler
+# got packaged and uploaded — it crashed on startup with only "Missing chrome or
+# resource URL" to show for it.
+#
+# So: prefer the freshly built runtime whenever one is present, and say out loud
+# which one is being shipped.
+MAC_BUILD_DIR="${BORK_MAC_BUILD_DIR:-$HOME/bork-build}"
+if [ -z "${BORK_MAC_RUNTIME_APP:-}" ]; then
+  fresh="$(find "$MAC_BUILD_DIR/obj-mac-aarch64/dist" -maxdepth 1 -name '*.app' 2>/dev/null | head -1)"
+  [ -n "$fresh" ] && export BORK_MAC_RUNTIME_APP="$fresh"
+fi
+if [ -n "${BORK_MAC_RUNTIME_APP:-}" ]; then
+  log "mac runtime: $BORK_MAC_RUNTIME_APP (freshly built)"
+else
+  log "mac runtime: _dist/bin/floorp/Floorp.app (dev tree fallback — NOT a fresh build)"
+fi
+
 # 2 + 3. feature layer + overlay + package, per lane.
 log "building feature layer and packaging: ${LANES[*]}"
 "$ROOT/tools/release/build-bork-packages.sh" --build "${LANES[@]}"
+
+# 3b. install the freshly packaged mac app locally (opt-in).
+# Deliberately non-fatal: a failed install should not sink a build whose packages
+# are already made, and refusing to overwrite a running copy is the common case.
+if [ "$INSTALL" = 1 ]; then
+  app="$ROOT/build/release/mac/Bork.app"
+  dest="$HOME/Applications/Bork.app"
+  if ! printf '%s\n' "${LANES[@]}" | grep -qx mac; then
+    log "--install ignored: mac is not among the lanes (${LANES[*]})"
+  elif [ ! -d "$app" ]; then
+    log "--install skipped: no packaged app at $app"
+  elif pgrep -f "$dest/Contents/MacOS/" >/dev/null 2>&1; then
+    log "--install skipped: Bork is running from $dest — quit it and re-run to install"
+  else
+    log "installing $dest"
+    rm -rf "$dest" && mkdir -p "$HOME/Applications" && cp -R "$app" "$dest" \
+      && log "installed. launch it from ~/Applications" \
+      || log "install failed (packages in dist/ are unaffected)"
+  fi
+fi
 
 # 4. upload
 if [ "$UPLOAD" = 1 ]; then
@@ -95,7 +143,11 @@ if [ "$UPLOAD" = 1 ]; then
   # who runs it. Page goes up last, after the files it describes exist.
   log "refreshing page sums + sizes"
   python3 "$ROOT/tools/release/update-site-sums.py"
-  rsync -av "$ROOT/tools/release/site/index.html" "${WEB_REMOTE%/downloads}/"
+  # The whole site dir, not just index.html: the page now carries its own
+  # assets/ (hero photo, screenshots, webfont) and an index shipped without
+  # them renders unstyled and imageless. No --delete: downloads/ lives under
+  # the same web root and must survive.
+  rsync -av "$ROOT/tools/release/site/" "${WEB_REMOTE%/downloads}/"
   log "uploaded. live at $SITE_URL"
 else
   log "skipped upload (--no-upload); packages in dist/"

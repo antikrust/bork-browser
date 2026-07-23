@@ -58,6 +58,14 @@ PUBLISH="$ROOT/tools/release/publish-runtime-artifact.sh"
 log()  { printf '\033[34m[build-all]\033[0m %s\n' "$*"; }
 fail() { printf '\033[31m[build-all] %s\033[0m\n' "$*" >&2; exit 1; }
 
+# Where pulled artifacts land before publishing. Deliberately NOT named after the
+# canonical floorp-<platform>-<arch>-moz-artifact.<ext> that the release pipeline
+# consumes: publish-runtime-artifact.sh makes that copy itself, and when the file
+# it is handed already carries the canonical name the copy is a file onto itself,
+# which exits 1 and takes the publish down under `set -e`.
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/bork-runtime-stage.XXXXXX")"
+trap 'rm -rf "$STAGE"' EXIT
+
 # ---------------------------------------------------------------------------
 build_mac() {
   log "mac: native build on this machine"
@@ -95,9 +103,20 @@ export MOZCONFIG="$BUILD_DIR/mozconfig-linux-x86_64"
 ./mach build
 ./mach package
 REMOTE
-  # pull the flat tarball off the build host and publish from here
-  local out="/tmp/floorp-linux-x86_64-moz-artifact.tar.xz"
-  scp -q "$BUILD_HOST:$LINUX_BUILD_DIR/obj-linux-x86_64/dist/floorp-*.linux-x86_64.tar.xz" "$out"
+  # Pull the flat tarball off the build host and publish from here. mach names it
+  # after MOZ_APP_NAME, so resolve the name rather than assuming a prefix — this
+  # glob was 'floorp-*' and stopped matching the moment the app was renamed,
+  # exactly as the mac lane's did above, and it fails only AFTER the multi-hour
+  # build. A bork-named tarball here is correct output, not a fault to paper over:
+  # the canonical floorp-*-moz-artifact name the release pipeline consumes is a
+  # publishing concern, applied by publish-runtime-artifact.sh.
+  local remote
+  remote="$(ssh "$BUILD_HOST" "ls -1t '$LINUX_BUILD_DIR'/obj-linux-x86_64/dist/*.linux-x86_64.tar.xz 2>/dev/null | head -1")"
+  [ -n "$remote" ] || fail "linux: no *.linux-x86_64.tar.xz under $LINUX_BUILD_DIR/obj-linux-x86_64/dist on $BUILD_HOST"
+  log "linux: pulling $(basename "$remote")"
+  local out="$STAGE/$(basename "$remote")"
+  scp -q "$BUILD_HOST:$remote" "$out"
+  [ -s "$out" ] || fail "linux: pulled tarball is empty: $remote"
   "$PUBLISH" linux x86_64 "$out" "$TAG"
 }
 
@@ -108,8 +127,14 @@ build_windows() {
   # task with RunLevel Highest for msiexec, base64-over-WinRM pull). Trigger it:
   ssh "$BUILD_HOST" "bash '$WIN_BUILD_DIR/run-win-build.sh'" \
     || fail "windows VM build failed (see $WIN_BUILD_DIR/*.log on $BUILD_HOST)"
-  local out="/tmp/floorp-windows-x86_64-moz-artifact.zip"
-  scp -q "$BUILD_HOST:$LINUX_BUILD_DIR/artifacts/floorp-windows-x86_64-moz-artifact.zip" "$out"
+  # run-win-build.sh pulls the VM's zip to this fixed name, so the remote side is
+  # a contract with that script rather than a glob. Stage under a neutral local
+  # name so publish-runtime-artifact.sh is never handed the canonical name.
+  local remote="$LINUX_BUILD_DIR/artifacts/floorp-windows-x86_64-moz-artifact.zip"
+  local out="$STAGE/bork-windows-x86_64.zip"
+  scp -q "$BUILD_HOST:$remote" "$out" \
+    || fail "windows: no artifact at $remote on $BUILD_HOST (did run-win-build.sh finish?)"
+  [ -s "$out" ] || fail "windows: pulled zip is empty: $remote"
   "$PUBLISH" windows x86_64 "$out" "$TAG"
 }
 
