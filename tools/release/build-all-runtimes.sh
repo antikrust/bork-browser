@@ -74,7 +74,10 @@ build_mac() {
     export RUSTC="$tc/rustc" CARGO="$tc/cargo"
     ./mach build
     ./mach package )
-  local dmg; dmg="$(find "$base/obj-mac-aarch64/dist" -maxdepth 1 -name 'floorp-*.mac.dmg' | head -1)"
+  # mach names the dmg after MOZ_APP_NAME, so this glob must not hardcode it —
+  # it was 'floorp-*.mac.dmg' and stopped matching the moment the app was
+  # renamed, after a full build and package had already run.
+  local dmg; dmg="$(find "$base/obj-mac-aarch64/dist" -maxdepth 1 -name '*.mac.dmg' | head -1)"
   [ -f "$dmg" ] || fail "mac: no dmg produced"
   "$PUBLISH" mac aarch64 "$dmg" "$TAG"
 }
