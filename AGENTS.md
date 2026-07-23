@@ -1,6 +1,8 @@
 # AGENTS.md
 
-Floorp is a Firefox-based web browser ("Noraneko") built on top of the Gecko engine. This repo contains the custom browser features that overlay Firefox — not the Firefox source itself.
+**bork** is a fork of Floorp 12 ("Noraneko"), a Firefox-based browser built on the Gecko engine. This repo contains the feature layer that overlays Firefox — not the Firefox source itself; the engine arrives as a prebuilt runtime from [bork-runtime](https://github.com/100mountains/bork-runtime).
+
+"floorp" survives in plenty of identifiers on purpose — `resource://floorp/`, the `floorp.*` pref namespace, `_dist/bin/floorp`, the `floorpWorkspaceId` tab attributes. Those are real upstream names, not branding left behind. Renaming them breaks things.
 
 ## Agent Roles and Routing
 
@@ -23,7 +25,7 @@ security, visual-identity, or release changes require project-owner approval
 before implementation.
 
 Bork owns product features, including tab stacks, feature UI, feature state,
-and feature-specific preferences and migration. The companion `bork-build`
+and feature-specific preferences and migration. The companion `bork-runtime`
 repository owns the Firefox-derived runtime, its build, packaging, signing,
 and upstream synchronization. Do not patch Firefox internals directly for a
 feature-layer concern. When a feature needs runtime support, agree a minimal,
@@ -180,7 +182,7 @@ Colocated in `test/` directories next to source. The runner discovers them autom
 
 ## dev-tool -- Browser Inspection CLI
 
-`deno task dev-tool` communicates with a running Floorp instance via the **Marionette protocol** (Firefox's TCP-based WebDriver). All browser commands require the browser to be running (started via `dev-tool start` or `feles-build dev`).
+`deno task dev-tool` communicates with a running bork instance via the **Marionette protocol** (Firefox's TCP-based WebDriver). All browser commands require the browser to be running (started via `dev-tool start` or `feles-build dev`).
 
 ### Process Management
 

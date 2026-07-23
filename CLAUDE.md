@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **bork** is a fork of Floorp 12 ("Noraneko"), a Firefox-based browser built on the Gecko
 engine. This repo contains the feature layer that overlays Firefox — not the Firefox source
-itself; the engine arrives as a prebuilt runtime (currently FF152, Floorp-runtime daily).
+itself; the engine arrives as a prebuilt runtime (currently FF152, from bork-runtime).
 
 Fork-specific: compact theme (`browser-features/skin/bork/`), Vivaldi-style workspaces and
 tab stacks, zen mode, lean urlbar. Upstream remains `Floorp-Projects/Floorp` (`upstream`);
