@@ -16,6 +16,8 @@ export interface UpdateCheckerModule {
 export interface NotificationButton {
   label: string;
   callback: () => boolean;
+  /** Renders the button as the accent-coloured primary action. */
+  primary?: boolean;
 }
 
 export interface NotificationBoxLike {

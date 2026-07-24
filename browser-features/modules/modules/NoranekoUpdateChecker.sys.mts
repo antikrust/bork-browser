@@ -134,7 +134,11 @@ function getUpdateXmlUrl(): string {
 export async function fetchRemoteUpdateInfo(): Promise<RemoteUpdateInfo | null> {
   try {
     const url = await getUpdateXmlUrl();
-    const response = await fetch(url);
+    // no-store: the manifest is served with Cache-Control max-age=300, so the
+    // default cache would return a stale version for up to 5 minutes — a
+    // re-check inside that window (e.g. right after a release) misses the
+    // update. Always fetch fresh.
+    const response = await fetch(url, { cache: "no-store" });
 
     if (!response.ok) {
       console.error(

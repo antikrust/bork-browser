@@ -69,6 +69,7 @@ export default class UpdateCheck extends NoraComponentBase {
     }, [
       {
         label: "Download",
+        primary: true,
         callback: () => {
           (globalThis as {
             openTrustedLinkIn?: (url: string, where: string) => void;
