@@ -2012,6 +2012,14 @@
     .extra-information-label:not(:first-child) {
       margin-top: 4px !important; /* Original: 19px */
     }
+    /* "Your browser is being managed by your organisation." — shown because
+       the two bundled extensions are installed via an enterprise policy. It
+       is accurate but not something bork wants to advertise in Settings, and
+       there is nothing for the user to act on. Hide the notice; the policy
+       (and the extensions it installs) is unaffected. */
+    #policies-container-content {
+      display: none !important;
+    }
   }
   /*= about:processes ==========================================================*/
   @-moz-document url-prefix("about:processes"), url-prefix("about:performance") {

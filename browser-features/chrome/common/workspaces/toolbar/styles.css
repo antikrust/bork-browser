@@ -8,13 +8,34 @@
   border-radius: 0px !important;
   position: relative;
 
-  &:hover {
-    background-color: var(--toolbarbutton-hover-background) !important;
-  }
-
+  /* Hover/active fill stops 2px short of the BOTTOM so it lines up with the
+     tabs' 30px paint band inside the 32px row — the full-height button fill
+     reached the row bottom and sat 2px below a selected tab's background.
+     The button's own fill is cleared and repainted on a pseudo that is inset
+     2px at the bottom only, so the icon and text never move. */
+  &:hover,
   &[open="true"],
   &:hover:active {
-    background-color: var(--toolbarbutton-active-background) !important;
+    background-color: transparent !important;
+  }
+
+  &:hover::before,
+  &[open="true"]::before,
+  &:hover:active::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 2px 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &:hover::before {
+    background-color: var(--toolbarbutton-hover-background);
+  }
+
+  &[open="true"]::before,
+  &:hover:active::before {
+    background-color: var(--toolbarbutton-active-background);
   }
 
   /* Container indicator - colored border on the left */

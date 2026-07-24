@@ -129,11 +129,11 @@
 }
 
 /* No megabar. The address bar is a top-layer popover; focusing it makes
-   Firefox add [breakout-extend], which — with browser.nova.enabled off, our
-   case — grows the field: wider by twice --urlbar-margin-inline, taller to
-   --urlbar-container-height, scaled in by the urlbar-grow keyframes and
-   lifted with a focus ring and drop shadow. We want the field to hold
-   perfectly still and only the results to drop underneath it.
+   Firefox add [breakout-extend], which grows the field — wider by twice
+   --urlbar-margin-inline and taller to --urlbar-container-height, scaled in
+   by the urlbar-grow keyframes and lifted with a focus ring and drop shadow.
+   We want the field to hold perfectly still and only the results to drop
+   underneath it.
 
    Firefox writes those grow rules against the .urlbar CLASS, so the #urlbar
    ID outweighs them: each rule below reverts one extend-time change back to
@@ -144,10 +144,24 @@
 #urlbar[breakout][breakout-extend] {
   margin-inline: 0;
   width: var(--urlbar-width);
+  /* Grow the results DOWNWARD, not centered. The popover is over-constrained
+     (both insets + explicit height), so Firefox centers it and the field
+     rides up by half the height it gains the instant results open — the
+     "jumps up when you type" report. Pin the top to the captured resting
+     inset (index.ts keeps --bork-urlbar-rest-inset current, since it moves
+     with chrome height) and release the bottom so the growth falls below. */
+  inset-block-start: var(--bork-urlbar-rest-inset, 35px) !important;
+  inset-block-end: auto !important;
 }
 
-#urlbar[breakout][breakout-extend] > .urlbar-input-container {
+#urlbar[breakout][breakout-extend] > .urlbar-input-container,
+#urlbar[focused] > .urlbar-input-container,
+#urlbar[open] > .urlbar-input-container {
   height: var(--urlbar-height);
+  min-height: var(--urlbar-height);
+  /* margin-block pinned to 0 so the box never rides up on focus/extend —
+     the "jumps up a few pixels" report. */
+  margin-block: 0 !important;
   padding: var(--urlbar-container-padding);
 }
 
@@ -155,13 +169,28 @@
   animation-name: none;
 }
 
-/* Focus must not restyle the field itself: drop the grow-in shadow and the
-   focus ring so the bar looks exactly as it does at rest while the results
-   appear beneath it. */
+/* The field wears a persistent blue border, at rest and focused alike. */
+#urlbar .urlbar-background {
+  border: 1px solid #3b82f6 !important;
+}
+
+/* Focus must not restyle the field itself: the stock field swaps its border
+   for an outline on focus (that stray "underline" ring) and adds a grow-in
+   shadow. Keep the blue border, and kill the outline and shadow on the
+   background, the input container, and #urlbar itself so nothing new appears —
+   only the results drop beneath. */
 #urlbar[open] > .urlbar-background,
 #urlbar[focused] > .urlbar-background {
-  box-shadow: none;
-  outline: none;
+  border-color: #3b82f6 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+#urlbar[focused],
+#urlbar[open],
+#urlbar[focused] > .urlbar-input-container,
+#urlbar[open] > .urlbar-input-container {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* #urlbar sits in the top layer, so it does not shrink with the nav bar —

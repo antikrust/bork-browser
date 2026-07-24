@@ -496,8 +496,27 @@ export default class TabStacks extends NoraComponentBase {
         if (event.type !== "click" || !group) return;
         try {
           const gb = getGBrowser();
-          if (gb?.removeTabs) {
-            gb.removeTabs([...group.tabs]);
+          // Close the stack as a GROUP, not tab-by-tab. removeTabGroup records
+          // the whole group with SessionStore (getLastClosedTabGroupId), so
+          // Ctrl+Shift+T / the reopen path — SessionWindowUI.undoCloseTab —
+          // restores the entire stack in one go instead of bringing its tabs
+          // back individually as loose tabs. Fall back to removeTabs on older
+          // runtimes without group-close capture.
+          const groupBrowser = gb as unknown as {
+            removeTabGroup?: (
+              g: StackGroup,
+              opts?: { isUserTriggered?: boolean },
+            ) => Promise<void>;
+            removeTabs?: (tabs: unknown[]) => void;
+          } | null;
+          if (groupBrowser?.removeTabGroup) {
+            Promise.resolve(
+              groupBrowser.removeTabGroup(group, { isUserTriggered: true }),
+            ).catch((e) =>
+              console.error("[tab-stacks] Failed to close stack:", e)
+            );
+          } else if (groupBrowser?.removeTabs) {
+            groupBrowser.removeTabs([...group.tabs]);
           } else {
             for (const t of [...group.tabs]) {
               getGBrowser()?.removeTab(t, { animate: false });

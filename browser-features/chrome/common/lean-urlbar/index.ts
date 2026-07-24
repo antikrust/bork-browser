@@ -51,6 +51,31 @@ export default class LeanUrlbar extends NoraComponentBase {
 
     render(LeanUrlbarStyle, document.head, { hotCtx: import.meta.hot });
 
+    // Address bar "jumps up when you type": the bar is a top-layer popover
+    // that Firefox grows CENTERED when results open ([breakout-extend]), so
+    // the field rides up by half the height it gains. styles.css pins it to
+    // grow downward instead, but that needs the field's resting top — which
+    // varies with chrome height (one tab row vs the stack bar also showing).
+    // Capture it into --bork-urlbar-rest-inset whenever the bar is at rest.
+    if (urlbar) {
+      const captureRestInset = () => {
+        if (urlbar.hasAttribute("breakout-extend")) return;
+        const top = getComputedStyle(urlbar).insetBlockStart;
+        if (top && top !== "auto") {
+          urlbar.style.setProperty("--bork-urlbar-rest-inset", top);
+        }
+      };
+      captureRestInset();
+      const toolbox = document.getElementById("navigator-toolbox");
+      if (toolbox && typeof ResizeObserver !== "undefined") {
+        new ResizeObserver(() => captureRestInset()).observe(toolbox);
+      }
+      // Re-capture once the bar settles back to rest after each use.
+      urlbar.addEventListener("focusout", () => {
+        requestAnimationFrame(captureRestInset);
+      });
+    }
+
     // Feature switch: address-bar hiding is off by default (user request,
     // 2026-07-16). The code stays; flip the pref to bring it back. The
     // sidebar toggle below is independent and stays active either way.

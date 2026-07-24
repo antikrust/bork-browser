@@ -175,7 +175,10 @@
 #undo-closed-tab,
 #undo-closed-tab-button,
 #profiles-button,
-#profile-manager-button {
+#profile-manager-button,
+/* The Firefox sidebar toggle in the nav bar's far-left — bork has its own
+   panel sidebar, so this stock one is redundant clutter. */
+#sidebar-button {
   display: none !important;
 }
 
@@ -209,11 +212,17 @@ menuitem[id^="context-ask-chat"] {
   margin-inline-end: 0 !important;
 }
 
-/* The strip-start separator is #tabbrowser-tabs::before — a zero-width
-   flex item whose 1px left border draws the line. It also carried ~4px
-   of spacing, holding the line (and the whole strip) off the chooser's
-   edge, so the chooser's open/hover box stopped short of the line. */
+/* No strip-start separator. leptonChrome draws one as this pseudo's 1px
+   inline-start border (with ~4px of spacing that also held the whole strip off
+   the chooser). bork had kept it as the single line between the chooser and the
+   tabs, but it reads as a stray always-on bar on the chooser: a non-overflowing
+   row has nothing else there, and an overflowing one already gets Firefox's own
+   overflow-start / overflow-end indicators marking the scroll edges (a bar only
+   at the edge you can still scroll toward). Drop the border — keep the box
+   zeroed so the strip still sits flush to the chooser — and let those native
+   indicators be the only scroll-edge lines. */
 #TabsToolbar #tabbrowser-tabs::before {
+  border: none !important;
   margin: 0 !important;
   padding: 0 !important;
   width: 0 !important;
@@ -557,6 +566,16 @@ menuitem[id^="context-ask-chat"] {
   background-color: #131317 !important;
 }
 
+/* Search-engine selector chip (#urlbar-searchmode-switcher). The stock chip
+   paints from --urlbar-box-background-color, which stays a light grey in dark
+   mode and read as a bright pill against the black chrome. .searchmode-switcher
+   maps --button-background-color to that box var, so overriding the box vars on
+   the chip darkens resting AND hover/focus in one place. */
+:root[data-bork-dark] #urlbar-searchmode-switcher {
+  --urlbar-box-background-color: #1c1c22 !important;
+  --urlbar-box-background-color-focus: #2a2a33 !important;
+}
+
 /* The same unification for the default scheme, which never had it: the
    chrome showed three surfaces where it should show one. The tab strip
    and the panel sidebar both sit on --lwt-accent-color (Window), but
@@ -584,7 +603,6 @@ menuitem[id^="context-ask-chat"] {
   padding-inline: 0 !important;
 }
 
-#bork-workspaces-rail-button,
 #bork-panel-sidebar-button {
   width: 35px !important;
   min-width: 35px !important;
@@ -593,7 +611,6 @@ menuitem[id^="context-ask-chat"] {
   justify-content: center !important;
 }
 
-#bork-workspaces-rail-button .toolbarbutton-icon,
 #bork-panel-sidebar-button .toolbarbutton-icon {
   margin-inline: auto !important;
 }
