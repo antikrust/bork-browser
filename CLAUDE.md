@@ -8,7 +8,9 @@ itself; the engine arrives as a prebuilt runtime (currently FF152, from bork-run
 
 Fork-specific: compact theme (`browser-features/skin/bork/`), Vivaldi-style workspaces and
 tab stacks, zen mode, lean urlbar. Upstream remains `Floorp-Projects/Floorp` (`upstream`);
-push to `origin` (github.com/100mountains/bork). GitHub Actions are disabled on the fork —
+push to `origin` (`shithub.space/n01/bork`, self-hosted Forgejo — the project has moved
+off GitHub). The compiled runtime is published as public Forgejo releases on
+`shithub.space/n01/bork-runtime`, not GitHub. GitHub Actions are disabled on the fork —
 do not re-enable.
 
 **NO BRANCHES — commits go straight to `main` and are pushed to `origin main`.** Never

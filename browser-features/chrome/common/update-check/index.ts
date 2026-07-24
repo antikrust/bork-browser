@@ -14,7 +14,7 @@ import type {
 
 /**
  * Daily release check against updates/update.xml on the repo's main branch
- * (served by raw.githubusercontent.com — no update server). When a newer
+ * (served by shithub/Forgejo raw — no update server). When a newer
  * version is published, a notification bar offers the download page once
  * per version. The native Mozilla updater is policy-disabled
  * (DisableAppUpdate in distribution/policies.json): its compiled-in aus5

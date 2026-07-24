@@ -10,7 +10,7 @@
 #   - dev servers stopped (the production build owns _dist/noraneko)
 #   - `deno task feles-build build --phase before-mach` has produced
 #     _dist/noraneko (run with --build to do it here)
-#   - runtime archives in build/runtimes/ (see RUNTIME_TAG; downloaded
+#   - runtime archives in build/runtimes/ (see OWN_RUNTIME_TAG; downloaded
 #     automatically when missing)
 #
 # Lanes: mac (from the local dev-validated runtime tree), linux + windows
@@ -26,16 +26,12 @@ HOSTS_ENV="${BORK_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
 [ -f "$HOSTS_ENV" ] && source "$HOSTS_ENV"
 SITE_URL="${BORK_SITE_URL:-https://example.com/bork/}"
 
-RUNTIME_TAG="${BORK_RUNTIME_TAG:-daily-977}"
-RUNTIME_URL="https://github.com/Floorp-Projects/Floorp-runtime/releases/download/${RUNTIME_TAG}"
-
-# Runtimes we build ourselves live in a private repo and are fetched with an
-# authenticated `gh` download. Any file NOT listed in OWN_RUNTIME_FILES falls
-# back to the upstream Floorp-runtime release above. As more platforms get
-# built by us, add their artifact filenames to OWN_RUNTIME_FILES.
-OWN_RUNTIME_REPO="${BORK_OWN_RUNTIME_REPO:-100mountains/bork-runtime}"
+# Every shipped platform's runtime is built by us and lives on shithub
+# (self-hosted Forgejo) as a public release, fetched over plain HTTPS — no auth,
+# no `gh`, no GitHub. All runtime files come from this one repo/tag.
+FORGEJO_HOST="${BORK_FORGEJO_HOST:-shithub.space}"
+OWN_RUNTIME_REPO="${BORK_OWN_RUNTIME_REPO:-n01/bork-runtime}"
 OWN_RUNTIME_TAG="${BORK_OWN_RUNTIME_TAG:-bork-runtime-152.0.7-1}"
-OWN_RUNTIME_FILES="${BORK_OWN_RUNTIME_FILES:-floorp-linux-x86_64-moz-artifact.tar.xz floorp-windows-x86_64-moz-artifact.zip}"
 
 log() { printf '\033[34m[bork-release]\033[0m %s\n' "$*"; }
 fail() { printf '\033[31m[bork-release] %s\033[0m\n' "$*" >&2; exit 1; }
@@ -162,28 +158,17 @@ strip_ai_bundle() {
 # superseded binary. That is how a runtime carrying a startup-crash fix could be
 # built, published, and still not reach the package.
 fetch_runtime() {
-  local file="$1" tag dir
-
-  if printf '%s\n' $OWN_RUNTIME_FILES | grep -qxF "$file"; then
-    tag="$OWN_RUNTIME_TAG"
-  else
-    tag="$RUNTIME_TAG"
-  fi
+  local file="$1" tag="$OWN_RUNTIME_TAG" dir
   dir="build/runtimes/$tag"
   mkdir -p "$dir"
   RUNTIME_FILE="$dir/$file"
   [ -f "$RUNTIME_FILE" ] && { log "using cached $file ($tag)"; return; }
 
-  if [ "$tag" = "$OWN_RUNTIME_TAG" ]; then
-    log "downloading $file from our runtime (${OWN_RUNTIME_REPO}@${tag})"
-    gh release download "$tag" --repo "$OWN_RUNTIME_REPO" \
-      --pattern "$file" --dir "$dir" \
-      || fail "gh runtime download failed: $file (is gh authed for ${OWN_RUNTIME_REPO}?)"
-  else
-    log "downloading $file (upstream ${tag})"
-    curl -sL -o "$RUNTIME_FILE" "${RUNTIME_URL}/${file}" \
-      || fail "download failed: $file"
-  fi
+  log "downloading $file from our runtime (${OWN_RUNTIME_REPO}@${tag} on ${FORGEJO_HOST})"
+  # Forgejo/Gitea public release asset URL — same shape as GitHub's, no auth.
+  curl -fsSL -o "$RUNTIME_FILE" \
+    "https://${FORGEJO_HOST}/${OWN_RUNTIME_REPO}/releases/download/${tag}/${file}" \
+    || fail "runtime download failed: $file (is ${OWN_RUNTIME_REPO}@${tag} published on ${FORGEJO_HOST}?)"
   [ -s "$RUNTIME_FILE" ] || fail "downloaded artifact is empty: $RUNTIME_FILE"
 }
 

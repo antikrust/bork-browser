@@ -566,14 +566,16 @@ menuitem[id^="context-ask-chat"] {
   background-color: #131317 !important;
 }
 
-/* Search-engine selector chip (#urlbar-searchmode-switcher). The stock chip
-   paints from --urlbar-box-background-color, which stays a light grey in dark
-   mode and read as a bright pill against the black chrome. .searchmode-switcher
-   maps --button-background-color to that box var, so overriding the box vars on
-   the chip darkens resting AND hover/focus in one place. */
-:root[data-bork-dark] #urlbar-searchmode-switcher {
-  --urlbar-box-background-color: #1c1c22 !important;
-  --urlbar-box-background-color-focus: #2a2a33 !important;
+/* Search-engine selector chip. The element is `.searchmode-switcher` — a
+   CLASS, with no id: an earlier `#urlbar-searchmode-switcher` rule matched
+   nothing, so the chip stayed the stock light grey no matter the colour.
+   urlbar-searchbar.css maps `--button-background-color: var(--urlbar-box-
+   background-color)` on `.searchmode-switcher` (and the -focus variant while
+   [focused]/[open]), so overriding the box vars on the class darkens resting
+   AND hover/focus/open in one place. */
+:root[data-bork-dark] .searchmode-switcher {
+  --urlbar-box-background-color: #0a0a0d !important;
+  --urlbar-box-background-color-focus: #17171d !important;
 }
 
 /* The same unification for the default scheme, which never had it: the

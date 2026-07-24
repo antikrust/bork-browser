@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0
 #
-# Publish a self-built Gecko runtime artifact to the private bork-runtime repo,
-# so the release pipeline (build-bork-packages.sh, OWN_RUNTIME_FILES) fetches
-# OUR runtime instead of upstream's. Automates the "wire it up" step.
+# Publish a self-built Gecko runtime artifact to the bork-runtime repo on shithub
+# (self-hosted Forgejo), so the release pipeline (build-bork-packages.sh,
+# OWN_RUNTIME_FILES) fetches OUR runtime instead of upstream's. Automates the
+# "wire it up" step. The repo is public; publishing uses the Forgejo API.
 #
 # Usage:
 #   publish-runtime-artifact.sh <platform> <arch> <local-artifact-path> [tag]
@@ -17,8 +18,9 @@
 #     /path/to/bork-runtime-build/artifacts/floorp-windows-x86_64-moz-artifact.zip \
 #     bork-runtime-152.0.7-1
 #
-# Prereqs: gh authed for the runtime repo; the artifact already built + pulled
-# out of the build host/VM (see BUILD.md for the per-platform build steps).
+# Prereqs: BORK_FORGEJO_TOKEN set (a Forgejo token with write:repository scope
+# for the runtime repo); the artifact already built + pulled out of the build
+# host/VM (see BUILD.md for the per-platform build steps).
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -28,7 +30,10 @@ HOSTS_ENV="${BORK_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
 # shellcheck source=/dev/null
 [ -f "$HOSTS_ENV" ] && source "$HOSTS_ENV"
 
-RUNTIME_REPO="${BORK_RUNTIME_REPO:-100mountains/bork-runtime}"
+FORGEJO_HOST="${BORK_FORGEJO_HOST:-shithub.space}"
+FORGEJO_TOKEN="${BORK_FORGEJO_TOKEN:-}"
+RUNTIME_REPO="${BORK_RUNTIME_REPO:-n01/bork-runtime}"
+API="https://${FORGEJO_HOST}/api/v1/repos/${RUNTIME_REPO}"
 
 platform="${1:?platform required (linux|windows|mac)}"
 arch="${2:?arch required (x86_64|aarch64|universal)}"
@@ -69,15 +74,44 @@ if [ -z "$tag" ]; then
   fail "no tag given; pass the bork-runtime release tag as arg 4"
 fi
 
-# Create the release if missing, then upload (clobber so re-publish is idempotent).
-if ! gh release view "$tag" --repo "$RUNTIME_REPO" >/dev/null 2>&1; then
-  log "creating release $tag on $RUNTIME_REPO"
-  gh release create "$tag" --repo "$RUNTIME_REPO" --title "$tag" \
-    --notes "Self-built bork/Gecko runtime artifacts." >/dev/null
+# Create the release if missing, then upload (delete-then-add so re-publish is
+# idempotent — Forgejo has no --clobber). All via the Forgejo API.
+[ -n "$FORGEJO_TOKEN" ] || fail "BORK_FORGEJO_TOKEN not set (need a Forgejo token with write:repository for ${RUNTIME_REPO} on ${FORGEJO_HOST})"
+
+# Release id for $tag, or empty if the release does not exist yet.
+rid="$(curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" "$API/releases/tags/$tag" 2>/dev/null \
+  | python3 -c "import sys,json
+try: print(json.load(sys.stdin).get('id',''))
+except Exception: print('')")"
+
+if [ -z "$rid" ]; then
+  log "creating release $tag on $RUNTIME_REPO@$FORGEJO_HOST"
+  rid="$(curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" -H 'Content-Type: application/json' \
+    -X POST "$API/releases" \
+    -d "{\"tag_name\":\"$tag\",\"name\":\"$tag\",\"body\":\"Self-built bork/Gecko runtime artifacts.\"}" \
+    | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))")"
+  [ -n "$rid" ] || fail "could not create release $tag on $RUNTIME_REPO"
 fi
 
-log "uploading $canonical to $RUNTIME_REPO@$tag"
-gh release upload "$tag" --repo "$RUNTIME_REPO" --clobber \
-  "$workdir/$canonical" "$workdir/$canonical.sha256"
+# Upload one asset, replacing any existing asset of the same name.
+upload_asset() {
+  local path="$1" name existing
+  name="$(basename "$path")"
+  existing="$(curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" "$API/releases/$rid/assets" 2>/dev/null \
+    | python3 -c "import sys,json
+[print(a['id']) for a in json.load(sys.stdin) if a.get('name')=='$name']" 2>/dev/null)"
+  if [ -n "$existing" ]; then
+    log "replacing existing asset $name"
+    curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" -X DELETE \
+      "$API/releases/$rid/assets/$existing" >/dev/null || true
+  fi
+  log "uploading $name to $RUNTIME_REPO@$tag"
+  curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" -F "attachment=@$path" \
+    "$API/releases/$rid/assets?name=$name" >/dev/null \
+    || fail "asset upload failed: $name"
+}
 
-log "published. build-bork-packages.sh will fetch it if '$canonical' is in OWN_RUNTIME_FILES."
+upload_asset "$workdir/$canonical"
+upload_asset "$workdir/$canonical.sha256"
+
+log "published to https://${FORGEJO_HOST}/${RUNTIME_REPO}/releases/tag/$tag — build-bork-packages.sh will fetch it if '$canonical' is in OWN_RUNTIME_FILES."

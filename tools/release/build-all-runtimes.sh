@@ -25,8 +25,9 @@
 # Example:
 #   build-all-runtimes.sh bork-runtime-152.0.7-2 all
 #
-# Prereqs: gh authed for the runtime repo; ssh access to your build host; the VM
-# present and reachable. Each lane checks its own tools.
+# Prereqs: BORK_FORGEJO_TOKEN set (Forgejo write token for the runtime repo);
+# ssh access to your build host; the VM present and reachable. Each lane checks
+# its own tools.
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -41,7 +42,7 @@ HOSTS_ENV="${BORK_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
 # shellcheck source=/dev/null
 [ -f "$HOSTS_ENV" ] && source "$HOSTS_ENV"
 
-RUNTIME_REPO="${BORK_RUNTIME_REPO:-100mountains/bork-runtime}"
+RUNTIME_REPO="${BORK_RUNTIME_REPO:-n01/bork-runtime}"
 BUILD_HOST="${BORK_BUILD_HOST:-your-linux-build-host}"        # SSH alias or user@host
 MAC_BUILD_DIR="${BORK_MAC_BUILD_DIR:-$HOME/bork-build}"        # runtime tree on this Mac
 LINUX_BUILD_DIR="${BORK_LINUX_BUILD_DIR:-/path/to/bork-runtime-build}"  # on the Linux host

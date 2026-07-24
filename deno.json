@@ -55,7 +55,6 @@
   ],
   "tasks": {
     "feles-build": "deno run -A tools/feles-build.ts",
-    "act": "deno run -A tools/act/run-package-workflow.ts",
     "dev-tool": "deno run -A tools/dev-tool.ts",
     "test": "deno run -A tools/src/colocated_test_runner.ts",
     "test:host": "deno test --allow-read --allow-write tools/src/",

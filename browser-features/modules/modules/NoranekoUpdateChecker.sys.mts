@@ -121,10 +121,11 @@ function getUpdateType(oldVersion: string, newVersion: string): UpdateType {
 /**
  * The published update manifest: updates/update.xml on the repo's main
  * branch, refreshed by tools/release/build-bork-packages.sh on every
- * package run. No update server — GitHub raw serving is the endpoint.
+ * package run. No update server — shithub (Forgejo) raw serving is the
+ * endpoint. Forgejo raw path is /raw/branch/<branch>/<path>.
  */
 function getUpdateXmlUrl(): string {
-  return "https://raw.githubusercontent.com/100mountains/bork/main/updates/update.xml";
+  return "https://shithub.space/n01/bork/raw/branch/main/updates/update.xml";
 }
 
 /**
