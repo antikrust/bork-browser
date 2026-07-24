@@ -76,7 +76,7 @@ deno task feles-build build --phase after-mach   # post-mach injection
 ```
 
 The Gecko runtime lives in a separate repo,
-[bork-runtime](https://github.com/100mountains/bork-runtime). The full release
+[bork-runtime](https://shithub.space/n01/bork-runtime). The full release
 chain — runtimes, feature layer, packaging, upload — is
 `tools/release/production-build.sh`.
 

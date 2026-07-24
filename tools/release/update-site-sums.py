@@ -10,6 +10,7 @@ uploaded.
 """
 
 import hashlib
+import json
 import pathlib
 import re
 import sys
@@ -33,6 +34,17 @@ def sha256(path: pathlib.Path) -> str:
 
 def main() -> int:
     html = PAGE.read_text()
+
+    # Hero subtitle tracks the shipped version: "bork X.Y.Z based on floorp".
+    # Kept in step with package.json so every release relabels it automatically.
+    version = json.loads((ROOT / "package.json").read_text())["version"]
+    html = re.sub(
+        r"bork(?:\s+[\d.]+)?\s+based on floorp",
+        f"bork {version} based on floorp",
+        html,
+    )
+    print(f"[site-sums] hero subtitle -> bork {version} based on floorp")
+
     updated = []
     for rel in ARTIFACTS:
         path = ROOT / "dist" / rel

@@ -254,6 +254,18 @@ menuitem[id^="context-ask-chat"] {
   min-height: 26px !important;
 }
 
+/* Focused/open urlbar popup border. When the urlbar is opened by pointer
+   (Firefox sets [suppress-focus-border]) it draws NO focus outline, so the
+   box's own 1px border is the only edge — and stock leaves it the subtle
+   --panel-border-color. Colour it with the accent so the popup still reads as
+   focused. Scoped to the suppressed state: keyboard focus keeps the stock
+   accent OUTLINE, and forcing the border too would double the line. The bottom
+   edge only becomes visible once the results panel below stops painting over
+   it (see the transparent .urlbarView rule in the dark-bork section). */
+#urlbar[open][suppress-focus-border] > #urlbar-background {
+  border-color: var(--focus-outline-color) !important;
+}
+
 #nav-bar {
   /* 0, not 1px: with compact density (browser.uidensity=1, set in
      override.ini) this lands the nav bar at ~32px — a quarter off the
@@ -558,12 +570,18 @@ menuitem[id^="context-ask-chat"] {
   background-color: #050506 !important;
 }
 
-:root[data-bork-dark] .urlbar-background,
-:root[data-bork-dark] #urlbar[open] > .urlbarView {
-  /* Class, not id — the field element carries .urlbar-background. The
-     results panel is listed with it so the suggestions sit on the same
-     tone as the field rather than the lighter stock field colour. */
+:root[data-bork-dark] .urlbar-background {
   background-color: #131317 !important;
+}
+
+/* The results panel is a SIBLING that paints OVER .urlbar-background. Filling it
+   opaque hid the box's 1px accent bottom-border — the "blue border missing at
+   the bottom" bug, confirmed by live measurement: the panel's bottom sat exactly
+   on the border (bgBottom − viewBottom = 0) and covered it. The #131317 surface
+   behind it is identical, so transparent keeps the same tone for the suggestions
+   while letting the bottom border show. */
+:root[data-bork-dark] #urlbar[open] > .urlbarView {
+  background-color: transparent !important;
 }
 
 /* Search-engine selector chip. The element is `.searchmode-switcher` — a
@@ -576,6 +594,29 @@ menuitem[id^="context-ask-chat"] {
 :root[data-bork-dark] .searchmode-switcher {
   --urlbar-box-background-color: #0a0a0d !important;
   --urlbar-box-background-color-focus: #17171d !important;
+}
+
+/* Update-available bar (gNotificationBox .infobar).
+   Dark-only: darker surface. infobar.css reads
+   --info-bar-background-color-configurable first (its own documented override
+   hook), else the light-dark() default (rgb(66,65,77) in dark — the grey that
+   read too light). Set on the host, the var inherits into the bar's shadow DOM. */
+:root[data-bork-dark] .infobar {
+  --info-bar-background-color-configurable: #0d0d11 !important;
+}
+
+/* Both variants (normal + dark bork):
+   - No accent stripe: infobar.css paints a purple→pink→amber gradient on the
+     host's ::before (the "red" tail is its #ff4aa2 stop); null it here.
+   - Action button loses its rounded corners — stays a rectangle, just squared
+     edges. The "Download" button is a real <button class="notification-button">
+     slotted in from the outer DOM, so it styles directly, not a shadow node. */
+.infobar::before {
+  background: none !important;
+}
+
+.notification-button {
+  border-radius: 0 !important;
 }
 
 /* The same unification for the default scheme, which never had it: the
