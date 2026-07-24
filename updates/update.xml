@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <updates>
   <update type="minor"
-          displayVersion="1.0.2"
-          appVersion2="1.0.2"
+          displayVersion="1.0.3"
+          appVersion2="1.0.3"
           detailsURL="https://borkbrowser.online/"/>
 </updates>
