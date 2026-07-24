@@ -211,6 +211,26 @@ tab-group[data-bork-stack] .bork-stack-close:hover {
 #tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label-container,
 #tabbrowser-tabs tab-group:not([data-bork-stack])
   .tab-group-overflow-count-container {
+  /* Background painted by ::before pseudo-element with inset positioning. */
+  background-color: transparent;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--bork-tab-height, 30px);
+  padding: 0 !important;
+  /* Stock puts a 4px margin on the left of the label container and nothing on
+     the right, which reads as the cell being padded on one side only. */
+  margin: 0 !important;
+  position: relative;
+}
+
+#tabbrowser-tabs tab-group:not([data-bork-stack]) .tab-group-label-container::before,
+#tabbrowser-tabs tab-group:not([data-bork-stack])
+  .tab-group-overflow-count-container::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 2px 0;
+  z-index: -1;
+  pointer-events: none;
   /* A wash of the group colour, not the solid native cell: the solid
      bright invert forced dark text (unreadable against the compact
      theme, and the dark colour inherited into member-tab titles on the
@@ -222,13 +242,6 @@ tab-group[data-bork-stack] .bork-stack-close:hover {
     light-dark(var(--tab-group-color), var(--tab-group-color-invert)) 32%,
     transparent
   );
-  align-items: center;
-  justify-content: center;
-  min-height: var(--bork-tab-height, 30px);
-  padding: 0 !important;
-  /* Stock puts a 4px margin on the left of the label container and nothing on
-     the right, which reads as the cell being padded on one side only. */
-  margin: 0 !important;
 }
 
 /* The container carries the colour now, so the label must not paint its own —
