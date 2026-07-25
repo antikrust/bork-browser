@@ -40,14 +40,20 @@ function toStringArray(value: unknown): string[] {
   return [];
 }
 
+/** Injected by vite from the root package.json (see vite.config.ts). */
+declare const __BORK_VERSION__: string;
+
 export default function WhatsNewPage() {
   const { t, i18n } = useTranslation();
   const version = (() => {
+    // The shipping version is the fallback, not a hardcoded "12" — that
+    // Floorp-12 leftover made the page read "Welcome to Bork 12" on every
+    // build. ?upgrade= still wins when the opener passes one.
     try {
       const params = new URLSearchParams(globalThis.location.search);
-      return params.get("upgrade") ?? "12";
+      return params.get("upgrade") ?? __BORK_VERSION__;
     } catch {
-      return "12";
+      return __BORK_VERSION__;
     }
   })();
 

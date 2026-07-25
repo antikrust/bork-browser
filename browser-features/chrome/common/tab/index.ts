@@ -36,8 +36,19 @@ export default class Tab extends NoraComponentBase {
         ) as Window;
         const gBrowser = window.gBrowser;
         if (gBrowser) {
-          // Open welcome page with upgrade parameter
-          const t = gBrowser.addTrustedTab("about:welcome?upgrade=12");
+          // Open the welcome page with the version actually shipping, not a
+          // hardcoded "12" (a Floorp-12 leftover that made the page announce
+          // "Welcome to Bork 12" forever). version2 is package.json's version,
+          // injected at build time — the same number the updater compares and
+          // the release site prints.
+          const { NoranekoConstants } = ChromeUtils.importESModule(
+            "resource://noraneko/modules/NoranekoConstants.sys.mjs",
+          ) as { NoranekoConstants: { version2: string } };
+          const t = gBrowser.addTrustedTab(
+            `about:welcome?upgrade=${
+              encodeURIComponent(NoranekoConstants.version2)
+            }`,
+          );
           gBrowser.selectedTab = t;
 
           // Reset the flag so it does not show again

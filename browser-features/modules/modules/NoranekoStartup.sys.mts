@@ -192,7 +192,14 @@ async function openReleaseNotesInRecentWindow(): Promise<void> {
   }
 
   try {
-    const welcomeTab = tabBrowser.addTab("about:welcome?upgrade=12", {
+    // The shipping version, not a hardcoded "12" (a Floorp-12 leftover that
+    // made the page announce "Welcome to Bork 12" on every build). version2 is
+    // package.json's version, injected at build time.
+    const welcomeTab = tabBrowser.addTab(
+      `about:welcome?upgrade=${
+        encodeURIComponent(NoranekoConstants.version2 as string)
+      }`,
+      {
       relatedToCurrent: false,
       inBackground: true,
       skipAnimation: false,

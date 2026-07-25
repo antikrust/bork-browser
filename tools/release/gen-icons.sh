@@ -73,9 +73,16 @@ done
 echo "building cropped wordmark"
 sips -c 429 795 --cropOffset 295 119 "$SRC" --out "$OUT/wordmark.png" >/dev/null
 
-# The About dialog has room for the wordmark whatever the size.
-sips -s format png -z 192 192 "$SRC" --out "$OUT/about-logo.png" >/dev/null
-sips -s format png -z 384 384 "$SRC" --out "$OUT/about-logo@2x.png" >/dev/null
+# about-logo is a logo MARK, not a wordmark: Firefox uses it wherever a small
+# brand glyph sits beside its own text — the Settings sidebar renders it at
+# 24x24 next to the word "Settings", and the About dialog puts it above the
+# name. Generated from the full source it carried the wordmark, so those places
+# spelled out the old "derp" artwork next to correct "Bork" text. Use the face,
+# like every other icon here does; it also survives 24px, which a wordmark
+# cannot. (Upscaled from the 128px disc, the same compromise the icns 256+
+# slots already make — a true fix needs higher-resolution bork artwork.)
+sips -s format png -z 192 192 "$FACE" --out "$OUT/about-logo.png" >/dev/null
+sips -s format png -z 384 384 "$FACE" --out "$OUT/about-logo@2x.png" >/dev/null
 
 echo "done:"
 ls -1 "$OUT" | sed 's/^/  /'
