@@ -8,13 +8,15 @@ import {
   noraComponent,
   NoraComponentBase,
 } from "#features-chrome/utils/base.ts";
-import type {
-  DroppedRun,
-  GuardedScrollbox,
-  StreamAxis,
-  TabBrowserLike,
-  WheelGuardReadout,
-} from "./types.ts";
+import type { GuardedScrollbox, TabBrowserLike } from "./types.ts";
+import {
+  attachReleaseWatchdog,
+  attachWheelGuard,
+  getWheelGuardReadout,
+  GUARD_DEFAULT,
+  GUARD_PREF,
+  RECENTRE_RULE,
+} from "./attach.ts";
 
 /**
  * Stops the overflowing tab strip "snapping back" after a trackpad scroll.
@@ -27,30 +29,20 @@ import type {
  * scrollbox") behind only a 2-event axis filter, so from the tail's third
  * event the strip scrolls back against the drag it just finished.
  *
- * Two rules, capture-phase, ahead of every strip wheel listener; pixel-mode
- * (trackpad) events only, so plain mouse wheels never see the guard:
- *  - axis quarantine: inside one gapless stream, vertical-dominant events
- *    may not continue a horizontal-dominant stream. A deliberate vertical
- *    strip-scroll starts its own stream (>400ms gap) and still works.
- *  - reversal hold: a direction reversal inside a gapless same-axis stream
- *    is held while it stays under the run's peak envelope. A momentum tail
- *    enters at its peak and decays — frame jitter (…13, 12, 15, 11…) can
- *    exceed the PREVIOUS event but never climbs back above the entry peak,
- *    so the release must compare against the run peak, not the last event
- *    (a last-event comparison leaked real tails). A live finger enters
- *    near zero and clears its own tiny peak within an event or two.
+ * The two wheel rules now live in attach.ts and are applied to EVERY
+ * horizontal arrowscrollbox — the stack bar (row 2) is the same widget and was
+ * still snapping back while only the strip was guarded. See scrollback-error.md
+ * and attach.ts for the mechanism; the strip-only third rule stays here:
  *
- * A third rule covers the non-wheel half of the symptom: Firefox re-runs
- * ensureTabIsVisible(selectedTab) on every strip resize (tabs.js
- * handleResize -> _handleTabSelect), and strip resizes trail manual
- * scrolling with a delay (lazy tab rendering settling, scroll-button and
- * stack-bar churn) — yanking the strip back to the selected tab seconds
- * after the user scrolled away from it:
- *  - recentre latch: a manual wheel over the strip marks it
- *    user-positioned for the CURRENT selected tab; while the selection is
- *    unchanged, resize-driven recentres onto that tab are skipped.
- *    Selecting any tab (the only recentre the user actually asked for)
- *    ends the suppression by identity, so no listener ordering is
+ *  - recentre latch: Firefox re-runs ensureTabIsVisible(selectedTab) on every
+ *    strip resize (tabs.js handleResize -> _handleTabSelect), and strip resizes
+ *    trail manual scrolling with a delay (lazy tab rendering settling,
+ *    scroll-button and stack-bar churn) — yanking the strip back to the
+ *    selected tab seconds after the user scrolled away from it. A manual wheel
+ *    over the strip marks it user-positioned for the CURRENT selected tab;
+ *    while the selection is unchanged, resize-driven recentres onto that tab
+ *    are skipped. Selecting any tab (the only recentre the user actually asked
+ *    for) ends the suppression by identity, so no listener ordering is
  *    involved.
  *
  * Pref (int) floorp.tabstrip.wheelguard — bitfield: 1 axis quarantine |
@@ -58,23 +50,6 @@ import type {
  * stock behavior. Readout at globalThis.__borkWheelGuard says which
  * rules engaged.
  */
-
-const GUARD_PREF = "floorp.tabstrip.wheelguard";
-const AXIS_RULE = 1;
-const REVERSAL_RULE = 2;
-const RECENTRE_RULE = 4;
-const GUARD_DEFAULT = AXIS_RULE | REVERSAL_RULE | RECENTRE_RULE;
-
-/** A pause longer than this starts a fresh stream (re-latches axis and
- * direction). Momentum tails run gapless at display rate and the
- * touch-to-momentum handoff pause stays well under this. */
-const STREAM_GAP_MS = 400;
-
-/** A held reversal must clear runPeak * factor + 1 to count as a live
- * finger instead of a decaying tail's jitter. */
-const PEAK_FACTOR = 1.05;
-
-const READOUT_KEY = "__borkWheelGuard";
 
 @noraComponent(import.meta.hot)
 export default class TabStripWheelGuard extends NoraComponentBase {
@@ -88,150 +63,33 @@ export default class TabStripWheelGuard extends NoraComponentBase {
       return;
     }
 
-    const readout: WheelGuardReadout = {
-      axisDropped: 0,
-      reversalDropped: 0,
-      recentresSuppressed: 0,
-      lastRun: null,
-      reset() {
-        this.axisDropped = 0;
-        this.reversalDropped = 0;
-        this.recentresSuppressed = 0;
-        this.lastRun = null;
-      },
-    };
-    (globalThis as Record<string, unknown> & typeof globalThis)[READOUT_KEY] =
-      readout;
+    const readout = getWheelGuardReadout();
 
     const getSelectedTab = (): Element | null =>
       (globalThis as { gBrowser?: TabBrowserLike }).gBrowser?.selectedTab ??
         null;
 
-    let lastTs = 0;
-    let streamAxis: StreamAxis | null = null;
-    let streamDir = 0;
-    let runPeak = -1;
-    let run: DroppedRun | null = null;
     let errorReported = false;
     // The tab whose resize-driven recentres are suppressed because the
     // user manually positioned the strip while it was selected. Cleared
     // by identity: any selection change makes it stale.
     let userPositionedFor: Element | null = null;
 
-    const drop = (
-      event: WheelEvent,
-      axis: StreamAxis,
-      px: number,
-    ): void => {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      if (!run) {
-        run = { axis, events: 0, px: 0, endedAt: 0 };
-        readout.lastRun = run;
-      }
-      run.events += 1;
-      run.px += px;
-      run.endedAt = Date.now();
-    };
-
-    const onWheelCapture = (event: WheelEvent): void => {
-      try {
-        const mode = Services.prefs.getIntPref(GUARD_PREF, GUARD_DEFAULT);
-        if (mode <= 0) return;
-        if (!(event.target instanceof Node) || !asb.contains(event.target)) {
-          return;
-        }
-        // Any manual wheel over the strip — pixel or line mode — is the
-        // user positioning it; arm the recentre latch for the currently
-        // selected tab.
+    const detachGuard = attachWheelGuard({
+      asb,
+      listenOn: tabContainer,
+      readout,
+      // Any manual wheel over the strip — pixel or line mode — is the user
+      // positioning it; arm the recentre latch for the selected tab.
+      onManualWheel: () => {
         userPositionedFor = getSelectedTab();
-        // Trackpads deliver pixel-mode streams; line/page devices have no
-        // momentum machinery and pass untouched.
-        if (event.deltaMode !== event.DOM_DELTA_PIXEL) return;
-        // Enforcement mirrors stock on_wheel's bail-outs — but the stream
-        // model must keep OBSERVING while enforcement is off (e.g. the
-        // strip briefly loses [overflowing] during session restore or tab
-        // churn). If observation paused too, a momentum tail arriving as
-        // the first event after a blind window would latch as a fresh
-        // gesture and pass wholesale.
-        const enforcing = asb.hasAttribute("overflowing") &&
-          asb.getAttribute("orient") !== "vertical";
-
-        const absX = Math.abs(event.deltaX);
-        const absY = Math.abs(event.deltaY);
-        if (absX === 0 && absY === 0) return;
-
-        // Same delta selection stock on_wheel performs.
-        const isVertical = absY > absX;
-        const rawDelta = isVertical ? event.deltaY : event.deltaX;
-        const effDelta = isVertical && asb.isRTLScrollbox
-          ? -rawDelta
-          : rawDelta;
-        const axis: StreamAxis = isVertical ? "v" : "h";
-        const dir = effDelta < 0 ? -1 : 1;
-        const mag = Math.abs(effDelta);
-
-        const gap = event.timeStamp - lastTs;
-        lastTs = event.timeStamp;
-
-        // Fresh stream, or observe-only (a blind event reaches stock and
-        // becomes the stream's reality — track it, never drop it).
-        if (streamAxis === null || gap > STREAM_GAP_MS || !enforcing) {
-          streamAxis = axis;
-          streamDir = dir;
-          runPeak = -1;
-          run = null;
-          return;
-        }
-
-        if (axis !== streamAxis) {
-          if (streamAxis === "h" && (mode & AXIS_RULE) !== 0) {
-            readout.axisDropped += 1;
-            drop(event, axis, mag);
-            return;
-          }
-          // Horizontal is the strip's native axis — a stream turning
-          // horizontal-dominant is the user, let it re-latch.
-          streamAxis = axis;
-          streamDir = dir;
-          runPeak = -1;
-          run = null;
-          return;
-        }
-
-        if (dir === streamDir) {
-          runPeak = -1;
-          run = null;
-          return;
-        }
-
-        if ((mode & REVERSAL_RULE) !== 0) {
-          if (runPeak >= 0 && mag > runPeak * PEAK_FACTOR + 1) {
-            streamDir = dir;
-            runPeak = -1;
-            run = null;
-            return;
-          }
-          runPeak = Math.max(runPeak, mag);
-          readout.reversalDropped += 1;
-          drop(event, axis, mag);
-          return;
-        }
-
-        streamDir = dir;
-        runPeak = -1;
-      } catch (e) {
-        if (!errorReported) {
-          errorReported = true;
-          console.error("[TabStripWheelGuard]", e);
-        }
-      }
-    };
-
-    tabContainer.addEventListener("wheel", onWheelCapture, {
-      capture: true,
-      passive: false,
+      },
     });
+
+    // The strip's arrows leak the same click-to-scroll loop as the stack bar's
+    // (the left arrow disables itself at the start, so the release is never
+    // seen); watchdog it here too.
+    const detachWatchdog = attachReleaseWatchdog(asb);
 
     // Recentre latch: intercept Firefox's resize-driven scroll-to-selected
     // (tabs.js handleResize -> _handleTabSelect -> ensureTabIsVisible).
@@ -267,45 +125,13 @@ export default class TabStripWheelGuard extends NoraComponentBase {
         asb.__borkRecentreWrapped = false;
       });
     }
-    // Fourth rule — release watchdog for the strip's own click-to-scroll loop.
-    // Holding a scroll arrow starts a loop that only ends via _stopScroll(),
-    // which stock calls from on_mouseup/on_mouseout — both of which bail out
-    // unless the event's originalTarget IS one of the arrow buttons. But the
-    // left arrow inherits `disabled=scrolledtostart`, so scrolling back to the
-    // start disables the button under the pointer, and a disabled XUL button
-    // dispatches no mouse events: the release is never seen and the loop runs
-    // every frame forever, starving the main thread that remote-content wheel
-    // input needs (the page stops scrolling, then jerks when it finally ends).
-    // Same defect and fix as the stack bar's (tab-stacks/stack-bar.tsx).
-    const strip = asb as typeof asb & {
-      _stopScroll?: () => void;
-      _scrollTimer?: { cancel?: () => void };
-      _arrowScrollAnim?: { stop?: () => void };
-      _mousedown?: boolean;
-    };
-    const onRelease = (): void => {
-      // A no-op unless a press is outstanding — _stopScroll() is exactly what
-      // stock runs on a normal release, so holding an arrow still scrolls.
-      strip._stopScroll?.();
-      strip._scrollTimer?.cancel?.();
-      strip._arrowScrollAnim?.stop?.();
-      strip._mousedown = false;
-    };
-    document.addEventListener("mouseup", onRelease, true);
-    document.addEventListener("pointercancel", onRelease, true);
-    document.addEventListener("blur", onRelease, true);
-
     this.logger.debug("attached");
 
     onCleanup(() => {
-      document.removeEventListener("mouseup", onRelease, true);
-      document.removeEventListener("pointercancel", onRelease, true);
-      document.removeEventListener("blur", onRelease, true);
-      onRelease();
-      tabContainer.removeEventListener("wheel", onWheelCapture, true);
-      delete (globalThis as Record<string, unknown> & typeof globalThis)[
-        READOUT_KEY
-      ];
+      detachGuard();
+      detachWatchdog();
+      // The readout is left in place: it is shared with the stack bar's guard,
+      // which may still be attached.
     });
   }
 }

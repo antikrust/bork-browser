@@ -336,6 +336,15 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
 - **No `ref={var}`** — the renderer doesn't export the `use` directive the Solid compiler
   emits for refs (`"use" is not exported by solid-xul`, build fails). Grab elements with
   `onMount(() => document.getElementById(...))` instead.
+**Every horizontal `<arrowscrollbox>` needs the wheel guard, not just the strip**
+- The momentum snap-back (`scrollback-error.md`) is stock toolkit behavior, so it applies to
+  **any** horizontal arrowscrollbox. The 2026-07-17 fix was scoped to `#tabbrowser-tabs`, which
+  left the stack bar (row 2, the same widget) snapping back — and row 2's `on_wheel` swallows the
+  event (`preventDefault` + `stopPropagation`) whenever it is `[overflowing]` **even when its
+  axis filter refuses to scroll**, so the page loses those wheels too. The rules now live in
+  `tab-strip-wheel-guard/attach.ts` and are attached to both boxes, sharing one
+  `globalThis.__borkWheelGuard` readout. **Any new arrowscrollbox must call `attachWheelGuard`.**
+
 **`<arrowscrollbox>` click-to-scroll leaks a per-frame loop — page scroll freezes**
 - Holding a scroll arrow starts a loop (repeating timer for line scroll, an rAF chain for
   smooth) and **`_arrowScrollAnim.sample()` re-requests a frame unconditionally**: the only exit

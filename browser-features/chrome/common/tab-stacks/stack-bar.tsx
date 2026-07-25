@@ -12,6 +12,11 @@ import {
   Show,
 } from "solid-js";
 import styles from "./styles.css?inline";
+import {
+  attachReleaseWatchdog,
+  attachWheelGuard,
+  getWheelGuardReadout,
+} from "#features-chrome/common/tab-strip-wheel-guard/attach.ts";
 
 export function StackStyleElement() {
   return <style>{styles}</style>;
@@ -356,40 +361,31 @@ export function StackBar() {
          * happens to stop the loop. Hence: stop it on any release/blur, and on
          * unmount.
          */
-        let asb:
-          | (Element & {
-            _stopScroll?: () => void;
-            _scrollTimer?: { cancel?: () => void };
-            _arrowScrollAnim?: { stop?: () => void };
-            _mousedown?: boolean;
-          })
-          | undefined;
-        const stopScrollLoop = (): void => {
-          if (!asb) return;
-          // Only ever a no-op when no press is outstanding: _stopScroll() is
-          // what stock itself calls on a normal release, so holding an arrow
-          // still scrolls — this just guarantees the release always lands.
-          asb._stopScroll?.();
-          asb._scrollTimer?.cancel?.();
-          asb._arrowScrollAnim?.stop?.();
-          asb._mousedown = false;
-        };
-        // Capture phase on the document: seen even when the release lands on a
-        // disabled button, another element, or nothing at all.
-        const onRelease = (): void => stopScrollLoop();
+        let asb: Element | undefined;
+        let detachGuard: (() => void) | undefined;
+        let detachWatchdog: (() => void) | undefined;
         onMount(() => {
-          asb = document.getElementById("bork-stack-bar") as typeof asb;
-          document.addEventListener("mouseup", onRelease, true);
-          document.addEventListener("pointercancel", onRelease, true);
-          document.addEventListener("blur", onRelease, true);
-          window.addEventListener("deactivate", onRelease, true);
+          asb = document.getElementById("bork-stack-bar") ?? undefined;
+          if (!asb) return;
+          // The snap-back rules, same as the tab strip's. This box is the same
+          // widget with the same stock on_wheel, so it had the same momentum
+          // snap-back — and because on_wheel swallows the event
+          // (preventDefault + stopPropagation) whenever the box is
+          // [overflowing], a tail arriving here is eaten instead of scrolling
+          // the page. Listening on the document (capture) guarantees we run
+          // before the box's own handler.
+          detachGuard = attachWheelGuard({
+            asb,
+            listenOn: document,
+            readout: getWheelGuardReadout(),
+          });
+          detachWatchdog = attachReleaseWatchdog(asb);
         });
         onCleanup(() => {
-          document.removeEventListener("mouseup", onRelease, true);
-          document.removeEventListener("pointercancel", onRelease, true);
-          document.removeEventListener("blur", onRelease, true);
-          window.removeEventListener("deactivate", onRelease, true);
-          stopScrollLoop();
+          detachGuard?.();
+          // Also stops the loop, covering an unmount mid-press: the release
+          // can never reach a detached box.
+          detachWatchdog?.();
         });
         return (
           // arrowscrollbox: one row forever — overflow scrolls behind arrow

@@ -1,4 +1,79 @@
-# scrollback-error — tab strip snaps back after scrolling away (FIXED — user-validated 2026-07-17)
+# scrollback-error — arrowscrollbox snaps back after scrolling away
+
+## 2026-07-25 — the guard was only ever on ROW 1; row 2 still had the bug
+
+User report: "I just saw it snap back, exactly like the snap back scroll bug —
+it appears we only blocked the tab snap back and something is still in there
+snapping stuff back", triggered by **row 2's left scroll arrow / scrolling
+along row 2**, after which **the page (shithub.space/n01/…) would not scroll
+down** until something unrelated happened, then it caught up with a jerk.
+
+Correct: the 2026-07-17 fix attached the wheel rules to `#tabbrowser-tabs`
+only. bork's stack bar (`#bork-stack-bar`, row 2) is **the same widget** — a
+horizontal `<arrowscrollbox>` running the same stock `on_wheel` — so it still
+had the original momentum snap-back. And row 2 makes it worse than row 1:
+`on_wheel` calls `preventDefault()` + `stopPropagation()` **unconditionally
+whenever the box is `[overflowing]`** (even when its own 2-event axis filter
+refuses to scroll), so a tail — or any wheel still being delivered to the bar —
+is **swallowed there instead of scrolling the page**. That is the "page won't
+scroll" half of the symptom.
+
+**Reproduced synthetically on row 2 and fixed** (the recipe from the 2026-07-17
+section, applied to `#bork-stack-bar`: horizontal pixel stream, then a
+vertical-dominant decaying tail with `WHEEL_EVENT_CAUSED_BY_MOMENTUM`):
+
+| | after drag | after tail | snap-back | axisDropped |
+|---|---|---|---|---|
+| guard OFF (`floorp.tabstrip.wheelguard=0`) | 462 | 514 | **+52px** | 0 |
+| guard ON (`=7`) | 513 | 513 | **0px** | **15** |
+
+**Fix**: the wheel rules moved to
+`tab-strip-wheel-guard/attach.ts` (`attachWheelGuard`) and are now applied to
+**every** horizontal arrowscrollbox — the strip (from its own feature) and the
+stack bar (from `tab-stacks/stack-bar.tsx` on mount). One shared readout at
+`globalThis.__borkWheelGuard` covers both. The strip-only recentre latch (rule
+4) stays in the strip feature.
+
+Also fixed alongside it (separate defect, same widget, proven live): the
+**click-to-scroll loop leak** — `_arrowScrollAnim.sample()` re-requests a frame
+unconditionally and the only exit is `_stopScroll()`, which stock calls from
+`on_mouseup`/`on_mouseout` — both of which bail out unless the event's
+`originalTarget` IS an arrow button. The **left arrow inherits
+`disabled=scrolledtostart`**, and a disabled XUL button dispatches no mouse
+events, so scrolling back to the start and releasing leaves the loop running
+every frame forever (measured ~60 samples/s against an already-at-start box),
+starving the main thread that remote-content wheel input needs. Both boxes now
+run `attachReleaseWatchdog` (document-capture mouseup/pointercancel/blur, plus
+on unmount).
+
+### Still open, if it recurs
+
+The residual mechanism is hypothesis 1/2 below, never closed: a **wheel
+transaction latched to row 2** could keep delivering page-destined wheels to the
+bar after the pointer has moved onto the page (`mousewheel.transaction.timeout`
+1500ms, `ignoremovedelay` 100ms — each new wheel refreshes the timeout). It is
+**not reproducible headlessly**: synthesized wheels never reach a remote content
+process, `sendNativeTouchpadPan` aborts this runtime, and non-e10s no longer
+exists, so cross-process wheel routing cannot be measured here — it needs a real
+trackpad session. **After a reproduction, read the shared readout before
+relaunching anything:**
+
+```bash
+deno task dev-tool eval 'JSON.stringify(globalThis.__borkWheelGuard)'
+```
+
+- `axisDropped`/`reversalDropped` > 0 → a guard engaged on that gesture (the
+  snap-back path); which box is in `lastRun`.
+- both 0 while the page still refuses to scroll → the guard never saw the
+  events, so they were retargeted/consumed elsewhere → the transaction
+  hypothesis, and the next lever to test is
+  `mousewheel.transaction.ignoremovedelay=0` (any pointer move ends the
+  transaction; deliberately NOT shipped blind, because a stationary-cursor
+  jitter grace period is what that pref exists for).
+
+---
+
+# (2026-07-17) tab strip snaps back after scrolling away — FIXED, user-validated
 
 Validation-session counters (real trackpad): reversalDropped 217,
 recentresSuppressed 28, axisDropped 7 — all three mechanisms live in one
