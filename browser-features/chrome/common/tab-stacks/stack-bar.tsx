@@ -12,11 +12,6 @@ import {
   Show,
 } from "solid-js";
 import styles from "./styles.css?inline";
-import {
-  attachReleaseWatchdog,
-  attachWheelGuard,
-  getWheelGuardReadout,
-} from "#features-chrome/common/tab-strip-wheel-guard/attach.ts";
 
 export function StackStyleElement() {
   return <style>{styles}</style>;
@@ -334,58 +329,34 @@ export function StackBar() {
   return (
     <Show when={activeGroup()}>
       {() => {
-        /**
-         * Watchdog for the bar's <arrowscrollbox> click-to-scroll loop.
-         *
-         * Holding a scroll arrow starts a loop — a repeating timer for line
-         * scroll, a requestAnimationFrame chain for smooth scroll — and
-         * `_arrowScrollAnim.sample()` re-requests a frame UNCONDITIONALLY: the
-         * only way it ever ends is an explicit `_stopScroll()`. Stock calls that
-         * from `on_mouseup`/`on_mouseout`, both of which bail out unless
-         * `event.originalTarget` is one of the two arrow buttons. Two ways that
-         * never happens:
-         *
-         *  - The left arrow inherits `disabled=scrolledtostart`, so scrolling
-         *    back to the start DISABLES the button under the pointer. A disabled
-         *    XUL button dispatches no mouse events, so the release is never seen
-         *    and there is no recovery path in stock code at all.
-         *  - The bar unmounts (the stack is deselected) mid-press, so the
-         *    release cannot reach the detached box. Its own guard is
-         *    `if (!document)`, never true — `document` is the global, not the
-         *    element's.
-         *
-         * Either way the loop then calls `scrollBy` on this scrollbox every
-         * frame forever. That per-frame parent-process work starves the main
-         * thread that remote-content wheel input depends on, so the PAGE stops
-         * scrolling and only flushes — with a visible jerk — once something else
-         * happens to stop the loop. Hence: stop it on any release/blur, and on
-         * unmount.
-         */
-        let asb: Element | undefined;
-        let detachGuard: (() => void) | undefined;
-        let detachWatchdog: (() => void) | undefined;
+        // The bar's <arrowscrollbox> runs a native click-to-scroll loop
+        // (repeating timer for line scroll, animation for smooth) while an
+        // arrow is held. Its ONLY self-cancel guard checks `!document` — which
+        // is never true once the element is detached, because `document` is the
+        // global, not the element's. So if this bar unmounts (the stack is
+        // deselected) while an arrow press is in flight, the loop keeps firing
+        // forever on the now-detached element and starves the main thread:
+        // page scrolling freezes until an unrelated blur (typing) or mouseup
+        // finally stops it — the "scroll snaps back with a jerk" bug. The
+        // press's own mouseup never reaches the detached box, so stop the loop
+        // ourselves when the bar goes away.
+        let asb:
+          | (Element & {
+            _stopScroll?: () => void;
+            _scrollTimer?: { cancel?: () => void };
+            _arrowScrollAnim?: { stop?: () => void };
+            _mousedown?: boolean;
+          })
+          | undefined;
         onMount(() => {
-          asb = document.getElementById("bork-stack-bar") ?? undefined;
-          if (!asb) return;
-          // The snap-back rules, same as the tab strip's. This box is the same
-          // widget with the same stock on_wheel, so it had the same momentum
-          // snap-back — and because on_wheel swallows the event
-          // (preventDefault + stopPropagation) whenever the box is
-          // [overflowing], a tail arriving here is eaten instead of scrolling
-          // the page. Listening on the document (capture) guarantees we run
-          // before the box's own handler.
-          detachGuard = attachWheelGuard({
-            asb,
-            listenOn: document,
-            readout: getWheelGuardReadout(),
-          });
-          detachWatchdog = attachReleaseWatchdog(asb);
+          asb = document.getElementById("bork-stack-bar") as typeof asb;
         });
         onCleanup(() => {
-          detachGuard?.();
-          // Also stops the loop, covering an unmount mid-press: the release
-          // can never reach a detached box.
-          detachWatchdog?.();
+          if (!asb) return;
+          asb._stopScroll?.();
+          asb._scrollTimer?.cancel?.();
+          asb._arrowScrollAnim?.stop?.();
+          asb._mousedown = false;
         });
         return (
           // arrowscrollbox: one row forever — overflow scrolls behind arrow

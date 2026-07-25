@@ -58,21 +58,34 @@ export default class LeanUrlbar extends NoraComponentBase {
     // varies with chrome height (one tab row vs the stack bar also showing).
     // Capture it into --bork-urlbar-rest-inset whenever the bar is at rest.
     if (urlbar) {
+      // Only write when the value actually changed: this ran on EVERY toolbox
+      // resize — and row 2 appearing, or its overflow arrows toggling, is a
+      // toolbox resize — so it forced a style flush and re-set the property
+      // dozens of times per gesture for no change.
+      let lastInset = "";
       const captureRestInset = () => {
         if (urlbar.hasAttribute("breakout-extend")) return;
         const top = getComputedStyle(urlbar).insetBlockStart;
-        if (top && top !== "auto") {
+        if (top && top !== "auto" && top !== lastInset) {
+          lastInset = top;
           urlbar.style.setProperty("--bork-urlbar-rest-inset", top);
         }
       };
       captureRestInset();
-      const toolbox = document.getElementById("navigator-toolbox");
-      if (toolbox && typeof ResizeObserver !== "undefined") {
-        new ResizeObserver(() => captureRestInset()).observe(toolbox);
-      }
       // Re-capture once the bar settles back to rest after each use.
-      urlbar.addEventListener("focusout", () => {
-        requestAnimationFrame(captureRestInset);
+      const onRestSettle = () => requestAnimationFrame(captureRestInset);
+      const toolbox = document.getElementById("navigator-toolbox");
+      let restObserver: ResizeObserver | null = null;
+      if (toolbox && typeof ResizeObserver !== "undefined") {
+        restObserver = new ResizeObserver(() => captureRestInset());
+        restObserver.observe(toolbox);
+      }
+      urlbar.addEventListener("focusout", onRestSettle);
+      // Both leaked: neither was in this feature's onCleanup, so every window
+      // added another observer on #navigator-toolbox that was never released.
+      onCleanup(() => {
+        restObserver?.disconnect();
+        urlbar.removeEventListener("focusout", onRestSettle);
       });
     }
 
