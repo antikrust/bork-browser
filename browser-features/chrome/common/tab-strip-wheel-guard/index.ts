@@ -267,9 +267,41 @@ export default class TabStripWheelGuard extends NoraComponentBase {
         asb.__borkRecentreWrapped = false;
       });
     }
+    // Fourth rule — release watchdog for the strip's own click-to-scroll loop.
+    // Holding a scroll arrow starts a loop that only ends via _stopScroll(),
+    // which stock calls from on_mouseup/on_mouseout — both of which bail out
+    // unless the event's originalTarget IS one of the arrow buttons. But the
+    // left arrow inherits `disabled=scrolledtostart`, so scrolling back to the
+    // start disables the button under the pointer, and a disabled XUL button
+    // dispatches no mouse events: the release is never seen and the loop runs
+    // every frame forever, starving the main thread that remote-content wheel
+    // input needs (the page stops scrolling, then jerks when it finally ends).
+    // Same defect and fix as the stack bar's (tab-stacks/stack-bar.tsx).
+    const strip = asb as typeof asb & {
+      _stopScroll?: () => void;
+      _scrollTimer?: { cancel?: () => void };
+      _arrowScrollAnim?: { stop?: () => void };
+      _mousedown?: boolean;
+    };
+    const onRelease = (): void => {
+      // A no-op unless a press is outstanding — _stopScroll() is exactly what
+      // stock runs on a normal release, so holding an arrow still scrolls.
+      strip._stopScroll?.();
+      strip._scrollTimer?.cancel?.();
+      strip._arrowScrollAnim?.stop?.();
+      strip._mousedown = false;
+    };
+    document.addEventListener("mouseup", onRelease, true);
+    document.addEventListener("pointercancel", onRelease, true);
+    document.addEventListener("blur", onRelease, true);
+
     this.logger.debug("attached");
 
     onCleanup(() => {
+      document.removeEventListener("mouseup", onRelease, true);
+      document.removeEventListener("pointercancel", onRelease, true);
+      document.removeEventListener("blur", onRelease, true);
+      onRelease();
       tabContainer.removeEventListener("wheel", onWheelCapture, true);
       delete (globalThis as Record<string, unknown> & typeof globalThis)[
         READOUT_KEY

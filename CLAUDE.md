@@ -336,13 +336,24 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
 - **No `ref={var}`** — the renderer doesn't export the `use` directive the Solid compiler
   emits for refs (`"use" is not exported by solid-xul`, build fails). Grab elements with
   `onMount(() => document.getElementById(...))` instead.
-- **Native XUL elements unmounted by `<Show>`/`<For>` keep running their own timers/animations.**
-  The stack bar is an `<arrowscrollbox>` inside `<Show when={activeGroup()}>`; its native
-  click-to-scroll loop self-cancels only on `if (!document)` — never true for a detached node
-  (`document` is the global) — so unmounting mid-press left a runaway scroll animation starving
-  the main thread and **freezing page scroll until an unrelated blur/mouseup** (the "scroll snaps
-  back with a jerk" bug). `onCleanup` must stop the native machinery (`_stopScroll()` + cancel
-  the timer/anim) when such an element unmounts (`tab-stacks/stack-bar.tsx`).
+**`<arrowscrollbox>` click-to-scroll leaks a per-frame loop — page scroll freezes**
+- Holding a scroll arrow starts a loop (repeating timer for line scroll, an rAF chain for
+  smooth) and **`_arrowScrollAnim.sample()` re-requests a frame unconditionally**: the only exit
+  is an explicit `_stopScroll()`. Stock calls that from `on_mouseup`/`on_mouseout`, which **bail
+  out unless `event.originalTarget` IS an arrow button** — so it is lost whenever:
+  - the **left arrow disables itself** (`"#scrollbutton-up": "disabled=scrolledtostart"`) as the
+    box reaches its start: a disabled XUL button dispatches no mouse events, so the release is
+    never seen and stock has **no recovery path at all**; or
+  - the box **unmounts mid-press** (`<Show>`/`<For>`) — its own guard is `if (!document)`, never
+    true for a detached node (`document` is the global, not the element's).
+- The loop then calls `scrollBy` every frame forever (measured ~60/s, scrolling against a wall).
+  That parent-process work starves the main thread remote-content wheel input needs, so **the
+  page stops scrolling and only flushes with a visible jerk** when something else stops the loop
+  — this is the "scroll on row 2 then the page won't scroll" bug, and typing appeared to fix it.
+- Both bork arrowscrollboxes therefore run a release watchdog (document-capture
+  `mouseup`/`pointercancel`/`blur` → `_stopScroll()` + cancel timer/anim, plus on unmount):
+  `tab-stacks/stack-bar.tsx` and `tab-strip-wheel-guard/index.ts`. **Do not remove**; holding an
+  arrow still scrolls because `_stopScroll()` is exactly what stock runs on a normal release.
 
 **Zen mode**
 - Retracts by **self-sizing transforms** (`translateY(±100%)`) with the toolbox/statusbar out of
