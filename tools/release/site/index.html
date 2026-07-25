@@ -92,12 +92,14 @@ a:hover { color: var(--paper); }
   border-radius: 50%; background: var(--amber); margin-left: 5px;
   flex: none;
 }
-/* Sized in em so it tracks the clamped h1 font-size. The crop is tight to the
-   glyphs, whose tallest is the 'b' ascender, so ~0.72em matches the cap height
-   of the "browser" text beside it rather than overshooting it. */
+/* Sized in em so it tracks the clamped h1 font-size. It stands alone now, so it
+   is sized to carry the headline itself rather than to match the cap height of a
+   word beside it. The drop-shadow replaces the text-shadow h1 used to apply for
+   legibility over the hero photo — text-shadow does nothing to an image. */
 .h1-mark {
-  height: .72em; width: auto;
-  display: inline-block; vertical-align: baseline;
+  height: 1em; width: auto;
+  display: block;
+  filter: drop-shadow(0 2px 40px rgba(0, 0, 0, .6));
 }
 .bar nav { margin-left: auto; display: flex; gap: clamp(14px, 3vw, 28px); }
 .bar nav a {
@@ -141,13 +143,13 @@ a:hover { color: var(--paper); }
 }
 
 .hero-copy { position: relative; }
+/* The headline IS the wordmark now — no set text beside it, so the type
+   properties here only survive as the em basis .h1-mark scales from. */
 h1 {
   font-size: clamp(3rem, 10vw, 6.4rem);
   line-height: .92; letter-spacing: -.045em; font-weight: 700;
   color: var(--paper);
-  text-shadow: 0 2px 40px rgba(0,0,0,.6);
 }
-h1 span { color: var(--amber-lt); }
 .sub {
   color: var(--paper); font-size: clamp(1.05rem, 2.2vw, 1.35rem);
   margin-top: 16px; letter-spacing: -.01em;
@@ -454,7 +456,7 @@ footer { border-top: 1px solid var(--line);
   <div class="hero-scrim"></div>
 
   <div class="wrap hero-copy">
-    <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="706" height="236"> <span>browser</span></h1>
+    <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="706" height="236"></h1>
     <p class="sub">bork 1.1.0 based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
   </div>
