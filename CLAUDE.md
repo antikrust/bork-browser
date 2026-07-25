@@ -333,6 +333,16 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
 - `setProperty` throws on unknown value types. `null` and `undefined` now both clear the
   attribute, but a `null` prop used to take down the entire component render (one lazy tab's
   null `linkedPanel` blanked the whole stack bar). Coerce values into the renderer.
+- **No `ref={var}`** — the renderer doesn't export the `use` directive the Solid compiler
+  emits for refs (`"use" is not exported by solid-xul`, build fails). Grab elements with
+  `onMount(() => document.getElementById(...))` instead.
+- **Native XUL elements unmounted by `<Show>`/`<For>` keep running their own timers/animations.**
+  The stack bar is an `<arrowscrollbox>` inside `<Show when={activeGroup()}>`; its native
+  click-to-scroll loop self-cancels only on `if (!document)` — never true for a detached node
+  (`document` is the global) — so unmounting mid-press left a runaway scroll animation starving
+  the main thread and **freezing page scroll until an unrelated blur/mouseup** (the "scroll snaps
+  back with a jerk" bug). `onCleanup` must stop the native machinery (`_stopScroll()` + cancel
+  the timer/anim) when such an element unmounts (`tab-stacks/stack-bar.tsx`).
 
 **Zen mode**
 - Retracts by **self-sizing transforms** (`translateY(±100%)`) with the toolbox/statusbar out of
