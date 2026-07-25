@@ -574,17 +574,14 @@ export default class TabStacks extends NoraComponentBase {
       // Let the proxy for the new position render first.
       setTimeout(() => {
         try {
-          const bar = document?.getElementById("bork-stack-bar") as
-            | (XULElement & {
-              ensureElementIsVisible?: (el: Element, instant?: boolean) => void;
-            })
-            | null;
+          const bar = document?.getElementById("bork-stack-bar");
           const proxy = bar?.querySelector(
             `.bork-stack-tab[data-bork-drag-id="${
               tab.getAttribute("data-bork-tab-id")
             }"]`,
           );
-          if (bar && proxy) bar.ensureElementIsVisible?.(proxy, true);
+          // Plain scrollIntoView: the bar is an ordinary scroll container now.
+          proxy?.scrollIntoView({ block: "nearest", inline: "nearest" });
         } catch (e) {
           console.error("[tab-stacks] scroll-into-view failed:", e);
         }

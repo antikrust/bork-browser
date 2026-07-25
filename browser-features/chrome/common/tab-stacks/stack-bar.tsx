@@ -299,7 +299,13 @@ function StackTabProxy(props: { tab: StackTab }) {
   );
 }
 
-export function StackBar() {
+/** Pixels per frame while a scroll arrow is held down. */
+const ARROW_STEP_PX = 14;
+/** Only snap to a cell edge if one is already this close, so a release
+ * never yanks the row somewhere the user did not aim it. */
+const ARROW_SNAP_PX = 60;
+
+function StackRow() {
   const tabs = createMemo(() => {
     version();
     const group = activeGroup();
@@ -326,58 +332,160 @@ export function StackBar() {
     }
   };
 
+  // Arrows and end-of-travel state, driven by the same three attributes row 1
+  // uses ([overflowing] / [scrolledtostart] / [scrolledtoend]) so styles.css
+  // can mirror tabs.css rule for rule.
+  //
+  // Deliberately NOT an <arrowscrollbox>, which is what this row used to be.
+  // Two pieces of that widget's JS came with it and neither is wanted here:
+  //   * on_wheel ends with an unconditional stopPropagation() +
+  //     preventDefault() on EVERY wheel event while the box is [overflowing] —
+  //     whether or not it actually scrolled. That takes the event out of
+  //     Gecko's wheel path entirely (EventStateManager::PostHandleEvent bails
+  //     on eConsumeNoDefault), which is what left page scrolling dead for
+  //     ~25 seconds after a scroll along this row.
+  //   * _arrowScrollAnim.sample() reschedules itself with NO exit condition —
+  //     no isConnected, no _mousedown, no !document. Only an explicit
+  //     _stopScroll() ever ends it, so a lost mouseup or an unmount mid-press
+  //     left a rAF loop hammering scrollByPixels forever (already recorded in
+  //     CLAUDE.md as "freezes page scroll until an unrelated blur/mouseup").
+  // Native overflow scrolling replaces the first; the hold loop below has
+  // every exit condition the toolkit's lacks.
+  onMount(() => {
+    const row = document!.getElementById("bork-stack-bar");
+    const scroller = document!.getElementById("bork-stack-scroller");
+    const items = document!.getElementById("bork-stack-items");
+    const up = document!.getElementById("bork-stack-scroll-up");
+    const down = document!.getElementById("bork-stack-scroll-down");
+    if (!row || !scroller || !items || !up || !down) return;
+
+    // Write only on change: an unconditional write feeds the ResizeObserver
+    // its own output, which is how widget code ends up in a style loop.
+    const flag = (name: string, on: boolean) => {
+      if (on !== row.hasAttribute(name)) row.toggleAttribute(name, on);
+    };
+
+    const sync = () => {
+      const max = scroller.scrollWidth - scroller.clientWidth;
+      const overflowing = max > 1;
+      const pos = Math.abs(scroller.scrollLeft);
+      flag("overflowing", overflowing);
+      flag("scrolledtostart", !overflowing || pos <= 1);
+      flag("scrolledtoend", !overflowing || pos >= max - 1);
+    };
+
+    // The arrows collapse out of flow when they are not needed, so showing
+    // them narrows the scroller. That is bistable, not oscillating: hiding
+    // widens the row and a row that already fits still fits.
+    const overflowObserver = new ResizeObserver(sync);
+    overflowObserver.observe(scroller);
+    overflowObserver.observe(items);
+    scroller.addEventListener("scroll", sync);
+    sync();
+
+    let heldDir = 0;
+    let frame = 0;
+
+    const step = () => {
+      frame = 0;
+      if (!heldDir || !scroller.isConnected) return;
+      scroller.scrollLeft += heldDir * ARROW_STEP_PX;
+      frame = requestAnimationFrame(step);
+    };
+
+    // Release lands on a cell edge the way row 1's _stopScroll snaps by index,
+    // so a tap leaves whole cells rather than a sliced one.
+    const snapToCell = () => {
+      const edge = scroller.getBoundingClientRect().left;
+      let nearest = 0;
+      let distance = Infinity;
+      for (const cell of scroller.querySelectorAll(".bork-stack-tab")) {
+        const delta = cell.getBoundingClientRect().left - edge;
+        if (Math.abs(delta) < distance) {
+          distance = Math.abs(delta);
+          nearest = delta;
+        }
+      }
+      if (distance < ARROW_SNAP_PX) scroller.scrollLeft += nearest;
+    };
+
+    const stopHold = () => {
+      if (!heldDir) return;
+      heldDir = 0;
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      snapToCell();
+    };
+
+    const startHold = (dir: number) => (event: MouseEvent) => {
+      if (event.button !== 0) return;
+      // Keep focus where it was; the row is a pointer target, not a stop.
+      event.preventDefault();
+      heldDir = dir;
+      if (!frame) frame = requestAnimationFrame(step);
+    };
+
+    const holdLeft = startHold(-1);
+    const holdRight = startHold(1);
+    up.addEventListener("mousedown", holdLeft);
+    down.addEventListener("mousedown", holdRight);
+    up.addEventListener("mouseleave", stopHold);
+    down.addEventListener("mouseleave", stopHold);
+    document!.addEventListener("mouseup", stopHold);
+    window.addEventListener("blur", stopHold);
+
+    onCleanup(() => {
+      heldDir = 0;
+      if (frame) cancelAnimationFrame(frame);
+      overflowObserver.disconnect();
+      scroller.removeEventListener("scroll", sync);
+      up.removeEventListener("mousedown", holdLeft);
+      down.removeEventListener("mousedown", holdRight);
+      up.removeEventListener("mouseleave", stopHold);
+      down.removeEventListener("mouseleave", stopHold);
+      document!.removeEventListener("mouseup", stopHold);
+      window.removeEventListener("blur", stopHold);
+    });
+  });
+
+  return (
+    <xul:hbox id="bork-stack-bar" align="center">
+      <xul:toolbarbutton
+        id="bork-stack-scroll-up"
+        class="bork-stack-scrollbutton"
+        tooltiptext="Scroll tabs left"
+      />
+      {/* Native overflow scrolling — no script on the wheel at all. */}
+      <xul:hbox id="bork-stack-scroller">
+        {/* Sized by its content, so the ResizeObserver above sees tabs come
+            and go and labels change width. */}
+        <xul:hbox id="bork-stack-items" align="center">
+          <For each={tabs()}>{(tab) => <StackTabProxy tab={tab} />}</For>
+        </xul:hbox>
+      </xul:hbox>
+      <xul:toolbarbutton
+        id="bork-stack-scroll-down"
+        class="bork-stack-scrollbutton"
+        tooltiptext="Scroll tabs right"
+      />
+      {/* Outside the scroller and last in the row, which is where row 1 keeps
+          the "+" it actually shows: #new-tab-button is a sibling AFTER
+          #tabbrowser-tabs, so it sits past the right arrow and never scrolls
+          away. (Row 1 also has #tabs-newtab-button inside the scroller, but
+          that is the one it hides once the strip overflows.) */}
+      <xul:toolbarbutton
+        id="bork-stack-newtab"
+        tooltiptext="New tab in stack"
+        onClick={addTabToActiveGroup}
+      />
+    </xul:hbox>
+  );
+}
+
+export function StackBar() {
   return (
     <Show when={activeGroup()}>
-      {() => {
-        // The bar's <arrowscrollbox> runs a native click-to-scroll loop
-        // (repeating timer for line scroll, animation for smooth) while an
-        // arrow is held. Its ONLY self-cancel guard checks `!document` — which
-        // is never true once the element is detached, because `document` is the
-        // global, not the element's. So if this bar unmounts (the stack is
-        // deselected) while an arrow press is in flight, the loop keeps firing
-        // forever on the now-detached element and starves the main thread:
-        // page scrolling freezes until an unrelated blur (typing) or mouseup
-        // finally stops it — the "scroll snaps back with a jerk" bug. The
-        // press's own mouseup never reaches the detached box, so stop the loop
-        // ourselves when the bar goes away.
-        let asb:
-          | (Element & {
-            _stopScroll?: () => void;
-            _scrollTimer?: { cancel?: () => void };
-            _arrowScrollAnim?: { stop?: () => void };
-            _mousedown?: boolean;
-          })
-          | undefined;
-        onMount(() => {
-          asb = document.getElementById("bork-stack-bar") as typeof asb;
-        });
-        onCleanup(() => {
-          if (!asb) return;
-          asb._stopScroll?.();
-          asb._scrollTimer?.cancel?.();
-          asb._arrowScrollAnim?.stop?.();
-          asb._mousedown = false;
-        });
-        return (
-          // arrowscrollbox: one row forever — overflow scrolls behind arrow
-          // buttons exactly like the tab strip, instead of wrapping into a
-          // second row and growing the bar.
-          <xul:arrowscrollbox
-            id="bork-stack-bar"
-            orient="horizontal"
-            clicktoscroll="true"
-            align="center"
-          >
-            <For each={tabs()}>{(tab) => <StackTabProxy tab={tab} />}</For>
-            <xul:toolbarbutton
-              id="bork-stack-newtab"
-              label="+"
-              tooltiptext="New tab in stack"
-              onClick={addTabToActiveGroup}
-            />
-          </xul:arrowscrollbox>
-        );
-      }}
+      <StackRow />
     </Show>
   );
 }

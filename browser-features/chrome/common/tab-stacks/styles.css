@@ -413,7 +413,8 @@ tab-group[data-bork-stack] .tab-group-label[data-bork-count]::after {
 #bork-stack-bar {
   background: transparent;
   border-bottom: 1px solid var(--chrome-content-separator-color, rgba(0, 0, 0, 0.2));
-  padding: 0 8px;
+  /* No inline padding: like row 1, the cells start at the row's own edge and
+     the only thing before them is the (collapsed) left scroll arrow. */
   /* Match row 1 exactly: a 32px row whose cells are --bork-tab-height,
      leaving the same 1px above/below the top row's tabs have. */
   min-height: calc(var(--bork-tab-height, 30px) + 2px);
@@ -421,6 +422,29 @@ tab-group[data-bork-stack] .tab-group-label[data-bork-count]::after {
   position: relative;
   z-index: 1;
   animation: bork-stack-bar-in 0.1s ease-out;
+  /* No inline padding at either end: the row runs edge to edge, the same way
+     bork.css zeroes #nav-bar's so its panel toggles can sit over the panels. */
+}
+
+/* The scroller. Overflow is handled by the compositor, with no script on the
+   wheel — the whole point of not being an <arrowscrollbox>. No scrollbar; the
+   row is 32px and the arrows are the affordance. */
+#bork-stack-scroller {
+  flex: 1;
+  min-width: 0;
+  height: var(--bork-tab-height, 30px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+/* Content box: at least the scroller's width so cells shrink to their floor
+   before anything overflows, and free to grow past it after that. Its width
+   IS the content width, which is what the overflow ResizeObserver watches. */
+#bork-stack-items {
+  flex: 0 0 auto;
+  min-width: 100%;
+  height: 100%;
 }
 
 @keyframes bork-stack-bar-in {
@@ -434,26 +458,74 @@ tab-group[data-bork-stack] .tab-group-label[data-bork-count]::after {
   }
 }
 
-/* Same scroll-arrow containers as the tab strip. When the bar is NOT
-   overflowing the buttons stay exactly as tuned (transparent spacers —
-   the + button's alignment was measured against them). */
-#bork-stack-bar::part(scrollbutton-up),
-#bork-stack-bar::part(scrollbutton-down) {
-  padding-inline: 2px !important;
-  margin-inline: 0 !important;
-  /* No native mac button bezel/border — that white edge appeared once the
-     colour override (which had appearance:none) was removed. The strip's
-     arrows use appearance:none too, so this only matches them. */
-  border: none !important;
-  appearance: none !important;
+/* ===== Overflow scroll arrows ===== */
+/* Same glyph, padding, pill and hover as row 1's: toolkit arrowscrollbox.css
+   gives its buttons arrow-left.svg with the "down" one mirrored, and tabs.css
+   layers --arrowscrollbox-scrollicon-* onto them (radius --tab-border-radius,
+   hover/active --toolbarbutton-background-color-*, icon padding
+   --toolbarbutton-padding-inner 2px, button padding 0 4px). Those custom
+   properties only reach ::part(), so the values are inlined here.
+   Colour is left to theme variables so dark and light bork both come out
+   right on their own — an earlier override that forced fills got the tone
+   wrong in both. */
+.bork-stack-scrollbutton {
+  appearance: none;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  padding: 0 8px;
+  margin: 0;
+  height: var(--bork-tab-height, 30px);
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  list-style-image: url("chrome://global/skin/icons/arrow-left.svg");
+  -moz-context-properties: fill, fill-opacity;
+  fill: var(--toolbarbutton-icon-fill, currentColor);
+  fill-opacity: 1;
 }
 
-/* The overflow scroll arrows are deliberately NOT recoloured here. An earlier
-   override forced fills/backgrounds on them, which diverged them from the
-   strip's arrows and got the tone wrong in both themes (a solid --toolbar-bgcolor
-   pill, a grey glyph). Left to the toolkit default they inherit the active
-   theme's own values (currentColor and friends) and so conform to dark/light
-   bork on their own — the size rule above is the only tuning they need. */
+/* .toolbarbutton-icon IS the image, and xul.css sets `* { box-sizing:
+   border-box }` — so padding on it eats the glyph rather than surrounding it.
+   An earlier attempt at a pill here left 2px of visible arrow inside a 16px
+   box. Natural 16px glyph, zero padding; the fill and hover go on the BUTTON,
+   exactly as bork.css already does for row 1's "+". */
+.bork-stack-scrollbutton > .toolbarbutton-icon {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.bork-stack-scrollbutton > .toolbarbutton-text {
+  display: none;
+}
+
+#bork-stack-scroll-down > .toolbarbutton-icon {
+  transform: scaleX(-1);
+}
+
+.bork-stack-scrollbutton:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+/* Gone entirely when there is nothing to scroll — visibility: collapse, not
+   hidden, because :root carries -moz-box-collapse: legacy, so a collapsed
+   flex item takes no space at all. That is how row 1's arrows disappear and
+   why its first tab still starts flush at the row edge. */
+#bork-stack-bar:not([overflowing]) > .bork-stack-scrollbutton {
+  visibility: collapse;
+}
+
+/* Dimmed and dead at the ends of travel, like the inherited disabled= state
+   row 1 gets from scrolledtostart / scrolledtoend. */
+#bork-stack-bar[scrolledtostart] > #bork-stack-scroll-up,
+#bork-stack-bar[scrolledtoend] > #bork-stack-scroll-down {
+  fill-opacity: var(--toolbarbutton-opacity-disabled, 0.4);
+  pointer-events: none;
+}
 
 /* Proxies size like top-row tabs: start wide, shrink to the tab floor,
    and only then overflow into the scroll arrows. The explicit basis
@@ -631,35 +703,49 @@ tab-group[data-bork-stack] .tab-group-label[data-bork-count]::after {
   font-size: 12px;
 }
 
-/* Row-2 "+": square and full-height like the cells, no border/appearance
-   (the native toolbarbutton draws both). The label's own line box sat the
-   glyph ~2px low — line-height 1 + centring fixes that. */
+/* Row-2 "+": row 1's #new-tab-button glyph (plus.svg, not a "+" text label),
+   parked past the right arrow at the end of the row instead of scrolling with
+   the cells.
+   The 35px slot is the same construction bork.css uses for
+   #bork-panel-sidebar-button: the right panel is a 35px column flush with the
+   window edge, so a 35px slot flush with that edge centres this glyph on the
+   same centreline as the panel toggle directly below it. Matched by
+   construction, not by arithmetic — it survives the icon changing size.
+   Height is --bork-tab-height, NOT align-self: stretch: stretching painted a
+   32px hover over 30px cells, the mismatched hover the top row does not have. */
 #bork-stack-newtab {
-  appearance: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-  background-color: transparent !important;
-  padding: 2px 8px !important;
-  margin: 0 !important;
-  align-self: stretch !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  /* Unchanged from the original — only the glyph's vertical seat was off. */
-  font-size: 14px;
-  font-weight: 600;
+  appearance: none;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  width: 35px;
+  min-width: 35px;
+  padding: 0;
+  margin: 0;
+  height: var(--bork-tab-height, 30px);
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  list-style-image: url("chrome://global/skin/icons/plus.svg");
+  -moz-context-properties: fill;
+  fill: var(--toolbarbutton-icon-fill, currentColor);
+}
+
+#bork-stack-newtab > .toolbarbutton-icon {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+#bork-stack-newtab > .toolbarbutton-text {
+  display: none;
 }
 
 #bork-stack-newtab:hover {
-  background-color: rgba(255, 255, 255, 0.09) !important;
-}
-
-#bork-stack-newtab .toolbarbutton-text,
-#bork-stack-newtab label {
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 1 !important;
-  text-align: center !important;
+  background-color: rgba(255, 255, 255, 0.09);
 }
 
 /* ===== Hover-to-reload (stamped by the tab-refresh feature) ===== */
