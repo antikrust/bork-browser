@@ -85,9 +85,22 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             # Empty string -> produce ""
             formatted_value='""'
         else
-            # String value -> wrap in single pair of double quotes
-            # Escape any existing double quotes inside the string
-            safe_value=$(printf '%s' "$stripped_value" | sed 's/"/\\"/g')
+            # String value -> wrap in single pair of double quotes.
+            #
+            # Escape only quotes that are not ALREADY escaped. A plain
+            # `sed 's/"/\\"/g'` re-escaped the backslash of every `\"` the
+            # author wrote in override.ini, turning `\"` into `\\"`. That closes
+            # the JS string early, so
+            #   floorp.splitView.config = "{\"layout\":\"horizontal\"}"
+            # emitted pref("...", "{\\"layout\\"...") and Firefox rejected the
+            # line with `prefs parse error: unknown keyword`, silently dropping
+            # the default. Values carrying embedded JSON are precisely the ones
+            # that need escaping, so both splitView prefs never applied at all.
+            #
+            # perl for the negative lookbehind; sed has no equivalent. perl is
+            # already a build dependency (vendor/brand rewriting in
+            # build-bork-packages.sh).
+            safe_value=$(printf '%s' "$stripped_value" | perl -pe 's/(?<!\\)"/\\"/g')
             formatted_value="\"$safe_value\""
         fi
 
