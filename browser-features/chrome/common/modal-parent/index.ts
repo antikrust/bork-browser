@@ -26,6 +26,12 @@ export default class ModalParent extends NoraComponentBase {
 
   constructor() {
     super();
+    // Claim the singleton slot for the instance the feature loader builds.
+    // Without this, getInstance() never sees it and constructs a SECOND
+    // ModalParent, whose init() re-runs initializeModal() over DOM the first
+    // one already owns. Nothing called getInstance() until now, which is why
+    // it never surfaced.
+    ModalParent.instance ??= this;
   }
 
   init(): void {

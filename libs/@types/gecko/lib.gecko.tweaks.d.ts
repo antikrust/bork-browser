@@ -51,6 +51,15 @@ interface MozQueryInterface {
 interface nsICryptoHash extends nsISupports {
   // Accepts a TypedArray.
   update(aData: ArrayLike<number>, aLen: number): void;
+  // The generated xpcom defs omit everything but update(), which makes the
+  // interface unusable on its own — you cannot start a digest or read one out.
+  // Algorithm constants are on the interface object (Ci.nsICryptoHash.SHA256).
+  init(aAlgorithm: number): void;
+  initWithString(aAlgorithm: string): void;
+  // aCount = 0 reads the stream to the end; the common case for a whole file.
+  updateFromStream(aStream: nsIInputStream, aCount: number): void;
+  // ASCII=true returns base64, false returns raw bytes as a binary string.
+  finish(aASCII: boolean): string;
 }
 
 interface nsIDOMWindow extends Window {}
