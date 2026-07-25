@@ -160,7 +160,8 @@ Or the pieces directly — `tools/release/build-bork-packages.sh [--build] mac l
 - **mac** assembles from the local `_dist/bin/floorp/Floorp.app` (populate it first with a
   `feles-build stage` against the mac runtime), overlays `_dist/noraneko`, brands, ad-hoc signs, DMGs.
 - **linux/windows** `fetch_runtime` the published artifact (set `BORK_OWN_RUNTIME_TAG=<tag>`),
-  extract, overlay the 12 patches (`_dist/bin/applied_patches`) + `noraneko-devdir`, repack.
+  extract, overlay the patches (`_dist/bin/applied_patches` — a snapshot that can lag
+  `tools/patches/`, see Gotchas) + `noraneko-devdir`, repack.
 
 Outputs land in `dist/{macos,linux,windows}/`; `production-build.sh` rsyncs them to
 `$BORK_WEB_REMOTE` with `SHA256SUMS.txt`, live at `$BORK_SITE_URL`.
@@ -173,6 +174,27 @@ linux + windows over SSH to `BORK_BUILD_HOST`, windows via `run-win-build.sh`) a
 ---
 
 ## Gotchas (each cost real time)
+
+- **`--install` is silently skipped while Bork is running.** `production-build.sh` refuses to
+  overwrite a running `~/Applications/Bork.app` and only says so on one line near the end
+  (`--install skipped: Bork is running from …`). Twice in one session this meant the user was
+  testing a build that had never been installed — including once when the whole point was to
+  confirm a fix. **Verify the install, do not assume it:** check the app's mtime, and prove the
+  change is in `Contents/Resources/noraneko-devdir/content/assets/js/*.js` by grepping for
+  something only the new code produces. To install after quitting, no rebuild is needed:
+  `rm -rf ~/Applications/Bork.app && cp -R build/release/mac/Bork.app ~/Applications/Bork.app`.
+- **Packaging dies with "Ignoring previously applied (or reversed) patch"** when bork's patches
+  have been written *into* the runtime source checkout through `_dist/bin`'s symlink farm. Only
+  the loose-chrome files are affected (the rest live inside jars). Recover by restoring them in
+  `bork-build/bork-runtime-mac`, which is a git checkout — `git status --porcelain` lists exactly
+  the damaged files, and the packaging step reapplies the patches to its own dereferenced copy,
+  so nothing is lost. `build-bork-packages.sh` copies with `cp -RL` to stop it recurring.
+- **`_dist/bin/applied_patches` is a snapshot, not the source of truth, and it can go stale.**
+  The mac/linux/windows lanes overlay *that directory*, while `tools/patches/` is what the
+  project actually carries. As of 2026-07-25 the snapshot holds 12 of 14 patches — both
+  `chrome-toolkit-content-global-translations-about-translations*.patch` are missing, so shipped
+  packages get stock `about:translations`, not bork's. `feles-build misc patch apply` rebuilds
+  the snapshot (it reverses the old set first, so run it on a clean `_dist/bin`).
 
 - **gkrust OOM.** The `gkrust` LTO step needs ~17 GB for one rustc process. Linux: add a 32 GB
   swapfile (`fallocate`/`mkswap`/`swapon` on the build disk). Windows: the pagefile wouldn't grow,

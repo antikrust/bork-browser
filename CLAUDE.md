@@ -284,6 +284,13 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
 **Firefox chrome (FF152)**
 - `.toolbarbutton-icon` **is** the image element, not a container around it —
   sizing it scales the glyph. Put fills/hovers on the button instead.
+  `xul.css` also opens with `* { box-sizing: border-box }`, so **padding on the
+  icon eats the glyph instead of surrounding it**: 16px square + `padding-block:
+  7px` (an attempt to fake a 30px pill) left 2px of visible arrow inside a 16px
+  box — the arrows rendered as empty squares. Size and paint the *button*; leave
+  the icon at its natural 16px with zero padding. `bork.css` already does exactly
+  this for both `+` buttons and says so in its own comment — copy that recipe
+  rather than reinventing a pill.
 - `#urlbar-container` defines `--urlbar-container-height` **on itself** (a calc
   from the urlbar's height + padding), so a `:root` value never reaches it; an
   element's own custom-property definition beats anything inherited. Its
@@ -302,14 +309,38 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   where the patches already carry the attribute just gives you two sources of truth.
 - `tab-group` is **`display: contents`** — it has no box. Sizing rules on it do nothing; its
   children participate directly in the strip's flexbox. Style `.tab-group-label-container`.
-- `visibility: collapse` **only removes width in XUL box layout**. The tab strip is flexbox,
-  where collapsed tabs still claim their flex size. Zero every box metric to hide a tab.
+- `visibility: collapse` **does** remove the box in chrome, flexbox included: `xul.css` sets
+  `-moz-box-collapse: legacy` on `:root` (repeated in `global-shared.css`, and nothing anywhere
+  sets `flex`), which selects the legacy XUL behaviour rather than the CSS-standard "keep the
+  strut". Verified on row 2's scroll arrows — they collapse to zero and the first cell sits
+  flush at the row edge, which is how row 1's arrows behave too. **Tabs were the exception that
+  produced the older note here** ("collapsed tabs still claim their flex size"); whatever is
+  tab-specific about that, *zero every box metric to hide a tab* is the rule that was actually
+  validated there, so keep doing that for tabs and use collapse freely elsewhere.
 - **Lazy tabs have `linkedPanel === null`** (background-created and session-restored tabs).
   Anything reading it must tolerate null.
 - macOS panels animate open via **native window transforms**; repositioning or fading a panel
   mid-animation raced that machinery and left windows composited as an empty frame (the
   "vanishing window" hunt). `widget.macos.window-transforms.disabled = true` switches it off —
   do not remove without re-testing. Position panels on `popupshowing`, before first paint.
+
+**Toolkit `<arrowscrollbox>` — do not use it for chrome we own**
+- Its `on_wheel` ends with an **unconditional** `event.stopPropagation()` +
+  `event.preventDefault()` whenever the box is `[overflowing]` — the two calls sit *outside*
+  `if (doScroll)`, so events it deliberately ignored are consumed too (the `_prevMouseScrolls`
+  filter drops everything until two events agree on an axis, which on a trackpad is constant).
+  `EventStateManager::PostHandleEvent` then bails out of the **entire** wheel default-action
+  path on `eConsumeNoDefault`. Scrolling along row 2 froze *page* scrolling for ~25 seconds at
+  a time because of this.
+- Plus `_arrowScrollAnim.sample()`, whose rAF loop has no exit condition (see `@nora/solid-xul`
+  below).
+- Row 2 is a plain `<hbox>` with `overflow-x: auto` flanked by two `toolbarbutton`s as of
+  `312901f058`, and looks and behaves like row 1 with none of the widget's JS.
+  **Do not "restore" the arrowscrollbox.** Full write-up: `scrollback-error.md`.
+- **Diagnostic worth keeping: if typing clears a scrolling problem, it is the wheel
+  transaction, not a janked main thread.** `WheelTransaction::OnEvent` ends the transaction on
+  `eKeyDown`/`eKeyPress`/`eMouseDown` (`dom/events/WheelHandlingHelper.cpp`), and a janked main
+  thread would not have let you type in the first place.
 
 **XUL layout attributes beat CSS — always**
 - `pack`, `align`, `flex`, `orient` on XUL boxes are mapped by Gecko as
@@ -325,6 +356,13 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   Anything needing the compact height must read **`--bork-tab-height`** (theme-owned,
   `skin/bork/css/bork.css`) instead. It also inflates the tab close button and sizes strip and
   tab paint boxes to 32px.
+- **The 32px leaks through other variables**, so "I never touched `--tab-min-height`" is not a
+  defence: `toolbarbuttons.css` computes `--toolbarbutton-padding-inner` as
+  `calc((var(--tab-min-height) - 16px) / 2)`, i.e. 8px, and `tabs.css` feeds that into
+  `--arrowscrollbox-scrollicon-padding`. Inheriting it gave row 2's arrows a 32px paint box
+  beside 30px cells — a 2px mismatch that reads as "not quite the same height as the tabs".
+  Inside the strip, derive every size from `--bork-tab-height`, never from a toolbarbutton
+  variable.
 - When a rule refuses to apply, check for a stronger cascade origin before escalating
   specificity: `display` on the tab close button could not be beaten, but `opacity` was
   untouched — and made a better crossfade anyway.
@@ -337,12 +375,14 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   emits for refs (`"use" is not exported by solid-xul`, build fails). Grab elements with
   `onMount(() => document.getElementById(...))` instead.
 - **Native XUL elements unmounted by `<Show>`/`<For>` keep running their own timers/animations.**
-  The stack bar is an `<arrowscrollbox>` inside `<Show when={activeGroup()}>`; its native
-  click-to-scroll loop self-cancels only on `if (!document)` — never true for a detached node
-  (`document` is the global) — so unmounting mid-press left a runaway scroll animation starving
-  the main thread and **freezing page scroll until an unrelated blur/mouseup** (the "scroll snaps
-  back with a jerk" bug). `onCleanup` must stop the native machinery (`_stopScroll()` + cancel
-  the timer/anim) when such an element unmounts (`tab-stacks/stack-bar.tsx`).
+  `<arrowscrollbox>`'s click-to-scroll loop (`_arrowScrollAnim.sample`) reschedules itself with
+  **no exit condition at all** — no `isConnected`, no `_mousedown`, not even the `!document`
+  check its sibling timer callback has — so only an explicit `_stopScroll()` ends it, and
+  unmounting mid-press left it starving the main thread and **freezing page scroll until an
+  unrelated blur/mouseup**. The stack bar used to be such an element and no longer is (see the
+  arrowscrollbox landmine above), so treat this as the rule for the *next* native widget you
+  mount under `<Show>`: `onCleanup` must stop its machinery, and if the widget's own loop has no
+  exit condition, prefer not using the widget.
 
 **Zen mode**
 - Retracts by **self-sizing transforms** (`translateY(±100%)`) with the toolbox/statusbar out of

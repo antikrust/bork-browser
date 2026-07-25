@@ -1,4 +1,92 @@
-# scrollback-error — tab strip snaps back after scrolling away (FIXED — user-validated 2026-07-17)
+# scrollback-error — two separate tab-strip scroll bugs, both FIXED
+
+**Two different bugs live in this file. Check which symptom you have:**
+
+| Symptom | Row | Status |
+| --- | --- | --- |
+| The strip **scrolls itself back** toward where it was after you scroll away | row 1 | fixed 2026-07-17, [below](#2026-07-17-resolution) |
+| Scrolling row 2 kills **page** scrolling for ~25s; recovers with a jerk, or instantly if you type | row 2 | fixed 2026-07-25, next section |
+
+---
+
+# Row 2 froze page scrolling (FIXED — user-validated 2026-07-25)
+
+**Cause: the `<arrowscrollbox>` itself.** Row 2 became one in `eff859f474`
+(2026-07-16), which is the earliest point the bug can exist; the user confirmed
+it was present in builds from 07-21 and 07-23. Replacing it with a plain
+`<hbox>` (`312901f058`) ended it — user-confirmed, and the decisive test, since
+building the 07-16 commit against today's runtime is impossible (that feature
+layer ships the PWA/SSB component the runtime dropped on 07-23).
+
+Eliminated by the user before that: Dark Bork, `floorp.tabstrip.wheelguard`
+(that pref only guards row 1), and any runtime change (the runtime binary had
+not moved since 07-23 17:28).
+
+**What in the widget does it.** Both of these are stock toolkit code, read out
+of `toolkit/content/widgets/arrowscrollbox.js` in the runtime checkout:
+
+1. `on_wheel` ends with `event.stopPropagation(); event.preventDefault();`
+   **outside** the `if (doScroll)` block, so *every* wheel event is consumed
+   while the box is `[overflowing]` — including the ones it chose not to act on.
+   It ignores a lot of them: the `_prevMouseScrolls` filter (length 2) drops
+   events until two in a row agree on an axis, which on a trackpad is constant.
+   The consequence is in `EventStateManager::PostHandleEvent`:
+
+   ```
+   case eWheel:
+     if (*aStatus == nsEventStatus_eConsumeNoDefault) {
+       ScrollbarsForWheel::Inactivate(); break;
+     }
+   ```
+
+   — `preventDefault` skips the **whole** wheel default-action path: scroll
+   target computation, the wheel transaction, the APZ handoff.
+
+2. `_arrowScrollAnim.sample()` reschedules itself every frame with **no exit
+   condition at all** — no `isConnected`, no `_mousedown`, not even the
+   `!document` check its sibling timer callback has. Only an explicit
+   `_stopScroll()` ends it, and that needs a mouseup landing inside the widget's
+   own shadow root. `_onButtonMouseOver → _continueScroll → _startScroll`
+   restarts it from a plain hover once `_mousedown` has latched. Already on
+   record in `CLAUDE.md` as freezing page scroll until an unrelated blur/mouseup.
+
+**Which of the two delivered the user's 25 seconds is not established.** Proving
+it needs instrumentation on a build that still has the bug, and the bug was not
+reintroduced to find out. The replacement avoids both.
+
+**Why typing cleared it.** `WheelTransaction::OnEvent`
+(`dom/events/WheelHandlingHelper.cpp`) ends the transaction on
+`eKeyDown`/`eKeyPress`/`eMouseDown`. That is the only path in the engine where a
+keystroke fixes a scrolling problem — and it also rules out a janked main
+thread, which would not have let the user type at all. **Keep this as a
+diagnostic.**
+
+**The replacement** (`tab-stacks/stack-bar.tsx` + `styles.css`), structured to
+mirror row 1's `[scroller][arrow][+]`:
+
+- plain `<hbox id="bork-stack-scroller">` with `overflow-x: auto` — no wheel
+  handler of any kind, the compositor scrolls it
+- two `toolbarbutton`s using row 1's `arrow-left.svg` with the right one
+  mirrored, driven by the same `[overflowing]` / `[scrolledtostart]` /
+  `[scrolledtoend]` attributes `tabs.css` keys off
+- hold-to-scroll with every exit the toolkit's lacks — released, pointer left
+  the button, window blurred, element detached, component unmounted — plus
+  `onCleanup` cancelling the frame; release snaps to a cell edge the way
+  `_stopScroll` snaps by index
+- one `ResizeObserver` over the scroller and its content box, writing attributes
+  **only on change** so it cannot feed itself. Arrow visibility is bistable, not
+  oscillating: showing them narrows the scroller, hiding widens it, and a row
+  that already fits still fits.
+
+**Dead ends from this hunt — do not redo:** two "fixes" claimed without a
+reproduction (reverted, `ce904bb61a` and `992853a228`); a global
+`mousewheel.transaction.timeout` pref (the freeze outlasts 1500ms by far, and
+the transaction is never even created for row 2 — `preventDefault` means
+`WillHandleDefaultAction` is not reached).
+
+---
+
+# Row 1 snapped back after scrolling away (FIXED — user-validated 2026-07-17)
 
 Validation-session counters (real trackpad): reversalDropped 217,
 recentresSuppressed 28, axisDropped 7 — all three mechanisms live in one
@@ -101,9 +189,9 @@ synthetic events.
 - Machine: macOS (Darwin 24.5), trackpad (momentum scrolling).
 - Build: bork (Floorp 12 fork), FF152 runtime, stage mode
   (`deno task feles-build stage --marionette`).
-- Row 2 (bork's stack bar) is NOT involved — user confirmed the jump is the
-  top row; probes confirmed no programmatic scrolls of the top strip from
-  bork code.
+- Row 2 (bork's stack bar) is NOT involved **in this bug** — user confirmed the
+  jump is the top row; probes confirmed no programmatic scrolls of the top strip
+  from bork code. (Row 2 had its own, unrelated scroll bug — first section.)
 
 ## Hard evidence collected
 
