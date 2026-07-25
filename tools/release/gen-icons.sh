@@ -24,6 +24,12 @@ SRC="browser-features/branding/logo.png"
 OUT="browser-features/branding"
 [ -f "$SRC" ] || { echo "missing $SRC" >&2; exit 1; }
 
+# The PRODUCT wordmark is its own artwork: "bork" in white on transparent.
+# logo.png is derp tech's mark (bork is by derp tech) and its wordmark reads
+# "derp", so it cannot stand in for the product name — the icons below still
+# come from it, because the face is the shared brand glyph.
+WORDMARK_SRC="browser-features/branding/logo-wordmark.png"
+
 # Face crop, measured against the 1024x1024 source: the disc on the 'p' bowl.
 # Tight to the disc on purpose. A wider box reaches into the arc of the bowl's
 # own outline, which nothing shows at 16px and everything shows once the same
@@ -65,13 +71,28 @@ for size in 16 32 48 64 128; do
     --out "$OUT/icon${size}.png" >/dev/null
 done
 
-# A tightly-cropped wordmark. The source centres the mark in a square with a
-# lot of transparent padding — measured, it fills only 37% of the canvas
-# vertically — so anywhere the logo is placed by width (page headers, the help
-# topbar) the square version renders it small inside a mostly empty box.
-# Margin is generous enough to keep the soft shadow.
+# A tightly-cropped wordmark, from the product artwork. The source centres the
+# lettering in a 1024 square with a lot of transparent padding (measured: the
+# glyphs occupy x187..868, y406..617), so anywhere the logo is placed by width
+# with height:auto — the welcome page, the Hub header — the square version
+# renders it small inside a mostly empty box. Crop to the measured bounding box
+# plus a 12px margin.
+#
+# The art is WHITE on transparent, so every consumer must sit it on a dark
+# surface or invert it: those pages support the light daisyUI theme too, where
+# white-on-light would be invisible (see .bork-wordmark in pages-welcome).
 echo "building cropped wordmark"
-sips -c 429 795 --cropOffset 295 119 "$SRC" --out "$OUT/wordmark.png" >/dev/null
+[ -f "$WORDMARK_SRC" ] || { echo "missing $WORDMARK_SRC" >&2; exit 1; }
+sips -c 236 706 --cropOffset 394 175 "$WORDMARK_SRC" --out "$OUT/wordmark.png" >/dev/null
+
+# Every consumer keeps its own copy of the wordmark, and they were all hand
+# copies — which is how they silently kept the old artwork after the source
+# changed. Push the freshly cropped one to each so they cannot drift again:
+#   - the welcome/Hub pages import it as a bundled asset
+#   - the help pages load it as .brand-mark in their topbar
+WELCOME_ASSETS="browser-features/pages-welcome/src/assets"
+[ -d "$WELCOME_ASSETS" ] && cp "$OUT/wordmark.png" "$WELCOME_ASSETS/wordmark.png"
+[ -d "browser-features/help" ] && cp "$OUT/wordmark.png" "browser-features/help/logo.png"
 
 # about-logo is a logo MARK, not a wordmark: Firefox uses it wherever a small
 # brand glyph sits beside its own text — the Settings sidebar renders it at

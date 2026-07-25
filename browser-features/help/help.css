@@ -43,8 +43,15 @@ body {
   color: var(--text-strong); text-decoration: none;
 }
 /* Tightly-cropped wordmark (see gen-icons.sh): sizing the square source by
-   width rendered the mark small inside mostly-empty padding. */
-.brand-mark { width: 132px; height: auto; flex: 0 0 auto; }
+   width rendered the mark small inside mostly-empty padding.
+   The artwork is WHITE on transparent, and these pages are light by default
+   (--bg is light-dark(#ffffff, …)), where white lettering is invisible. Invert
+   it for light and leave it alone in dark; the mark is flat monochrome, so the
+   inverse is clean black and the transparency is untouched. */
+.brand-mark { width: 132px; height: auto; flex: 0 0 auto; filter: invert(1); }
+@media (prefers-color-scheme: dark) {
+  .brand-mark { filter: none; }
+}
 
 .menu-toggle {
   display: none;

@@ -25,7 +25,7 @@ export default function WelcomePage() {
                         <img
                             src={borkWordmark}
                             alt="bork"
-                            className="w-72 h-auto mx-auto mb-6"
+                            className="bork-wordmark w-72 h-auto mx-auto mb-6"
                         />
                         <h1 className="text-5xl font-bold mb-6">{t('welcomePage.welcome')}</h1>
 
