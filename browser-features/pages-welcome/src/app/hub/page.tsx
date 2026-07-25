@@ -25,7 +25,7 @@ export default function HubIntroPage() {
                   <img
                     src={borkWordmark}
                     alt="Bork Hub"
-                    className="bork-wordmark w-52 lg:w-64 h-auto mx-auto"
+                    className="bork-wordmark bork-wordmark-themed w-52 lg:w-64 h-auto mx-auto"
                   />
                 </div>
                 <h2 className="text-2xl lg:text-3xl font-bold mb-2">

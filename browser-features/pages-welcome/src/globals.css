@@ -3,13 +3,20 @@
   themes: light --default, dark --prefersdark;
 }
 
-/* The bork wordmark artwork is WHITE on transparent, which is invisible on the
-   light theme's surfaces. Invert it there — the mark is flat monochrome, so
-   inverting gives clean black lettering and leaves the transparency alone.
+/* The bork wordmark artwork is WHITE on transparent, so whether it needs
+   inverting depends on the SURFACE it sits on, not on the theme alone:
+   - .bork-wordmark        plain white, for surfaces that are always dark. The
+                           first welcome step draws it over the hero art, which
+                           stays dark green/black in both themes — inverting
+                           there would put black lettering on a dark background.
+   - .bork-wordmark-themed inverts on the light theme, for surfaces that follow
+                           it (the Hub sits inside card bg-base-200, which goes
+                           light). The mark is flat monochrome, so the inverse is
+                           clean black and the transparency is untouched.
    Keyed on data-theme, the same attribute daisyUI and theme-provider set, so it
    cannot disagree with the theme actually applied (Tailwind's `dark:` variant
-   would follow prefers-color-scheme instead, which the in-page theme switcher
-   can contradict). */
-[data-theme="light"] .bork-wordmark {
+   follows prefers-color-scheme instead, which the in-page switcher can
+   contradict). */
+[data-theme="light"] .bork-wordmark-themed {
   filter: invert(1);
 }
