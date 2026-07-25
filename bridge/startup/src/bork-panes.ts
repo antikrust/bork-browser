@@ -13,7 +13,6 @@
 import { registerWorkspacesPane } from "./panes/workspaces.ts";
 import { registerDesignPane } from "./panes/design.ts";
 import { registerSidebarPane } from "./panes/sidebar.ts";
-import { registerGesturePane } from "./panes/gesture.ts";
 import { registerShortcutsPane } from "./panes/shortcuts.ts";
 import { applyBorkReskin } from "./panes/reskin.ts";
 
@@ -23,6 +22,5 @@ export function setupBorkPanes(): void {
   registerDesignPane();
   registerWorkspacesPane();
   registerSidebarPane();
-  registerGesturePane();
   registerShortcutsPane();
 }

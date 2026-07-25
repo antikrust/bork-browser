@@ -112,7 +112,7 @@ type FloorpHubWarningElements = {
 
 const defaultWarningTexts: FloorpHubWarningTexts = {
   message:
-    "Bork-specific settings such as the panel sidebar, Workspaces, and mouse gestures are managed in Bork Hub.",
+    "Bork-specific settings such as the panel sidebar, Workspaces, and keyboard shortcuts are managed in Bork Hub.",
   buttonLabel: "Open Bork Hub",
 };
 
