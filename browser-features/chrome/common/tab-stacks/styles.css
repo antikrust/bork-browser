@@ -441,27 +441,19 @@ tab-group[data-bork-stack] .tab-group-label[data-bork-count]::after {
 #bork-stack-bar::part(scrollbutton-down) {
   padding-inline: 2px !important;
   margin-inline: 0 !important;
-  border-inline: none !important;
+  /* No native mac button bezel/border — that white edge appeared once the
+     colour override (which had appearance:none) was removed. The strip's
+     arrows use appearance:none too, so this only matches them. */
+  border: none !important;
+  appearance: none !important;
 }
 
-/* Overflowing only: stock tabs.css gives the strip's arrows this
-   treatment keyed to #tabbrowser-arrowscrollbox, so this bar's id gets
-   none of it and fell back to bare toolkit chevrons with clipped pills
-   flush against the glyph. Scoped to [overflowing] so the tuned
-   not-overflowing spacing above is untouched. */
-#bork-stack-bar[overflowing]::part(scrollbutton-up),
-#bork-stack-bar[overflowing]::part(scrollbutton-down) {
-  --arrowscrollbox-scrollicon-border-radius: var(--tab-border-radius);
-  --arrowscrollbox-scrollicon-hover-background-color: var(
-    --toolbarbutton-background-color-hover
-  );
-  --arrowscrollbox-scrollicon-active-background-color: var(
-    --toolbarbutton-background-color-active
-  );
-  appearance: none;
-  fill: var(--toolbarbutton-icon-fill);
-  background-color: var(--toolbar-bgcolor);
-}
+/* The overflow scroll arrows are deliberately NOT recoloured here. An earlier
+   override forced fills/backgrounds on them, which diverged them from the
+   strip's arrows and got the tone wrong in both themes (a solid --toolbar-bgcolor
+   pill, a grey glyph). Left to the toolkit default they inherit the active
+   theme's own values (currentColor and friends) and so conform to dark/light
+   bork on their own — the size rule above is the only tuning they need. */
 
 /* Proxies size like top-row tabs: start wide, shrink to the tab floor,
    and only then overflow into the scroll arrows. The explicit basis
