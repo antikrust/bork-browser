@@ -234,12 +234,61 @@ export function lookupMetalinkHttp(url: string): MetalinkHttpInfo | undefined {
 }
 
 const PREF_ENABLED = "bork.metalink.http.enabled";
+const PREF_METALINK_ENABLED = "bork.metalink.enabled";
+
+const METALINK_TYPES = new Set([
+  "application/metalink4+xml",
+  "application/metalink+xml",
+]);
+
+/**
+ * URLs we are fetching ourselves. fetchMetalinkDocument goes through necko like
+ * anything else, so without this the observer below would cancel our own fetch
+ * of the document we are trying to read.
+ */
+const selfFetching = new Set<string>();
+
+/** Recently intercepted, so the two entry points cannot both act on one URL. */
+const handled = new Map<string, number>();
+const HANDLED_TTL_MS = 30_000;
+
+export function beginSelfFetch(url: string): void {
+  selfFetching.add(url);
+}
+export function endSelfFetch(url: string): void {
+  selfFetching.delete(url);
+}
+
+/**
+ * True once per URL per 30s. Both the nsIContentHandler factory and the
+ * response observer can see the same document; whichever gets there first wins.
+ */
+export function claimMetalinkUrl(url: string): boolean {
+  const now = Date.now();
+  for (const [k, t] of handled) {
+    if (now - t > HANDLED_TTL_MS) handled.delete(k);
+  }
+  if (handled.has(url)) return false;
+  handled.set(url, now);
+  return true;
+}
+
+function looksLikeMetalink(url: string, contentType: string): boolean {
+  if (METALINK_TYPES.has(contentType)) return true;
+  // Fall back to the extension. MirrorBrain and friends get the type right, but
+  // plenty of mirrors serve .meta4 as application/octet-stream.
+  try {
+    const path = new URL(url).pathname.toLowerCase();
+    return path.endsWith(".meta4") || path.endsWith(".metalink");
+  } catch {
+    return false;
+  }
+}
 
 const responseObserver = {
   QueryInterface: ChromeUtils.generateQI(["nsIObserver"]),
   observe(subject: nsISupports, topic: string): void {
     if (topic !== "http-on-examine-response") return;
-    if (!Services.prefs.getBoolPref(PREF_ENABLED, true)) return;
     try {
       // nsISupports.QueryInterface is optional in the generated typings, and
       // observers do get handed subjects that are not channels at all.
@@ -259,6 +308,45 @@ const responseObserver = {
           return null;
         }
       };
+
+      // --- Metalink document interception ---
+      //
+      // This, not the nsIContentHandler factory, is what actually catches real
+      // Metalink downloads. Every server that publishes them sends
+      // `Content-Disposition: attachment` (they ARE downloads), and that routes
+      // Gecko straight to nsIExternalHelperAppService without ever consulting
+      // the `@mozilla.org/uriloader/content-handler;1?type=` contract. The
+      // factory therefore only ever fired for documents served inline, which no
+      // real mirror does — LibreOffice's .meta4 sails right past it.
+      //
+      // Examining the response catches it regardless of disposition.
+      if (
+        !selfFetching.has(url) &&
+        Services.prefs.getBoolPref(PREF_METALINK_ENABLED, true) &&
+        looksLikeMetalink(url, channel.contentType ?? "")
+      ) {
+        // Only top-level loads. A page embedding a .meta4 in a frame should not
+        // be able to pop a download picker at the user.
+        let isDocument = false;
+        try {
+          isDocument = channel.loadInfo?.externalContentPolicyType ===
+            Ci.nsIContentPolicy.TYPE_DOCUMENT;
+        } catch {
+          isDocument = false;
+        }
+        if (isDocument && claimMetalinkUrl(url)) {
+          channel.cancel(Cr.NS_BINDING_ABORTED);
+          const svc = ChromeUtils.importESModule(
+            "resource://noraneko/modules/MetalinkService.sys.mjs",
+          ) as { openMetalinkUrl(u: string): Promise<void> };
+          svc.openMetalinkUrl(url).catch((e) =>
+            console.error("[MetalinkHttp] open", e)
+          );
+          return;
+        }
+      }
+
+      if (!Services.prefs.getBoolPref(PREF_ENABLED, true)) return;
 
       // Cheap bail-out before any parsing: the vast majority of responses
       // carry neither header, and this observer sees every single one.

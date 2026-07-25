@@ -138,6 +138,14 @@ class MetalinkContentHandler {
     }
 
     if (!uri) return;
+    // The response observer in MetalinkHttp usually gets here first (it catches
+    // the Content-Disposition: attachment case this factory cannot see at all).
+    // Claim the URL so one document never opens two pickers.
+    const { claimMetalinkUrl } = ChromeUtils.importESModule(
+      "resource://noraneko/modules/MetalinkHttp.sys.mjs",
+    ) as { claimMetalinkUrl(u: string): boolean };
+    if (!claimMetalinkUrl(uri)) return;
+
     // Re-fetch rather than reading the cancelled channel's stream: the bytes
     // are small, the request is already being torn down, and a fresh fetch
     // keeps this off the necko listener path entirely.

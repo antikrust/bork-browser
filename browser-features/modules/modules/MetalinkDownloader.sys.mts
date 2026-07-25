@@ -293,6 +293,22 @@ export async function downloadMetalinkFile(
  * cached manifest can point at mirrors that have since been retired.
  */
 export async function fetchMetalinkDocument(url: string): Promise<string> {
+  // Tell the response observer to leave this one alone — it intercepts
+  // Metalink documents, and this fetch IS one, so without the bypass it would
+  // cancel the very request it asked for.
+  const { beginSelfFetch, endSelfFetch } = ChromeUtils.importESModule(
+    "resource://noraneko/modules/MetalinkHttp.sys.mjs",
+  ) as { beginSelfFetch(u: string): void; endSelfFetch(u: string): void };
+
+  beginSelfFetch(url);
+  try {
+    return await fetchMetalinkDocumentInner(url);
+  } finally {
+    endSelfFetch(url);
+  }
+}
+
+async function fetchMetalinkDocumentInner(url: string): Promise<string> {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(`Metalink fetch failed: HTTP ${res.status}`);
