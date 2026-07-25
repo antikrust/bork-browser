@@ -134,6 +134,22 @@ button, menulist {
   border-radius: var(--bork-radius-box) !important;
 }
 
+/* ---------- "Your browser is being managed by your organisation" ----------
+   preferences.js un-hides #policies-container-content whenever
+   Services.policies.status is ACTIVE, and bork always ships an active
+   distribution/policies.json — it is how the product configures ITSELF:
+   DuckDuckGo as the default engine, DisableAppUpdate (the runtime's
+   compiled-in update URL is Mozilla's aus5, which does not serve this
+   product — bork runs its own update check instead), and the two default
+   extensions (uBlock Origin, Dark Reader). There is no organisation and no
+   remote administrator, so the banner is a false claim about who controls the
+   browser, sitting across the top of every settings page. Hide the notice,
+   NOT the policies: about:policies still lists every one of them, so the
+   configuration stays fully inspectable. */
+#policies-container-content {
+  display: none !important;
+}
+
 /* ---------- native features bork doesn't ship ----------
    bork has no AI and no vertical tabs (the bork vertical-tab feature was
    removed; the compact tab strip is horizontal by design). Hide Firefox's
