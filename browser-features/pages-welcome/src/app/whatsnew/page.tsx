@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import panelSidebarSvg from "../features/assets/panelsidebar.svg";
 import workspacesSvg from "../features/assets/workspaces.svg";
 import pwaSvg from "../features/assets/pwa.svg";
-import mouseGestureSvg from "../features/assets/mousegesture.svg";
 import borkLogo from "../../assets/logo.png";
 import headerCover from "./header-cover.webp";
 import {
@@ -494,18 +493,6 @@ export default function WhatsNewPage() {
               }),
             )}
             reverse
-          />
-
-          <FeatureSection
-            tag={t("whatsNew.tags.gestures")}
-            title={t("featuresPage.mouseGesture.title")}
-            description={t("featuresPage.mouseGesture.description")}
-            image={mouseGestureSvg}
-            bullets={toStringArray(
-              t("featuresPage.mouseGesture.features", {
-                returnObjects: true,
-              }),
-            )}
           />
 
           <div className="py-16 text-center">

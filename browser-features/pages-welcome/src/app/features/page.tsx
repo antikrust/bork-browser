@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import panelSidebarSvg from "./assets/panelsidebar.svg";
 import workspacesSvg from "./assets/workspaces.svg";
 import pwaSvg from "./assets/pwa.svg";
-import mouseGestureSvg from "./assets/mousegesture.svg";
-import { PanelLeft, LayoutGrid, Globe, MousePointer } from "lucide-react";
+import { PanelLeft, LayoutGrid, Globe } from "lucide-react";
 
 export default function FeaturesPage() {
     const { t } = useTranslation();
@@ -33,14 +32,6 @@ export default function FeaturesPage() {
         </div>
     );
 
-    const mouseGestureImage = (
-        <div className="w-full h-full flex items-center justify-center">
-            <div className="w-full max-w-[200px] aspect-[4/3] bg-base-300 rounded-lg p-2 overflow-hidden">
-                <img src={mouseGestureSvg} alt="Mouse Gesture" className="w-full h-full object-contain" />
-            </div>
-        </div>
-    );
-
     const getTranslatedFeatures = (path: string): string[] => {
         const features = t(path, { returnObjects: true });
         return Array.isArray(features) ? features : [];
@@ -49,7 +40,6 @@ export default function FeaturesPage() {
     const panelSidebarFeatures = getTranslatedFeatures('featuresPage.panelSidebar.features');
     const workspacesFeatures = getTranslatedFeatures('featuresPage.workspaces.features');
     const pwaFeatures = getTranslatedFeatures('featuresPage.pwa.features');
-    const mouseGestureFeatures = getTranslatedFeatures('featuresPage.mouseGesture.features');
 
     return (
         <div className="flex flex-col gap-8">
@@ -136,31 +126,6 @@ export default function FeaturesPage() {
                     </div>
                 </div>
 
-                <div className="card bg-base-200 shadow-xl h-full">
-                    <div className="card-body">
-                        <div className="flex items-center mb-4">
-                            <div className="text-primary mr-3">
-                                <MousePointer size={28} />
-                            </div>
-                            <h2 className="text-2xl font-bold">{t('featuresPage.mouseGesture.title')}</h2>
-                        </div>
-                        <div className="flex flex-col md:flex-row gap-4 items-center">
-                            <div className="md:w-1/2">
-                                <p className="mb-3">
-                                    {t('featuresPage.mouseGesture.description')}
-                                </p>
-                                <ul className="list-disc list-inside space-y-1">
-                                    {mouseGestureFeatures.map((feature, index) => (
-                                        <li key={index}>{feature}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="md:w-1/2">
-                                {mouseGestureImage}
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <Navigation />

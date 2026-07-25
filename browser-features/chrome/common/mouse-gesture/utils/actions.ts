@@ -42,35 +42,6 @@ const clickIfExists = (id: string, win?: Window) => {
   }
 };
 
-const sendScrollCommand = (
-  direction:
-    | "lineUp"
-    | "lineDown"
-    | "pageUp"
-    | "pageDown"
-    | "lineRight"
-    | "lineLeft"
-    | "toTop"
-    | "toBottom",
-  win: Window,
-) => {
-  try {
-    const browser = win.gBrowser?.selectedBrowser;
-    if (!browser) return;
-    const actor = browser.browsingContext?.currentWindowGlobal?.getActor(
-      "NRMouseGestureScroll",
-    );
-    if (!actor) return;
-    console.debug(
-      "[mouse-gesture] Sending scroll command to content:",
-      direction,
-    );
-    actor.sendAsyncMessage("MouseGestureScroll:Execute", { direction });
-  } catch (e) {
-    console.error("[mouse-gesture] Failed to send scroll command:", e);
-  }
-};
-
 function applyThreePaneLayout(
   win: Window,
   targetLayout:
@@ -461,38 +432,6 @@ export const actions: GestureActionRegistration[] = [
       // hardcoded on and needed a restart to take effect anyway.)
       togglePanelSidebar(win as unknown as Window);
     },
-  },
-  {
-    name: "gecko-scroll-line-up",
-    fn: (win) => sendScrollCommand("lineUp", win),
-  },
-  {
-    name: "gecko-scroll-line-down",
-    fn: (win) => sendScrollCommand("lineDown", win),
-  },
-  {
-    name: "gecko-scroll-up",
-    fn: (win) => sendScrollCommand("pageUp", win),
-  },
-  {
-    name: "gecko-scroll-down",
-    fn: (win) => sendScrollCommand("pageDown", win),
-  },
-  {
-    name: "gecko-scroll-right",
-    fn: (win) => sendScrollCommand("lineRight", win),
-  },
-  {
-    name: "gecko-scroll-left",
-    fn: (win) => sendScrollCommand("lineLeft", win),
-  },
-  {
-    name: "gecko-scroll-to-top",
-    fn: (win) => sendScrollCommand("toTop", win),
-  },
-  {
-    name: "gecko-scroll-to-bottom",
-    fn: (win) => sendScrollCommand("toBottom", win),
   },
   {
     name: "gecko-workspace-next",

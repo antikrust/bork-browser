@@ -272,20 +272,6 @@ const JS_WINDOW_ACTORS: {
     ],
     allFrames: true,
   },
-  NRMouseGestureScroll: {
-    parent: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRMouseGestureScrollParent.sys.mts",
-      ),
-    },
-    child: {
-      esModuleURI: localPathToResourceURI(
-        "../actors/NRMouseGestureScrollChild.sys.mts",
-      ),
-    },
-    matches: ["http://*/*", "https://*/*", "file:///*", "about:*"],
-    allFrames: true,
-  },
 };
 
 ActorManagerParent.addJSWindowActors(JS_WINDOW_ACTORS);
