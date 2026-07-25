@@ -3,7 +3,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { createMemo, createSignal, For, Show } from "solid-js";
+import {
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 import styles from "./styles.css?inline";
 
 export function StackStyleElement() {
@@ -321,23 +328,56 @@ export function StackBar() {
 
   return (
     <Show when={activeGroup()}>
-      {/* arrowscrollbox: one row forever — overflow scrolls behind arrow
-          buttons exactly like the tab strip, instead of wrapping into a
-          second row and growing the bar. */}
-      <xul:arrowscrollbox
-        id="bork-stack-bar"
-        orient="horizontal"
-        clicktoscroll="true"
-        align="center"
-      >
-        <For each={tabs()}>{(tab) => <StackTabProxy tab={tab} />}</For>
-        <xul:toolbarbutton
-          id="bork-stack-newtab"
-          label="+"
-          tooltiptext="New tab in stack"
-          onClick={addTabToActiveGroup}
-        />
-      </xul:arrowscrollbox>
+      {() => {
+        // The bar's <arrowscrollbox> runs a native click-to-scroll loop
+        // (repeating timer for line scroll, animation for smooth) while an
+        // arrow is held. Its ONLY self-cancel guard checks `!document` — which
+        // is never true once the element is detached, because `document` is the
+        // global, not the element's. So if this bar unmounts (the stack is
+        // deselected) while an arrow press is in flight, the loop keeps firing
+        // forever on the now-detached element and starves the main thread:
+        // page scrolling freezes until an unrelated blur (typing) or mouseup
+        // finally stops it — the "scroll snaps back with a jerk" bug. The
+        // press's own mouseup never reaches the detached box, so stop the loop
+        // ourselves when the bar goes away.
+        let asb:
+          | (Element & {
+            _stopScroll?: () => void;
+            _scrollTimer?: { cancel?: () => void };
+            _arrowScrollAnim?: { stop?: () => void };
+            _mousedown?: boolean;
+          })
+          | undefined;
+        onMount(() => {
+          asb = document.getElementById("bork-stack-bar") as typeof asb;
+        });
+        onCleanup(() => {
+          if (!asb) return;
+          asb._stopScroll?.();
+          asb._scrollTimer?.cancel?.();
+          asb._arrowScrollAnim?.stop?.();
+          asb._mousedown = false;
+        });
+        return (
+          // arrowscrollbox: one row forever — overflow scrolls behind arrow
+          // buttons exactly like the tab strip, instead of wrapping into a
+          // second row and growing the bar.
+          <xul:arrowscrollbox
+            id="bork-stack-bar"
+            orient="horizontal"
+            clicktoscroll="true"
+            align="center"
+          >
+            <For each={tabs()}>{(tab) => <StackTabProxy tab={tab} />}</For>
+            <xul:toolbarbutton
+              id="bork-stack-newtab"
+              label="+"
+              tooltiptext="New tab in stack"
+              onClick={addTabToActiveGroup}
+            />
+          </xul:arrowscrollbox>
+        );
+      }}
     </Show>
   );
 }
