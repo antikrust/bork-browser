@@ -134,6 +134,28 @@ button, menulist {
   border-radius: var(--bork-radius-box) !important;
 }
 
+/* ---------- Firefox's "Same settings, new look!" promo ----------
+   An upstream announcement about MOZILLA's settings redesign, complete with a
+   "Got it" button, sitting above the first real setting until dismissed. It is
+   meaningless here — this page is bork's own reskin, not Firefox's redesign —
+   and it comes back for every new profile. */
+.settings-redesign-promo {
+  display: none !important;
+}
+
+/* ---------- no grey band across the top ----------
+   #search-container painted a grey band around the search field (64px of top
+   padding plus an opaque background). Stock needs that background because the
+   container is position:sticky with z-index 2 — it has to mask the content
+   scrolling beneath it. So dropping the background alone would let the page
+   scroll THROUGH the search field; the stickiness goes with it, and the search
+   field simply scrolls with the page like every other row. */
+#search-container {
+  padding-top: 8px !important;
+  background: transparent !important;
+  position: static !important;
+}
+
 /* ---------- "Your browser is being managed by your organisation" ----------
    preferences.js un-hides #policies-container-content whenever
    Services.policies.status is ACTIVE, and bork always ships an active
