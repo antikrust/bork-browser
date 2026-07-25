@@ -190,11 +190,30 @@ linux + windows over SSH to `BORK_BUILD_HOST`, windows via `run-win-build.sh`) a
   the damaged files, and the packaging step reapplies the patches to its own dereferenced copy,
   so nothing is lost. `build-bork-packages.sh` copies with `cp -RL` to stop it recurring.
 - **`_dist/bin/applied_patches` is a snapshot, not the source of truth, and it can go stale.**
-  The mac/linux/windows lanes overlay *that directory*, while `tools/patches/` is what the
-  project actually carries. As of 2026-07-25 the snapshot holds 12 of 14 patches — both
-  `chrome-toolkit-content-global-translations-about-translations*.patch` are missing, so shipped
-  packages get stock `about:translations`, not bork's. `feles-build misc patch apply` rebuilds
-  the snapshot (it reverses the old set first, so run it on a clean `_dist/bin`).
+  `tools/patches/` is what the project carries; nothing in `build-bork-packages.sh` compares the
+  two, so a patch added to `tools/patches/` reaches packages only after the patcher has been run.
+  Both package routes read the dev tree, by different paths: `overlay()` (linux + windows) replays
+  `_dist/bin/applied_patches/*.patch` onto a freshly extracted runtime, while the mac lane skips
+  `overlay()` entirely and copies `_dist/bin/floorp/Floorp.app` — so it inherits whatever the dev
+  tree happens to have applied. A stale snapshot silently ships stock Firefox files.
+  It bit us once: the two `chrome-toolkit-content-global-translations-about-translations*.patch`
+  sat in `tools/patches/` but had never been applied, so the snapshot held 12 of 14 and every
+  1.1.1-era mac/linux/windows package shipped stock `about:translations` instead of bork's
+  "Translate." / "Local translations only no internet". Fixed 2026-07-25.
+  Check for drift before packaging — this must print nothing:
+
+  ```bash
+  diff <(ls -1 tools/patches/*.patch | xargs -n1 basename) <(ls -1 _dist/bin/applied_patches/*.patch | xargs -n1 basename)
+  ```
+
+  `deno task feles-build misc patch apply` rebuilds the snapshot. It **reverses the currently
+  listed set first** and aborts on the first failure, so `_dist/bin` must be consistent with that
+  set going in. Dry-run the reversal rather than discovering it half-done — `git apply -R --check
+  --unsafe-paths --directory _dist/bin/floorp/Floorp.app/Contents/Resources <patch>` over each
+  file in `applied_patches/` — because the real run uses `--reject`, which leaves a partly
+  reversed tree and `.rej` files behind. If a reversal fails, stop and repair the tree; do not
+  force it. Verify afterwards by content, not by file count: grep the built package for
+  `Translate.` rather than trusting that 14 files exist.
 
 - **gkrust OOM.** The `gkrust` LTO step needs ~17 GB for one rustc process. Linux: add a 32 GB
   swapfile (`fallocate`/`mkswap`/`swapon` on the build disk). Windows: the pagefile wouldn't grow,
