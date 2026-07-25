@@ -78,14 +78,26 @@ a:hover { color: var(--paper); }
   border-bottom-color: var(--line);
 }
 .bar { display: flex; align-items: center; gap: 24px; height: 62px; }
+/* The wordmark artwork is white on transparent and this page is dark
+   (--ink), so it needs no inversion — unlike the in-app pages, which have a
+   light theme. Both marks below scale from the one asset. */
 .mark {
   font-size: 1.15rem; font-weight: 700; letter-spacing: -.03em;
   color: var(--paper); text-decoration: none;
+  display: inline-flex; align-items: center;
 }
+.mark-img { height: 19px; width: auto; display: block; }
 .mark::after {
   content: ""; display: inline-block; width: 6px; height: 6px;
   border-radius: 50%; background: var(--amber); margin-left: 5px;
-  vertical-align: 2px;
+  flex: none;
+}
+/* Sized in em so it tracks the clamped h1 font-size. The crop is tight to the
+   glyphs, whose tallest is the 'b' ascender, so ~0.72em matches the cap height
+   of the "browser" text beside it rather than overshooting it. */
+.h1-mark {
+  height: .72em; width: auto;
+  display: inline-block; vertical-align: baseline;
 }
 .bar nav { margin-left: auto; display: flex; gap: clamp(14px, 3vw, 28px); }
 .bar nav a {
@@ -417,7 +429,9 @@ footer { border-top: 1px solid var(--line);
 
 <header class="topbar" id="topbar">
   <div class="wrap bar">
-    <a class="mark" href="#top">bork</a>
+    <a class="mark" href="#top" aria-label="bork">
+      <img class="mark-img" src="assets/bork-wordmark.png" alt="bork" width="706" height="236">
+    </a>
     <nav>
       <a class="opt" href="#screens">screens</a>
       <a class="opt" href="#keys">keys</a>
@@ -440,8 +454,8 @@ footer { border-top: 1px solid var(--line);
   <div class="hero-scrim"></div>
 
   <div class="wrap hero-copy">
-    <h1>bork <span>browser</span></h1>
-    <p class="sub">bork 1.0.3 based on floorp</p>
+    <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="706" height="236"> <span>browser</span></h1>
+    <p class="sub">bork 1.1.0 based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
   </div>
 
@@ -457,10 +471,10 @@ footer { border-top: 1px solid var(--line);
         <div class="dlcard">
           <a class="dl" href="downloads/Bork-macOS-universal.dmg">
             <span class="dl-top">
-              <b>macOS</b> <small>Apple silicon (arm64) · 182 MB</small>
+              <b>macOS</b> <small>Apple silicon (arm64) · 183 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 e36fe53246fa494af5df95b6117d8cca82347d5fcf7800f37b3e76b8bc4bf558</code>
+              <code>sha256 ee9dd8a7a0659161001a9cf3836937996cbd5630b151be3d2b11df44759968f4</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the macOS sha256">
@@ -489,7 +503,7 @@ footer { border-top: 1px solid var(--line);
               <b>Linux</b> <small>x86_64 · 120 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 c805ac83a2dd029618965ad3efef51f10fa860111b2d9ec06b2caf7ee577f0be</code>
+              <code>sha256 f0832d67bed2230047c7c6fa230927d5ca2b2232a4a79fb16e988c8515b6345d</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Linux sha256">
@@ -508,10 +522,10 @@ footer { border-top: 1px solid var(--line);
         <div class="dlcard">
           <a class="dl" href="downloads/Bork-windows-x86_64.zip">
             <span class="dl-top">
-              <b>Windows</b> <small>x86_64 · 141 MB</small>
+              <b>Windows</b> <small>x86_64 · 140 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 583e3a18eb3d00e8caa3c295e5cfb147d81d2bfdef2c3a97466901ec96248471</code>
+              <code>sha256 def34f27ec77d1b5784291f5247de0de59f02a2d365c614acbe8a077aea6c511</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Windows sha256">
@@ -541,7 +555,7 @@ footer { border-top: 1px solid var(--line);
         <li class="big"><span class="sq" aria-hidden="true"></span><span class="ft">Tab <span class="hl">Groups</span></span></li>
         <li class="big"><span class="sq" aria-hidden="true"></span><span class="ft">Zen <span class="hl">mode</span></span></li>
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Split view</span></li>
-        <li><span class="sq" aria-hidden="true"></span><span class="ft">Mouse gestures</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft">Share mode</span></li>
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Side panels</span></li>
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Command palette</span></li>
         <li><span class="sq" aria-hidden="true"></span><span class="ft">URLs directly on tabs</span></li>

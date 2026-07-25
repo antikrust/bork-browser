@@ -15,6 +15,7 @@
 #
 # Usage:
 #   production-build.sh <runtime-tag> [--skip-runtime] [--no-upload] [mac linux windows | all]
+#   production-build.sh --site-only
 #
 #   --skip-runtime : reuse the already-published runtime tag instead of rebuilding
 #                    the Gecko runtimes (rebuild is the long part; skip when only
@@ -22,6 +23,12 @@
 #   --no-upload    : build packages but do not rsync to the download site.
 #   --install      : after the mac lane packages, install it to ~/Applications.
 #                    Refuses while a copy is running rather than clobbering it.
+#   --site-only    : publish ONLY the download page — copy, layout, assets. Runs
+#                    the same page refresh and rsync the full build does, so the
+#                    version subtitle, per-file sizes and sha256s are still
+#                    regenerated from dist/ rather than hand-edited; it just
+#                    skips rebuilding and re-uploading packages that have not
+#                    changed. Takes no runtime tag and no lanes.
 #
 # Example (feature-layer-only ship, reusing the current runtime):
 #   production-build.sh bork-runtime-152.0.7-1 --skip-runtime all
@@ -36,7 +43,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
-TAG="${1:?runtime tag required (e.g. bork-runtime-152.0.7-1)}"; shift || true
+SITE_ONLY=0
+if [ "${1:-}" = "--site-only" ]; then
+  SITE_ONLY=1; shift || true; TAG=""
+else
+  TAG="${1:?runtime tag required (e.g. bork-runtime-152.0.7-1)}"; shift || true
+fi
 SKIP_RUNTIME=0
 UPLOAD=1
 INSTALL=0
@@ -64,6 +76,19 @@ WEB_REMOTE="${BORK_WEB_REMOTE:-your-web-host:/var/www/example.com/bork/downloads
 SITE_URL="${BORK_SITE_URL:-https://example.com/bork/}"
 
 log() { printf '\033[35m[production]\033[0m %s\n' "$*"; }
+
+# 0. site-only: the page, nothing else. Same refresh + rsync as the upload step
+# below (deliberately the same two commands, so the page can never be published
+# with hand-edited sums or a stale version subtitle) minus the package upload,
+# which would re-send hundreds of MB that have not changed.
+if [ "$SITE_ONLY" = 1 ]; then
+  log "site only — refreshing page sums, sizes and version from dist/"
+  python3 "$ROOT/tools/release/update-site-sums.py"
+  log "uploading the site to ${WEB_REMOTE%/downloads}"
+  rsync -av "$ROOT/tools/release/site/" "${WEB_REMOTE%/downloads}/"
+  log "uploaded. live at $SITE_URL"
+  exit 0
+fi
 
 # 1. runtimes (the long part) — skip to reuse an already-published tag
 if [ "$SKIP_RUNTIME" = 0 ]; then
