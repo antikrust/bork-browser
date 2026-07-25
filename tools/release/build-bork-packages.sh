@@ -10,8 +10,9 @@
 #   - dev servers stopped (the production build owns _dist/noraneko)
 #   - `deno task feles-build build --phase before-mach` has produced
 #     _dist/noraneko (run with --build to do it here)
-#   - runtime archives in build/runtimes/ (see OWN_RUNTIME_TAG; downloaded
-#     automatically when missing)
+#   - runtime archives in build/runtimes/<tag>/ — downloaded automatically when
+#     missing, from the newest published release unless BORK_OWN_RUNTIME_TAG
+#     pins an older one (see resolve_runtime_tag)
 #
 # Lanes: mac (from the local dev-validated runtime tree), linux + windows
 # (from clean downloaded runtime archives + patches). Artifacts in dist/.
@@ -31,7 +32,15 @@ SITE_URL="${BORK_SITE_URL:-https://example.com/bork/}"
 # no `gh`, no GitHub. All runtime files come from this one repo/tag.
 FORGEJO_HOST="${BORK_FORGEJO_HOST:-shithub.space}"
 OWN_RUNTIME_REPO="${BORK_OWN_RUNTIME_REPO:-n01/bork-runtime}"
-OWN_RUNTIME_TAG="${BORK_OWN_RUNTIME_TAG:-bork-runtime-152.0.7-1}"
+# Empty means "whatever is newest on the release host", resolved at run time by
+# resolve_runtime_tag below. Set BORK_OWN_RUNTIME_TAG to pin an older one.
+#
+# This used to be a hardcoded tag and it went stale twice over: first naming a
+# runtime that had been superseded, then one that had been deleted outright, so
+# every linux/windows build 404'd on the download until someone passed the env
+# var by hand. A default that names a specific release is wrong the moment the
+# next one is published — ask instead.
+OWN_RUNTIME_TAG="${BORK_OWN_RUNTIME_TAG:-}"
 
 log() { printf '\033[34m[bork-release]\033[0m %s\n' "$*"; }
 fail() { printf '\033[31m[bork-release] %s\033[0m\n' "$*" >&2; exit 1; }
@@ -148,6 +157,29 @@ strip_ai_bundle() {
   log "AI bundle: ${before}K -> $(du -sk "$ml" | cut -f1)K (translation kept)"
 }
 
+# Newest published tag, asked for once and reused. Called from fetch_runtime
+# rather than at startup so a mac-only build — which consumes no published
+# artifact — never needs the network for this.
+#
+# No fallback to a baked-in tag on failure, deliberately: we cannot know what is
+# published without asking, and quietly packaging some older runtime we happen to
+# name in this file is the exact failure being fixed. Stop and let the operator
+# pin one, which also covers building offline from build/runtimes/.
+resolve_runtime_tag() {
+  if [ -n "$OWN_RUNTIME_TAG" ]; then return 0; fi
+
+  log "resolving newest runtime tag (${OWN_RUNTIME_REPO} on ${FORGEJO_HOST})"
+  # Forgejo/Gitea REST, same shape as GitHub's: newest non-draft, non-prerelease.
+  local api="https://${FORGEJO_HOST}/api/v1/repos/${OWN_RUNTIME_REPO}/releases/latest"
+  local json=""
+  json="$(curl -fsSL --max-time 30 "$api" 2>/dev/null)" || json=""
+  OWN_RUNTIME_TAG="$(printf '%s' "$json" |
+    perl -ne 'if (/"tag_name"\s*:\s*"([^"]+)"/) { print $1; last }')"
+
+  [ -n "$OWN_RUNTIME_TAG" ] || fail "could not resolve the newest runtime tag from ${FORGEJO_HOST} (${OWN_RUNTIME_REPO}) — pass BORK_OWN_RUNTIME_TAG=<tag> to pin one"
+  log "runtime tag: $OWN_RUNTIME_TAG (newest published)"
+}
+
 # Resolve a runtime artifact to a local path, downloading if we do not have it.
 # Sets RUNTIME_FILE to the path the caller should use.
 #
@@ -158,6 +190,7 @@ strip_ai_bundle() {
 # superseded binary. That is how a runtime carrying a startup-crash fix could be
 # built, published, and still not reach the package.
 fetch_runtime() {
+  resolve_runtime_tag
   local file="$1" tag="$OWN_RUNTIME_TAG" dir
   dir="build/runtimes/$tag"
   mkdir -p "$dir"

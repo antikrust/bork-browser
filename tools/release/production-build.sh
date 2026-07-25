@@ -14,8 +14,12 @@
 # are individually proven — it wires them into one "ship it" command.
 #
 # Usage:
-#   production-build.sh <runtime-tag> [--skip-runtime] [--no-upload] [mac linux windows | all]
+#   production-build.sh [runtime-tag] [--skip-runtime] [--no-upload] [mac linux windows | all]
 #   production-build.sh --site-only
+#
+#   <runtime-tag>  : required when building runtimes (it is the tag they publish
+#                    under). With --skip-runtime it is optional and pins which
+#                    published runtime to ship; omit it to ship the newest.
 #
 #   --skip-runtime : reuse the already-published runtime tag instead of rebuilding
 #                    the Gecko runtimes (rebuild is the long part; skip when only
@@ -30,8 +34,8 @@
 #                    skips rebuilding and re-uploading packages that have not
 #                    changed. Takes no runtime tag and no lanes.
 #
-# Example (feature-layer-only ship, reusing the current runtime):
-#   production-build.sh bork-runtime-152.0.7-1 --skip-runtime all
+# Example (feature-layer-only ship, on the newest published runtime):
+#   production-build.sh --skip-runtime all
 #
 # NOTE on branding: until M2 (runtimes built WITH a bork branding dir), the
 # runtimes are nightly-branded and bork-branding.patch cannot apply. Visible
@@ -44,10 +48,17 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 SITE_ONLY=0
+TAG=""
 if [ "${1:-}" = "--site-only" ]; then
-  SITE_ONLY=1; shift || true; TAG=""
-else
-  TAG="${1:?runtime tag required (e.g. bork-runtime-152.0.7-1)}"; shift || true
+  SITE_ONLY=1; shift || true
+elif [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then
+  # A leading bare word that is not a lane is the runtime tag. Optional now:
+  # omitted with --skip-runtime it means "ship on the newest published runtime",
+  # which is what you want almost every time and what nobody can mistype.
+  case "$1" in
+    mac|linux|windows|all) ;;
+    *) TAG="$1"; shift ;;
+  esac
 fi
 SKIP_RUNTIME=0
 UPLOAD=1
@@ -92,13 +103,20 @@ fi
 
 # 1. runtimes (the long part) — skip to reuse an already-published tag
 if [ "$SKIP_RUNTIME" = 0 ]; then
+  # Building runtimes means publishing under a tag, so this one cannot be
+  # inferred — naming an existing release here would publish over it.
+  [ -n "$TAG" ] ||
+    { echo "runtime tag required when building runtimes (e.g. bork-runtime-152.0.7-3); omit it only with --skip-runtime" >&2; exit 1; }
   log "building Gecko runtimes for: ${LANES[*]} (tag $TAG)"
   "$ROOT/tools/release/build-all-runtimes.sh" "$TAG" all
-else
+elif [ -n "$TAG" ]; then
   log "reusing published runtime tag $TAG (--skip-runtime)"
+else
+  log "reusing the newest published runtime (--skip-runtime, no tag pinned)"
 fi
 
-# Point the release packager at our runtime tag.
+# Point the release packager at our runtime tag. Empty is meaningful: it lets
+# build-bork-packages.sh resolve the newest published release itself.
 export BORK_OWN_RUNTIME_TAG="$TAG"
 
 # Which runtime the mac lane ships.

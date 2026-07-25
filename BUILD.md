@@ -152,16 +152,24 @@ The release pipeline fetches these via `OWN_RUNTIME_FILES` in `build-bork-packag
 Once the runtimes are published:
 
 ```bash
-# packages all three onto our runtimes, uploads to your download site
+# packages all three onto the NEWEST published runtime, uploads to your download site
+tools/release/production-build.sh --skip-runtime all
+# …or name a tag to ship an older runtime deliberately
 tools/release/production-build.sh <runtime-tag> --skip-runtime all
 ```
+
+The tag is only mandatory when you are *building* runtimes (it is what they publish under);
+with `--skip-runtime` it is an optional pin.
 
 Or the pieces directly — `tools/release/build-bork-packages.sh [--build] mac linux windows`:
 - **mac** assembles from the local `_dist/bin/floorp/Floorp.app` (populate it first with a
   `feles-build stage` against the mac runtime), overlays `_dist/noraneko`, brands, ad-hoc signs, DMGs.
-- **linux/windows** `fetch_runtime` the published artifact (set `BORK_OWN_RUNTIME_TAG=<tag>`),
+- **linux/windows** `fetch_runtime` the published artifact — the **newest** release on the
+  runtime host, resolved at run time, unless `BORK_OWN_RUNTIME_TAG=<tag>` pins an older one —
   extract, overlay the patches (`_dist/bin/applied_patches` — a snapshot that can lag
   `tools/patches/`, see Gotchas) + `noraneko-devdir`, repack.
+  Artifacts cache under `build/runtimes/<tag>/`, so switching tags re-downloads rather than
+  reusing the previous runtime under the same filename.
 
 Outputs land in `dist/{macos,linux,windows}/`; `production-build.sh` rsyncs them to
 `$BORK_WEB_REMOTE` with `SHA256SUMS.txt`, live at `$BORK_SITE_URL`.
@@ -189,6 +197,14 @@ linux + windows over SSH to `BORK_BUILD_HOST`, windows via `run-win-build.sh`) a
   `bork-build/bork-runtime-mac`, which is a git checkout — `git status --porcelain` lists exactly
   the damaged files, and the packaging step reapplies the patches to its own dereferenced copy,
   so nothing is lost. `build-bork-packages.sh` copies with `cp -RL` to stop it recurring.
+- **Never hardcode the runtime tag back into `build-bork-packages.sh`.** It used to default to a
+  literal `bork-runtime-152.0.7-1`, which is wrong the moment the next runtime is published: first
+  it named a superseded runtime, then one deleted outright, and every linux/windows build died on
+  `curl 404` until someone passed `BORK_OWN_RUNTIME_TAG` by hand. `resolve_runtime_tag` now asks
+  the host for the newest release (`/api/v1/repos/<repo>/releases/latest`, no auth) on first use —
+  lazily, so a mac-only build stays offline — and **fails rather than falling back** to any baked-in
+  tag, because silently packaging an older runtime is the bug, not the recovery. Pin with
+  `BORK_OWN_RUNTIME_TAG=<tag>` to ship an older one or to build offline from `build/runtimes/`.
 - **`_dist/bin/applied_patches` is a snapshot, not the source of truth, and it can go stale.**
   `tools/patches/` is what the project carries; nothing in `build-bork-packages.sh` compares the
   two, so a patch added to `tools/patches/` reaches packages only after the patcher has been run.
@@ -257,5 +273,5 @@ deno install                                   # deps
 deno task feles-build stage --marionette       # dev: run bork locally (the only working launch path)
 deno task dev-tool status                      # inspect a running instance over Marionette
 tools/release/build-all-runtimes.sh <tag> all  # build+publish all 3 runtimes
-tools/release/production-build.sh <tag> --skip-runtime all   # package + upload to your site
+tools/release/production-build.sh --skip-runtime all         # package on the newest runtime + upload
 ```
