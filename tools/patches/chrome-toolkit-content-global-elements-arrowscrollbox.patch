@@ -1,0 +1,28 @@
+diff --git a/chrome/toolkit/content/global/elements/arrowscrollbox.js b/chrome/toolkit/content/global/elements/arrowscrollbox.js
+--- ./chrome/toolkit/content/global/elements/arrowscrollbox.js
++++ ./chrome/toolkit/content/global/elements/arrowscrollbox.js
+@@ -714,10 +714,21 @@
+           scrollAmount = this._destination - startPos;
+         }
+         this.scrollByPixels(scrollAmount, instant);
+-      }
+ 
+-      event.stopPropagation();
+-      event.preventDefault();
++        // bork: consume ONLY the events we actually acted on. These two calls
++        // used to sit outside `if (doScroll)`, so an overflowing scrollbox ate
++        // EVERY wheel event — including the ones the _prevMouseScrolls axis
++        // filter above deliberately declined, which on a trackpad is most of
++        // them. preventDefault makes EventStateManager::PostHandleEvent take
++        // the eConsumeNoDefault branch and skip the whole wheel default-action
++        // path (scroll target, wheel transaction, APZ handoff), so the live
++        // wheel transaction stayed latched to the tab strip and page scrolling
++        // died for ~25s until it timed out. Same defect that made row 2
++        // unusable; row 2 escaped by dropping the widget, the tab strip
++        // cannot. See scrollback-error.md.
++        event.stopPropagation();
++        event.preventDefault();
++      }
+     }
+ 
+     on_touchstart(event) {

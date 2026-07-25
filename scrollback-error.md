@@ -1,11 +1,44 @@
-# scrollback-error — two separate tab-strip scroll bugs, both FIXED
+# scrollback-error — three tab-strip scroll bugs, all FIXED
 
-**Two different bugs live in this file. Check which symptom you have:**
+**Three different bugs live in this file. Check which symptom you have:**
 
 | Symptom | Row | Status |
 | --- | --- | --- |
 | The strip **scrolls itself back** toward where it was after you scroll away | row 1 | fixed 2026-07-17, [below](#2026-07-17-resolution) |
-| Scrolling row 2 kills **page** scrolling for ~25s; recovers with a jerk, or instantly if you type | row 2 | fixed 2026-07-25, next section |
+| Scrolling row 2 kills **page** scrolling for ~25s; recovers with a jerk, or instantly if you type | row 2 | fixed 2026-07-25, [below](#row-2-froze-page-scrolling-fixed--user-validated-2026-07-25) |
+| Scrolling **row 1** kills page scrolling the same way | row 1 | fixed 2026-07-26, next section |
+
+---
+
+# Row 1 froze page scrolling too (FIXED 2026-07-26)
+
+The same defect as row 2, reported by the user the day after row 2 was fixed.
+The row 2 write-up below should have predicted it: **row 1 is a stock
+`<arrowscrollbox>`** — `<arrowscrollbox id="tabbrowser-arrowscrollbox">` in
+`browser.xhtml` — so it carries the identical `on_wheel` defect, and always
+did. Row 2 escaped by ceasing to be one (`312901f058`). Row 1 cannot: it is
+Firefox's own tab strip.
+
+Replacing the widget therefore fixed *only* row 2. **A fix that works by not
+using the buggy component does nothing for the other places that still use it
+— go and check them.** Nothing about the row 2 diagnosis was wrong; it was
+just applied to one of the two callers.
+
+Unrelated to `floorp.tabstrip.wheelguard`, despite the note below that the pref
+"only guards row 1" — that is about the 2026-07-17 snap-back bug, and the guard
+does nothing about wheel-event consumption.
+
+**The fix**: `tools/patches/chrome-toolkit-content-global-elements-arrowscrollbox.patch`
+moves `event.stopPropagation(); event.preventDefault();` **inside** the
+`if (doScroll)` block they sat below. The widget now consumes only what it
+actually scrolled on; events the `_prevMouseScrolls` axis filter declines fall
+through to the normal wheel path instead of killing it.
+
+Patched in the runtime rather than the feature layer because the file is loose
+chrome (`--enable-chrome-format=flat`), the change is four lines, and it repairs
+*every* arrowscrollbox in the browser rather than just the tab strip. The file
+was verified byte-identical in the dev tree and the packaged runtime before the
+patch was cut, so one patch covers both.
 
 ---
 
