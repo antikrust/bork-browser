@@ -75,24 +75,33 @@ done
 # lettering in a 1024 square with a lot of transparent padding (measured: the
 # glyphs occupy x187..868, y406..617), so anywhere the logo is placed by width
 # with height:auto — the welcome page, the Hub header — the square version
-# renders it small inside a mostly empty box. Crop to the measured bounding box
-# plus a 12px margin.
+# renders it small inside a mostly empty box.
+#
+# Crop to the measured bounding box plus only 2px, enough to keep the edge
+# antialiasing. A wider margin becomes visible dead space once the image is
+# scaled: at the download page's headline size the old 12px margin worked out to
+# ~5px, which read as the logo sitting right of the text beneath it. This art is
+# flat, with no shadow to protect (unlike logo.png, whose margin existed for
+# one).
 #
 # The art is WHITE on transparent, so every consumer must sit it on a dark
 # surface or invert it: those pages support the light daisyUI theme too, where
 # white-on-light would be invisible (see .bork-wordmark in pages-welcome).
 echo "building cropped wordmark"
 [ -f "$WORDMARK_SRC" ] || { echo "missing $WORDMARK_SRC" >&2; exit 1; }
-sips -c 236 706 --cropOffset 394 175 "$WORDMARK_SRC" --out "$OUT/wordmark.png" >/dev/null
+sips -c 216 686 --cropOffset 404 185 "$WORDMARK_SRC" --out "$OUT/wordmark.png" >/dev/null
 
 # Every consumer keeps its own copy of the wordmark, and they were all hand
 # copies — which is how they silently kept the old artwork after the source
 # changed. Push the freshly cropped one to each so they cannot drift again:
 #   - the welcome/Hub pages import it as a bundled asset
 #   - the help pages load it as .brand-mark in their topbar
+#   - the download page uses it for the topbar mark and the headline itself
 WELCOME_ASSETS="browser-features/pages-welcome/src/assets"
 [ -d "$WELCOME_ASSETS" ] && cp "$OUT/wordmark.png" "$WELCOME_ASSETS/wordmark.png"
 [ -d "browser-features/help" ] && cp "$OUT/wordmark.png" "browser-features/help/logo.png"
+[ -d "tools/release/site/assets" ] &&
+  cp "$OUT/wordmark.png" "tools/release/site/assets/bork-wordmark.png"
 
 # about-logo is a logo MARK, not a wordmark: Firefox uses it wherever a small
 # brand glyph sits beside its own text — the Settings sidebar renders it at

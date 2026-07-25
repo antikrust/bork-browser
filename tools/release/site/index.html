@@ -97,8 +97,14 @@ a:hover { color: var(--paper); }
    word beside it. The drop-shadow replaces the text-shadow h1 used to apply for
    legibility over the hero photo — text-shadow does nothing to an image. */
 .h1-mark {
-  height: 1em; width: auto;
+  height: 1.2em; width: auto;
   display: block;
+  /* Pull back the crop's 2px antialiasing margin so the 'b' lands on the same
+     line as the text below it, not a hair right of it. Expressed against the
+     height rather than in px: the margin scales with the image (2px of a 216px
+     source at height 1.2em), so a fixed px correction would only be right at
+     one viewport width, and this headline's font-size is clamped/fluid. */
+  margin-left: calc(-1.2em * 2 / 216);
   filter: drop-shadow(0 2px 40px rgba(0, 0, 0, .6));
 }
 .bar nav { margin-left: auto; display: flex; gap: clamp(14px, 3vw, 28px); }
@@ -432,7 +438,7 @@ footer { border-top: 1px solid var(--line);
 <header class="topbar" id="topbar">
   <div class="wrap bar">
     <a class="mark" href="#top" aria-label="bork">
-      <img class="mark-img" src="assets/bork-wordmark.png" alt="bork" width="706" height="236">
+      <img class="mark-img" src="assets/bork-wordmark.png" alt="bork" width="686" height="216">
     </a>
     <nav>
       <a class="opt" href="#screens">screens</a>
@@ -456,7 +462,7 @@ footer { border-top: 1px solid var(--line);
   <div class="hero-scrim"></div>
 
   <div class="wrap hero-copy">
-    <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="706" height="236"></h1>
+    <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="686" height="216"></h1>
     <p class="sub">bork 1.1.0 based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
   </div>
