@@ -93,11 +93,10 @@ overlay() {
   bash static/gecko/pref/override.sh \
     "$approot/browser/defaults/preferences/firefox.js"
 
-  # Default extension pack: written at build time by the injector into the
-  # dev tree only (installDistributionPolicies targets _dist/bin), so clean
-  # runtime trees need it copied in or fresh installs get no extensions.
-  # Same for distribution/extensions/ — the 10 built-in theme XPIs
-  # (installThemePack); without the copy, fresh installs get no themes.
+  # Distribution policies + theme pack. The injector only ever writes these into
+  # the dev tree (it targets _dist/bin), so clean runtime trees need them copied
+  # in or fresh installs get no policies and no themes. refresh_distribution
+  # (called once before the lanes) has already rebuilt the source directory.
   log "installing distribution policies + theme pack"
   local dist_src="_dist/bin/floorp/Floorp.app/Contents/Resources/distribution"
   [ -f "$dist_src/policies.json" ] ||
@@ -335,6 +334,18 @@ if [ "$DO_BUILD" = 1 ]; then
   deno task feles-build build --phase before-mach
 fi
 [ -d _dist/noraneko ] || fail "_dist/noraneko missing — run with --build"
+
+# Rebuild _dist/bin/.../distribution/ (policies.json + theme XPIs) from source
+# before any lane reads it. Every lane ships that directory: linux/windows copy
+# it in overlay(), and the mac lane inherits it wholesale with _dist/bin's app
+# bundle. It is a build output, so whatever a past stage left there is not
+# necessarily what the tree now says — and trusting it shipped Ghostery and
+# Privacy Badger in every package for four days after they were deleted from
+# injector.ts, alongside 10 pre-rebrand `@themes.derp` XPIs. Package from
+# source; never from an artifact you cannot date.
+log "regenerating distribution policies + theme pack from source"
+deno task feles-build misc distribution ||
+  fail "could not regenerate the distribution dir from source"
 
 for lane in "${LANES[@]}"; do "build_$lane"; done
 

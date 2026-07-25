@@ -286,7 +286,8 @@ async function main(): Promise<void> {
     case "misc": {
       if (argv.includes("--help") || argv.includes("-h")) {
         console.log(
-          "Usage: feles-build misc patch --action <apply|create|init>",
+          "Usage: feles-build misc patch --action <apply|create|init>\n" +
+            "       feles-build misc distribution",
         );
         return;
       }
@@ -295,6 +296,13 @@ async function main(): Promise<void> {
         const idx = argv.indexOf("--action");
         const action = idx >= 0 ? argv[idx + 1] : "apply";
         runPatch(action);
+      } else if (sub === "distribution") {
+        // Rewrite _dist/bin/.../distribution/ from source. Normally a side
+        // effect of a stage/build cycle; exposed on its own so the release
+        // packager can refresh it before copying, instead of shipping whatever
+        // an old cycle happened to leave there.
+        Injector.installDistributionPolicies();
+        Injector.installThemePack();
       } else if (sub === "writeVersion") {
         Update.writeVersion("static/gecko");
         logger.success("Version written to static/gecko/config/");

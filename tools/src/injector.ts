@@ -27,23 +27,18 @@ const DEFAULT_POLICIES = {
     // bork's own check instead (chrome/common/update-check reads
     // updates/update.xml from the repo's main branch).
     DisableAppUpdate: true,
-    // Blocking is uBlock Origin alone: Ghostery and Privacy Badger were
-    // ~wholly redundant on top of it (Ghostery's one distinct feature,
-    // consent auto-reject, is covered natively — bork-defaults enables
-    // cookiebanners.service.mode 1). Fewer defaults, fewer "which blocker
-    // broke this site" mysteries.
-    ExtensionSettings: {
-      "uBlock0@raymondhill.net": {
-        installation_mode: "normal_installed",
-        install_url:
-          "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi",
-      },
-      "addon@darkreader.org": {
-        installation_mode: "normal_installed",
-        install_url:
-          "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi",
-      },
-    },
+    // No ExtensionSettings, deliberately: bork auto-installs NOTHING into a new
+    // profile. The pack went uBO + Ghostery + Privacy Badger -> uBO + Dark
+    // Reader -> nothing. Blocking a user never chose is still a default they
+    // have to undo, and every bundled add-on is one more "which extension broke
+    // this site" mystery plus a third party fetching an .xpi on first run.
+    // Consent auto-reject is covered natively anyway (bork-defaults sets
+    // cookiebanners.service.mode 1).
+    //
+    // Adding one back means adding the key here — and NOT hand-editing
+    // _dist/bin/.../distribution/policies.json, which is a build output, not
+    // config. Getting that backwards is why the two removed blockers kept
+    // shipping for four days after they were deleted from this file.
   },
 };
 
@@ -58,6 +53,12 @@ export function installThemePack(): void {
   if (!exists(themesSrc)) return;
   const extDir = path.join(BIN_DIR, "distribution", "extensions");
   try {
+    // Clear first, don't just overwrite what we are about to write. This
+    // directory is copied wholesale into every package, so an .xpi whose theme
+    // was renamed or deleted lingers forever and ships: the 10 pre-rebrand
+    // `@themes.derp` files were still going out alongside their `@themes.bork`
+    // replacements, doubling the preinstalled theme list.
+    safeRemove(extDir);
     Deno.mkdirSync(extDir, { recursive: true });
     let count = 0;
     for (const entry of Deno.readDirSync(themesSrc)) {
