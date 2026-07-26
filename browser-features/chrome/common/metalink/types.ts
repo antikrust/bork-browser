@@ -37,6 +37,34 @@ export interface MetalinkServiceModule {
   registerMetalinkHandler(): void;
   unregisterMetalinkHandler(): void;
   openMetalinkUrl(url: string): Promise<void>;
+  readMetalinkUrl(url: string): Promise<MetalinkDocument>;
+}
+
+export interface SegmentedResult {
+  ok: boolean;
+  path?: string;
+  verified: boolean;
+  hashType?: string;
+  contributions: Record<string, number>;
+  retiredMirrors: string[];
+  error?: string;
+  fellBackToSingle?: boolean;
+}
+
+export interface MetalinkSegmentedModule {
+  downloadSegmented(
+    file: MetalinkFile,
+    mirrors: MetalinkUrl[],
+    hash: MetalinkHash | undefined,
+    targetPath: string,
+    onProgress?: (p: {
+      receivedBytes: number;
+      totalBytes: number;
+      activeMirrors: string[];
+      completedChunks: number;
+      totalChunks: number;
+    }) => void,
+  ): Promise<SegmentedResult>;
 }
 
 export interface MetalinkAttempt {
@@ -62,4 +90,5 @@ export interface MetalinkDownloaderModule {
     hash: MetalinkHash | undefined,
     onProgress?: (mirror: string, index: number, total: number) => void,
   ): Promise<MetalinkDownloadResult>;
+  targetPathFor(name: string): Promise<string>;
 }

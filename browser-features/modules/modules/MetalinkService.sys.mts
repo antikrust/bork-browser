@@ -212,3 +212,14 @@ export function unregisterMetalinkHandler(): void {
 export function openMetalinkUrl(url: string): Promise<void> {
   return handleMetalinkUri(url);
 }
+
+/**
+ * Fetch and parse, returning the document instead of broadcasting it.
+ *
+ * For callers that want the contents without starting anything — the context
+ * menu needs the mirror list to build its submenu, and must not kick off a
+ * download just by being opened.
+ */
+export async function readMetalinkUrl(url: string): Promise<MetalinkDocument> {
+  return parseMetalink(await fetchMetalinkDocument(url));
+}

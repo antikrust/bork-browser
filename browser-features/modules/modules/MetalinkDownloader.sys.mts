@@ -153,7 +153,7 @@ function digestsMatch(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-async function targetPathFor(name: string): Promise<string> {
+export async function targetPathFor(name: string): Promise<string> {
   const dir = await Downloads.getPreferredDownloadsDirectory();
   const file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
   file.initWithPath(dir);
