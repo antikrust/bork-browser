@@ -668,9 +668,9 @@ menuitem[id^="context-ask-chat"] {
    because the latter draws the PNG at its intrinsic size with no way to scale
    it down.
 
-   Only while the transfer is live — state 0 is DOWNLOADING and 4 is PAUSED
-   (DownloadsCommon.sys.mjs). The mark is there to say "this one is coming off
-   mirrors right now"; once it has finished the file is just a file.
+   Shown for the whole life of the entry, not just while transferring: how a
+   file arrived is still worth knowing after it lands, and a mark that vanishes
+   on completion reads as a glitch.
 
    Superimposed on the file-type icon, and hung off the richlistitem rather
    than the icon or the filename:
@@ -681,13 +681,11 @@ menuitem[id^="context-ask-chat"] {
        apply to it either.
    The item is an ordinary box, so its ::after does render; position it over
    the icon. */
-#downloadsListBox richlistitem[bork-metalink="true"][state="0"],
-#downloadsListBox richlistitem[bork-metalink="true"][state="4"] {
+#downloadsListBox richlistitem[bork-metalink="true"] {
   position: relative;
 }
 
-#downloadsListBox richlistitem[bork-metalink="true"][state="0"]::after,
-#downloadsListBox richlistitem[bork-metalink="true"][state="4"]::after {
+#downloadsListBox richlistitem[bork-metalink="true"]::after {
   content: "";
   position: absolute;
   inset-inline-start: 26px;
