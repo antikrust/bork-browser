@@ -305,6 +305,38 @@ a.dl code {
   letter-spacing: -.03em; line-height: 1.05;
 }
 
+/* addendum — a footnote to the feature grid, not a feature in its own right:
+   sits under the list, separated by a hairline, with the mark small enough to
+   read as a credit rather than a logo placement. */
+.addendum {
+  margin-top: clamp(32px, 4vw, 52px);
+  padding-top: clamp(24px, 3vw, 32px);
+  border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: auto 1fr;
+  gap: clamp(16px, 2vw, 24px); align-items: start;
+}
+.addendum-mark {
+  width: 30px; height: auto; margin-top: 2px;
+  /* The mark ships orange; the site's amber is close but not the same, so
+     leave it as its own colour rather than half-matching. */
+}
+.addendum-text {
+  font-size: .84rem; line-height: 1.7; color: var(--muted);
+  font-family: var(--mono); letter-spacing: -.01em; max-width: 62ch;
+}
+.addendum-head {
+  display: block; font-family: inherit; font-weight: 600;
+  color: var(--paper); letter-spacing: .02em; text-transform: uppercase;
+  font-size: .74rem; margin-bottom: 8px;
+}
+.addendum-text code {
+  font-family: var(--mono); color: var(--amber-lt);
+  font-size: .95em;
+}
+@media (max-width: 480px) {
+  .addendum { grid-template-columns: 1fr; }
+}
+
 /* NO — headings then the growing chant */
 .no-item + .no-item { margin-top: clamp(30px, 4vw, 44px); }
 .no-head {
@@ -571,6 +603,20 @@ footer { border-top: 1px solid var(--line);
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Notes</span></li>
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Local translator</span></li>
       </ul>
+
+      <div class="addendum">
+        <img class="addendum-mark" src="assets/metalinker.png"
+             alt="Metalink" width="182" height="224" loading="lazy">
+        <p class="addendum-text">
+          <span class="addendum-head"><a href="https://www.metalinker.org/"
+            rel="noopener">Metalink</a> support</span>
+          Automatic download chunking. A <code>.meta4</code> file lists every
+          mirror a download lives on plus its checksum, so bork pulls the
+          pieces from several mirrors at once — maxing out a fast line, and
+          rescuing a bad one by routing around whichever mirror is crawling.
+          The checksum is verified when it lands.
+        </p>
+      </div>
     </div>
 
     <div class="block no">
