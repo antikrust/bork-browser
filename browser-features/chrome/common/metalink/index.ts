@@ -151,7 +151,7 @@ export default class Metalink extends NoraComponentBase {
   }
 
   /**
-   * Badge our downloads in the panel and about:downloads.
+   * Badge our downloads in the downloads panel.
    *
    * The richlistitem for a download has no hook for extra state, so watch the
    * list for items appearing and stamp `bork-metalink="true"` on the ones whose
@@ -159,6 +159,9 @@ export default class Metalink extends NoraComponentBase {
    * see skin/bork/css/bork.css. A MutationObserver rather than a
    * DownloadsView override because the panel rebuilds its items on every open,
    * and overriding onDownloadAdded only catches the first construction.
+   *
+   * The attribute is stamped whatever the state; the stylesheet is what limits
+   * the mark to a live transfer, so nothing here has to track state changes.
    */
   private markMetalinkDownloads(): void {
     const integration = ChromeUtils.importESModule(
@@ -205,6 +208,7 @@ export default class Metalink extends NoraComponentBase {
       // verification result would never reach the tooltip without this.
       panel.addEventListener("popupshown", stampAll);
     }
+
     globalThis.addEventListener("unload", () => {
       observer.disconnect();
       panel?.removeEventListener("popupshown", stampAll);

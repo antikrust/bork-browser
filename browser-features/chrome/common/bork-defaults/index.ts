@@ -38,6 +38,21 @@ const DARK_CONTENT_CSS = `@-moz-document url-prefix("about:") {
     background-color: #050506 !important;
     --in-content-page-background: #050506 !important;
   }
+}
+@-moz-document url("about:downloads") {
+  /* The selected row painted itself with the system accent — a bright cyan
+     slab (oklch(0.76 0.14 205)) across the top of an otherwise black page.
+     The first row is selected by default, so it was always on screen.
+     Use a tint of the row's own text colour instead: subtle on black, keeps
+     the filename readable, and unlike an accent it follows the theme. */
+  #downloadsListBox > richlistitem[selected] {
+    background-color: color-mix(in srgb, currentColor 16%, transparent) !important;
+    color: inherit !important;
+    outline: none !important;
+  }
+  #downloadsListBox > richlistitem:hover:not([selected]) {
+    background-color: color-mix(in srgb, currentColor 9%, transparent) !important;
+  }
 }`;
 
 const styleSheetService = Cc[

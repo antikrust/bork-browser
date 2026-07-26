@@ -661,19 +661,76 @@ menuitem[id^="context-ask-chat"] {
 /* Metalink downloads: mark the ones assembled from several mirrors so a
    chunked transfer is distinguishable from an ordinary one at a glance.
    The attribute is stamped by chrome/common/metalink; the panel's richlistitem
-   has no state of its own we could key off. Uses ::after on the target line
-   rather than an icon file so it inherits the item's own colour and needs no
-   asset. */
-#downloadsListBox richlistitem[bork-metalink="true"] .downloadTarget::after,
-#downloadsRichListBox richlistitem[bork-metalink="true"] .downloadTarget::after {
-  content: "⛓ metalink";
-  margin-inline-start: 6px;
-  padding: 0 5px;
-  border-radius: 3px;
-  font-size: 0.72em;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  vertical-align: middle;
-  opacity: 0.85;
-  background: color-mix(in srgb, currentColor 14%, transparent);
+   has no state of its own we could key off.
+
+   The metalinker.org mark itself, sized from its own 182x224 aspect so it is
+   not squashed. `content: ""` plus a background rather than `content: url()`
+   because the latter draws the PNG at its intrinsic size with no way to scale
+   it down.
+
+   Only while the transfer is live — state 0 is DOWNLOADING and 4 is PAUSED
+   (DownloadsCommon.sys.mjs). The mark is there to say "this one is coming off
+   mirrors right now"; once it has finished the file is just a file.
+
+   Superimposed on the file-type icon, and hung off the richlistitem rather
+   than the icon or the filename:
+     - .downloadTarget is a XUL label that renders its text from a `value`
+       attribute, and generated content does not paint on those. The rule
+       computed correctly and drew nothing at all.
+     - .downloadTypeIcon is a replaced element, so ::before/::after do not
+       apply to it either.
+   The item is an ordinary box, so its ::after does render; position it over
+   the icon. */
+#downloadsListBox richlistitem[bork-metalink="true"][state="0"],
+#downloadsListBox richlistitem[bork-metalink="true"][state="4"] {
+  position: relative;
+}
+
+#downloadsListBox richlistitem[bork-metalink="true"][state="0"]::after,
+#downloadsListBox richlistitem[bork-metalink="true"][state="4"]::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 26px;
+  top: 50%;
+  margin-top: 0;
+  width: 15px;
+  height: 18px;
+  pointer-events: none;
+  /* Absolute URL, not `../icons/`. This sheet is not loaded from
+     chrome://noraneko-skin/ like engine-*.css are, so a relative reference
+     resolved against chrome://browser/ and 404'd. */
+  background: url("chrome://noraneko-skin/content/bork/icons/metalinker.png")
+    no-repeat center / contain;
+  /* Keep the mark legible over whatever the file icon is. */
+  filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 1px #000);
+}
+
+/* Downloads panel on the dark theme.
+   The stock panel keeps Firefox's own light surface, which reads as a bright
+   rectangle against bork's chrome. Paint it from the same variables the rest
+   of the theme uses rather than hardcoding a colour, so it follows the active
+   design. */
+#downloadsPanel,
+#downloadsPanel .panel-arrowcontent,
+#downloadsPanel richlistbox,
+#downloadsPanel #downloadsListBox,
+#downloadsPanel #downloadsFooter,
+#downloadsPanel toolbarseparator {
+  background-color: var(--bork-panel-bg, var(--arrowpanel-background)) !important;
+  color: var(--bork-panel-fg, var(--arrowpanel-color)) !important;
+}
+
+#downloadsPanel richlistitem.download {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* Keep hover/selection legible once the surface is dark — the stock rules
+   assume a light background and wash out against it. */
+#downloadsPanel richlistitem.download:hover {
+  background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
+}
+
+#downloadsPanel richlistitem.download[selected] {
+  background-color: color-mix(in srgb, currentColor 16%, transparent) !important;
 }
