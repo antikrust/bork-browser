@@ -49,6 +49,28 @@ export interface SegmentedResult {
   retiredMirrors: string[];
   error?: string;
   fellBackToSingle?: boolean;
+  cancelled?: boolean;
+}
+
+export interface MetalinkDownloadDetails {
+  mirrorCount: number;
+  usedMirrors: number;
+  verified: boolean;
+  hashType?: string;
+}
+
+export interface MetalinkIntegrationModule {
+  startSegmentedDownload(
+    file: MetalinkFile,
+    mirrors: MetalinkUrl[],
+    hash: MetalinkHash | undefined,
+    targetPath: string,
+  ): Promise<{
+    download: object;
+    completion: Promise<SegmentedResult | null>;
+  }>;
+  isMetalinkDownload(download: object): boolean;
+  metalinkDetails(download: object): MetalinkDownloadDetails | undefined;
 }
 
 export interface MetalinkSegmentedModule {

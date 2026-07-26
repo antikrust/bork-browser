@@ -59,6 +59,8 @@ export interface SegmentedResult {
   error?: string;
   /** True when we fell back to a single stream (no ranges, or file too small). */
   fellBackToSingle?: boolean;
+  /** True when the caller aborted; not a failure to report as one. */
+  cancelled?: boolean;
 }
 
 interface Chunk {
@@ -160,11 +162,13 @@ function planChunks(size: number, pieceLength?: number): Chunk[] {
 async function probeRange(
   url: string,
   size: number,
+  signal?: AbortSignal,
 ): Promise<{ ok: boolean; reason?: string }> {
   try {
     const res = await fetch(url, {
       headers: { Range: "bytes=0-0" },
       cache: "no-store",
+      signal,
     });
     if (res.status !== 206) {
       // Drain so the connection can be reused/closed cleanly.
@@ -190,10 +194,12 @@ async function probeRange(
 async function fetchChunk(
   url: string,
   chunk: Chunk,
+  signal?: AbortSignal,
 ): Promise<Uint8Array> {
   const res = await fetch(url, {
     headers: { Range: `bytes=${chunk.start}-${chunk.end}` },
     cache: "no-store",
+    signal,
   });
   if (res.status !== 206) {
     throw new Error(`expected 206, got ${res.status}`);
@@ -227,6 +233,7 @@ export async function downloadSegmented(
   hash: MetalinkHash | undefined,
   targetPath: string,
   onProgress?: (p: SegmentedProgress) => void,
+  signal?: AbortSignal,
 ): Promise<SegmentedResult> {
   const contributions: Record<string, number> = {};
   const retired: string[] = [];
@@ -248,7 +255,7 @@ export async function downloadSegmented(
   // Probe mirrors in parallel; keep the ones that can actually serve ranges.
   const candidates = mirrors.slice(0, MAX_CONNECTIONS * 2);
   const probes = await Promise.all(
-    candidates.map(async (m) => ({ m, r: await probeRange(m.url, size) })),
+    candidates.map(async (m) => ({ m, r: await probeRange(m.url, size, signal) })),
   );
   const usable = probes.filter((p) => p.r.ok).map((p) => p.m);
   for (const p of probes) {
@@ -278,12 +285,13 @@ export async function downloadSegmented(
 
   const worker = async (mirror: MetalinkUrl): Promise<void> => {
     for (;;) {
+      if (signal?.aborted) return;
       const chunk = queue.shift();
       if (!chunk) return;
 
       active.add(mirror.url);
       try {
-        const bytes = await fetchChunk(mirror.url, chunk);
+        const bytes = await fetchChunk(mirror.url, chunk, signal);
         await writer.write(chunk.start, bytes);
         received += bytes.byteLength;
         completed++;
@@ -298,6 +306,12 @@ export async function downloadSegmented(
       } catch (e) {
         // Put it back for someone else and count this mirror's failure.
         queue.unshift(chunk);
+        // A cancel aborts every in-flight fetch at once; that is not the
+        // mirror misbehaving, so do not retire anything on the way out.
+        if (signal?.aborted) {
+          active.delete(mirror.url);
+          return;
+        }
         const n = (failures.get(mirror.url) ?? 0) + 1;
         failures.set(mirror.url, n);
         active.delete(mirror.url);
@@ -317,6 +331,18 @@ export async function downloadSegmented(
     await Promise.all(usable.slice(0, workerCount).map((m) => worker(m)));
   } finally {
     await writer.close();
+  }
+
+  if (signal?.aborted) {
+    await IOUtils.remove(targetPath).catch(() => {});
+    return {
+      ok: false,
+      verified: false,
+      contributions,
+      retiredMirrors: retired,
+      cancelled: true,
+      error: "cancelled",
+    };
   }
 
   if (queue.length > 0) {

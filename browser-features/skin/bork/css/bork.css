@@ -657,3 +657,23 @@ menuitem[id^="context-ask-chat"] {
 #bork-panel-sidebar-button .toolbarbutton-icon {
   margin-inline: auto !important;
 }
+
+/* Metalink downloads: mark the ones assembled from several mirrors so a
+   chunked transfer is distinguishable from an ordinary one at a glance.
+   The attribute is stamped by chrome/common/metalink; the panel's richlistitem
+   has no state of its own we could key off. Uses ::after on the target line
+   rather than an icon file so it inherits the item's own colour and needs no
+   asset. */
+#downloadsListBox richlistitem[bork-metalink="true"] .downloadTarget::after,
+#downloadsRichListBox richlistitem[bork-metalink="true"] .downloadTarget::after {
+  content: "⛓ metalink";
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  opacity: 0.85;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}

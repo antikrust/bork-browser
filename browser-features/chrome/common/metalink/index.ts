@@ -9,11 +9,11 @@ import {
 } from "#features-chrome/utils/base.ts";
 import type {
   MetalinkDownloaderModule,
+  MetalinkIntegrationModule,
   MetalinkErrorPayload,
   MetalinkFile,
   MetalinkModule,
   MetalinkOpenPayload,
-  MetalinkSegmentedModule,
   MetalinkServiceModule,
   MetalinkUrl,
 } from "./types.ts";
@@ -23,7 +23,8 @@ const METALINK_ERROR_TOPIC = "bork-metalink-error";
 
 const MODULE_URI = "resource://noraneko/modules/Metalink.sys.mjs";
 const DOWNLOADER_URI = "resource://noraneko/modules/MetalinkDownloader.sys.mjs";
-const SEGMENTED_URI = "resource://noraneko/modules/MetalinkSegmented.sys.mjs";
+const INTEGRATION_URI =
+  "resource://noraneko/modules/MetalinkDownloadIntegration.sys.mjs";
 const SERVICE_URI = "resource://noraneko/modules/MetalinkService.sys.mjs";
 const HTTP_URI = "resource://noraneko/modules/MetalinkHttp.sys.mjs";
 
@@ -122,6 +123,8 @@ export default class Metalink extends NoraComponentBase {
     document?.getElementById("contentAreaContextMenu")
       ?.addEventListener("popupshowing", this.menuListener);
 
+    this.markMetalinkDownloads();
+
     globalThis.addEventListener("unload", () => this.teardown(), {
       once: true,
     });
@@ -147,6 +150,67 @@ export default class Metalink extends NoraComponentBase {
     }
   }
 
+  /**
+   * Badge our downloads in the panel and about:downloads.
+   *
+   * The richlistitem for a download has no hook for extra state, so watch the
+   * list for items appearing and stamp `bork-metalink="true"` on the ones whose
+   * Download object we own. The theme paints the marker off that attribute —
+   * see skin/bork/css/bork.css. A MutationObserver rather than a
+   * DownloadsView override because the panel rebuilds its items on every open,
+   * and overriding onDownloadAdded only catches the first construction.
+   */
+  private markMetalinkDownloads(): void {
+    const integration = ChromeUtils.importESModule(
+      INTEGRATION_URI,
+    ) as MetalinkIntegrationModule;
+
+    const stamp = (root: ParentNode) => {
+      for (const item of Array.from(root.querySelectorAll("richlistitem"))) {
+        const dl = (item as unknown as { _shell?: { download?: object } })
+          ._shell?.download;
+        if (!dl) continue;
+        if (!integration.isMetalinkDownload(dl)) continue;
+        item.setAttribute("bork-metalink", "true");
+        // Refresh the tooltip every pass rather than only on first stamp: the
+        // details are stamped while the transfer is still running, so the
+        // verification result is not known yet and would otherwise never
+        // appear.
+        const d = integration.metalinkDetails(dl);
+        if (d) {
+          const tip = `Metalink: ${d.usedMirrors || d.mirrorCount} mirror(s)` +
+            (d.verified ? `, ${d.hashType} verified` : "");
+          if (item.getAttribute("bork-metalink-tooltip") !== tip) {
+            item.setAttribute("bork-metalink-tooltip", tip);
+            item.setAttribute("tooltiptext", tip);
+          }
+        }
+      }
+    };
+
+    const stampAll = () => {
+      const box = document?.getElementById("downloadsListBox");
+      if (box) stamp(box);
+      const richList = document?.getElementById("downloadsRichListBox");
+      if (richList) stamp(richList);
+    };
+
+    const observer = new MutationObserver(stampAll);
+
+    const panel = document?.getElementById("downloadsPanel");
+    if (panel) {
+      observer.observe(panel, { childList: true, subtree: true });
+      // Also on open. The observer only fires on DOM changes, and a download
+      // that finished while the panel was closed mutates nothing — so the
+      // verification result would never reach the tooltip without this.
+      panel.addEventListener("popupshown", stampAll);
+    }
+    globalThis.addEventListener("unload", () => {
+      observer.disconnect();
+      panel?.removeEventListener("popupshown", stampAll);
+    }, { once: true });
+  }
+
   // --- click / navigation path: segmented download, no dialog ---
 
   private async onOpen(data: string): Promise<void> {
@@ -158,9 +222,6 @@ export default class Metalink extends NoraComponentBase {
     const downloader = ChromeUtils.importESModule(
       DOWNLOADER_URI,
     ) as MetalinkDownloaderModule;
-    const segmented = ChromeUtils.importESModule(
-      SEGMENTED_URI,
-    ) as MetalinkSegmentedModule;
 
     const mirrors = metalink.orderMirrors(file, this.homeCountry());
     if (!mirrors.length) {
@@ -169,19 +230,25 @@ export default class Metalink extends NoraComponentBase {
     }
     const hash = metalink.strongestHash(file);
 
-    this.notify(
-      `${file.name} (${formatSize(file.size)}) — starting across ` +
-        `${Math.min(mirrors.length, 6)} of ${mirrors.length} mirrors…`,
-    );
-
     try {
       const target = await downloader.targetPathFor(file.name);
-      const result = await segmented.downloadSegmented(
+
+      // Goes through Downloads.sys.mjs, so it appears in the downloads panel
+      // and about:downloads with a working progress bar and Cancel button.
+      const integration = ChromeUtils.importESModule(
+        INTEGRATION_URI,
+      ) as MetalinkIntegrationModule;
+      const { completion } = await integration.startSegmentedDownload(
         file,
         mirrors,
         hash,
         target,
       );
+      const result = await completion;
+
+      if (!result) return;
+
+      if (result.cancelled) return;
 
       if (result.ok) {
         const used = Object.keys(result.contributions).length;
