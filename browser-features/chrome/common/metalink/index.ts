@@ -8,6 +8,7 @@ import {
   NoraComponentBase,
 } from "#features-chrome/utils/base.ts";
 import type {
+  MetalinkDocument,
   MetalinkDownloaderModule,
   MetalinkIntegrationModule,
   MetalinkErrorPayload,
@@ -29,6 +30,7 @@ const SERVICE_URI = "resource://noraneko/modules/MetalinkService.sys.mjs";
 const HTTP_URI = "resource://noraneko/modules/MetalinkHttp.sys.mjs";
 
 const MENU_ID = "bork-metalink-mirrors";
+const PREF_ENABLED = "bork.metalink.enabled";
 
 function formatSize(bytes?: number): string {
   if (bytes === undefined) return "";
@@ -69,8 +71,8 @@ function isMetalinkUrl(url: string): boolean {
  *
  * - Opening a `.meta4`/`.metalink` starts a SEGMENTED download straight away:
  *   the file is pulled from several mirrors at once and reassembled. No dialog.
- * - Right-clicking a link to one lists the mirrors in the context menu; picking
- *   one downloads from that mirror alone.
+ * - Right-clicking a link to one offers "Show Mirrors", which opens a generated
+ *   page listing every mirror the document names.
  *
  * Parsing, transport and the RFC 6249 header work live in the ESM layer
  * (Metalink*.sys.mts). This class is window-side glue only.
@@ -119,6 +121,7 @@ export default class Metalink extends NoraComponentBase {
     Services.obs.addObserver(this.observer, METALINK_OPEN_TOPIC, false);
     Services.obs.addObserver(this.errorObserver, METALINK_ERROR_TOPIC, false);
 
+    this.buildMirrorMenuItem();
     this.menuListener = () => this.onContextMenuShowing();
     document?.getElementById("contentAreaContextMenu")
       ?.addEventListener("popupshowing", this.menuListener);
@@ -145,6 +148,8 @@ export default class Metalink extends NoraComponentBase {
           ?.removeEventListener("popupshowing", this.menuListener);
         this.menuListener = null;
       }
+      this.mirrorMenuItem?.remove();
+      this.mirrorMenuItem = null;
     } catch (e) {
       console.error("[Metalink] teardown", e);
     }
@@ -301,81 +306,89 @@ export default class Metalink extends NoraComponentBase {
 
   // --- right-click path: list mirrors, download from the chosen one ---
 
-  private onContextMenuShowing(): void {
+  /**
+   * "Show Mirrors" lives in the DOM from startup, hidden.
+   *
+   * It is not created during popupshowing. Building menu elements there and
+   * opening them crashes Gecko; popupshowing only flips `hidden`.
+   */
+  private mirrorMenuItem: XULElement | null = null;
+  private mirrorUrl: string | null = null;
+
+  private buildMirrorMenuItem(): void {
     const menu = document?.getElementById("contentAreaContextMenu");
     if (!menu) return;
+    // Adopt an existing one rather than bailing: returning without assigning
+    // left the handler with a null item and it silently did nothing.
+    const existing = menu.querySelector(`#${MENU_ID}`) as XULElement | null;
+    if (existing) {
+      this.mirrorMenuItem = existing;
+      return;
+    }
+    const item = document!.createXULElement("menuitem") as XULElement;
+    item.id = MENU_ID;
+    item.setAttribute("label", "Show Mirrors");
+    item.setAttribute("hidden", "true");
+    item.addEventListener("command", () => {
+      const url = this.mirrorUrl;
+      if (url) {
+        this.showMirrorsPage(url).catch((e) => {
+          console.error("[Metalink] mirror page", e);
+          this.notify(`Metalink: could not read ${url}`);
+        });
+      }
+    });
+    menu.appendChild(item);
+    this.mirrorMenuItem = item;
+  }
 
-    // Rebuild every time: the link under the cursor changes between openings.
-    menu.querySelector(`#${MENU_ID}`)?.remove();
+  private onContextMenuShowing(): void {
+    const item = this.mirrorMenuItem ??
+      (document?.getElementById(MENU_ID) as XULElement | null);
+    if (!item) return;
 
     const ctx = (globalThis as { gContextMenu?: { onLink?: boolean; linkURL?: string } })
       .gContextMenu;
-    if (!ctx?.onLink || !ctx.linkURL || !isMetalinkUrl(ctx.linkURL)) return;
+    const url = ctx?.onLink ? ctx.linkURL : undefined;
+    const show = !!url &&
+      isMetalinkUrl(url) &&
+      Services.prefs.getBoolPref(PREF_ENABLED, true);
 
-    const url = ctx.linkURL;
-    const item = document!.createXULElement("menu") as XULElement;
-    item.id = MENU_ID;
-    item.setAttribute("label", "Download from mirror");
-    const popup = document!.createXULElement("menupopup");
-    item.appendChild(popup);
-
-    const loading = document!.createXULElement("menuitem") as XULElement;
-    loading.setAttribute("label", "Loading mirrors…");
-    loading.setAttribute("disabled", "true");
-    popup.appendChild(loading);
-
-    menu.appendChild(item);
-
-    // Fetching is async and the menu is already on screen; fill it in when the
-    // document arrives. If the user closes the menu first this is simply
-    // discarded on the next popupshowing.
-    this.populateMirrors(url, popup).catch((e) => {
-      console.error("[Metalink] mirror menu", e);
-      loading.setAttribute("label", "Could not read the Metalink");
-    });
+    this.mirrorUrl = show ? url! : null;
+    item.hidden = !show;
   }
 
-  private async populateMirrors(
-    url: string,
-    popup: Element,
-  ): Promise<void> {
+  /**
+   * Read the Metalink and open a generated page listing its mirrors. Runs
+   * after the menu has closed, so there is no menu left to disturb.
+   */
+  private async showMirrorsPage(url: string): Promise<void> {
     const svc = ChromeUtils.importESModule(SERVICE_URI) as MetalinkServiceModule;
     const metalink = ChromeUtils.importESModule(MODULE_URI) as MetalinkModule;
-    const downloader = ChromeUtils.importESModule(
-      DOWNLOADER_URI,
-    ) as MetalinkDownloaderModule;
 
     const doc = await svc.readMetalinkUrl(url);
-    const file = doc.files[0];
-    if (!file || !file.urls.length) {
-      popup.textContent = "";
-      const none = document!.createXULElement("menuitem") as XULElement;
-      none.setAttribute("label", "No mirrors listed");
-      none.setAttribute("disabled", "true");
-      popup.appendChild(none);
+    if (!doc.files.length) {
+      this.notify("Metalink: no files described in that document.");
       return;
     }
 
-    const mirrors = metalink.orderMirrors(file, this.homeCountry());
-    const hash = metalink.strongestHash(file);
+    const html = renderMirrorsPage(
+      doc,
+      url,
+      (f) => metalink.orderMirrors(f, this.homeCountry()),
+    );
 
-    popup.textContent = "";
-    for (const m of mirrors) {
-      const mi = document!.createXULElement("menuitem") as XULElement;
-      mi.setAttribute("label", describeMirror(m));
-      mi.addEventListener("command", () => {
-        // Chosen mirror first; the rest stay as failover rather than being
-        // discarded, so picking a mirror that has since died still works.
-        const ordered = [
-          ...mirrors.filter((x) => x.url === m.url),
-          ...mirrors.filter((x) => x.url !== m.url),
-        ];
-        this.notify(`${file.name}: downloading from ${describeMirror(m)}`);
-        this.singleMirror(file, ordered, hash, downloader)
-          .catch((e) => console.error("[Metalink]", e));
-      });
-      popup.appendChild(mi);
-    }
+    // A real file rather than a data: URL — top-level data: navigation is
+    // blocked, and this way the page can simply be reloaded.
+    const path = PathUtils.join(
+      PathUtils.tempDir,
+      `bork-mirrors-${Date.now()}.html`,
+    );
+    await IOUtils.writeUTF8(path, html);
+
+    (globalThis as {
+      openTrustedLinkIn?: (u: string, where: string) => void;
+    }).openTrustedLinkIn?.(PathUtils.toFileURI(path), "tab");
   }
 
   /**
@@ -420,4 +433,114 @@ interface NotificationBoxLike {
   ): void;
   getNotificationWithValue?(value: string): unknown;
   removeNotification(n: unknown): void;
+}
+
+/** Escape for HTML text and attribute contexts — mirror URLs come off the
+ *  network and land in a document. */
+function esc(v: unknown): string {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/** The generated mirrors page. Self-contained: no network, no script. */
+function renderMirrorsPage(
+  doc: MetalinkDocument,
+  sourceUrl: string,
+  order: (f: MetalinkFile) => MetalinkUrl[],
+): string {
+  const files = doc.files.map((f) => {
+    const mirrors = order(f);
+    const rows = mirrors.map((m, i) => `
+        <tr>
+          <td class="n">${i + 1}</td>
+          <td>${m.location ? `<span class="cc">${esc(m.location)}</span>` : ""}</td>
+          <td class="host">${esc((() => { try { return new URL(m.url).host; } catch { return m.url; } })())}</td>
+          <td class="pri">${m.priority ?? ""}</td>
+          <td class="url"><a href="${esc(m.url)}">${esc(m.url)}</a></td>
+        </tr>`).join("");
+
+    const hashes = f.hashes.map((h) =>
+      `<div class="hash"><span class="ht">${esc(h.type)}</span><code>${esc(h.value)}</code></div>`
+    ).join("");
+
+    const torrents = f.metaurls.filter((m) => m.mediatype === "torrent")
+      .map((m) => `<a href="${esc(m.url)}">${esc(m.url)}</a>`).join("<br>");
+
+    return `
+    <section class="file">
+      <h2>${esc(f.name)}</h2>
+      <p class="meta">
+        ${f.size !== undefined ? `<span>${esc(formatSize(f.size))}</span>` : ""}
+        ${f.version ? `<span>v${esc(f.version)}</span>` : ""}
+        ${f.os.length ? `<span>${esc(f.os.join(", "))}</span>` : ""}
+        ${f.language.length ? `<span>${esc(f.language.join(", "))}</span>` : ""}
+        <span>${mirrors.length} mirror${mirrors.length === 1 ? "" : "s"}</span>
+      </p>
+      ${f.description ? `<p class="desc">${esc(f.description)}</p>` : ""}
+      ${hashes ? `<div class="hashes">${hashes}</div>` : ""}
+      ${torrents ? `<p class="torrent">BitTorrent: ${torrents}<br><small>bork does not open torrents — copy this into a torrent client.</small></p>` : ""}
+      <table>
+        <thead><tr><th></th><th></th><th>Host</th><th>Priority</th><th>URL</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </section>`;
+  }).join("");
+
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Mirrors — ${esc(doc.files[0]?.name ?? "Metalink")}</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; padding:40px 32px; background:#050506; color:#e8e6e3;
+         font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  header { display:flex; align-items:center; gap:14px; margin-bottom:28px;
+           padding-bottom:20px; border-bottom:1px solid #26262c; }
+  header img { width:34px; height:auto; }
+  header h1 { margin:0; font-size:1.05rem; font-weight:600; letter-spacing:.02em;
+              text-transform:uppercase; color:#f6f5f4; }
+  header .src { margin-left:auto; font-size:.75rem; color:#8b8a92;
+                font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+                max-width:50ch; overflow-wrap:anywhere; }
+  .file { margin-bottom:44px; }
+  .file h2 { font-size:1.5rem; margin:0 0 8px; letter-spacing:-.02em; overflow-wrap:anywhere; }
+  .meta { margin:0 0 10px; color:#8b8a92; font-size:.82rem;
+          font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .meta span + span::before { content:"·"; margin:0 8px; color:#44444c; }
+  .desc { margin:0 0 14px; color:#c9c7c4; }
+  .hashes { margin:0 0 18px; }
+  .hash { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.74rem;
+          color:#8b8a92; overflow-wrap:anywhere; margin-bottom:3px; }
+  .ht { display:inline-block; min-width:70px; color:#ff8a1f; }
+  .torrent { font-size:.8rem; color:#8b8a92; margin:0 0 18px; overflow-wrap:anywhere; }
+  table { width:100%; border-collapse:collapse; font-size:.86rem; }
+  thead th { text-align:left; font-weight:600; font-size:.68rem; letter-spacing:.14em;
+             text-transform:uppercase; color:#6f6e77; padding:0 10px 8px;
+             border-bottom:1px solid #26262c; }
+  td { padding:8px 10px; border-bottom:1px solid #17171b; vertical-align:top; }
+  tbody tr:hover { background:#101014; }
+  .n { color:#55545c; font-variant-numeric:tabular-nums; width:1%; }
+  .cc { background:#1c1c22; color:#ff8a1f; border-radius:3px; padding:1px 6px;
+        font-size:.72rem; font-weight:600; letter-spacing:.04em; }
+  .host { font-weight:500; }
+  .pri { color:#8b8a92; font-variant-numeric:tabular-nums; }
+  .url { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.74rem;
+         overflow-wrap:anywhere; }
+  .url a { color:#8b8a92; text-decoration:none; }
+  .url a:hover { color:#ff8a1f; text-decoration:underline; }
+  footer { margin-top:40px; padding-top:18px; border-top:1px solid #26262c;
+           color:#6f6e77; font-size:.78rem; }
+</style></head>
+<body><div class="wrap">
+<header>
+  <img src="chrome://noraneko-skin/content/bork/icons/metalinker.png" alt="">
+  <h1>Metalink mirrors</h1>
+  <span class="src">${esc(sourceUrl)}</span>
+</header>
+${files}
+<footer>Clicking a mirror downloads from that one alone. Opening the
+<code>.meta4</code> itself downloads from several at once and verifies the
+checksum.</footer>
+</div></body></html>`;
 }

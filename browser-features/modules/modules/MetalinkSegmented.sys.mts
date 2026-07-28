@@ -28,13 +28,61 @@ import type {
 } from "./Metalink.sys.mts";
 import { hashFile } from "./MetalinkDownloader.sys.mts";
 
+// Not globals in .sys.mjs scope — they live in Timer.sys.mjs.
+const { setTimeout, clearTimeout } = ChromeUtils.importESModule(
+  "resource://gre/modules/Timer.sys.mjs",
+) as {
+  setTimeout: (fn: () => void, ms: number) => number;
+  clearTimeout: (id: number) => void;
+};
+
 /** Below this, connection setup costs more than parallelism saves. */
 const MIN_SEGMENTED_SIZE = 4 * 1024 * 1024;
 /** Mirrors hit at once. Above ~6 you mostly annoy mirror operators. */
 const MAX_CONNECTIONS = 6;
 const DEFAULT_CHUNK_SIZE = 8 * 1024 * 1024;
-/** A mirror that fails this many chunks is retired. */
-const MAX_MIRROR_FAILURES = 2;
+/**
+ * A mirror gets one chance. Retrying a bad one costs a whole chunk's timeout
+ * and the queue is shared anyway — another mirror picks the chunk up
+ * immediately, so there is nothing to gain by waiting on this one.
+ */
+const MAX_MIRROR_FAILURES = 1;
+
+/**
+ * Ceilings on a single request. Without them a mirror that accepts the
+ * connection and then stalls holds its worker until the OS gives up, which is
+ * how one bad mirror drags a whole transfer: the other workers finish the queue
+ * and then wait on it.
+ *
+ * The probe is short because it asks for one byte. The chunk ceiling is a
+ * stall detector, not a speed limit — it is reset by progress, so a slow but
+ * live mirror is left alone and only a silent one is dropped.
+ */
+const PROBE_TIMEOUT_MS = 4000;
+const CHUNK_STALL_MS = 10000;
+
+/**
+ * A signal that aborts when the caller aborts, or when `ms` passes without a
+ * bump(). Hand-rolled because AbortSignal.timeout/any are window-scoped and
+ * throw "Could not find window" in a .sys.mjs module.
+ */
+function stallGuard(ms: number, parent?: AbortSignal) {
+  const ctl = new AbortController();
+  let timer = setTimeout(() => ctl.abort(), ms);
+  const onParent = () => ctl.abort();
+  parent?.addEventListener("abort", onParent);
+  return {
+    signal: ctl.signal,
+    bump() {
+      clearTimeout(timer);
+      timer = setTimeout(() => ctl.abort(), ms);
+    },
+    done() {
+      clearTimeout(timer);
+      parent?.removeEventListener("abort", onParent);
+    },
+  };
+}
 
 /** Typed as optional by the generated defs; it is a fixed XPCOM constant (0). */
 const SEEK_SET = Ci.nsISeekableStream.NS_SEEK_SET ?? 0;
@@ -164,11 +212,12 @@ async function probeRange(
   size: number,
   signal?: AbortSignal,
 ): Promise<{ ok: boolean; reason?: string }> {
+  const guard = stallGuard(PROBE_TIMEOUT_MS, signal);
   try {
     const res = await fetch(url, {
       headers: { Range: "bytes=0-0" },
       cache: "no-store",
-      signal,
+      signal: guard.signal,
     });
     if (res.status !== 206) {
       // Drain so the connection can be reused/closed cleanly.
@@ -187,6 +236,8 @@ async function probeRange(
     return { ok: true };
   } catch (e) {
     return { ok: false, reason: e instanceof Error ? e.message : String(e) };
+  } finally {
+    guard.done();
   }
 }
 
@@ -196,28 +247,55 @@ async function fetchChunk(
   chunk: Chunk,
   signal?: AbortSignal,
 ): Promise<Uint8Array> {
-  const res = await fetch(url, {
-    headers: { Range: `bytes=${chunk.start}-${chunk.end}` },
-    cache: "no-store",
-    signal,
-  });
-  if (res.status !== 206) {
-    throw new Error(`expected 206, got ${res.status}`);
-  }
+  // A stall clock rather than a total deadline: every arriving block pushes it
+  // out, so a slow mirror finishes and a silent one is cut loose in seconds.
+  const guard = stallGuard(CHUNK_STALL_MS, signal);
+  try {
+    const res = await fetch(url, {
+      headers: { Range: `bytes=${chunk.start}-${chunk.end}` },
+      cache: "no-store",
+      signal: guard.signal,
+    });
+    if (res.status !== 206) {
+      throw new Error(`expected 206, got ${res.status}`);
+    }
   // Trusting Content-Range rather than just the length stops a mirror handing
   // back a valid-length slice of the WRONG offset, which would assemble into a
   // corrupt file that only the final hash would catch.
-  const cr = res.headers.get("content-range") ?? "";
-  const m = /bytes\s+(\d+)-(\d+)\//.exec(cr);
-  if (!m || Number(m[1]) !== chunk.start || Number(m[2]) !== chunk.end) {
-    throw new Error(`content-range mismatch: ${cr || "(absent)"}`);
+    const cr = res.headers.get("content-range") ?? "";
+    const m = /bytes\s+(\d+)-(\d+)\//.exec(cr);
+    if (!m || Number(m[1]) !== chunk.start || Number(m[2]) !== chunk.end) {
+      throw new Error(`content-range mismatch: ${cr || "(absent)"}`);
+    }
+
+    const expected = chunk.end - chunk.start + 1;
+    const buf = new Uint8Array(expected);
+    let at = 0;
+    const reader = res.body?.getReader();
+    if (!reader) {
+      const whole = new Uint8Array(await res.arrayBuffer());
+      if (whole.byteLength !== expected) {
+        throw new Error(`got ${whole.byteLength} bytes, expected ${expected}`);
+      }
+      return whole;
+    }
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      guard.bump();
+      if (at + value.byteLength > expected) {
+        throw new Error("mirror sent more than the range asked for");
+      }
+      buf.set(value, at);
+      at += value.byteLength;
+    }
+    if (at !== expected) {
+      throw new Error(`got ${at} bytes, expected ${expected}`);
+    }
+    return buf;
+  } finally {
+    guard.done();
   }
-  const buf = new Uint8Array(await res.arrayBuffer());
-  const expected = chunk.end - chunk.start + 1;
-  if (buf.byteLength !== expected) {
-    throw new Error(`got ${buf.byteLength} bytes, expected ${expected}`);
-  }
-  return buf;
 }
 
 /**
@@ -275,6 +353,10 @@ export async function downloadSegmented(
 
   const chunks = planChunks(size, file.pieces?.length);
   const queue: Chunk[] = [...chunks];
+  /** Handed to a worker, not yet written. */
+  const pending = new Map<number, Chunk>();
+  /** Written. A chunk can be fetched twice (see racing below); only one wins. */
+  const done = new Set<number>();
   const failures = new Map<string, number>();
   const active = new Set<string>();
   let received = 0;
@@ -282,44 +364,90 @@ export async function downloadSegmented(
 
   const writer = new OffsetWriter(targetPath, size);
   const workerCount = Math.min(usable.length, MAX_CONNECTIONS);
+  // Probed good but not given a starting slot. A worker whose mirror dies takes
+  // one of these instead of ending, so a bad mirror costs a retry, not a
+  // connection for the rest of the transfer.
+  const spares: MetalinkUrl[] = usable.slice(workerCount);
 
-  const worker = async (mirror: MetalinkUrl): Promise<void> => {
+  const delay = (ms: number) =>
+    new Promise<void>((r) => setTimeout(() => r(), ms));
+
+  // Aborted the moment the last chunk is written, so a mirror still holding a
+  // superseded request is dropped instead of keeping the whole transfer waiting
+  // on its stall timeout. Also mirrors the caller's cancel.
+  const opCtl = new AbortController();
+  const onCallerAbort = () => opCtl.abort();
+  signal?.addEventListener("abort", onCallerAbort);
+  const opSignal = opCtl.signal;
+
+  const worker = async (start: MetalinkUrl): Promise<void> => {
+    let mirror = start;
     for (;;) {
       if (signal?.aborted) return;
-      const chunk = queue.shift();
-      if (!chunk) return;
+      if (done.size === chunks.length) return;
+
+      let chunk = queue.shift();
+      let racing = false;
+
+      if (!chunk) {
+        // Queue empty but work outstanding: race a chunk someone else is
+        // already on rather than idling. A mirror that accepted the request and
+        // went quiet would otherwise hold the whole transfer for its full stall
+        // timeout while everyone else sat done — first copy to arrive wins.
+        const candidate = [...pending.values()].find((c) => !done.has(c.index));
+        if (!candidate) {
+          await delay(50);
+          continue;
+        }
+        chunk = candidate;
+        racing = true;
+      } else {
+        pending.set(chunk.index, chunk);
+      }
 
       active.add(mirror.url);
       try {
-        const bytes = await fetchChunk(mirror.url, chunk, signal);
-        await writer.write(chunk.start, bytes);
-        received += bytes.byteLength;
-        completed++;
-        contributions[mirror.url] = (contributions[mirror.url] ?? 0) + 1;
-        onProgress?.({
-          receivedBytes: received,
-          totalBytes: size,
-          activeMirrors: [...active],
-          completedChunks: completed,
-          totalChunks: chunks.length,
-        });
-      } catch (e) {
-        // Put it back for someone else and count this mirror's failure.
-        queue.unshift(chunk);
-        // A cancel aborts every in-flight fetch at once; that is not the
-        // mirror misbehaving, so do not retire anything on the way out.
-        if (signal?.aborted) {
-          active.delete(mirror.url);
-          return;
+        const bytes = await fetchChunk(mirror.url, chunk, opSignal);
+        if (!done.has(chunk.index)) {
+          await writer.write(chunk.start, bytes);
+          done.add(chunk.index);
+          pending.delete(chunk.index);
+          // Everything is on disk; stop anyone still waiting on bytes we no
+          // longer need.
+          if (done.size === chunks.length) opCtl.abort();
+          received += bytes.byteLength;
+          completed++;
+          contributions[mirror.url] = (contributions[mirror.url] ?? 0) + 1;
+          onProgress?.({
+            receivedBytes: received,
+            totalBytes: size,
+            activeMirrors: [...active],
+            completedChunks: completed,
+            totalChunks: chunks.length,
+          });
         }
+      } catch (e) {
+        // A lost race is not a failure — the winner already wrote it.
+        if (!done.has(chunk.index) && !racing) {
+          queue.unshift(chunk);
+          pending.delete(chunk.index);
+        }
+        active.delete(mirror.url);
+        if (signal?.aborted) return;
+        // Cut loose after completion, or beaten to this chunk: neither is the
+        // mirror's fault, so do not hold it against it.
+        if (done.size === chunks.length) return;
+        if (done.has(chunk.index)) continue;
+
         const n = (failures.get(mirror.url) ?? 0) + 1;
         failures.set(mirror.url, n);
-        active.delete(mirror.url);
         if (n >= MAX_MIRROR_FAILURES) {
           retired.push(
             `${mirror.url} (${e instanceof Error ? e.message : String(e)})`,
           );
-          return;
+          const spare = spares.shift();
+          if (!spare) return;
+          mirror = spare;
         }
         continue;
       }
@@ -330,6 +458,8 @@ export async function downloadSegmented(
   try {
     await Promise.all(usable.slice(0, workerCount).map((m) => worker(m)));
   } finally {
+    signal?.removeEventListener("abort", onCallerAbort);
+    opCtl.abort();
     await writer.close();
   }
 
@@ -345,14 +475,15 @@ export async function downloadSegmented(
     };
   }
 
-  if (queue.length > 0) {
+  if (done.size !== chunks.length) {
     await IOUtils.remove(targetPath).catch(() => {});
     return {
       ok: false,
       verified: false,
       contributions,
       retiredMirrors: retired,
-      error: `every mirror failed with ${queue.length} chunk(s) outstanding`,
+      error:
+        `every mirror failed with ${chunks.length - done.size} chunk(s) outstanding`,
     };
   }
 
