@@ -29,18 +29,34 @@ const logger = new Logger("injector");
  * Default add-ons (uBO, Dark Reader, the theme pack) install from
  * distribution/extensions as ordinary user-removable add-ons.
  */
-const DISTRIBUTION_INI = [
-  "[Global]",
-  "id=bork",
-  "version=1.0",
-  "about=bork",
-  "",
-  "[Preferences]",
-  "",
-  "[Search]",
-  "searchDefault=DuckDuckGo",
-  "",
-].join("\n");
+/**
+ * The version field surfaces in user-visible places (the About dialog and
+ * settings both render "distribution.id — distribution.version"), so it
+ * carries the real shipping version from the root package.json — a hardcoded
+ * placeholder here had users reading "bork — 1.0" on a 1.1.6 install.
+ */
+function distributionIni(): string {
+  let version = "0.0.0";
+  try {
+    version = (JSON.parse(
+      Deno.readTextFileSync(path.join(PROJECT_ROOT, "package.json")),
+    ) as { version?: string }).version ?? version;
+  } catch {
+    // keep the placeholder; a broken package.json fails the build elsewhere
+  }
+  return [
+    "[Global]",
+    "id=bork",
+    `version=${version}`,
+    "about=bork",
+    "",
+    "[Preferences]",
+    "",
+    "[Search]",
+    "searchDefault=DuckDuckGo",
+    "",
+  ].join("\n");
+}
 
 /**
  * bork add-on pack: the static WebExtension themes in browser-features/themes/
@@ -115,7 +131,7 @@ export function installDistributionPolicies(): void {
     Deno.mkdirSync(distDir, { recursive: true });
     Deno.writeTextFileSync(
       path.join(distDir, "distribution.ini"),
-      DISTRIBUTION_INI,
+      distributionIni(),
     );
     // An old policies.json in the build tree would still ship and still trip
     // the "managed by your organisation" banner — remove, never carry.

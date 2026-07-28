@@ -8,6 +8,16 @@ import { genJarmnPlugin } from "../../libs/vite-plugin-gen-jarmn/plugin.ts";
 const r = (dir: string) => path.resolve(import.meta.dirname ?? ".", dir);
 
 /**
+ * The shipping version, straight from the root package.json — the same single
+ * source the release script, the update manifest, the download site and the
+ * welcome page use. The dialog used to show only Gecko's
+ * MOZ_APP_VERSION_DISPLAY, which is the runtime's number, not bork's.
+ */
+const BORK_VERSION: string = JSON.parse(
+  fs.readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
+).version;
+
+/**
  * Vite plugin to include public directory files in the JAR manifest.
  *
  * Unlike other pages that use index.html as the Vite entry point,
@@ -47,6 +57,9 @@ function includePublicInJarmn() {
 }
 
 export default defineConfig({
+  define: {
+    __BORK_VERSION__: JSON.stringify(BORK_VERSION),
+  },
   plugins: [
     deno(),
     react({

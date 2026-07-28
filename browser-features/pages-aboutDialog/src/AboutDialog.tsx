@@ -2,6 +2,8 @@ import { useEffect, useState, useRef, useMemo } from "preact/hooks";
 import { useTranslation } from "react-i18next";
 
 // deno-lint-ignore no-explicit-any
+/** Injected by vite from the root package.json (see vite.config.ts). */
+declare const __BORK_VERSION__: string;
 declare const ChromeUtils: any;
 // deno-lint-ignore no-explicit-any
 declare const Services: any;
@@ -147,7 +149,11 @@ export function AboutDialog() {
       }
 
       const rawVersion = Services.appinfo.version;
-      setVersion(AppConstants.MOZ_APP_VERSION_DISPLAY);
+      // Bork's shipping version leads; Gecko's display version (the runtime
+      // number) rides along so a bug report still identifies the engine.
+      setVersion(
+        `${__BORK_VERSION__} (${AppConstants.MOZ_APP_VERSION_DISPLAY})`,
+      );
       if (/a\d+$/.test(rawVersion)) setIsNightly(true);
       if (AppConstants.IS_ESR) setIsEsr(true);
 
