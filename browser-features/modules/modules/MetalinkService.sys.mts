@@ -4,19 +4,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * Catches Metalink documents on their way to the download manager and hands
- * them to bork's own handler instead.
- *
- * Mechanism is an nsIContentHandler factory registered over the contract ID
- * Gecko looks up for a given MIME type — the same registrar trick
- * NoranekoStartup uses to own `about:` pages, applied to
- * "what should Firefox do with this file" rather than to a URL scheme.
- * Registering our factory on the stock contract ID displaces the built-in
- * behaviour (which is "offer to save it", i.e. the user gets a .meta4 file on
- * disk that nothing can open).
- *
- * The service does no UI. It parses and then broadcasts, so the chrome layer
- * can render the mirror picker in whatever window is frontmost.
+ * Reads a Metalink document and broadcasts it. No UI, and no interception —
+ * MetalinkHttp's response observer is the single place that decides a load is
+ * a Metalink and hands it here.
  */
 
 import { parseMetalink, strongestHash } from "./Metalink.sys.mts";
@@ -28,27 +18,11 @@ export const METALINK_OPEN_TOPIC = "bork-metalink-open";
 /** Broadcast when one could not be parsed. */
 export const METALINK_ERROR_TOPIC = "bork-metalink-error";
 
-const PREF_ENABLED = "bork.metalink.enabled";
-
 /**
  * notifyObservers takes an nsISupports subject; broadcasting without one is
  * normal and Gecko accepts null, but the generated typings do not model that.
  */
 const NO_SUBJECT = null as unknown as nsISupports;
-
-const CONTENT_TYPES = [
-  "application/metalink4+xml",
-  "application/metalink+xml",
-];
-
-function getComponentRegistrar(): nsIComponentRegistrar | null {
-  const cm = Components.manager;
-  const maybeQI =
-    (cm as unknown as { QueryInterface?: (iid: nsIID) => unknown })
-      .QueryInterface;
-  if (typeof maybeQI !== "function") return null;
-  return maybeQI.call(cm, Ci.nsIComponentRegistrar) as nsIComponentRegistrar;
-}
 
 /**
  * A parsed document plus where it came from. Passed to observers as a JSON
@@ -109,106 +83,7 @@ async function handleMetalinkUri(uri: string): Promise<void> {
   }
 }
 
-class MetalinkContentHandler {
-  QueryInterface = ChromeUtils.generateQI(["nsIContentHandler"]);
-
-  handleContent(
-    _contentType: string,
-    _windowContext: nsIInterfaceRequestor,
-    request: nsIRequest,
-  ): void {
-    let uri: string | null = null;
-    try {
-      const qi = (request as { QueryInterface?: (iid: unknown) => unknown })
-        .QueryInterface;
-      const channel = typeof qi === "function"
-        ? qi.call(request, Ci.nsIChannel) as nsIChannel
-        : null;
-      uri = channel?.URI?.spec ?? null;
-    } catch {
-      uri = null;
-    }
-
-    // Stop Gecko's own handling either way. Letting the request continue would
-    // race our fetch and still drop a .meta4 in the downloads folder.
-    try {
-      request.cancel(Cr.NS_BINDING_ABORTED);
-    } catch {
-      // already dead
-    }
-
-    if (!uri) return;
-    // The response observer in MetalinkHttp usually gets here first (it catches
-    // the Content-Disposition: attachment case this factory cannot see at all).
-    // Claim the URL so one document never opens two pickers.
-    const { claimMetalinkUrl } = ChromeUtils.importESModule(
-      "resource://noraneko/modules/MetalinkHttp.sys.mjs",
-    ) as { claimMetalinkUrl(u: string): boolean };
-    if (!claimMetalinkUrl(uri)) return;
-
-    // Re-fetch rather than reading the cancelled channel's stream: the bytes
-    // are small, the request is already being torn down, and a fresh fetch
-    // keeps this off the necko listener path entirely.
-    handleMetalinkUri(uri).catch((e) => console.error("[Metalink]", e));
-  }
-}
-
-const factory: nsIFactory = {
-  createInstance<T extends nsIID>(iid: T): nsQIResult<T> {
-    return new MetalinkContentHandler().QueryInterface(iid);
-  },
-};
-
-type ComponentID = ReturnType<typeof Services.uuid.generateUUID>;
-const registeredCids: ComponentID[] = [];
-
-/**
- * Register the handler for both Metalink media types. Idempotent; safe to call
- * from every window's startup even though only the first does anything.
- */
-export function registerMetalinkHandler(): void {
-  if (registeredCids.length) return;
-  if (!Services.prefs.getBoolPref(PREF_ENABLED, true)) return;
-
-  const registrar = getComponentRegistrar();
-  if (!registrar) {
-    console.error("[Metalink] no component registrar; handler not registered");
-    return;
-  }
-
-  for (const type of CONTENT_TYPES) {
-    try {
-      const cid = Services.uuid.generateUUID();
-      registrar.registerFactory(
-        cid as unknown as nsIID,
-        `Metalink content handler (${type})`,
-        `@mozilla.org/uriloader/content-handler;1?type=${type}`,
-        factory,
-      );
-      registeredCids.push(cid);
-    } catch (e) {
-      console.error(`[Metalink] could not register handler for ${type}`, e);
-    }
-  }
-}
-
-export function unregisterMetalinkHandler(): void {
-  const registrar = getComponentRegistrar();
-  if (!registrar) return;
-  for (const cid of registeredCids.splice(0)) {
-    try {
-      registrar.unregisterFactory(cid as unknown as nsIID, factory);
-    } catch (e) {
-      console.error("[Metalink] unregisterFactory", e);
-    }
-  }
-}
-
-/**
- * Open a Metalink document by URL without going through content handling —
- * used by the RFC 6249 path, where a `rel=describedby` header points at a
- * `.meta4` for a file the user is already downloading.
- */
+/** Read a Metalink at `url` and broadcast it for the chrome layer to act on. */
 export function openMetalinkUrl(url: string): Promise<void> {
   return handleMetalinkUri(url);
 }

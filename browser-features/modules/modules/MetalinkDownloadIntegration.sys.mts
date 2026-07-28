@@ -103,6 +103,8 @@ export function metalinkDetails(download: object) {
  */
 class MetalinkSaver {
   download: DownloadLike | null = null;
+  // Recreated on every execute(): retry calls start() again on the same saver,
+  // and a spent controller would cancel the new attempt instantly.
   #controller = new AbortController();
   #file: MetalinkFile;
   #mirrors: MetalinkUrl[];
@@ -127,6 +129,7 @@ class MetalinkSaver {
   async execute(aSetProgressBytesFn: SetProgressFn): Promise<void> {
     const target = this.download?.target.path;
     if (!target) throw new Error("Metalink download has no target path");
+    this.#controller = new AbortController();
 
     // Report 0 immediately so the panel shows a determinate bar from the start
     // rather than sitting on "unknown size" until the first chunk lands.
@@ -139,7 +142,11 @@ class MetalinkSaver {
       target,
       (p) => {
         this.#lastProgressAt = Date.now();
-        aSetProgressBytesFn(p.receivedBytes, p.totalBytes, true);
+        // false: no resumable part file exists. Reporting true made a
+        // canceled download render as PAUSED (canceled + hasPartialData),
+        // whose action button is pause/resume — so cancel showed "Paused"
+        // and the next click restarted the transfer.
+        aSetProgressBytesFn(p.receivedBytes, p.totalBytes, false);
       },
       this.#controller.signal,
     );
@@ -183,7 +190,13 @@ class MetalinkSaver {
     this.#controller.abort();
   }
 
-  async removePartialData(): Promise<void> {
+  /**
+   * The saver-contract method Download.removePartialData and the panel's
+   * cancel actually call. Its earlier name here (removePartialData) is not
+   * part of the contract, so the call threw and hasPartialData never cleared.
+   */
+  async removeData(canRemoveFinalTarget = false): Promise<void> {
+    if (this.download?.succeeded && !canRemoveFinalTarget) return;
     const target = this.download?.target.path;
     if (target) await IOUtils.remove(target).catch(() => {});
   }

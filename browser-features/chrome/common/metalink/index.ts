@@ -85,8 +85,6 @@ export default class Metalink extends NoraComponentBase {
 
   init(): void {
     try {
-      (ChromeUtils.importESModule(SERVICE_URI) as MetalinkServiceModule)
-        .registerMetalinkHandler();
       (ChromeUtils.importESModule(HTTP_URI) as { startMetalinkHttp(): void })
         .startMetalinkHttp();
     } catch (e) {
@@ -293,6 +291,7 @@ export default class Metalink extends NoraComponentBase {
     downloader: MetalinkDownloaderModule,
   ): Promise<void> {
     const r = await downloader.downloadMetalinkFile(file, mirrors, hash);
+    if (r.cancelled) return;
     if (r.ok) {
       this.notify(
         `${file.name} downloaded${

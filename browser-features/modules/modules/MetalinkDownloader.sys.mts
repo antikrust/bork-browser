@@ -45,6 +45,7 @@ interface DownloadLike {
   cancel(): Promise<void>;
   removePartialData(): Promise<void>;
   target: { path: string };
+  canceled?: boolean;
   error?: { message?: string } | null;
 }
 
@@ -56,6 +57,8 @@ export interface MetalinkAttempt {
 
 export interface MetalinkDownloadResult {
   ok: boolean;
+  /** True when the user cancelled; not a failure to report as one. */
+  cancelled?: boolean;
   /** Final on-disk path, present when ok. */
   path?: string;
   /** Which mirror actually served it. */
@@ -213,6 +216,18 @@ export async function downloadMetalinkFile(
         await download?.removePartialData();
       } catch {
         // best effort
+      }
+      // A cancel is the user stopping the download, not this mirror failing —
+      // moving on to the next mirror made cancel spawn a fresh transfer per
+      // remaining mirror.
+      if (download?.canceled) {
+        return {
+          ok: false,
+          verified: false,
+          cancelled: true,
+          attempts,
+          error: "cancelled",
+        };
       }
       continue;
     }

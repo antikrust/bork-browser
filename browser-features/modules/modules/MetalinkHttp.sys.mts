@@ -248,29 +248,11 @@ const METALINK_TYPES = new Set([
  */
 const selfFetching = new Set<string>();
 
-/** Recently intercepted, so the two entry points cannot both act on one URL. */
-const handled = new Map<string, number>();
-const HANDLED_TTL_MS = 30_000;
-
 export function beginSelfFetch(url: string): void {
   selfFetching.add(url);
 }
 export function endSelfFetch(url: string): void {
   selfFetching.delete(url);
-}
-
-/**
- * True once per URL per 30s. Both the nsIContentHandler factory and the
- * response observer can see the same document; whichever gets there first wins.
- */
-export function claimMetalinkUrl(url: string): boolean {
-  const now = Date.now();
-  for (const [k, t] of handled) {
-    if (now - t > HANDLED_TTL_MS) handled.delete(k);
-  }
-  if (handled.has(url)) return false;
-  handled.set(url, now);
-  return true;
 }
 
 function looksLikeMetalink(url: string, contentType: string): boolean {
@@ -311,15 +293,10 @@ const responseObserver = {
 
       // --- Metalink document interception ---
       //
-      // This, not the nsIContentHandler factory, is what actually catches real
-      // Metalink downloads. Every server that publishes them sends
-      // `Content-Disposition: attachment` (they ARE downloads), and that routes
-      // Gecko straight to nsIExternalHelperAppService without ever consulting
-      // the `@mozilla.org/uriloader/content-handler;1?type=` contract. The
-      // factory therefore only ever fired for documents served inline, which no
-      // real mirror does — LibreOffice's .meta4 sails right past it.
-      //
-      // Examining the response catches it regardless of disposition.
+      // The only place a Metalink load is intercepted. Content-type or
+      // extension, top-level loads only. Examining the response works whatever
+      // the Content-Disposition — which the content-handler contract does not,
+      // since `attachment` bypasses it entirely.
       if (
         !selfFetching.has(url) &&
         Services.prefs.getBoolPref(PREF_METALINK_ENABLED, true) &&
@@ -334,7 +311,7 @@ const responseObserver = {
         } catch {
           isDocument = false;
         }
-        if (isDocument && claimMetalinkUrl(url)) {
+        if (isDocument) {
           channel.cancel(Cr.NS_BINDING_ABORTED);
           const svc = ChromeUtils.importESModule(
             "resource://noraneko/modules/MetalinkService.sys.mjs",

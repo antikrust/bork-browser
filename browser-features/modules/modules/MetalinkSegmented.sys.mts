@@ -246,6 +246,7 @@ async function fetchChunk(
   url: string,
   chunk: Chunk,
   signal?: AbortSignal,
+  onBytes?: (soFar: number) => void,
 ): Promise<Uint8Array> {
   // A stall clock rather than a total deadline: every arriving block pushes it
   // out, so a slow mirror finishes and a silent one is cut loose in seconds.
@@ -288,6 +289,7 @@ async function fetchChunk(
       }
       buf.set(value, at);
       at += value.byteLength;
+      onBytes?.(at);
     }
     if (at !== expected) {
       throw new Error(`got ${at} bytes, expected ${expected}`);
@@ -361,6 +363,24 @@ export async function downloadSegmented(
   const active = new Set<string>();
   let received = 0;
   let completed = 0;
+  /**
+   * Bytes arrived for chunks still in flight, so the bar moves continuously
+   * instead of jumping once per 8MB chunk — on a slow mirror that looked like
+   * a stalled download, and made a cancel look like it had done nothing.
+   * Racing copies are excluded: they would double-count against the winner.
+   */
+  const inflight = new Map<number, number>();
+  const report = () => {
+    let live = 0;
+    for (const n of inflight.values()) live += n;
+    onProgress?.({
+      receivedBytes: Math.min(received + live, size),
+      totalBytes: size,
+      activeMirrors: [...active],
+      completedChunks: completed,
+      totalChunks: chunks.length,
+    });
+  };
 
   const writer = new OffsetWriter(targetPath, size);
   const workerCount = Math.min(usable.length, MAX_CONNECTIONS);
@@ -407,7 +427,15 @@ export async function downloadSegmented(
 
       active.add(mirror.url);
       try {
-        const bytes = await fetchChunk(mirror.url, chunk, opSignal);
+        const bytes = await fetchChunk(
+          mirror.url,
+          chunk,
+          opSignal,
+          racing ? undefined : (soFar) => {
+            inflight.set(chunk.index, soFar);
+            report();
+          },
+        );
         if (!done.has(chunk.index)) {
           await writer.write(chunk.start, bytes);
           done.add(chunk.index);
@@ -417,14 +445,9 @@ export async function downloadSegmented(
           if (done.size === chunks.length) opCtl.abort();
           received += bytes.byteLength;
           completed++;
+          inflight.delete(chunk.index);
           contributions[mirror.url] = (contributions[mirror.url] ?? 0) + 1;
-          onProgress?.({
-            receivedBytes: received,
-            totalBytes: size,
-            activeMirrors: [...active],
-            completedChunks: completed,
-            totalChunks: chunks.length,
-          });
+          report();
         }
       } catch (e) {
         // A lost race is not a failure — the winner already wrote it.
@@ -432,6 +455,7 @@ export async function downloadSegmented(
           queue.unshift(chunk);
           pending.delete(chunk.index);
         }
+        inflight.delete(chunk.index);
         active.delete(mirror.url);
         if (signal?.aborted) return;
         // Cut loose after completion, or beaten to this chunk: neither is the

@@ -34,8 +34,6 @@ export interface MetalinkModule {
 }
 
 export interface MetalinkServiceModule {
-  registerMetalinkHandler(): void;
-  unregisterMetalinkHandler(): void;
   openMetalinkUrl(url: string): Promise<void>;
   readMetalinkUrl(url: string): Promise<MetalinkDocument>;
 }
@@ -97,6 +95,7 @@ export interface MetalinkAttempt {
 
 export interface MetalinkDownloadResult {
   ok: boolean;
+  cancelled?: boolean;
   path?: string;
   mirror?: string;
   verified: boolean;
