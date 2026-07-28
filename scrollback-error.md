@@ -115,6 +115,37 @@ wheel-transaction latch target that will capture strip and page input. There
 is no third option. Check `getComputedStyle(el).overflowX` before shipping any
 new scroller in the toolbox.**
 
+## Addendum (same day): the engine defect itself, fixed in the runtime
+
+Unlatching row 2 fixed the tab area but the user still froze on PAGES —
+because the same machinery runs inside every content process, and **any page
+with a horizontal scroller is a trap**: one wheel tick that clips a carousel
+or code block latches it, and vertical scrolling over the whole page is then
+routed INTO it, where it dies — renewed past the 1.5s timeout by the deltaX
+component of every diagonal trackpad event. Recorded live in the user's own
+session (element-level probe: events over `#below` dispatched at the
+carousel's div, `MIS: true`, scrollY frozen), then reproduced synthetically
+on demand. Escape "fixing it" was `WheelTransaction::OnEvent` ending the
+transaction on keydown — the user had been curing it by typing for weeks.
+
+Fixed at the source in the bork runtime (`bork-runtime` commit
+`8108364c34e`, dom/events/WheelHandlingHelper.{h,cpp} +
+layout/base/PresShell.cpp):
+- `WheelTransaction::CanRouteEvent` — a transaction only owns events whose
+  **dominant axis** its latched scroller can scroll (axis capability, not
+  remaining range, so end-of-travel does not cause mid-gesture handoff).
+- `PresShell::UpdateWheelEventTarget` additionally refuses group targets
+  from a **different pres shell** — the transaction is process-global,
+  chrome-side tab switches are invisible to it, and a hidden tab keeps its
+  frames, so the stored target could point into the previous tab.
+On either mismatch the transaction ends and events target by position.
+
+Verified post-build: the carousel latch no longer captures a single vertical
+event, and a latched about:downloads list receives nothing after a tab
+switch (hidden tab moved 0px; the visible page scrolled). **The fix lives in
+the runtime — a mac runtime built from `nora-0.2.0` ≥ `8108364c34e` carries
+it; linux/windows runtimes need the next `build-all-runtimes.sh` tag.**
+
 ---
 
 # Row 1 froze page scrolling too (FIXED 2026-07-26)

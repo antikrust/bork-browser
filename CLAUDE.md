@@ -349,6 +349,12 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
 - Toolkit `<arrowscrollbox>` stays banned for chrome we own: stock on_wheel consumes declined
   events, and `_arrowScrollAnim.sample()`'s rAF loop has no exit condition (see
   `@nora/solid-xul` below). Full mechanism + measured repro: `scrollback-error.md`.
+- **The engine half is patched in the runtime** (`bork-runtime` `8108364c34e`): a wheel
+  transaction only owns events whose dominant axis its latched scroller can scroll, and never
+  routes into a different pres shell (hidden-tab staleness). Without it, any in-page
+  horizontal scroller froze vertical page scrolling for as long as the user kept scrolling.
+  Mac runtimes ≥ that commit carry it; a linux/windows runtime rebuilt from an older tag
+  REINTRODUCES the page freeze — check before shipping runtime tags.
 - **Diagnostic worth keeping: if typing clears a scrolling problem, it is the wheel
   transaction, not a janked main thread.** `WheelTransaction::OnEvent` ends the transaction on
   `eKeyDown`/`eKeyPress`/`eMouseDown` (`dom/events/WheelHandlingHelper.cpp`), and a janked main
