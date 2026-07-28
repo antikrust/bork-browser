@@ -1,16 +1,64 @@
-# scrollback-error — the tab-strip scroll bugs, root cause found 2026-07-28
+# scrollback-error — every scroll bug, every cause, all closed 2026-07-28
 
-**Read the first section before touching ANYTHING about scrolling.** It is the
-mechanism that generated every symptom in this file, it is deterministic, and
-it has a 4-step reproduction. The sections below it are the history of fighting
-its shadows one symptom at a time.
+**Read "THE PERSISTENT PAGE FREEZE" section first.** The bug that survived
+every fix in this file was never in the code: **debugging it kept poisoning
+the profile being debugged.** Then read the wheel-transaction section — the
+tab-area mechanism — before touching anything about scrolling.
 
-| Symptom | Row | Status |
-| --- | --- | --- |
-| Scrolling one surface then quickly another: wheel input lands on the WRONG one for up to 1.5s | all | root cause, fixed 2026-07-28, next section |
-| The strip **scrolls itself back** / snaps back to the selected tab | row 1 | two carriers, both fixed (2026-07-17 momentum mapping, 2026-07-28 capture + recentre) |
-| Scrolling row 2 kills **page** scrolling; recovers instantly if you type | row 2 | two carriers, both fixed (2026-07-25 consume starvation, 2026-07-28 transaction capture) |
-| Scrolling **row 1** kills page scrolling the same way | row 1 | fixed 2026-07-26 (consume starvation half) |
+| Symptom | Where | Final cause | Status |
+| --- | --- | --- | --- |
+| Vertical page scrolling freezes for many seconds, any site, recovers with a lurch | pages | **automation pref leftovers in the profile** (next section) | fixed + self-healing, user-confirmed 2026-07-28 |
+| Scrolling one tab-area surface then quickly another: input lands on the WRONG one | rows | wheel-transaction capture | fixed 2026-07-28 |
+| The strip **scrolls itself back** / snaps to the selected tab | row 1 | momentum mapping + resize recentres | fixed 2026-07-17 / 2026-07-28 |
+| Scrolling row 2 killed **page** scrolling (~25s, typing recovered it) | row 2 | arrowscrollbox consume starvation | fixed 2026-07-25 |
+| Scrolling **row 1** killed page scrolling the same way | row 1 | same defect, runtime patch | fixed 2026-07-26 |
+
+---
+
+# THE PERSISTENT PAGE FREEZE — automation prefs in the profile (RESOLVED 2026-07-28)
+
+The freeze that outlived the row fixes, the engine fixes, and a uBlock-off
+test was three user prefs sitting in the DAILY profile:
+
+```
+apz.content_response_timeout = 60000        (stock: 400)
+mousewheel.transaction.timeout = 1          (stock: 1500)
+mousewheel.allow_scrolling_more_than_one_page = true
+```
+
+**The first is the freeze.** Before the compositor scrolls a page that has
+wheel/touch listeners (every modern page), it asks the content process
+whether the scroll is cancelled, and waits at most
+`apz.content_response_timeout` for the answer. Stock: 0.4s. At 60000, a busy
+content process (heavy sites, stack tabs mid-session-restore) parks
+scrolling for up to a minute while events pile up — delivered but nothing
+moves, then a lurch when the queue flushes. Any page, any extension state,
+untouched by every event-routing fix, exactly as recorded live.
+
+**Where they came from:** the first and third are on Firefox's own
+automation list (`remote/shared/RecommendedPreferences.sys.mjs:101,346` in
+this runtime) — **every `-marionette` launch applies that list AS USER
+PREFS, and they persist in the profile after the session ends.** Each
+instrumented debugging run re-poisoned the very profile it was debugging;
+scratch profiles were clean, which is why no synthetic reproduction ever
+matched the user's browser. The second pref matches the "global
+mousewheel.transaction.timeout" experiment recorded as a dead end below —
+set by hand during an earlier hunt and never cleared.
+
+**The fix** (`84af84efbd`): the leftovers were deleted from the profile, and
+`NoranekoStartup.healAutomationScrollPrefs()` now clears any user value on
+those prefs at every normal launch (skipped while `MOZ_MARIONETTE` is set,
+since a live automation session needs them). A debugged profile heals on its
+next real run. User-confirmed: the freeze is gone.
+
+**The law this section adds:** never launch the daily profile with
+`-marionette` expecting it to stay a daily profile — and when a symptom
+survives every code fix, `grep` the profile's prefs.js before building
+another theory. Also disproven along the way, for the record: this freeze
+was NOT the in-page consent/overlay scroll-lock and NOT uBlock cosmetic
+filtering (reproduced identically with uBO disabled), and no keypress-cures
+were ever reported for it — that fingerprint belonged only to the 2026-07-25
+row-2 bug below.
 
 ---
 

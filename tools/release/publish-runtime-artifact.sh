@@ -79,10 +79,20 @@ fi
 [ -n "$FORGEJO_TOKEN" ] || fail "BORK_FORGEJO_TOKEN not set (need a Forgejo token with write:repository for ${RUNTIME_REPO} on ${FORGEJO_HOST})"
 
 # Release id for $tag, or empty if the release does not exist yet.
-rid="$(curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" "$API/releases/tags/$tag" 2>/dev/null \
-  | python3 -c "import sys,json
+#
+# The 404 for a not-yet-created release must not kill the script: `curl -f`
+# exits non-zero on it, and under `set -euo pipefail` a bare command
+# substitution turned that into a SILENT whole-script exit — so publishing a
+# NEW tag always died here, before printing anything, and the create-release
+# branch below could never be reached. Capture the body first, and only parse
+# it when the request actually succeeded.
+rid=""
+if body="$(curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" \
+    "$API/releases/tags/$tag" 2>/dev/null)"; then
+  rid="$(printf '%s' "$body" | python3 -c "import sys,json
 try: print(json.load(sys.stdin).get('id',''))
 except Exception: print('')")"
+fi
 
 if [ -z "$rid" ]; then
   log "creating release $tag on $RUNTIME_REPO@$FORGEJO_HOST"
@@ -97,9 +107,14 @@ fi
 upload_asset() {
   local path="$1" name existing
   name="$(basename "$path")"
-  existing="$(curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" "$API/releases/$rid/assets" 2>/dev/null \
-    | python3 -c "import sys,json
-[print(a['id']) for a in json.load(sys.stdin) if a.get('name')=='$name']" 2>/dev/null)"
+  # Same pipefail trap as the release lookup above: a failed request here must
+  # mean "no existing asset", not "abort the publish".
+  existing=""
+  if listing="$(curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" \
+      "$API/releases/$rid/assets" 2>/dev/null)"; then
+    existing="$(printf '%s' "$listing" | python3 -c "import sys,json
+[print(a['id']) for a in json.load(sys.stdin) if a.get('name')=='$name']" 2>/dev/null || true)"
+  fi
   if [ -n "$existing" ]; then
     log "replacing existing asset $name"
     curl -fsSL -H "Authorization: token $FORGEJO_TOKEN" -X DELETE \
