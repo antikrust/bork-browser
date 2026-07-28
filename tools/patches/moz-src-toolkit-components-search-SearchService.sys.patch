@@ -189,7 +189,7 @@ diff --git a/moz-src/toolkit/components/search/SearchService.sys.mjs b/moz-src/t
 +          },
 +        },
 +      ],
-+      appDefaultEngineId: "google",
++      appDefaultEngineId: "ddg",
 +    };
 +    /*@nora:inject:end*/
      return this.#engineSelector.fetchEngineConfiguration(

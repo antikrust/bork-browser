@@ -93,18 +93,23 @@ overlay() {
   bash static/gecko/pref/override.sh \
     "$approot/browser/defaults/preferences/firefox.js"
 
-  # Distribution policies + theme pack. The injector only ever writes these into
+  # Distribution config + add-on pack. The injector only ever writes these into
   # the dev tree (it targets _dist/bin), so clean runtime trees need them copied
-  # in or fresh installs get no policies and no themes. refresh_distribution
-  # (called once before the lanes) has already rebuilt the source directory.
-  log "installing distribution policies + theme pack"
+  # in. refresh_distribution (called once before the lanes) has already rebuilt
+  # the source directory. NO policies.json ships, ever: any active enterprise
+  # policy makes every profile display "Your browser is being managed by your
+  # organisation" — search default travels in distribution.ini instead, and the
+  # default add-ons (themes + uBO + Dark Reader) are ordinary removable
+  # installs from distribution/extensions.
+  log "installing distribution config + add-on pack"
   local dist_src="_dist/bin/floorp/Floorp.app/Contents/Resources/distribution"
-  [ -f "$dist_src/policies.json" ] ||
-    fail "policies.json missing from dev tree — run stage once"
+  [ -f "$dist_src/distribution.ini" ] ||
+    fail "distribution.ini missing from dev tree — run 'deno task feles-build misc distribution'"
   [ -d "$dist_src/extensions" ] ||
-    fail "distribution/extensions (theme pack) missing from dev tree — run stage once"
+    fail "distribution/extensions (add-on pack) missing from dev tree — run 'deno task feles-build misc distribution'"
   mkdir -p "$approot/distribution"
-  cp "$dist_src/policies.json" "$approot/distribution/policies.json"
+  cp "$dist_src/distribution.ini" "$approot/distribution/distribution.ini"
+  rm -f "$approot/distribution/policies.json"
   cp -R "$dist_src/extensions" "$approot/distribution/extensions"
 
   log "installing icons"

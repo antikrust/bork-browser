@@ -108,12 +108,52 @@ function initializeVersionInfo(): void {
   Services.prefs.setStringPref("floorp.startup.oldVersion", nowVersion);
 }
 
+/**
+ * bork's default add-ons (uBlock Origin, Dark Reader) ship in the app's
+ * distribution/extensions directory, which Firefox only auto-installs when a
+ * profile is new or the GECKO version changes — bork releases keep the same
+ * Gecko, so existing profiles would never receive them. This adopts them into
+ * existing profiles exactly once per add-on id: a per-id pref records the
+ * attempt, so an add-on the user removes stays removed forever.
+ */
+async function adoptDistributionAddons(): Promise<void> {
+  const ADOPT_IDS = ["uBlock0@raymondhill.net", "addon@darkreader.org"];
+  const PREF_BASE = "bork.distribution.adopted.";
+  try {
+    const { AddonManager } = ChromeUtils.importESModule(
+      "resource://gre/modules/AddonManager.sys.mjs",
+    );
+    const distDir = Services.dirsvc.get("XREAppDist", Ci.nsIFile);
+    for (const id of ADOPT_IDS) {
+      if (Services.prefs.getBoolPref(PREF_BASE + id, false)) continue;
+      // Never reinstall over anything present (any state — disabled counts).
+      const existing = await AddonManager.getAddonByID(id);
+      if (existing) {
+        Services.prefs.setBoolPref(PREF_BASE + id, true);
+        continue;
+      }
+      const xpi = distDir.clone();
+      xpi.append("extensions");
+      xpi.append(`${id}.xpi`);
+      if (!xpi.exists()) continue;
+      const install = await AddonManager.getInstallForFile(xpi);
+      await install.install();
+      Services.prefs.setBoolPref(PREF_BASE + id, true);
+      console.log(`[NoranekoStartup] adopted distribution add-on ${id}`);
+    }
+  } catch (e) {
+    console.error("[NoranekoStartup] distribution add-on adoption failed:", e);
+  }
+}
+
 export function onFinalUIStartup(): void {
   Services.obs.removeObserver(onFinalUIStartup, "final-ui-startup");
 
   createDefaultUserChromeFiles().catch((error) => {
     console.error("Failed to create default userChrome files:", error);
   });
+
+  adoptDistributionAddons();
 
   openReleaseNotesInRecentWindow();
 

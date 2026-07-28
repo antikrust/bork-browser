@@ -13,40 +13,44 @@ import { BIN_DIR, PROD_BIN_DIR, PROJECT_ROOT } from "./defines.ts";
 const logger = new Logger("injector");
 
 /**
- * bork: default extension pack, delivered via the enterprise-policy file the
- * browser reads from <app>/distribution/policies.json. "normal_installed"
- * auto-installs on first run (downloaded from AMO) but stays user-removable.
+ * bork ships NO enterprise policies. Any active policy — even one line —
+ * makes every profile show "Your browser is being managed by your
+ * organisation" in settings, which reads as spyware on a personal browser.
+ * What policies.json used to carry moved to mechanisms that do not trip the
+ * banner:
+ *  - default search engine -> distribution/distribution.ini ([Global] +
+ *    searchDefault), the classic distro mechanism;
+ *  - DisableAppUpdate -> nothing. The runtime's compiled-in update URL is
+ *    Mozilla's aus5 server, which does not serve this product, so Mozilla's
+ *    checker finds nothing by itself; updates are bork's own check
+ *    (NoranekoUpdateChecker reads updates/update.xml from the repo).
+ *    override.ini sets app.update.auto = false so it never even tries a
+ *    background download.
+ * Default add-ons (uBO, Dark Reader, the theme pack) install from
+ * distribution/extensions as ordinary user-removable add-ons.
  */
-const DEFAULT_POLICIES = {
-  policies: {
-    SearchEngines: {
-      Default: "DuckDuckGo",
-    },
-    // The runtime's compiled-in update URL is Mozilla's aus5 server, which
-    // doesn't serve this product — every check is a no-op ping. Updates are
-    // bork's own check instead (chrome/common/update-check reads
-    // updates/update.xml from the repo's main branch).
-    DisableAppUpdate: true,
-    // No ExtensionSettings, deliberately: bork auto-installs NOTHING into a new
-    // profile. The pack went uBO + Ghostery + Privacy Badger -> uBO + Dark
-    // Reader -> nothing. Blocking a user never chose is still a default they
-    // have to undo, and every bundled add-on is one more "which extension broke
-    // this site" mystery plus a third party fetching an .xpi on first run.
-    // Consent auto-reject is covered natively anyway (bork-defaults sets
-    // cookiebanners.service.mode 1).
-    //
-    // Adding one back means adding the key here — and NOT hand-editing
-    // _dist/bin/.../distribution/policies.json, which is a build output, not
-    // config. Getting that backwards is why the two removed blockers kept
-    // shipping for four days after they were deleted from this file.
-  },
-};
+const DISTRIBUTION_INI = [
+  "[Global]",
+  "id=bork",
+  "version=1.0",
+  "about=bork",
+  "",
+  "[Preferences]",
+  "",
+  "[Search]",
+  "searchDefault=DuckDuckGo",
+  "",
+].join("\n");
 
 /**
- * bork theme pack: the static WebExtension themes in browser-features/themes/
- * are zipped into <app>/distribution/extensions/<gecko-id>.xpi, which Firefox
- * auto-installs into new profiles (user-visible in about:addons, removable).
- * The runtime does not enforce add-on signing, so plain zips are enough.
+ * bork add-on pack: the static WebExtension themes in browser-features/themes/
+ * are zipped into <app>/distribution/extensions/<gecko-id>.xpi, and the
+ * vendored default extensions in browser-features/extensions/ (uBlock Origin,
+ * Dark Reader — .xpi files named by their gecko id) are copied in beside them.
+ * Firefox auto-installs everything in that directory into new profiles as
+ * ordinary add-ons: user-visible in about:addons, user-removable, no policy
+ * machinery involved. The runtime does not enforce add-on signing, so plain
+ * zips are enough for the themes.
  */
 export function installThemePack(): void {
   const themesSrc = path.join(PROJECT_ROOT, "browser-features", "themes");
@@ -84,10 +88,24 @@ export function installThemePack(): void {
       }
       count++;
     }
-    logger.success(`theme pack: ${count} themes → distribution/extensions`);
+    let bundled = 0;
+    const bundledSrc = path.join(PROJECT_ROOT, "browser-features", "extensions");
+    if (exists(bundledSrc)) {
+      for (const entry of Deno.readDirSync(bundledSrc)) {
+        if (!entry.isFile || !entry.name.endsWith(".xpi")) continue;
+        Deno.copyFileSync(
+          path.join(bundledSrc, entry.name),
+          path.join(extDir, entry.name),
+        );
+        bundled++;
+      }
+    }
+    logger.success(
+      `add-on pack: ${count} themes + ${bundled} extensions → distribution/extensions`,
+    );
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    logger.error(`Failed to build theme pack: ${msg}`);
+    logger.error(`Failed to build add-on pack: ${msg}`);
   }
 }
 
@@ -96,13 +114,16 @@ export function installDistributionPolicies(): void {
   try {
     Deno.mkdirSync(distDir, { recursive: true });
     Deno.writeTextFileSync(
-      path.join(distDir, "policies.json"),
-      JSON.stringify(DEFAULT_POLICIES, null, 2),
+      path.join(distDir, "distribution.ini"),
+      DISTRIBUTION_INI,
     );
-    logger.success("distribution/policies.json written (default extensions)");
+    // An old policies.json in the build tree would still ship and still trip
+    // the "managed by your organisation" banner — remove, never carry.
+    safeRemove(path.join(distDir, "policies.json"));
+    logger.success("distribution/distribution.ini written (no policies)");
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    logger.error(`Failed to write distribution policies: ${msg}`);
+    logger.error(`Failed to write distribution config: ${msg}`);
   }
 }
 
