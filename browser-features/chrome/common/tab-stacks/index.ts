@@ -154,20 +154,41 @@ export default class TabStacks extends NoraComponentBase {
       hotCtx: import.meta.hot,
     });
 
-    // Stop the strip yanking back to a hidden stacked tab. Firefox re-runs
-    // _handleTabSelect -> ensureTabIsVisible(selectedTab) on EVERY tab-strip
-    // resize (tabs.js handleResize). When the selected tab is a stack member
-    // it is hidden (zero width) at the chip's spot, so this scrolled the row
-    // back to the chip during manual scrolling — and each scroll toggles the
-    // overflow buttons, resizing the strip, firing it again (a scroll/resize
-    // fight). A hidden zero-width element cannot be "made visible" anyway, so
-    // skip it; every other tab still scrolls into view normally.
+    // THE one wrap on the strip's scroll-into-view. Firefox re-runs
+    // _handleTabSelect -> ensureTabIsVisible(selectedTab) on window resize,
+    // fullscreen flips, uidensity changes and every overflow start (tabs.js),
+    // which yanks a manually-scrolled strip back to the selected tab. Two
+    // skips, one wrapper — a second wrapper on this method is how stale
+    // wrappers survive teardown, so any future condition belongs HERE:
+    //  * hidden target: the selected tab is a stack member, hidden (zero
+    //    width) at the chip's spot. Scrolling "to" it walked the strip back
+    //    to the chip on every strip resize. A hidden element cannot be made
+    //    visible by scrolling anyway.
+    //  * user-positioned: any wheel over the strip since the current tab was
+    //    selected means the user chose this scroll position; recentres onto
+    //    that same still-selected tab are refused until the selection
+    //    changes (selecting a tab is the one recentre a user actually asks
+    //    for, and it re-enables the pass-through by identity).
+    // The arming listener is passive capture: it can only observe — it is
+    // physically unable to consume or reorder wheel events.
     const asb = (gb.tabContainer as unknown as {
       arrowScrollbox?: XULElement & {
         ensureElementIsVisible: (el: Element, instant?: boolean) => void;
         __borkEnsureWrapped?: boolean;
       };
     }).arrowScrollbox;
+    let userPositionedFor: Element | null = null;
+    const tabsContainer = gb.tabContainer as unknown as Element;
+    const armRecentreLatch = () => {
+      userPositionedFor = (gb.selectedTab as unknown as Element) ?? null;
+    };
+    tabsContainer.addEventListener("wheel", armRecentreLatch, {
+      capture: true,
+      passive: true,
+    });
+    onCleanup(() =>
+      tabsContainer.removeEventListener("wheel", armRecentreLatch, true)
+    );
     if (asb && !asb.__borkEnsureWrapped) {
       const orig = asb.ensureElementIsVisible.bind(asb);
       asb.ensureElementIsVisible = (el: Element, instant?: boolean) => {
@@ -178,6 +199,14 @@ export default class TabStacks extends NoraComponentBase {
               el.getBoundingClientRect?.().width === 0)
           ) {
             return;
+          }
+          if (userPositionedFor) {
+            const selected = (gb.selectedTab as unknown as Element) ?? null;
+            if (selected !== userPositionedFor) {
+              userPositionedFor = null;
+            } else if (el === selected) {
+              return;
+            }
           }
         } catch {
           // fall through to native

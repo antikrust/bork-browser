@@ -426,16 +426,20 @@ tab-group[data-bork-stack] .tab-group-label[data-bork-count]::after {
      bork.css zeroes #nav-bar's so its panel toggles can sit over the panels. */
 }
 
-/* The scroller. Overflow is handled by the compositor, with no script on the
-   wheel — the whole point of not being an <arrowscrollbox>. No scrollbar; the
+/* The scroller. overflow-x MUST stay hidden, not auto: hidden zeroes the
+   row's user-input scroll range, which keeps Gecko's wheel transaction from
+   ever latching onto this row — a latched transaction retargets EVERY wheel
+   event in the window at its holder for up to 1.5s, which is how this row
+   captured tab-strip and page scrolling when it was overflow-x:auto
+   (scrollback-error.md). Script scrolling is unaffected by hidden; the wheel
+   handler and arrows in stack-bar.tsx own all movement. No scrollbar; the
    row is 32px and the arrows are the affordance. */
 #bork-stack-scroller {
   flex: 1;
   min-width: 0;
   height: var(--bork-tab-height, 30px);
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
-  scrollbar-width: none;
 }
 
 /* Content box: at least the scroller's width so cells shrink to their floor

@@ -336,21 +336,13 @@ function StackRow() {
   // uses ([overflowing] / [scrolledtostart] / [scrolledtoend]) so styles.css
   // can mirror tabs.css rule for rule.
   //
-  // Deliberately NOT an <arrowscrollbox>, which is what this row used to be.
-  // Two pieces of that widget's JS came with it and neither is wanted here:
-  //   * on_wheel ends with an unconditional stopPropagation() +
-  //     preventDefault() on EVERY wheel event while the box is [overflowing] —
-  //     whether or not it actually scrolled. That takes the event out of
-  //     Gecko's wheel path entirely (EventStateManager::PostHandleEvent bails
-  //     on eConsumeNoDefault), which is what left page scrolling dead for
-  //     ~25 seconds after a scroll along this row.
-  //   * _arrowScrollAnim.sample() reschedules itself with NO exit condition —
-  //     no isConnected, no _mousedown, no !document. Only an explicit
-  //     _stopScroll() ever ends it, so a lost mouseup or an unmount mid-press
-  //     left a rAF loop hammering scrollByPixels forever (already recorded in
-  //     CLAUDE.md as "freezes page scroll until an unrelated blur/mouseup").
-  // Native overflow scrolling replaces the first; the hold loop below has
-  // every exit condition the toolkit's lacks.
+  // Scroll ownership: this row is overflow-x HIDDEN (styles.css says why:
+  // hidden keeps the browser's wheel transaction from latching onto the row
+  // and swallowing strip/page scrolling), so nothing scrolls it except the
+  // wheel handler and the arrow hold-loop below. Deliberately NOT an
+  // <arrowscrollbox>: that widget consumes wheel events it declined to act
+  // on, and its click-to-scroll rAF loop has no exit condition — the hold
+  // loop below has every exit the toolkit's lacks.
   onMount(() => {
     const row = document!.getElementById("bork-stack-bar");
     const scroller = document!.getElementById("bork-stack-scroller");
@@ -382,6 +374,29 @@ function StackRow() {
     overflowObserver.observe(items);
     scroller.addEventListener("scroll", sync);
     sync();
+
+    // The row's one wheel path. Same rule the tab strip's patched
+    // arrowscrollbox uses: pixel-mode input (trackpads) scrolls only on its
+    // horizontal-dominant events — a macOS momentum tail follows the lift
+    // velocity, not the drag, so mapping vertical pixel deltas onto a
+    // horizontal row lets the tail drag it back on its own. Line/page
+    // devices (plain mouse wheels, no momentum machinery) keep the vertical
+    // mapping so they can drive the row at all. Consume only what scrolled;
+    // everything else falls through to the normal wheel path untouched.
+    const onWheel = (event: WheelEvent) => {
+      if (scroller.scrollWidth - scroller.clientWidth <= 1) return;
+      const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+      if (event.deltaMode === WheelEvent.DOM_DELTA_PIXEL) {
+        if (!horizontal) return;
+        scroller.scrollLeft += event.deltaX;
+      } else {
+        const delta = horizontal ? event.deltaX : event.deltaY;
+        scroller.scrollLeft += delta * ARROW_STEP_PX;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    scroller.addEventListener("wheel", onWheel);
 
     let heldDir = 0;
     let frame = 0;
@@ -438,6 +453,7 @@ function StackRow() {
       heldDir = 0;
       if (frame) cancelAnimationFrame(frame);
       overflowObserver.disconnect();
+      scroller.removeEventListener("wheel", onWheel);
       scroller.removeEventListener("scroll", sync);
       up.removeEventListener("mousedown", holdLeft);
       down.removeEventListener("mousedown", holdRight);
@@ -455,7 +471,8 @@ function StackRow() {
         class="bork-stack-scrollbutton"
         tooltiptext="Scroll tabs left"
       />
-      {/* Native overflow scrolling — no script on the wheel at all. */}
+      {/* overflow-x:hidden + one wheel handler (onWheel above) — the row is
+          invisible to the browser's wheel-transaction machinery. */}
       <xul:hbox id="bork-stack-scroller">
         {/* Sized by its content, so the ResizeObserver above sees tabs come
             and go and labels change width. */}

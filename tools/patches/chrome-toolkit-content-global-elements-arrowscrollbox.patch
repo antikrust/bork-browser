@@ -1,7 +1,35 @@
 diff --git a/chrome/toolkit/content/global/elements/arrowscrollbox.js b/chrome/toolkit/content/global/elements/arrowscrollbox.js
 --- ./chrome/toolkit/content/global/elements/arrowscrollbox.js
 +++ ./chrome/toolkit/content/global/elements/arrowscrollbox.js
-@@ -714,10 +714,21 @@
+@@ -669,12 +669,23 @@
+         let delta = isVertical ? event.deltaY : event.deltaX;
+         let scrollByDelta = isVertical && this.isRTLScrollbox ? -delta : delta;
+ 
+-        if (this._prevMouseScrolls.every(prev => prev == isVertical)) {
++        if (deltaMode == event.DOM_DELTA_PIXEL) {
++          // bork: pixel-mode input (trackpads) scrolls a horizontal box only
++          // with its horizontal-dominant events, and every one of them
++          // scrolls — the two-event axis vote below is for line/page devices
++          // only. The vote dropped the first horizontal event after any
++          // vertical one, which reads as a dead first tick; and mapping
++          // vertical pixel deltas onto a horizontal box lets a macOS momentum
++          // tail — whose axis mix follows the lift velocity, not the drag —
++          // scroll the box back on its own after the fingers have left. Line
++          // and page devices keep the mapping and the vote: a plain mouse
++          // wheel has no horizontal axis and no momentum machinery.
++          doScroll = !isVertical;
++          scrollAmount = scrollByDelta;
++          instant = true;
++        } else if (this._prevMouseScrolls.every(prev => prev == isVertical)) {
+           doScroll = true;
+           scrollAmount = scrollByDelta;
+-          if (deltaMode == event.DOM_DELTA_PIXEL) {
+-            instant = true;
+-          }
+         }
+ 
+         if (this._prevMouseScrolls.length > 1) {
+@@ -714,10 +725,17 @@
            scrollAmount = this._destination - startPos;
          }
          this.scrollByPixels(scrollAmount, instant);
@@ -9,17 +37,13 @@ diff --git a/chrome/toolkit/content/global/elements/arrowscrollbox.js b/chrome/t
  
 -      event.stopPropagation();
 -      event.preventDefault();
-+        // bork: consume ONLY the events we actually acted on. These two calls
-+        // used to sit outside `if (doScroll)`, so an overflowing scrollbox ate
-+        // EVERY wheel event — including the ones the _prevMouseScrolls axis
-+        // filter above deliberately declined, which on a trackpad is most of
-+        // them. preventDefault makes EventStateManager::PostHandleEvent take
-+        // the eConsumeNoDefault branch and skip the whole wheel default-action
-+        // path (scroll target, wheel transaction, APZ handoff), so the live
-+        // wheel transaction stayed latched to the tab strip and page scrolling
-+        // died for ~25s until it timed out. Same defect that made row 2
-+        // unusable; row 2 escaped by dropping the widget, the tab strip
-+        // cannot. See scrollback-error.md.
++        // bork: consume ONLY events this box actually scrolled on. Stock has
++        // these two calls outside `if (doScroll)`, so an overflowing box eats
++        // every wheel event including ones it declined to act on, and
++        // preventDefault takes the whole wheel default-action path with it
++        // (EventStateManager bails on eConsumeNoDefault) — which is how
++        // scrolling along the tab strip starved page scrolling. Declined
++        // events must fall through untouched. See scrollback-error.md.
 +        event.stopPropagation();
 +        event.preventDefault();
 +      }

@@ -324,23 +324,36 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   "vanishing window" hunt). `widget.macos.window-transforms.disabled = true` switches it off —
   do not remove without re-testing. Position panels on `popupshowing`, before first paint.
 
-**Toolkit `<arrowscrollbox>` — do not use it for chrome we own**
-- Its `on_wheel` ends with an **unconditional** `event.stopPropagation()` +
-  `event.preventDefault()` whenever the box is `[overflowing]` — the two calls sit *outside*
-  `if (doScroll)`, so events it deliberately ignored are consumed too (the `_prevMouseScrolls`
-  filter drops everything until two events agree on an axis, which on a trackpad is constant).
-  `EventStateManager::PostHandleEvent` then bails out of the **entire** wheel default-action
-  path on `eConsumeNoDefault`. Scrolling along row 2 froze *page* scrolling for ~25 seconds at
-  a time because of this.
-- Plus `_arrowScrollAnim.sample()`, whose rAF loop has no exit condition (see `@nora/solid-xul`
-  below).
-- Row 2 is a plain `<hbox>` with `overflow-x: auto` flanked by two `toolbarbutton`s as of
-  `312901f058`, and looks and behaves like row 1 with none of the widget's JS.
-  **Do not "restore" the arrowscrollbox.** Full write-up: `scrollback-error.md`.
+**Scroll ownership around the tab strip — THE law (root cause found 2026-07-28)**
+- While a **wheel transaction** is latched onto a chrome scroller, `PresShell::
+  EventTargetData::UpdateWheelEventTarget` **retargets every wheel event in the window at the
+  latched element — pointer position ignored — for up to 1.5s, renewed by every successful
+  scroll including the macOS momentum tail**. Only a scroller with user-input scroll range can
+  latch; CSS `overflow: hidden` zeroes that range (`GetScrollRangeForUserInputEvents`). Row 2
+  as `overflow-x: auto` was the only latchable surface in the tab area, and one wheel tick that
+  clipped it captured strip AND page scrolling wholesale — the "unreproducible" snap-back /
+  page-freeze family. Retargeting happens **before any DOM listener**, so no feature-layer
+  listener can guard against it; the deleted `tab-strip-wheel-guard` tried and its counters
+  read 0 during a live capture.
+- **Therefore: near the strip, a chrome scroller is either `overflow: hidden` + script-scrolled
+  by its one owner, or it is a latch target that will capture input.** Row 2 is
+  `overflow-x: hidden` with exactly one wheel handler (stack-bar.tsx) + the arrow hold-loop.
+  Row 1 is owned by the runtime-patched arrowscrollbox alone
+  (`tools/patches/chrome-toolkit-content-global-elements-arrowscrollbox.patch`): pixel-mode
+  scrolls iff horizontal-dominant (no two-event axis vote, no vertical→horizontal mapping —
+  that mapping let vertical momentum tails drag the strip back), line/page devices keep stock
+  behaviour, and it consumes **only** events it scrolled on (stock ate declined events too,
+  which starved the page's wheel path). One `ensureElementIsVisible` wrap exists, in
+  tab-stacks/index.ts — hidden-target skip + user-positioned recentre latch. **Never add a
+  second wheel system or a second wrap to the strip; extend the owner.**
+- Toolkit `<arrowscrollbox>` stays banned for chrome we own: stock on_wheel consumes declined
+  events, and `_arrowScrollAnim.sample()`'s rAF loop has no exit condition (see
+  `@nora/solid-xul` below). Full mechanism + measured repro: `scrollback-error.md`.
 - **Diagnostic worth keeping: if typing clears a scrolling problem, it is the wheel
   transaction, not a janked main thread.** `WheelTransaction::OnEvent` ends the transaction on
   `eKeyDown`/`eKeyPress`/`eMouseDown` (`dom/events/WheelHandlingHelper.cpp`), and a janked main
-  thread would not have let you type in the first place.
+  thread would not have let you type in the first place. It proved central: "typing fixes it"
+  was the transaction fingerprint all along.
 
 **XUL layout attributes beat CSS — always**
 - `pack`, `align`, `flex`, `orient` on XUL boxes are mapped by Gecko as

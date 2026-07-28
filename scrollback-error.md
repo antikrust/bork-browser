@@ -1,12 +1,119 @@
-# scrollback-error — three tab-strip scroll bugs, all FIXED
+# scrollback-error — the tab-strip scroll bugs, root cause found 2026-07-28
 
-**Three different bugs live in this file. Check which symptom you have:**
+**Read the first section before touching ANYTHING about scrolling.** It is the
+mechanism that generated every symptom in this file, it is deterministic, and
+it has a 4-step reproduction. The sections below it are the history of fighting
+its shadows one symptom at a time.
 
 | Symptom | Row | Status |
 | --- | --- | --- |
-| The strip **scrolls itself back** toward where it was after you scroll away | row 1 | fixed 2026-07-17, [below](#2026-07-17-resolution) |
-| Scrolling row 2 kills **page** scrolling for ~25s; recovers with a jerk, or instantly if you type | row 2 | fixed 2026-07-25, [below](#row-2-froze-page-scrolling-fixed--user-validated-2026-07-25) |
-| Scrolling **row 1** kills page scrolling the same way | row 1 | fixed 2026-07-26, next section |
+| Scrolling one surface then quickly another: wheel input lands on the WRONG one for up to 1.5s | all | root cause, fixed 2026-07-28, next section |
+| The strip **scrolls itself back** / snaps back to the selected tab | row 1 | two carriers, both fixed (2026-07-17 momentum mapping, 2026-07-28 capture + recentre) |
+| Scrolling row 2 kills **page** scrolling; recovers instantly if you type | row 2 | two carriers, both fixed (2026-07-25 consume starvation, 2026-07-28 transaction capture) |
+| Scrolling **row 1** kills page scrolling the same way | row 1 | fixed 2026-07-26 (consume starvation half) |
+
+---
+
+# THE ROOT CAUSE — wheel-transaction capture (FOUND + FIXED 2026-07-28)
+
+Every "unreproducible" scroll bug in this file — the snap-back, the page
+freeze, row 1 going dead — is one engine mechanism plus whichever bork surface
+was eligible for it that week.
+
+**The mechanism (all stock FF152, read out of this runtime's sources):**
+
+1. When a wheel event's default action scrolls a frame, a **wheel
+   transaction** latches onto that scroller
+   (`WheelTransaction::BeginTransaction`, dom/events/WheelHandlingHelper.cpp).
+2. While the transaction is live, `PresShell::EventTargetData::
+   UpdateWheelEventTarget` (layout/base/PresShell.cpp) **retargets EVERY wheel
+   event in the window at the latched element — the pointer position is
+   ignored.** Wheel over the page, over row 1, anywhere: it dispatches at the
+   latched target instead. `EventStateManager::ComputeScrollTargetAndMayAdjust
+   WheelEvent` likewise returns the latched scroller first
+   (`PREFER_MOUSE_WHEEL_TRANSACTION`) **without checking whether the event can
+   actually scroll it**.
+3. The transaction ends only on: 1.5s without a successful scroll of the
+   latched target (`mousewheel.transaction.timeout`), a real mousemove outside
+   the target's rect, or any keydown/mousedown. **Two-finger trackpad
+   scrolling moves no pointer and so generates no mousemoves**, and every
+   successful scroll — including the 2-3s macOS momentum tail, and including
+   the deltaX component of a diagonal page-scroll gesture — **resets the 1.5s
+   clock**. Typing always kills it, which is why "typing fixes it" kept
+   showing up as a diagnostic.
+4. What can latch: only a scroller with **user-input scroll range**. CSS
+   `overflow: hidden` zeroes that range
+   (`ScrollContainerFrame::GetScrollRangeForUserInputEvents`), which is why
+   the strip's own shadow scrollbox (xul.css `scrollbox { overflow: hidden }`)
+   can never latch. **Row 2 as a plain `overflow-x: auto` hbox (`312901f058`,
+   2026-07-25) was the only latchable scroller in the tab area — one
+   horizontal wheel tick that clipped it armed the trap for everything
+   above and below it.**
+
+**Why nobody could reproduce it:** the trap needs a live transaction, i.e. a
+scroll over row 2 (or its momentum tail) within ~1.5s of scrolling somewhere
+else, with no click and no mousemove processed in between. The user's "keep
+clicking and scrolling on each side, quickly" walks straight into that window;
+a synthetic test that scrolls one surface at a time never does.
+
+**Deterministic reproduction, measured live on the 2026-07-28 installed build**
+(windowUtils.sendWheelEvent, pixel deltas, one chrome eval):
+
+```text
+T1  dx=60 over row 2          -> row 2 scrolls 30px   (transaction latched)
+T2  dx=120 x3 OVER THE STRIP  -> strip moves 0px, row 2 moves +180px  (captured)
+T3  dy=120 over the strip     -> nothing anywhere      (page-freeze analogue)
+T4  same as T2 after 1.7s     -> strip scrolls +60     (transaction expired)
+```
+
+The wheel-guard's counters stayed 0 through T2/T3 — retargeting happens in
+PresShell **before any DOM listener**, so no feature-layer listener can even
+see the events it needs to guard against. That is why every listener-level fix
+moved the symptom instead of ending it.
+
+**The snap-back tie-in:** while captured, the user's strip-scrolls never
+dispatch at the strip, so nothing arms "the user positioned this strip" — and
+tabs.js re-runs `_handleTabSelect(true)` (→ `ensureTabIsVisible(selectedTab)`)
+on window resize, fullscreen flips, uidensity changes and **every overflow
+start** (`on_overflow`, tabs.js). First strip churn after a captured scroll:
+instant recentre onto the selected tab = "snapped back to the tab".
+
+## The fix — one owner per surface, nothing latchable near the strip
+
+- **Row 2 cannot latch, ever**: `#bork-stack-scroller` is `overflow-x: hidden`
+  (user-input scroll range = 0; script scrolling unaffected) and is scrolled
+  by exactly one wheel handler in stack-bar.tsx plus the arrow hold-loop.
+  Verified live before shipping: with overflow hidden, T2 shows the strip
+  scrolling normally right after a row-2 wheel.
+- **Row 1 is owned by the (runtime-patched) arrowscrollbox alone**
+  (`tools/patches/chrome-toolkit-content-global-elements-arrowscrollbox.patch`):
+  pixel-mode (trackpad) events scroll iff horizontal-dominant — every one of
+  them, no two-event axis vote (the vote dropped the first horizontal event
+  after any vertical one — measured live as T8, a dead first tick) — and
+  vertical pixel deltas are NEVER mapped onto horizontal scrolling (that
+  mapping is what let a vertical-dominant momentum tail drag the strip back:
+  the 2026-07-17 bug). Line/page devices (mouse wheels) keep stock vote +
+  mapping. Consume only what actually scrolled (the 2026-07-26 fix, kept).
+- **tab-strip-wheel-guard is DELETED** — axis quarantine, reversal hold,
+  peak envelopes, readout, pref (`floorp.tabstrip.wheelguard` is now inert).
+  Both mechanisms it guessed at are now impossible at the source, and its
+  capture-phase preventDefault was itself a fourth system on the strip's
+  wheel path.
+- **Exactly one `ensureElementIsVisible` wrap** (tab-stacks/index.ts): skips
+  recentres to hidden stack members (as before) AND recentres onto the
+  selected tab while the user has wheel-positioned the strip for that same
+  selection. Armed by a **passive** capture listener — it can observe wheel
+  events but is physically unable to consume or reorder them. The guard's
+  second wrap on the same method is gone with it.
+- **TabScroll** (scroll-to-switch-tabs) installs its `on_wheel` shadow only
+  while the feature is enabled, restoring the native method when off. Off by
+  default; it was a permanently-installed no-op shadow before.
+
+**The law this file exists to enforce: near the tab strip, a chrome scroller
+is either `overflow: hidden` + script-scrolled by its one owner, or it is a
+wheel-transaction latch target that will capture strip and page input. There
+is no third option. Check `getComputedStyle(el).overflowX` before shipping any
+new scroller in the toolbox.**
 
 ---
 
