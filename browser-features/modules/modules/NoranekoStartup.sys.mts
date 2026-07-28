@@ -146,8 +146,48 @@ async function adoptDistributionAddons(): Promise<void> {
   }
 }
 
+/**
+ * A `-marionette` launch applies Firefox's automation pref list AS USER
+ * PREFS, and they persist in the profile after the session — among them
+ * apz.content_response_timeout=60000 (the compositor waits up to 60s, not
+ * 0.4s, for a busy page before scrolling) and
+ * mousewheel.allow_scrolling_more_than_one_page. A profile debugged once
+ * scrolls like a broken browser forever after. On a NORMAL launch, clear any
+ * user value on these; while automation is actually running (MOZ_MARIONETTE
+ * set) leave them alone — the session needs them.
+ */
+function healAutomationScrollPrefs(): void {
+  try {
+    const env = Cc["@mozilla.org/process/environment;1"].getService(
+      Ci.nsIEnvironment,
+    );
+    if (env.exists("MOZ_MARIONETTE")) return;
+  } catch {
+    // no environment service: fall through and heal anyway
+  }
+  const LEFTOVERS = [
+    "apz.content_response_timeout",
+    "mousewheel.allow_scrolling_more_than_one_page",
+    "mousewheel.transaction.timeout",
+    // dead pref from the deleted tab-strip-wheel-guard feature
+    "floorp.tabstrip.wheelguard",
+  ];
+  for (const pref of LEFTOVERS) {
+    try {
+      if (Services.prefs.prefHasUserValue(pref)) {
+        Services.prefs.clearUserPref(pref);
+        console.log(`[NoranekoStartup] cleared automation leftover ${pref}`);
+      }
+    } catch (e) {
+      console.error(`[NoranekoStartup] clearing ${pref} failed:`, e);
+    }
+  }
+}
+
 export function onFinalUIStartup(): void {
   Services.obs.removeObserver(onFinalUIStartup, "final-ui-startup");
+
+  healAutomationScrollPrefs();
 
   createDefaultUserChromeFiles().catch((error) => {
     console.error("Failed to create default userChrome files:", error);
