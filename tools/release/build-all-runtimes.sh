@@ -49,6 +49,21 @@ LINUX_BUILD_DIR="${BORK_LINUX_BUILD_DIR:-/path/to/bork-runtime-build}"  # on the
 WIN_BUILD_DIR="${BORK_WIN_BUILD_DIR:-/path/to/bork-winbuild}"  # VM helpers, on the Linux host
 PUBLISH="$ROOT/tools/release/publish-runtime-artifact.sh"
 
+# --- source sync -------------------------------------------------------------
+# Every lane fetches the canonical runtime source before building. Without this
+# the three build machines drift silently: on 2026-07-28 the mac tree carried an
+# engine fix while the Linux host and the Windows VM were still pointed at the
+# ABANDONED GitHub remote, so a "cross-platform" release shipped three different
+# engines. A lane that cannot sync now FAILS instead of quietly building stale
+# source.
+#
+# Windows builds from its own branch: the VM's checkout carries the build recipe
+# (mozconfigs, upstream patches, branding) committed off the VM, so its branch is
+# canonical + that recipe rather than canonical itself.
+RUNTIME_GIT_URL="${BORK_RUNTIME_GIT_URL:-https://${BORK_FORGEJO_HOST:-shithub.space}/${RUNTIME_REPO}.git}"
+RUNTIME_BRANCH="${BORK_RUNTIME_BRANCH:-nora-0.2.0}"
+WIN_RUNTIME_BRANCH="${BORK_WIN_RUNTIME_BRANCH:-winbuild-recipe}"
+
 # --- shared build knobs (proven) --------------------------------------------
 # --enable-chrome-format=flat : bork's patcher edits loose chrome; without this
 #                               the package ships omni.ja and patching fails.
@@ -73,6 +88,15 @@ build_mac() {
   local base="$MAC_BUILD_DIR"
   local src="$base/bork-runtime-mac"
   [ -f "$src/mach" ] || fail "mac source missing at $src (clone bork-runtime there first)"
+
+  log "mac: syncing $RUNTIME_BRANCH from $RUNTIME_GIT_URL"
+  ( cd "$src"
+    git remote set-url origin "$RUNTIME_GIT_URL" 2>/dev/null || \
+      git remote add origin "$RUNTIME_GIT_URL"
+    git fetch --quiet origin "$RUNTIME_BRANCH" ) \
+    || fail "mac: could not fetch $RUNTIME_BRANCH"
+  ( cd "$src" && git merge --ff-only FETCH_HEAD ) \
+    || fail "mac: $src is not a fast-forward of origin/$RUNTIME_BRANCH — reconcile it by hand"
   local sdk; sdk="$(xcrun --sdk macosx --show-sdk-path)"
   [ -d "$sdk" ] || fail "no macOS SDK (need Xcode >= 26.4)"
 
@@ -95,6 +119,13 @@ build_mac() {
 build_linux() {
   log "linux: build on $BUILD_HOST"
   # pass the remote build dir as $1 so this stays a quoted (non-interpolated) heredoc
+  log "linux: syncing $RUNTIME_BRANCH on $BUILD_HOST"
+  ssh "$BUILD_HOST" "cd '$LINUX_BUILD_DIR/bork-runtime' \
+    && (git remote set-url origin '$RUNTIME_GIT_URL' || git remote add origin '$RUNTIME_GIT_URL') \
+    && git fetch --quiet origin '$RUNTIME_BRANCH' \
+    && git merge --ff-only FETCH_HEAD" \
+    || fail "linux: source sync failed on $BUILD_HOST (not a fast-forward? reconcile by hand)"
+
   ssh "$BUILD_HOST" "bash -s '$LINUX_BUILD_DIR'" <<'REMOTE'
 set -euo pipefail
 BUILD_DIR="$1"
@@ -126,6 +157,17 @@ build_windows() {
   log "windows: native build in the KVM VM (driven from $BUILD_HOST)"
   # The VM build + pull is scripted on the build host (winps runner, scheduled
   # task with RunLevel Highest for msiexec, base64-over-WinRM pull). Trigger it:
+  log "windows: syncing $WIN_RUNTIME_BRANCH inside the VM"
+  ssh "$BUILD_HOST" "cat > /tmp/bork-win-sync.ps1 <<'PS1'
+cd C:\\derp-runtime
+git remote set-url origin '$RUNTIME_GIT_URL'
+git fetch --quiet origin '$WIN_RUNTIME_BRANCH'
+git reset --hard FETCH_HEAD
+git log --oneline -1
+PS1
+'$WIN_BUILD_DIR/../bob-release/tools/winrm-venv/bin/python' '$WIN_BUILD_DIR/winps95.py' < /tmp/bork-win-sync.ps1" \
+    || fail "windows: VM source sync failed (branch $WIN_RUNTIME_BRANCH)"
+
   ssh "$BUILD_HOST" "bash '$WIN_BUILD_DIR/run-win-build.sh'" \
     || fail "windows VM build failed (see $WIN_BUILD_DIR/*.log on $BUILD_HOST)"
   # run-win-build.sh pulls the VM's zip to this fixed name, so the remote side is
