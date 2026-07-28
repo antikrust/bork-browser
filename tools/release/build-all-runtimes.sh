@@ -62,7 +62,7 @@ PUBLISH="$ROOT/tools/release/publish-runtime-artifact.sh"
 # canonical + that recipe rather than canonical itself.
 RUNTIME_GIT_URL="${BORK_RUNTIME_GIT_URL:-https://${BORK_FORGEJO_HOST:-shithub.space}/${RUNTIME_REPO}.git}"
 RUNTIME_BRANCH="${BORK_RUNTIME_BRANCH:-nora-0.2.0}"
-WIN_RUNTIME_BRANCH="${BORK_WIN_RUNTIME_BRANCH:-winbuild-recipe}"
+WIN_RUNTIME_BRANCH="${BORK_WIN_RUNTIME_BRANCH:-winbuild-canonical}"
 
 # --- shared build knobs (proven) --------------------------------------------
 # --enable-chrome-format=flat : bork's patcher edits loose chrome; without this
