@@ -525,7 +525,7 @@ export default function WhatsNewPage() {
               </h3>
               <div className="flex gap-4">
                 <a
-                  href="https://shithub.space/n01/bork"
+                  href="https://shithub.space/n01/bork-browser"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
@@ -558,7 +558,7 @@ export default function WhatsNewPage() {
 
               <div className="flex flex-wrap gap-6 text-sm">
                 <a
-                  href="https://shithub.space/n01/bork"
+                  href="https://shithub.space/n01/bork-browser"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"

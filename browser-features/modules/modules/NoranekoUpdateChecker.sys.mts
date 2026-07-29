@@ -125,7 +125,7 @@ function getUpdateType(oldVersion: string, newVersion: string): UpdateType {
  * endpoint. Forgejo raw path is /raw/branch/<branch>/<path>.
  */
 function getUpdateXmlUrl(): string {
-  return "https://shithub.space/n01/bork/raw/branch/main/updates/update.xml";
+  return "https://shithub.space/n01/bork-browser/raw/branch/main/updates/update.xml";
 }
 
 /**

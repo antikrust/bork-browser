@@ -1,4 +1,5 @@
 import { setupBorkPanes } from "./bork-panes.ts";
+import { groupboxOf } from "./panes/framework.ts";
 
 interface FirefoxWindow extends Window {
   gBrowser: {
@@ -792,9 +793,76 @@ function initHideNewTabPage(): void {
   }
 }
 
+// ===== Welcome tour & import — the onboarding page's standing door =====
+// The full import experience (passwords/bookmarks/history from another
+// browser, plus Vivaldi workspaces with their tabs) lives in onboarding,
+// which an existing profile never sees again. Home & startup is where
+// people go looking for it, so the card sits at the bottom of that pane.
+// Redesigned settings only — the redesign is what bork ships.
+const BORK_ONBOARDING_CARD_ID = "bork-onboarding-tour-group";
+
+function createOnboardingCard(): Element {
+  const group = groupboxOf("Welcome tour & import", [
+    (() => {
+      const desc = doc.createElement("p");
+      desc.className = "description-deemphasized";
+      desc.style.marginBlock = "0 8px";
+      desc.textContent =
+        "Run the first-run tour again: import passwords, bookmarks and " +
+        "history from another browser, and bring your Vivaldi workspaces " +
+        "in with their tabs.";
+      return desc;
+    })(),
+    (() => {
+      const row = doc.createXULElement("hbox");
+      row.setAttribute("align", "center");
+      const btn = doc.createXULElement("button");
+      btn.id = "bork-onboarding-tour-open";
+      btn.setAttribute("label", "Open the welcome tour");
+      btn.addEventListener("command", () => {
+        (globalThis as unknown as Window).location.href =
+          import.meta.env.MODE === "dev"
+            ? "http://localhost:5187/"
+            : "chrome://noraneko-welcome/content/index.html";
+      });
+      row.appendChild(btn);
+      return row;
+    })(),
+  ]);
+  group.id = BORK_ONBOARDING_CARD_ID;
+  return group;
+}
+
+function placeOnboardingCard(): void {
+  if (doc.getElementById(BORK_ONBOARDING_CARD_ID)) return;
+  doc
+    .querySelector('setting-pane[data-category="paneHome"]')
+    ?.appendChild(createOnboardingCard());
+}
+
+function initOnboardingCard(): void {
+  const run = () => {
+    placeOnboardingCard();
+    // paneHome materializes lazily and Lit can rebuild it; keep the card
+    // present the same way the Floorp Start hiding above does. The
+    // observer's own append is idempotent (the id check), so no loop.
+    const observer = new (doc.defaultView as unknown as {
+      MutationObserver: typeof MutationObserver;
+    }).MutationObserver(() => placeOnboardingCard());
+    const target = doc.getElementById("mainPrefPane") ?? doc.body;
+    if (target) observer.observe(target, { childList: true, subtree: true });
+  };
+  if (doc.readyState === "loading") {
+    doc.addEventListener("DOMContentLoaded", run, { once: true });
+  } else {
+    run();
+  }
+}
+
 ensureI18NInitialized();
 ensureFloorpStartWarning();
 initHideNewTabPage();
+initOnboardingCard();
 
 // bork panes: native categories inside about:preferences, replacing the hub
 // pane-by-pane (see bork-panes.ts — statically imported so tsdown inlines it

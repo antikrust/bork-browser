@@ -403,7 +403,7 @@ export function AboutDialog() {
                 class="ad-community-item"
                 onClick={(e) => {
                   e.preventDefault();
-                  openExternalUrl("https://shithub.space/n01/bork");
+                  openExternalUrl("https://shithub.space/n01/bork-browser");
                 }}
               >
                 <span class="ad-community-icon">
@@ -435,7 +435,7 @@ export function AboutDialog() {
                 class="ad-help-link"
                 onClick={(e) => {
                   e.preventDefault();
-                  openExternalUrl("https://shithub.space/n01/bork");
+                  openExternalUrl("https://shithub.space/n01/bork-browser");
                 }}
               >
                 {t("aboutDialog.help.repository")}
