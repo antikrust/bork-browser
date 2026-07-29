@@ -40,6 +40,13 @@ const DARK_CONTENT_CSS = `@-moz-document url-prefix("about:") {
   }
 }
 @-moz-document url("about:downloads") {
+  /* The list is a richlistbox, and in-content styling gives it its own
+     opaque surface (--in-content-box-background) — it filled the page over
+     the black :root above, so the downloads panel still read as Firefox
+     grey. Let the root show through. */
+  #downloadsListBox {
+    background-color: transparent !important;
+  }
   /* The selected row painted itself with the system accent — a bright cyan
      slab (oklch(0.76 0.14 205)) across the top of an otherwise black page.
      The first row is selected by default, so it was always on screen.

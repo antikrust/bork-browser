@@ -172,6 +172,23 @@ function healAutomationScrollPrefs(): void {
     // dead pref from the deleted tab-strip-wheel-guard feature
     "floorp.tabstrip.wheelguard",
   ];
+  // RecommendedPreferences also ships browser.translations.enable=false;
+  // left behind it blocks the translate panel with a "To translate text,
+  // unblock this feature" message (isBlocked is literally !this pref).
+  // A DELIBERATE block through AI controls writes the same pref but stamps
+  // browser.ai.control.translations="blocked" beside it (TranslationsFeature
+  // .block()); automation stamps nothing. Only heal the unstamped case so a
+  // user's explicit choice survives.
+  try {
+    if (
+      Services.prefs.getStringPref("browser.ai.control.translations", "") !==
+        "blocked"
+    ) {
+      LEFTOVERS.push("browser.translations.enable");
+    }
+  } catch {
+    LEFTOVERS.push("browser.translations.enable");
+  }
   for (const pref of LEFTOVERS) {
     try {
       if (Services.prefs.prefHasUserValue(pref)) {

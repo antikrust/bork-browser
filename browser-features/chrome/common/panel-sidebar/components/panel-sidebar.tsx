@@ -69,6 +69,56 @@ export class CPanelSidebar {
     };
     if (this.owner) runWithOwner(this.owner, exec);
     else createRoot(exec);
+
+    // Dark Bork can flip live; keep every static panel's scheme current.
+    // Static panels only — web panels are ordinary websites and keep the
+    // user's normal content scheme.
+    const schemeObserver = new MutationObserver(() => {
+      for (const p of panelSidebarData()) {
+        if (p.type !== "static") continue;
+        const b = this.getBrowserElement(p.id);
+        if (b) this.syncPanelScheme(b);
+      }
+    });
+    if (document?.documentElement) {
+      schemeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-bork-dark"],
+      });
+    }
+  }
+
+  /**
+   * Static panels must follow Dark Bork, not the OS. The in-process
+   * chrome-doc panels (bookmarks/history/places/synced tabs/notes) inherit
+   * the embedder's color-scheme through style.css — the same mechanism
+   * #sidebar-box uses in browser/themes/shared/sidebar.css — but the
+   * remote about: panels (downloads, translations) are top-level content
+   * and take their scheme from the platform: a light GTK theme rendered
+   * them light grey inside black chrome on linux.
+   * prefersColorSchemeOverride is the supported lever for a content
+   * browsing context — and ONLY for content: writing it on an in-process
+   * chrome browsing context SEGFAULTS FF152 in the synced-context commit
+   * (BrowsingContext::SetPrefersColorSchemeOverride →
+   * Transaction::Commit, symbolicated from a live crash), so the chrome
+   * panels must never reach the write.
+   */
+  private syncPanelScheme(browser: XULElement) {
+    try {
+      if (browser.getAttribute("remote") !== "true") {
+        return;
+      }
+      const dark = document?.documentElement?.hasAttribute("data-bork-dark") ??
+        false;
+      const bc = (browser as unknown as {
+        browsingContext?: { prefersColorSchemeOverride: string } | null;
+      }).browsingContext;
+      if (bc) {
+        bc.prefersColorSchemeOverride = dark ? "dark" : "none";
+      }
+    } catch (e) {
+      console.error("[panel-sidebar] scheme sync failed:", e);
+    }
   }
 
   private owner: Owner | null = null;
@@ -148,6 +198,50 @@ export class CPanelSidebar {
   }
 
   private initBrowser(panel: Panel) {
+    if (panel.type === "static") {
+      const browser = this.getBrowserElement(panel.id);
+      if (browser) {
+        // FF152's places sidebar documents carry their own panel header
+        // whose close button drives the MAIN window's SidebarController
+        // (bookmarksSidebar.js closeSidebarPanel → embedderWindowGlobal →
+        // SidebarController.toggle) — inside this embedding that pops the
+        // native sidebar open on the far side of the window instead of
+        // closing anything. The floorp header above the panel already has
+        // the one real close button; hide the embedded duplicate.
+        // In-process docs only — the remote about: panels don't carry it.
+        // The hidden attribute, not an injected <style>: these documents
+        // ship their own CSP (`default-src chrome:`), which silently kills
+        // inline sheets — the element appended fine but .sheet stayed
+        // null. Attributes are outside CSP's reach.
+        const injectEmbedTweaks = () => {
+          const doc = (browser as unknown as {
+            contentDocument?: Document | null;
+          }).contentDocument;
+          const hdr = doc?.getElementById("sidebar-panel-header") as
+            | (Element & { hidden: boolean })
+            | null;
+          if (hdr) {
+            hdr.hidden = true;
+          }
+        };
+        browser.addEventListener(
+          "load",
+          () => {
+            injectEmbedTweaks();
+            this.syncPanelScheme(browser);
+          },
+          true,
+        );
+        // Remote panels replace their frameloader (and with it the
+        // browsingContext) on the remoteness switch — re-assert the
+        // scheme on every new one.
+        browser.addEventListener("XULFrameLoaderCreated", () => {
+          this.syncPanelScheme(browser);
+        });
+        injectEmbedTweaks();
+        this.syncPanelScheme(browser);
+      }
+    }
     if (panel.type === "extension") {
       const browser = this.getBrowserElement(panel.id) as XULElement & {
         contentWindow: Window;

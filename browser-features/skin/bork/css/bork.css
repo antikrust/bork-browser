@@ -204,7 +204,11 @@ menuitem[id^="context-ask-chat"] {
   display: none !important;
 }
 
-@media (-moz-platform: macos) {
+/* The nav-bar hamburger duplicates the panel rail's own menu button
+   (#bork-sidebar-menu-icon) — one app menu is enough. linux joined the
+   hide once the rail landed there too; windows keeps the stock button
+   until its build is given the same look-over. */
+@media (-moz-platform: macos), (-moz-platform: linux) {
   #PanelUI-menu-button {
     display: none !important;
   }
@@ -484,6 +488,9 @@ menuitem[id^="context-ask-chat"] {
 #workspaces-toolbar-button {
   --toolbarbutton-inner-padding: 3px !important;
   font-size: 11px !important;
+  /* The chip is the first thing on the strip; without this its icon sat
+     flush against the window edge. */
+  margin-inline-start: 3px !important;
 }
 
 #workspaces-toolbar-button .toolbarbutton-icon {
@@ -605,6 +612,16 @@ menuitem[id^="context-ask-chat"] {
    keeps a slightly lifted tone so the input still reads as a field. */
 :root[data-bork-dark] #nav-bar {
   background-color: #050506 !important;
+}
+
+/* The toolbox keeps Firefox's 0.5px chrome-content separator
+   (rgb(43,42,51)) on its bottom edge. Invisible over the stock slate
+   content, it reads as a grey line clean across the window the moment
+   anything BLACK sits underneath — the sliding panel, a dark newtab.
+   Keep the 0.5px of geometry (zen mode measures the toolbox), just
+   never paint it. */
+:root[data-bork-dark] #navigator-toolbox {
+  border-bottom-color: transparent !important;
 }
 
 :root[data-bork-dark] #sidebar-main,

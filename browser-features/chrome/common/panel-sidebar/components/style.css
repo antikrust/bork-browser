@@ -61,6 +61,18 @@
   min-width: 225px;
 }
 
+/* Static chrome-doc panels (bookmarks/history/places/synced tabs/notes)
+   take their prefers-color-scheme from the EMBEDDER element — the same
+   mechanism the native #sidebar-box uses (browser/themes/shared/
+   sidebar.css). Without this a light GTK theme rendered them light grey
+   inside black chrome on linux; macs only looked right because the OS
+   scheme happened to match. The remote about: panels are handled in
+   panel-sidebar.tsx (prefersColorSchemeOverride) — top-level content
+   does not inherit the embedder's scheme. */
+:root[data-bork-dark] .sidebar-panel-browser {
+  color-scheme: dark;
+}
+
 /* Panel Sidebar Splitter */
 #panel-sidebar-splitter {
   margin-inline: 0;

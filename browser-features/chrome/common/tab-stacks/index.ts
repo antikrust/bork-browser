@@ -222,43 +222,72 @@ export default class TabStacks extends NoraComponentBase {
 
     // Closing a stacked tab used to yank selection up to row 1 even with
     // members left: stock blur logic picks the nearest VISIBLE tab, and
-    // every other member of a collapsed stack is hidden at the chip.
-    // _beginRemoveTab splices the closing tab out of succession right
-    // BEFORE dispatching TabClose, and _findTabToBlurTo consults
-    // tab.successor FIRST — so a successor set DURING the event wins,
-    // race-free. Point it at the neighbouring member (right, else left)
-    // and closing walks along row 2 instead of jumping rows.
-    const onStackTabClose = (event: Event) => {
+    // every other member of a collapsed stack is hidden at the chip. A
+    // successor set during TabClose (this fix's first shape) is TOO LATE:
+    // _blurTab runs inside _beginRemoveTab, ~90 lines BEFORE the TabClose
+    // dispatch, so selection has already jumped by the time the event
+    // fires. The successor must be in place AHEAD of the close instead:
+    // whenever selection sits on a stack member, keep its successor
+    // pointed at the neighbouring member (right, else left) — then every
+    // close path (cell ×, Cmd+W, context menu) walks along row 2.
+    const borkSuccessors = new WeakSet<Element>();
+    const refreshCloseSuccessor = () => {
       try {
-        const tab = event.target as
+        const tab = gb.selectedTab as
           | (Element & {
-            selected?: boolean;
             closing?: boolean;
             group?: (Element & { tabs: Element[] }) | null;
           })
           | null;
-        if (!tab?.selected) return;
+        if (!tab || tab.closing) return;
+        const setSucc = (gb as unknown as {
+          setSuccessor(a: Element, b: Element | null): void;
+        }).setSuccessor.bind(gb);
         const group = tab.group;
         if (!group || group.getAttribute?.("data-bork-stack") !== "true") {
+          // Only unwind pointers this feature set — extensions can manage
+          // their own successors and those must survive us.
+          if (borkSuccessors.has(tab)) {
+            borkSuccessors.delete(tab);
+            setSucc(tab, null);
+          }
           return;
         }
-        const members = [...group.tabs] as (Element & { closing?: boolean })[];
+        const members =
+          ([...group.tabs] as (Element & { closing?: boolean })[])
+            .filter((t) => !t.closing);
         const idx = members.indexOf(tab);
-        const pick = members.slice(idx + 1).find((t) => !t.closing) ??
-          members.slice(0, Math.max(idx, 0)).reverse().find((t) => !t.closing);
+        const pick = members[idx + 1] ?? members[idx - 1] ?? null;
         if (pick && pick !== tab) {
-          (gb as unknown as {
-            setSuccessor(a: Element, b: Element): void;
-          }).setSuccessor(tab, pick);
+          setSucc(tab, pick);
+          borkSuccessors.add(tab);
+        } else if (borkSuccessors.has(tab)) {
+          // Last member left — stock blur (row 1) is the only place to go.
+          borkSuccessors.delete(tab);
+          setSucc(tab, null);
         }
       } catch (e) {
         console.error("[tab-stacks] close successor:", e);
       }
     };
-    tabsContainer.addEventListener("TabClose", onStackTabClose);
-    onCleanup(() =>
-      tabsContainer.removeEventListener("TabClose", onStackTabClose)
-    );
+    // TabClose re-picks after a closing neighbour was spliced out of the
+    // succession line; the rest are selection/membership/order changes.
+    const SUCCESSOR_EVENTS = [
+      "TabSelect",
+      "TabMove",
+      "TabGrouped",
+      "TabUngrouped",
+      "TabClose",
+    ] as const;
+    for (const ev of SUCCESSOR_EVENTS) {
+      tabsContainer.addEventListener(ev, refreshCloseSuccessor);
+    }
+    refreshCloseSuccessor();
+    onCleanup(() => {
+      for (const ev of SUCCESSOR_EVENTS) {
+        tabsContainer.removeEventListener(ev, refreshCloseSuccessor);
+      }
+    });
 
     // ===== Native drag corrections around stack chips =====
     // Two fixes, both post-passes over TabDragAndDrop._animateTabMove:
@@ -420,6 +449,14 @@ export default class TabStacks extends NoraComponentBase {
     // their image (the list row does not move, so there the image IS the
     // feedback); row-2 proxies never enter startTabDrag and keep their
     // text-pill ghost.
+    // GTK cannot swap the drag image mid-drag: linux's nsDragService has no
+    // UpdateDragImage (cocoa/windows/android each implement it) — the icon
+    // is snapshotted once at drag-begin. Blanking there traded the native
+    // thumbnail for GTK's generic document icon, and the tear-off reveal
+    // could never land. So on linux the whole positional-ghost system
+    // stands down and the stock PageThumbs preview rides the entire drag,
+    // rows included — same as stock Firefox on that platform.
+    const canSwapDragImage = Services.appinfo.OS !== "Linux";
     let ghostBlank: HTMLElement | null = null;
     type DragDataTransfer = DataTransfer & {
       mozTypesAt?: (i: number) => ArrayLike<string>;
@@ -430,6 +467,7 @@ export default class TabStacks extends NoraComponentBase {
     let ghostThumbArgs: unknown[] | null = null;
     let ghostShown = false;
     const killTabDragGhost = (event: DragEvent) => {
+      if (!canSwapDragImage) return;
       const dt = event.dataTransfer as DragDataTransfer | null;
       if (!dt || dt.mozTypesAt?.(0)?.[0] !== TAB_DROP_TYPE) return;
       if (!ghostBlank) {

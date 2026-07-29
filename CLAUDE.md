@@ -58,6 +58,23 @@ deno task feles-build stage --marionette >> /tmp/bork-launch.log 2>&1 &
 
 Gotchas that cost real time:
 
+- **A dev browser that logs "Marionette enabled" then never listens is stuck on an
+  INVISIBLE macOS dialog.** After any `kill -9` of a previous dev browser, the next launch
+  blocks pre-window in `-[NSPersistentUIRestorer promptToIgnorePersistentStateWithCrashHistory:]`
+  (`sample <pid> 3` shows it) — the "reopen windows?" alert, often on another Space, so the
+  desktop looks empty. Fix once per bundle id:
+  `defaults write app.floorp.bork ApplePersistenceIgnoreState -bool YES`
+  (plus delete `~/Library/Saved Application State/app.floorp.bork.savedState`).
+- **`_dist/bin/floorp/Floorp.app` is a copy, not a product of the build** — feles-build
+  injects into whatever app sits there and never refreshes it. It rotted to a jul-20
+  derp-branded runtime that crashed (SIGSEGV, main thread) 5s–5min after boot regardless of
+  feature code (verified by stash test). When the runtime is rebuilt, re-copy
+  `bork-build/obj-mac-aarch64/dist/Bork.app` over `_dist/bin/floorp/Floorp.app` (keep the
+  Floorp.app name; delete the profile's `compatibility.ini` + `startupCache` after).
+- **The harness kills backgrounded launchers.** `nohup ... &` from a tool shell dies with the
+  shell and takes the vite servers or browser with it. Launch stage (and anything long-lived)
+  via python double-fork: `os.fork` → `os.setsid` → `os.fork` → `os.execvp`.
+
 - **Stale vite servers fail the next run.** A leftover server holding 5181 makes the new stage
   die with `main (port 5181) exited early with code 1` (details in `logs/vite-main.log`).
   Sweep 5170–5190 first — but *only* when no browser is attached to them: those servers are
@@ -319,6 +336,12 @@ deno task dev-tool eval "document.title" -c content         # Get page title fro
   validated there, so keep doing that for tabs and use collapse freely elsewhere.
 - **Lazy tabs have `linkedPanel === null`** (background-created and session-restored tabs).
   Anything reading it must tolerate null.
+- **`browsingContext.prefersColorSchemeOverride` SEGFAULTS on in-process chrome browsing
+  contexts** (`SetPrefersColorSchemeOverride` → `syncedcontext::Transaction::Commit`, null
+  deref — symbolicated live 2026-07-29). It is safe only on REMOTE content BCs (its RDM use
+  case). Check `browser.getAttribute("remote") === "true"` before writing it; chrome-doc
+  embeds follow the embedder element's CSS `color-scheme` instead (the `#sidebar-box`
+  mechanism, used by `.sidebar-panel-browser`).
 - macOS panels animate open via **native window transforms**; repositioning or fading a panel
   mid-animation raced that machinery and left windows composited as an empty frame (the
   "vanishing window" hunt). `widget.macos.window-transforms.disabled = true` switches it off —
