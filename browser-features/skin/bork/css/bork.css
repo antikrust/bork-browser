@@ -504,13 +504,17 @@ menuitem[id^="context-ask-chat"] {
 
 #workspaces-toolbar-button .toolbarbutton-text {
   font-size: 11px !important;
-  /* The label carries the design layer's 29px min-height and is a flex
-     box, so its anonymous text sat at the TOP of the box wherever the
-     platform's font metrics didn't happen to fill it — "text looks
-     higher" on linux, coincidentally centred-looking on macOS. Centre
-     the text INSIDE the box; the box keeps its geometry, so nothing
-     else moves. */
-  align-items: center !important;
+}
+
+/* linux ONLY: the label is a 29px-min-height box and GTK's font metrics
+   drew the text riding high in it (macOS metrics happen to land right,
+   so macOS gets no rule at all — a shared align-items:center in 1.1.11
+   moved BOTH platforms and was reverted). line-height equal to the box
+   centres a single line the classic way. */
+@media (-moz-platform: linux) {
+  #workspaces-toolbar-button .toolbarbutton-text {
+    line-height: 29px !important;
+  }
 }
 
 /* ===== Inline address edit: double-click a tab (row 1) ===== */
