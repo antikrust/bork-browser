@@ -291,6 +291,16 @@ menuitem[id^="context-ask-chat"] {
   }
 }
 
+/* ===== Audio indicator lives on the RIGHT ===== */
+/* Stock places the mute toggle immediately after the favicon — the same
+   spot the Vivaldi-style close button swaps into on hover. Flex-order it
+   to the tab's other end; the label's flex:1 keeps it pinned there.
+   Pinned tabs keep the stock overlay badge on the favicon. */
+.tabbrowser-tab:not([pinned]) .tab-audio-button {
+  order: 10;
+  margin-inline-end: 2px !important;
+}
+
 /* ===== Vivaldi-style close button: the favicon's spot becomes the X ===== */
 /* The pointer entering the tab swaps icon for close in the exact same
    14x14 box; clicking anywhere else on the tab still selects (the X only

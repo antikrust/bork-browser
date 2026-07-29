@@ -220,6 +220,46 @@ export default class TabStacks extends NoraComponentBase {
       });
     }
 
+    // Closing a stacked tab used to yank selection up to row 1 even with
+    // members left: stock blur logic picks the nearest VISIBLE tab, and
+    // every other member of a collapsed stack is hidden at the chip.
+    // _beginRemoveTab splices the closing tab out of succession right
+    // BEFORE dispatching TabClose, and _findTabToBlurTo consults
+    // tab.successor FIRST — so a successor set DURING the event wins,
+    // race-free. Point it at the neighbouring member (right, else left)
+    // and closing walks along row 2 instead of jumping rows.
+    const onStackTabClose = (event: Event) => {
+      try {
+        const tab = event.target as
+          | (Element & {
+            selected?: boolean;
+            closing?: boolean;
+            group?: (Element & { tabs: Element[] }) | null;
+          })
+          | null;
+        if (!tab?.selected) return;
+        const group = tab.group;
+        if (!group || group.getAttribute?.("data-bork-stack") !== "true") {
+          return;
+        }
+        const members = [...group.tabs] as (Element & { closing?: boolean })[];
+        const idx = members.indexOf(tab);
+        const pick = members.slice(idx + 1).find((t) => !t.closing) ??
+          members.slice(0, Math.max(idx, 0)).reverse().find((t) => !t.closing);
+        if (pick && pick !== tab) {
+          (gb as unknown as {
+            setSuccessor(a: Element, b: Element): void;
+          }).setSuccessor(tab, pick);
+        }
+      } catch (e) {
+        console.error("[tab-stacks] close successor:", e);
+      }
+    };
+    tabsContainer.addEventListener("TabClose", onStackTabClose);
+    onCleanup(() =>
+      tabsContainer.removeEventListener("TabClose", onStackTabClose)
+    );
+
     // ===== Native drag corrections around stack chips =====
     // Two fixes, both post-passes over TabDragAndDrop._animateTabMove:
     //
@@ -364,28 +404,33 @@ export default class TabStacks extends NoraComponentBase {
       });
     }
 
-    // No drag ghosts. Native startTabDrag hands the OS a 160×90 PageThumbs
-    // canvas as the drag image for every tab drag — white until the async
-    // capture lands, then a live page preview floating beside the tab that
-    // is ALREADY moving under the cursor (the "double ghost"; start pages
-    // capture instantly, so they showed the full preview every time). The
-    // strip's own movingtab animation is the feedback; the floating image
-    // adds nothing. Replace it with a transparent 1px node and shadow
-    // updateDragImage on this DataTransfer so the async capture cannot
-    // bring the preview back mid-drag. setDragImage must happen while the
-    // dragstart event is still being dispatched, and native stopPropagates
-    // it — hence the wrap, not a listener. All-tabs-list drags keep their
-    // image (the list row does not move, so there the image IS the
+    // Drag ghosts are positional. Native startTabDrag hands the OS a 160×90
+    // PageThumbs canvas as the drag image for every tab drag; while the
+    // pointer stays over the tab rows the strip's own movingtab animation is
+    // the feedback and the floating preview is a second ghost beside a tab
+    // already moving under the cursor. But past the rows — dragging out to
+    // tear off a new window — the tab snaps back into the strip and the OS
+    // image is the ONLY feedback; suppressing it there made tear-off look
+    // like nothing was happening. So: blank image while over row 1/row 2,
+    // native preview outside them. setDragImage only works during dragstart,
+    // but Gecko's updateDragImage swaps the image MID-drag (native uses it
+    // when the async thumb capture lands) — shadow it to hold the latest
+    // canvas, and drive the swap from pointer position. Native stopPropagates
+    // dragstart — hence the wrap, not a listener. All-tabs-list drags keep
+    // their image (the list row does not move, so there the image IS the
     // feedback); row-2 proxies never enter startTabDrag and keep their
     // text-pill ghost.
     let ghostBlank: HTMLElement | null = null;
+    type DragDataTransfer = DataTransfer & {
+      mozTypesAt?: (i: number) => ArrayLike<string>;
+      updateDragImage?: (...args: unknown[]) => void;
+    };
+    let ghostDt: DragDataTransfer | null = null;
+    let ghostUpdate: ((...args: unknown[]) => void) | null = null;
+    let ghostThumbArgs: unknown[] | null = null;
+    let ghostShown = false;
     const killTabDragGhost = (event: DragEvent) => {
-      const dt = event.dataTransfer as
-        | (DataTransfer & {
-          mozTypesAt?: (i: number) => ArrayLike<string>;
-          updateDragImage?: (...args: unknown[]) => void;
-        })
-        | null;
+      const dt = event.dataTransfer as DragDataTransfer | null;
       if (!dt || dt.mozTypesAt?.(0)?.[0] !== TAB_DROP_TYPE) return;
       if (!ghostBlank) {
         ghostBlank = document.createElement("div");
@@ -394,12 +439,74 @@ export default class TabStacks extends NoraComponentBase {
         document.documentElement?.appendChild(ghostBlank);
       }
       try {
+        ghostDt = dt;
+        ghostShown = false;
+        ghostThumbArgs = null;
+        ghostUpdate = dt.updateDragImage?.bind(dt) ?? null;
         dt.setDragImage(ghostBlank, 0, 0);
-        dt.updateDragImage = () => {};
+        dt.updateDragImage = (...args: unknown[]) => {
+          // The async PageThumbs capture landing mid-drag. Hold it; if the
+          // pointer is already past the rows, show it right away.
+          ghostThumbArgs = args;
+          if (ghostShown) ghostUpdate?.(...args);
+        };
       } catch (e) {
         console.error("[tab-stacks] drag ghost suppression failed:", e);
       }
     };
+    const setGhostShown = (on: boolean) => {
+      if (!ghostDt || !ghostUpdate || on === ghostShown) return;
+      ghostShown = on;
+      try {
+        if (on) {
+          if (ghostThumbArgs) ghostUpdate(...ghostThumbArgs);
+        } else if (ghostBlank) {
+          ghostUpdate(ghostBlank, 0, 0);
+        }
+      } catch (e) {
+        console.error("[tab-stacks] drag ghost swap failed:", e);
+      }
+    };
+    const overTabRows = (e: DragEvent): boolean => {
+      for (const id of ["TabsToolbar", "bork-stack-bar"]) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        if (
+          r.width > 0 &&
+          e.clientX >= r.left - 4 && e.clientX <= r.right + 4 &&
+          e.clientY >= r.top - 4 && e.clientY <= r.bottom + 8
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+    const onGhostDragOver = (e: DragEvent) => {
+      if (!ghostDt) return;
+      setGhostShown(!overTabRows(e));
+    };
+    const onGhostDragLeave = (e: DragEvent) => {
+      // Leaving the window entirely (tear-off): last chance to swap the
+      // image in before the OS is the only thing drawing it.
+      if (ghostDt && !e.relatedTarget) setGhostShown(true);
+    };
+    const endGhostDrag = () => {
+      ghostDt = null;
+      ghostUpdate = null;
+      ghostThumbArgs = null;
+      ghostShown = false;
+    };
+    window.addEventListener("dragover", onGhostDragOver, { capture: true });
+    window.addEventListener("dragleave", onGhostDragLeave, { capture: true });
+    window.addEventListener("dragend", endGhostDrag, { capture: true });
+    window.addEventListener("drop", endGhostDrag, { capture: true });
+    onCleanup(() => {
+      window.removeEventListener("dragover", onGhostDragOver, true);
+      window.removeEventListener("dragleave", onGhostDragLeave, true);
+      window.removeEventListener("dragend", endGhostDrag, true);
+      window.removeEventListener("drop", endGhostDrag, true);
+    });
     type StartTabDragFn = (
       event: DragEvent,
       tab: unknown,
