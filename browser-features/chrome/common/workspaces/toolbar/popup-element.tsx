@@ -4,6 +4,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { createSignal, For, onCleanup, Show } from "solid-js";
+import {
+  hasVivaldiWorkspaces,
+  importVivaldiWorkspaces,
+} from "../vivaldi-import.ts";
 import type { WorkspacesService } from "../workspacesService.ts";
 import { PopupToolbarElement } from "./popup-block-element.tsx";
 import { configStore } from "../data/config.ts";
@@ -15,6 +19,7 @@ import type { WorkspaceArchiveSummary } from "../utils/archive-types.ts";
 const translationKeys = {
   createNew: "workspaces.popup.create-new",
   manage: "workspaces.popup.manage",
+  importVivaldi: "workspaces.popup.import-vivaldi",
   restore: "workspaces.popup.restore",
   restoreCancel: "workspaces.popup.restore-cancel",
   restoreTitle: "workspaces.popup.restore-title",
@@ -39,6 +44,7 @@ const translate = (
 const getTranslations = () => ({
   createNew: translate(translationKeys.createNew),
   manage: translate(translationKeys.manage),
+  importVivaldi: translate(translationKeys.importVivaldi),
   restore: translate(translationKeys.restore),
   restoreCancel: translate(translationKeys.restoreCancel),
   restoreTitle: translate(translationKeys.restoreTitle),
@@ -115,6 +121,28 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
     } catch {
       return null;
     }
+  };
+
+  // "Import from Vivaldi" only shows when a Vivaldi profile with
+  // workspaces actually exists — otherwise the button is noise. The
+  // check is async and cheap, done once per window; the label + service
+  // plumbing existed since onboarding, this footer button is just the
+  // second (and only findable) door to it for profiles that never see
+  // onboarding.
+  const [canImportVivaldi, setCanImportVivaldi] = createSignal(false);
+  void hasVivaldiWorkspaces().then(setCanImportVivaldi).catch(() => {});
+  const runVivaldiImport = () => {
+    importVivaldiWorkspaces(props.ctx)
+      .then((r) => {
+        console.log(
+          `[VivaldiImport] popup import: ${r.workspacesCreated} workspaces, ` +
+            `${r.tabsRestored} tabs${
+              r.skipped.length ? `, skipped ${r.skipped.join(", ")}` : ""
+            }`,
+        );
+        setRefreshTick((t) => t + 1);
+      })
+      .catch((e) => console.error("[VivaldiImport] popup import failed", e));
   };
 
   const [isRestoreMode, setIsRestoreMode] = createSignal(false);
@@ -389,6 +417,14 @@ export function PopupElement(props: { ctx: WorkspacesService }) {
             flex="1"
           />
           <xul:hbox align="center" class="workspaceFooterButtons">
+            <Show when={canImportVivaldi()}>
+              <xul:toolbarbutton
+                id="workspacesImportVivaldiButton"
+                class="toolbarbutton-1 chromeclass-toolbar-additional"
+                label={texts().importVivaldi}
+                onCommand={runVivaldiImport}
+              />
+            </Show>
             <xul:toolbarbutton
               id="workspacesRestoreWorkspaceButton"
               class={`toolbarbutton-1 chromeclass-toolbar-additional workspaceRestoreToggle${

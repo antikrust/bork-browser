@@ -130,6 +130,7 @@ overlay() {
   # macOS profiles key on the app name only, so existing mac profiles keep.
   [ -f "$approot/application.ini" ] &&
     perl -i -pe 's/^Vendor=Ablaze$/Vendor=Bork/' "$approot/application.ini"
+  neuter_stock_updater "$approot/application.ini"
 
   strip_ai_bundle "$approot"
 
@@ -207,6 +208,22 @@ fetch_runtime() {
     "https://${FORGEJO_HOST}/${OWN_RUNTIME_REPO}/releases/download/${tag}/${file}" \
     || fail "runtime download failed: $file (is ${OWN_RUNTIME_REPO}@${tag} published on ${FORGEJO_HOST}?)"
   [ -s "$RUNTIME_FILE" ] || fail "downloaded artifact is empty: $RUNTIME_FILE"
+}
+
+# The runtimes ship with the STOCK Mozilla updater aimed at
+# aus5.mozilla.org — a live server that can genuinely answer for a
+# Firefox-shaped product, which is how "Bork is being updated by another
+# instance" appeared: the built-in updater engaging for real. bork
+# updates by its own site notification + manual download only, so point
+# the built-in machinery at our static "no updates" answer instead
+# (tools/release/site/aus/update.xml). Template parameters are dropped
+# on purpose — one static file answers every version.
+neuter_stock_updater() {
+  local ini="$1"
+  [ -f "$ini" ] || return 0
+  perl -i -pe \
+    's|^URL=https://aus\d*\.mozilla\.org/.*$|URL=https://borkbrowser.online/aus/update.xml|' \
+    "$ini"
 }
 
 build_linux() {
@@ -344,6 +361,7 @@ build_mac() {
     log "mac: correcting vendor name (Ablaze -> Bork)"
     find "$res/browser" \( -name brand.ftl -o -name brand.properties \) \
       -exec perl -i -pe 's/Ablaze/Bork/g' {} +
+    neuter_stock_updater "$res/application.ini"
   fi
 
   log "mac: signing (ad-hoc) and packing"

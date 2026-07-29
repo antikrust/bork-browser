@@ -506,16 +506,12 @@ menuitem[id^="context-ask-chat"] {
   font-size: 11px !important;
 }
 
-/* linux ONLY: the label is a 29px-min-height box and GTK's font metrics
-   drew the text riding high in it (macOS metrics happen to land right,
-   so macOS gets no rule at all — a shared align-items:center in 1.1.11
-   moved BOTH platforms and was reverted). line-height equal to the box
-   centres a single line the classic way. */
-@media (-moz-platform: linux) {
-  #workspaces-toolbar-button .toolbarbutton-text {
-    line-height: 29px !important;
-  }
-}
+/* Chip label vertical alignment: LEAVE IT ALONE. Two attempts (1.1.11
+   align-items:center — moved both platforms, text clamped low; 1.1.12
+   linux-only line-height:29px — still low AND grew the cell so it jutted
+   out of the row) both made it worse than the platform default. The GTK
+   text sitting a touch high in the box is the least-bad state; any next
+   attempt needs the user looking at candidates live, not a blind ship. */
 
 /* ===== Inline address edit: double-click a tab (row 1) ===== */
 /* The input is an overlay in #TabsToolbar space, anchored at the tab and
