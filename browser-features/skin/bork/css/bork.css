@@ -293,12 +293,37 @@ menuitem[id^="context-ask-chat"] {
 
 /* ===== Audio indicator lives on the RIGHT ===== */
 /* Stock places the mute toggle immediately after the favicon — the same
-   spot the Vivaldi-style close button swaps into on hover. Flex-order it
-   to the tab's other end; the label's flex:1 keeps it pinned there.
-   Pinned tabs keep the stock overlay badge on the favicon. */
+   spot the Vivaldi-style close button swaps into on hover. Same recipe as
+   that close button: absolute inside .tab-content (which is
+   position:relative below), flush against the inline end and dead-centred
+   vertically. Pinned tabs keep the stock overlay badge on the favicon. */
 .tabbrowser-tab:not([pinned]) .tab-audio-button {
-  order: 10;
-  margin-inline-end: 2px !important;
+  position: absolute !important;
+  inset-inline-end: 3px !important;
+  inset-block-start: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  z-index: 2;
+}
+
+/* moz-button's shadow button carries its own minimums and padding sized
+   for toolbars; shrink to the glyph so the centring above is real. */
+.tabbrowser-tab:not([pinned]) .tab-audio-button::part(button) {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 18px !important;
+  height: 18px !important;
+  padding: 1px !important;
+}
+
+/* Out-of-flow icon no longer reserves space — keep long labels from
+   running underneath it while sound state shows. Margin, not padding:
+   overflowing label text clips at the container's padding-box edge, so
+   padding just gives the overflow more room to paint across — margin
+   shrinks the clip box itself. */
+.tabbrowser-tab:not([pinned]):is([soundplaying], [muted], [activemedia-blocked])
+  .tab-label-container {
+  margin-inline-end: 22px !important;
 }
 
 /* ===== Vivaldi-style close button: the favicon's spot becomes the X ===== */
