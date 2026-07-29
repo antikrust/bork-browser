@@ -1,0 +1,22 @@
+# The Windows VM's ACTUAL build mozconfig (C:\derp-runtime\mozconfig inside the
+# derp-winbuild VM on the build host). It is deliberately untracked in the
+# runtime checkout — the pipeline's source sync (git reset --hard) must not
+# clobber it — so THIS file is the recorded copy. If the VM is ever rebuilt,
+# restore it from here. Deployed 2026-07-29 (derp->bork app rename; objdir and
+# other C:\derp-* names are VM-internal identities and stay).
+ac_add_options --with-app-name=bork
+ac_add_options --with-app-basename=Bork
+ac_add_options --disable-maintenance-service
+ac_add_options --disable-crashreporter
+ac_add_options --enable-bootstrap
+ac_add_options --enable-rust-simd
+ac_add_options --target=x86_64-pc-windows-msvc
+mk_add_options AUTOCLOBBER=1
+ac_add_options MOZ_TELEMETRY_REPORTING=
+export MOZ_PACKAGE_JSSHELL=1
+ac_add_options --enable-unverified-updates
+ac_add_options --enable-chrome-format=flat
+mk_add_options MOZ_OBJDIR=C:/derp-obj
+mk_add_options MOZ_MAKE_FLAGS="-j4"
+ac_add_options --disable-debug-symbols
+ac_add_options --with-branding=browser/branding/bork
