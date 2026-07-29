@@ -493,16 +493,24 @@ menuitem[id^="context-ask-chat"] {
   margin-inline-start: 3px !important;
 }
 
-#workspaces-toolbar-button .toolbarbutton-icon {
-  width: 16px !important;
-  height: 16px !important;
-  /* Inside the chip the glyph sat flush against the hover pill's left
-     edge; give it the same air the label has on its side. */
-  margin-inline-start: 4px !important;
+/* The chip's visible glyph is bork's own .bork-workspaces-chooser-icon —
+   the native .toolbarbutton-icon slot in this button is an EMPTY 0×0
+   image (a 1.1.10 margin aimed at it changed nothing, which is how the
+   "still no air before the icon" report happened). Put the air on the
+   real node. */
+#workspaces-toolbar-button .bork-workspaces-chooser-icon {
+  margin-inline-start: 6px !important;
 }
 
 #workspaces-toolbar-button .toolbarbutton-text {
   font-size: 11px !important;
+  /* The label carries the design layer's 29px min-height and is a flex
+     box, so its anonymous text sat at the TOP of the box wherever the
+     platform's font metrics didn't happen to fill it — "text looks
+     higher" on linux, coincidentally centred-looking on macOS. Centre
+     the text INSIDE the box; the box keeps its geometry, so nothing
+     else moves. */
+  align-items: center !important;
 }
 
 /* ===== Inline address edit: double-click a tab (row 1) ===== */
