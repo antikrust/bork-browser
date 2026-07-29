@@ -41,6 +41,56 @@ export default class TabInlineEdit extends NoraComponentBase {
       return;
     }
 
+    // "Paste and Go" in the STANDARD textbox context menu (the one both
+    // inline address editors already get, with Undo/Cut/Copy/Paste/…),
+    // shown only when that menu was opened on one of our editors. The menu
+    // is built lazily by toolkit's editMenuOverlay on first right-click, so
+    // hook its popupshowing rather than inserting at startup. Both editors
+    // navigate on an Enter keydown, so the item pastes and synthesizes
+    // Enter instead of knowing either commit path.
+    const PASTE_GO_ID = "bork-textbox-paste-and-go";
+    const EDITOR_CLASSES = ["bork-tab-url-input", "bork-stack-url-input"];
+    const onTextboxMenuShowing = (event: Event) => {
+      const popup = event.target as Element & { triggerNode?: Node | null };
+      if (popup.id !== "textbox-contextmenu") return;
+      let item = doc.getElementById(PASTE_GO_ID);
+      if (!item) {
+        item = doc.createXULElement("menuitem");
+        item.id = PASTE_GO_ID;
+        item.setAttribute("label", "Paste and Go");
+        item.addEventListener("command", () => {
+          const menu = doc.getElementById("textbox-contextmenu") as
+            | (Element & { triggerNode?: Node | null })
+            | null;
+          const input = (menu?.triggerNode ?? null) as HTMLInputElement | null;
+          if (!input?.isConnected) return;
+          input.focus();
+          input.select();
+          (globalThis as unknown as { goDoCommand(c: string): void })
+            .goDoCommand("cmd_paste");
+          input.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "Enter", code: "Enter" }),
+          );
+        });
+        popup.querySelector('[command="cmd_paste"]')
+          ?.insertAdjacentElement("afterend", item);
+      }
+      const trigger = popup.triggerNode as Element | null;
+      const ours = !!trigger &&
+        EDITOR_CLASSES.some((c) => trigger.classList?.contains(c));
+      (item as XULElement & { hidden: boolean }).hidden = !ours;
+      if (ours) {
+        // Mirror Paste's enabled state (goUpdateGlobalEditMenuItems has
+        // already run by the time the popup shows).
+        if (doc.getElementById("cmd_paste")?.getAttribute("disabled") === "true") {
+          item.setAttribute("disabled", "true");
+        } else {
+          item.removeAttribute("disabled");
+        }
+      }
+    };
+    doc.addEventListener("popupshowing", onTextboxMenuShowing);
+
     let activeInput: HTMLInputElement | null = null;
     let activeTab: TabLike | null = null;
 
