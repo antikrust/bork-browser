@@ -225,6 +225,48 @@ build_linux() {
   COPYFILE_DISABLE=1 tar --no-xattrs -czf dist/linux/Bork-linux-x86_64.tar.gz -C "$(dirname "$approot")" \
     "$(basename "$approot")"
   log "linux: dist/linux/Bork-linux-x86_64.tar.gz"
+
+  # AppImage: the same tree again as one self-mounting executable. An
+  # AppImage is literally `type-2 runtime blob + squashfs(AppDir)`
+  # concatenated — the runtime mounts its own tail and execs AppRun — so
+  # macOS builds it with just mksquashfs (brew install squashfs). Blob is
+  # vendored + pinned in tools/release/appimage/ (see its README).
+  local airt="tools/release/appimage/runtime-x86_64"
+  if command -v mksquashfs >/dev/null 2>&1 && [ -f "$airt" ]; then
+    log "linux: building AppImage"
+    local appdir=build/release/linux/Bork.AppDir
+    rm -rf "$appdir"
+    mkdir -p "$appdir"
+    cp -R "$approot" "$appdir/bork"
+    cat > "$appdir/AppRun" <<'APPRUN'
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "$0")")"
+exec "$HERE/bork/bork" "$@"
+APPRUN
+    chmod +x "$appdir/AppRun"
+    cat > "$appdir/bork.desktop" <<'DESKTOP'
+[Desktop Entry]
+Type=Application
+Name=Bork
+Exec=bork %u
+Icon=bork
+Categories=Network;WebBrowser;
+StartupWMClass=bork
+MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
+DESKTOP
+    cp browser-features/branding/icon128.png "$appdir/bork.png"
+    cp browser-features/branding/icon128.png "$appdir/.DirIcon"
+    local sqfs=build/release/linux/bork.squashfs
+    rm -f "$sqfs"
+    mksquashfs "$appdir" "$sqfs" -root-owned -noappend -no-xattrs -quiet \
+      -comp zstd -b 128K || fail "mksquashfs failed"
+    cat "$airt" "$sqfs" > dist/linux/Bork-linux-x86_64.AppImage
+    chmod +x dist/linux/Bork-linux-x86_64.AppImage
+    rm -f "$sqfs"
+    log "linux: dist/linux/Bork-linux-x86_64.AppImage"
+  else
+    log "linux: SKIPPED AppImage (needs mksquashfs + tools/release/appimage/runtime-x86_64)"
+  fi
 }
 
 build_windows() {

@@ -496,6 +496,9 @@ menuitem[id^="context-ask-chat"] {
 #workspaces-toolbar-button .toolbarbutton-icon {
   width: 16px !important;
   height: 16px !important;
+  /* Inside the chip the glyph sat flush against the hover pill's left
+     edge; give it the same air the label has on its side. */
+  margin-inline-start: 4px !important;
 }
 
 #workspaces-toolbar-button .toolbarbutton-text {

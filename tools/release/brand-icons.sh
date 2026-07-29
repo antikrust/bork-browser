@@ -41,4 +41,19 @@ if [ -d "$branding" ]; then
   done
 fi
 
+# Linux window/taskbar icon: GTK reads browser/chrome/icons/default/
+# defaultNN.png — without these the dock still shows the runtime's own
+# (Firefox) art. Same masters as everything above, so changing the icon
+# stays a one-place edit: swap browser-features/branding/logo.png, run
+# gen-icons.sh, rebuild.
+icondir="$approot/browser/chrome/icons/default"
+if [ -d "$icondir" ]; then
+  for n in 16 32 48 64 128 256; do
+    if [ -f "$src/icon$n.png" ] && [ -f "$icondir/default$n.png" ]; then
+      cp "$src/icon$n.png" "$icondir/default$n.png"
+      installed=$((installed + 1))
+    fi
+  done
+fi
+
 echo "branded $installed icon file(s) under $approot"

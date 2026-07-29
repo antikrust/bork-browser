@@ -375,6 +375,44 @@ function StackRow() {
     scroller.addEventListener("scroll", sync);
     sync();
 
+    // Line/page wheel notches GLIDE to their target instead of teleporting:
+    // row 1's stock line-mode path eases through arrowscrollbox, and the
+    // bare scrollLeft jump here read as a cheaper row. Target-chasing
+    // animator, still inside the row's single scroll owner — it just
+    // spreads the same write over frames. Exits when it arrives, when the
+    // browser clamps the write at an edge, or on cleanup; direct input
+    // (trackpad pixels, arrow hold) stops it first so nothing fights.
+    let glideTarget = 0;
+    let glideFrame = 0;
+    const glideStep = () => {
+      glideFrame = 0;
+      if (!scroller.isConnected) return;
+      const before = scroller.scrollLeft;
+      const diff = glideTarget - before;
+      if (Math.abs(diff) <= 1) {
+        scroller.scrollLeft = glideTarget;
+        return;
+      }
+      // A quarter of the remainder per frame ≈ settled in ~90ms at 60Hz.
+      scroller.scrollLeft = before + diff * 0.25;
+      if (scroller.scrollLeft === before) {
+        // Edge: the browser clamped the write. Pull the target back so a
+        // reversed wheel does not spend notches on phantom distance.
+        glideTarget = before;
+        return;
+      }
+      glideFrame = requestAnimationFrame(glideStep);
+    };
+    const glideBy = (delta: number) => {
+      const from = glideFrame ? glideTarget : scroller.scrollLeft;
+      glideTarget = from + delta;
+      if (!glideFrame) glideFrame = requestAnimationFrame(glideStep);
+    };
+    const stopGlide = () => {
+      if (glideFrame) cancelAnimationFrame(glideFrame);
+      glideFrame = 0;
+    };
+
     // The row's one wheel path. Same rule the tab strip's patched
     // arrowscrollbox uses: pixel-mode input (trackpads) scrolls only on its
     // horizontal-dominant events — a macOS momentum tail follows the lift
@@ -388,10 +426,11 @@ function StackRow() {
       const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
       if (event.deltaMode === WheelEvent.DOM_DELTA_PIXEL) {
         if (!horizontal) return;
+        stopGlide();
         scroller.scrollLeft += event.deltaX;
       } else {
         const delta = horizontal ? event.deltaX : event.deltaY;
-        scroller.scrollLeft += delta * ARROW_STEP_PX;
+        glideBy(delta * ARROW_STEP_PX);
       }
       event.preventDefault();
       event.stopPropagation();
@@ -421,7 +460,7 @@ function StackRow() {
           nearest = delta;
         }
       }
-      if (distance < ARROW_SNAP_PX) scroller.scrollLeft += nearest;
+      if (distance < ARROW_SNAP_PX) glideBy(nearest);
     };
 
     const stopHold = () => {
@@ -436,6 +475,7 @@ function StackRow() {
       if (event.button !== 0) return;
       // Keep focus where it was; the row is a pointer target, not a stop.
       event.preventDefault();
+      stopGlide();
       heldDir = dir;
       if (!frame) frame = requestAnimationFrame(step);
     };
@@ -452,6 +492,7 @@ function StackRow() {
     onCleanup(() => {
       heldDir = 0;
       if (frame) cancelAnimationFrame(frame);
+      stopGlide();
       overflowObserver.disconnect();
       scroller.removeEventListener("wheel", onWheel);
       scroller.removeEventListener("scroll", sync);

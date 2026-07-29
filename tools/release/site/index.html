@@ -495,7 +495,7 @@ footer { border-top: 1px solid var(--line);
 
   <div class="wrap hero-copy">
     <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="686" height="216"></h1>
-    <p class="sub">bork 1.1.9 based on floorp</p>
+    <p class="sub">bork 1.1.10 based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
   </div>
 
@@ -511,10 +511,10 @@ footer { border-top: 1px solid var(--line);
         <div class="dlcard">
           <a class="dl" href="downloads/Bork-macOS-universal.dmg">
             <span class="dl-top">
-              <b>macOS</b> <small>Apple silicon (arm64) · 189 MB</small>
+              <b>macOS</b> <small>Apple silicon (arm64) · 187 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 e54e42246c1e6f4cb6a23eb1d830c635e2e93431c5e7404813438aeec25ecb00</code>
+              <code>sha256 03573adadb88fa16facb90763ee02eea720a996d45b38ce7e759e017c708afc5</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the macOS sha256">
@@ -538,15 +538,29 @@ footer { border-top: 1px solid var(--line);
           <span class="youpill" hidden>your platform</span>
         </div>
         <div class="dlcard">
-          <a class="dl" href="downloads/Bork-linux-x86_64.tar.gz">
+          <a class="dl" href="downloads/Bork-linux-x86_64.AppImage">
             <span class="dl-top">
-              <b>Linux</b> <small>x86_64 · 125 MB</small>
+              <b>Linux</b> <small>AppImage · x86_64 · 114 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 330a0f6069e22fdf6fe835d5406cb8982b01f452bd96bdff23f785d814ccfef3</code>
+              <code>sha256 1e3b8ada269e4a9fe6e76065df63a658d0fb9bbf32cf4126ec0256ea25a49da8</code>
             </span>
           </a>
-          <button class="copy" type="button" aria-label="Copy the Linux sha256">
+          <button class="copy" type="button" aria-label="Copy the Linux AppImage sha256">
+            <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+        </div>
+        <div class="dlcard">
+          <a class="dl" href="downloads/Bork-linux-x86_64.tar.gz">
+            <span class="dl-top">
+              <b>Linux</b> <small>tarball · x86_64 · 125 MB</small>
+            </span>
+            <span class="dl-sum">
+              <code>sha256 9ba074397aafed4e1558030d12e74de76ac71e4246b82430436b749bac0533e3</code>
+            </span>
+          </a>
+          <button class="copy" type="button" aria-label="Copy the Linux tarball sha256">
             <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
           </button>
@@ -565,7 +579,7 @@ footer { border-top: 1px solid var(--line);
               <b>Windows</b> <small>x86_64 · 146 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 305e5e944337cf39889f10665310765ed4d84467bd71739d899997d98df59325</code>
+              <code>sha256 795186dd0cd1939597f63346e0701662d2ee5713f989fd129c4adbd917df70de</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Windows sha256">
@@ -761,10 +775,12 @@ footer { border-top: 1px solid var(--line);
     <ul class="steps">
       <li><b>macOS:</b> open the DMG, drag Bork to Applications. These builds
         are self-signed — first launch is right-click → Open.</li>
-      <li><b>Linux:</b> <code class="inline">tar -xzf Bork-linux-x86_64.tar.gz
-        &amp;&amp; ./floorp/floorp</code></li>
+      <li><b>Linux (AppImage):</b> <code class="inline">chmod +x
+        Bork-linux-x86_64.AppImage &amp;&amp; ./Bork-linux-x86_64.AppImage</code></li>
+      <li><b>Linux (tarball):</b> <code class="inline">tar -xzf
+        Bork-linux-x86_64.tar.gz &amp;&amp; ./bork/bork</code></li>
       <li><b>Windows:</b> unzip anywhere, run
-        <code class="inline">floorp.exe</code>. SmartScreen will grumble —
+        <code class="inline">bork.exe</code>. SmartScreen will grumble —
         More info → Run anyway.</li>
     </ul>
   </div>

@@ -77,7 +77,10 @@ export class CPanelSidebar {
       for (const p of panelSidebarData()) {
         if (p.type !== "static") continue;
         const b = this.getBrowserElement(p.id);
-        if (b) this.syncPanelScheme(b);
+        if (b) {
+          this.syncPanelScheme(b);
+          this.applyEmbedTweaks(b);
+        }
       }
     });
     if (document?.documentElement) {
@@ -103,6 +106,70 @@ export class CPanelSidebar {
    * Transaction::Commit, symbolicated from a live crash), so the chrome
    * panels must never reach the write.
    */
+  /** Adopted dark-surface sheets, one per embedded document. */
+  private embedSheets = new WeakMap<Document, CSSStyleSheet>();
+
+  /**
+   * Per-document corrections to the embedded static panels — in-process
+   * docs only; the remote about: panels need none of this.
+   *
+   * - FF152's places sidebar documents carry their own panel header whose
+   *   close button drives the MAIN window's SidebarController
+   *   (bookmarksSidebar.js closeSidebarPanel → embedderWindowGlobal →
+   *   SidebarController.toggle): inside this embedding that pops the
+   *   native sidebar open on the far side of the window instead of
+   *   closing anything. The floorp header above the panel already has the
+   *   one real close button; hide the embedded duplicate. The hidden
+   *   ATTRIBUTE, not an injected <style> — these documents ship their own
+   *   CSP (`default-src chrome:`) which silently kills inline sheets (the
+   *   element appends fine but .sheet stays null).
+   * - syncedtabs paints its :root with the platform Field colour, and
+   *   GTK's dark Field is a mid grey — the one panel that stayed light
+   *   grey inside black chrome. The same CSP applies, so the repaint
+   *   rides a CONSTRUCTED, adopted stylesheet: created by script, never
+   *   loaded, outside CSP's jurisdiction. Dark Bork only, and scoped to
+   *   that document — the places docs' surfaces are already right.
+   */
+  private applyEmbedTweaks(browser: XULElement) {
+    try {
+      const doc = (browser as unknown as {
+        contentDocument?: Document | null;
+      }).contentDocument;
+      if (!doc?.documentElement) return;
+      const hdr = doc.getElementById("sidebar-panel-header") as
+        | (Element & { hidden: boolean })
+        | null;
+      if (hdr) {
+        hdr.hidden = true;
+      }
+      if (!doc.documentURI.includes("syncedtabs")) return;
+      const win = doc.defaultView as
+        | (Window & { CSSStyleSheet: { new (): CSSStyleSheet } })
+        | null;
+      if (!win) return;
+      const dark = document?.documentElement?.hasAttribute("data-bork-dark") ??
+        false;
+      type AdoptingDoc = Document & { adoptedStyleSheets: CSSStyleSheet[] };
+      const adoc = doc as AdoptingDoc;
+      const existing = this.embedSheets.get(doc);
+      if (dark && !existing) {
+        const sheet = new win.CSSStyleSheet();
+        (sheet as unknown as { replaceSync(text: string): void }).replaceSync(
+          ":root { background-color: #050506 !important; }",
+        );
+        adoc.adoptedStyleSheets = [...adoc.adoptedStyleSheets, sheet];
+        this.embedSheets.set(doc, sheet);
+      } else if (!dark && existing) {
+        adoc.adoptedStyleSheets = adoc.adoptedStyleSheets.filter(
+          (s) => s !== existing,
+        );
+        this.embedSheets.delete(doc);
+      }
+    } catch (e) {
+      console.error("[panel-sidebar] embed tweaks failed:", e);
+    }
+  }
+
   private syncPanelScheme(browser: XULElement) {
     try {
       if (browser.getAttribute("remote") !== "true") {
@@ -201,33 +268,10 @@ export class CPanelSidebar {
     if (panel.type === "static") {
       const browser = this.getBrowserElement(panel.id);
       if (browser) {
-        // FF152's places sidebar documents carry their own panel header
-        // whose close button drives the MAIN window's SidebarController
-        // (bookmarksSidebar.js closeSidebarPanel → embedderWindowGlobal →
-        // SidebarController.toggle) — inside this embedding that pops the
-        // native sidebar open on the far side of the window instead of
-        // closing anything. The floorp header above the panel already has
-        // the one real close button; hide the embedded duplicate.
-        // In-process docs only — the remote about: panels don't carry it.
-        // The hidden attribute, not an injected <style>: these documents
-        // ship their own CSP (`default-src chrome:`), which silently kills
-        // inline sheets — the element appended fine but .sheet stayed
-        // null. Attributes are outside CSP's reach.
-        const injectEmbedTweaks = () => {
-          const doc = (browser as unknown as {
-            contentDocument?: Document | null;
-          }).contentDocument;
-          const hdr = doc?.getElementById("sidebar-panel-header") as
-            | (Element & { hidden: boolean })
-            | null;
-          if (hdr) {
-            hdr.hidden = true;
-          }
-        };
         browser.addEventListener(
           "load",
           () => {
-            injectEmbedTweaks();
+            this.applyEmbedTweaks(browser);
             this.syncPanelScheme(browser);
           },
           true,
@@ -238,7 +282,7 @@ export class CPanelSidebar {
         browser.addEventListener("XULFrameLoaderCreated", () => {
           this.syncPanelScheme(browser);
         });
-        injectEmbedTweaks();
+        this.applyEmbedTweaks(browser);
         this.syncPanelScheme(browser);
       }
     }
