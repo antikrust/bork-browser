@@ -299,21 +299,28 @@ menuitem[id^="context-ask-chat"] {
    vertically. Pinned tabs keep the stock overlay badge on the favicon. */
 .tabbrowser-tab:not([pinned]) .tab-audio-button {
   position: absolute !important;
-  inset-inline-end: 3px !important;
-  inset-block-start: 50% !important;
+  inset-inline-end: 4px !important;
+  /* translateY(-50%) centres the BOX; the extra 0.5px drops the glyph
+     onto the label's optical band — text ink sits below geometric centre
+     (line boxes reserve descender space), and a dead-centred icon reads
+     as floating high beside it. */
+  inset-block-start: calc(50% + 0.5px) !important;
   transform: translateY(-50%) !important;
   margin: 0 !important;
   z-index: 2;
 }
 
-/* moz-button's shadow button carries its own minimums and padding sized
-   for toolbars; shrink to the glyph so the centring above is real. */
+/* moz-button's shadow button carries toolbar-sized minimums, and paints
+   its 16px icon as a background pinned at 0,0 — any box bigger than the
+   artwork leaves the glyph riding high-left inside it. Exactly 16px, no
+   padding, centred paint. */
 .tabbrowser-tab:not([pinned]) .tab-audio-button::part(button) {
   min-width: 0 !important;
   min-height: 0 !important;
-  width: 18px !important;
-  height: 18px !important;
-  padding: 1px !important;
+  width: 16px !important;
+  height: 16px !important;
+  padding: 0 !important;
+  background-position: center !important;
 }
 
 /* Out-of-flow icon no longer reserves space — keep long labels from
