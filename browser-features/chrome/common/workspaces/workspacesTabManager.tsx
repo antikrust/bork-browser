@@ -527,6 +527,19 @@ export class WorkspacesTabManager {
    */
   private isAutoReplacementTab(tab: XULElement): boolean {
     try {
+      // Replacements only exist while closeWindowWithLastTab is false: that is
+      // the pref that makes Firefox spawn a blank tab instead of closing the
+      // window. This feature no longer forces it (init clears the user value),
+      // so under the stock default there is nothing to discount — and applying
+      // the blank-tab heuristic anyway declared a workspace whose tabs are all
+      // newtab pages "empty" on every close, bouncing the user to the default
+      // workspace.
+      if (
+        Services.prefs.getBoolPref("browser.tabs.closeWindowWithLastTab", true)
+      ) {
+        return false;
+      }
+
       // Pinned tabs are never auto-replacements.
       if (tab.getAttribute("pinned") === "true") return false;
 
