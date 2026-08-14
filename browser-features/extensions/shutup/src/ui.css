@@ -319,6 +319,13 @@ yt-live-chat-membership-item-renderer {
   font-weight: 600;
 }
 
+/* Emoji carried over from the chat; sized to ride in the text line. */
+.ytct-emoji {
+  height: 16px;
+  width: auto;
+  vertical-align: text-bottom;
+}
+
 /*
  * Buttons float over the text on hover rather than reserving a gutter: a
  * permanent 74px of right padding for two buttons costs every message a line

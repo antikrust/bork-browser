@@ -123,6 +123,31 @@
     return out.replace(/\s+/g, " ").trim();
   }
 
+  /**
+   * A render-safe copy of the message's rich content: its text plus its emoji
+   * images, nothing else. The plain-text copy is right for RULES (an emoji is
+   * its :name: there), but rendered to a reader the names come out as words —
+   * "face-blue-smiling" six times over — so rows render this instead. Stored
+   * once per message and cloned per row, since roots get rendered again when a
+   * late reply revives them.
+   */
+  function richFragment(msgEl) {
+    if (!msgEl) return null;
+    const frag = document.createDocumentFragment();
+    for (const child of msgEl.childNodes) {
+      if (child.tagName === "IMG" && child.src) {
+        const img = document.createElement("img");
+        img.className = "ytct-emoji";
+        img.src = child.src;
+        img.alt = child.getAttribute("alt") || "";
+        frag.appendChild(img);
+      } else if (child.textContent) {
+        frag.appendChild(document.createTextNode(child.textContent));
+      }
+    }
+    return frag;
+  }
+
   function parse(node) {
     const author = textOf(node.querySelector("#author-name"));
     const text = messageText(node.querySelector("#message"));
@@ -162,6 +187,7 @@
     node.dataset.ytctGen = String(generation);
 
     ensureButton(node, message);
+    message.rich = richFragment(node.querySelector("#message"));
 
     const verdict = filters.decide(message, { rules, banRules, blocked, config });
     const hide = !!verdict.hide;
@@ -209,6 +235,7 @@
     hiddenLog.push({
       author: message.author,
       text: message.text,
+      rich: message.rich || null,
       reason: verdict.reason,
       rule: verdict.rule || "",
       ts: Date.now(),
@@ -262,7 +289,8 @@
 
       const body = document.createElement("div");
       body.className = "ytct-hidden-text";
-      body.textContent = entry.text;
+      if (entry.rich) body.appendChild(entry.rich.cloneNode(true));
+      else body.textContent = entry.text;
 
       const allow = document.createElement("button");
       allow.type = "button";
@@ -583,8 +611,10 @@
 
     const body = document.createElement("span");
     body.className = "ytct-msg-text";
-    // textContent, never innerHTML: this is untrusted text from strangers.
-    body.textContent = message.text;
+    // Cloned fragment or textContent, never innerHTML: this is untrusted text
+    // from strangers.
+    if (message.rich) body.appendChild(message.rich.cloneNode(true));
+    else body.textContent = message.text;
 
     const actions = document.createElement("span");
     actions.className = "ytct-msg-actions";
