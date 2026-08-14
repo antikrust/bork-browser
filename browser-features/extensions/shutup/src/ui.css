@@ -118,6 +118,9 @@ yt-live-chat-membership-item-renderer {
 #ytct-threads-btn {
   align-self: center;
   flex: none;
+  /* YouTube's chat controls each bring their own 8px gap; without this the
+     button sits flush against the one before it. */
+  margin-inline-start: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

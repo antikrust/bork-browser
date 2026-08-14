@@ -596,9 +596,12 @@
    * thinking the box is empty, and the send button stays disabled.
    */
   function startReply(author) {
+    // YouTube writes contenteditable with an EMPTY value (contenteditable=""),
+    // so [contenteditable='true'] matched nothing and Reply silently did
+    // nothing. Match on the attribute being present at all.
     const box = document.querySelector(
-      "yt-live-chat-message-input-renderer div#input[contenteditable='true']",
-    ) || document.querySelector("div#input[contenteditable='true']");
+      "yt-live-chat-message-input-renderer div#input[contenteditable]",
+    ) || document.querySelector("div#input[contenteditable]");
     if (!box) return;
 
     box.focus();
