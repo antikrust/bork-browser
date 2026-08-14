@@ -1,0 +1,111 @@
+"use strict";
+/**
+ * Config storage, shared by the content script, the options page and the popup.
+ *
+ * One record under one key rather than a key per setting: the content script
+ * reloads the whole config on any change anyway (a changed word rule has to be
+ * re-applied to messages already on screen), so per-key granularity would buy
+ * nothing and make partial writes possible.
+ *
+ * chrome.storage.local, not .sync: a blocklist is long, personal, and grows
+ * fast — sync quota is 100KB with an 8KB per-item cap, which a few hundred
+ * blocked names plus rules can reach.
+ */
+globalThis.YTCT = globalThis.YTCT || {};
+(function (YTCT) {
+  const api = globalThis.browser ?? globalThis.chrome;
+  const KEY = "config";
+
+  const DEFAULTS = {
+    enabled: true,
+
+    /** Word rules that hide the offending MESSAGE. Plain text matches as a substring; "/pattern/flags" is a regex. */
+    words: [],
+    /**
+     * Word rules that block the PERSON. Saying one of these once hides every
+     * message they have on screen and everything they say afterwards — the
+     * blocklist entry is what does the work, so it survives a reload.
+     */
+    banWords: [],
+    /** Blocked authors: { name, at (epoch ms), auto (true if rule-triggered) }. */
+    authors: [],
+
+    /** "hide" removes the row; "collapse" leaves a one-line stub saying why. */
+    hideMode: "hide",
+    /** Plain-text rules only match on word boundaries. Regex rules are unaffected. */
+    wholeWord: false,
+    /** Plain-text rules become case-sensitive. Regex rules keep their own flags. */
+    caseSensitive: false,
+    /** Also test word rules against the author's name, not just the message. */
+    matchAuthorNames: false,
+    /** Never hide the channel owner or a moderator, whatever the rules say. */
+    protectStaff: true,
+
+    /** Auto-block an author after this many messages caught by word rules. 0 = off. */
+    repeatLimit: 3,
+
+    /** Threaded reading view. */
+    threads: true,
+    /** A thread jumps to the bottom when it gets a new reply. */
+    bumpThreads: true,
+
+    /** Show the SHUT UP button on every message row. */
+    showButton: true,
+
+    stats: { hidden: 0, blocked: 0 },
+  };
+
+  function clone(value) {
+    return typeof structuredClone === "function"
+      ? structuredClone(value)
+      : JSON.parse(JSON.stringify(value));
+  }
+
+  /**
+   * Fill in anything a stored config predates. Extensions get updated with
+   * settings already on disk, so a new key must never read as undefined.
+   */
+  function withDefaults(stored) {
+    const out = clone(DEFAULTS);
+    if (!stored || typeof stored !== "object") return out;
+    for (const [k, v] of Object.entries(stored)) {
+      if (!(k in out)) continue;
+      if (v === null || v === undefined) continue;
+      out[k] = Array.isArray(out[k]) && !Array.isArray(v) ? out[k] : v;
+    }
+    out.stats = Object.assign(clone(DEFAULTS.stats), stored.stats || {});
+    return out;
+  }
+
+  async function load() {
+    const got = await api.storage.local.get(KEY);
+    return withDefaults(got && got[KEY]);
+  }
+
+  async function save(config) {
+    await api.storage.local.set({ [KEY]: config });
+    return config;
+  }
+
+  /**
+   * Read-modify-write. The mutator may return a new config or edit in place.
+   * Kept here so callers never race each other through a get/set pair of their
+   * own — the content script writes from event handlers while the options page
+   * may be open on the same data.
+   */
+  async function update(mutate) {
+    const current = await load();
+    const next = (await mutate(current)) || current;
+    return save(next);
+  }
+
+  /** Fires whenever anything writes the config, including another tab. */
+  function onChange(callback) {
+    api.storage.onChanged.addListener((changes, area) => {
+      if (area !== "local" || !changes[KEY]) return;
+      callback(withDefaults(changes[KEY].newValue));
+    });
+  }
+
+  YTCT.store = { DEFAULTS, load, save, update, onChange, withDefaults, clone };
+})(globalThis.YTCT);

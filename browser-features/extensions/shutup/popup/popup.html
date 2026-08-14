@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SHUT UP</title>
+    <style>
+      :root {
+        --bg: #fff;
+        --fg: #14140f;
+        --dim: #5f6368;
+        --line: rgba(0, 0, 0, 0.14);
+        --accent: #c00;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f0f10;
+          --fg: #ececec;
+          --dim: #9aa0a6;
+          --line: rgba(255, 255, 255, 0.16);
+          --accent: #ff4e45;
+        }
+      }
+      body {
+        width: 236px;
+        margin: 0;
+        padding: 14px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 400 13px/1.5 system-ui, sans-serif;
+      }
+      h1 {
+        margin: 0 0 2px;
+        font-size: 15px;
+        letter-spacing: 0.02em;
+      }
+      .counts {
+        margin: 0 0 12px;
+        color: var(--dim);
+        font-size: 12px;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 0;
+      }
+      form {
+        display: flex;
+        gap: 6px;
+        margin: 10px 0 12px;
+      }
+      input[type="text"] {
+        flex: 1;
+        min-width: 0;
+        padding: 5px 8px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--fg);
+        font: inherit;
+      }
+      button {
+        padding: 5px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--fg);
+        font: inherit;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .wide {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SHUT UP</h1>
+    <p class="counts" id="counts">—</p>
+
+    <label><input type="checkbox" id="enabled" /> Filtering on</label>
+    <label><input type="checkbox" id="threads" /> Threaded view</label>
+
+    <form id="quick">
+      <input type="text" id="word" placeholder="hide messages with…" autocomplete="off" />
+      <button type="submit">Add</button>
+    </form>
+
+    <button type="button" id="settings" class="wide">All settings</button>
+
+    <script src="../src/store.js"></script>
+    <script src="../src/filters.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

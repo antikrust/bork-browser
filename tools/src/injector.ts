@@ -59,10 +59,60 @@ function distributionIni(): string {
 }
 
 /**
+ * Zip a WebExtension source directory to <extDir>/<gecko-id>.xpi.
+ *
+ * The add-on id has to be the FILENAME — that is how Firefox matches a
+ * distribution add-on to what it installs — so it is read from the manifest
+ * rather than taken from the directory name, which nothing enforces.
+ *
+ * @returns the gecko id on success, or null when the directory is not a
+ *   packable extension (no manifest, no id) or zip failed.
+ */
+function packExtensionDir(
+  dir: string,
+  extDir: string,
+  exclude: string[] = [],
+): string | null {
+  const manifestPath = path.join(dir, "manifest.json");
+  if (!exists(manifestPath)) return null;
+
+  const manifest = JSON.parse(Deno.readTextFileSync(manifestPath)) as {
+    browser_specific_settings?: { gecko?: { id?: string } };
+  };
+  const id = manifest.browser_specific_settings?.gecko?.id;
+  if (!id) {
+    logger.warn(`${path.basename(dir)}: no gecko id, skipped`);
+    return null;
+  }
+
+  const xpi = path.join(extDir, `${id}.xpi`);
+  safeRemove(xpi);
+  // Contents at archive root (manifest.json top-level), no extras.
+  const args = ["-r", "-X", "-q", xpi, "."];
+  if (exclude.length) args.push("-x", ...exclude);
+
+  const result = runCommandChecked("zip", args, dir);
+  if (!result.success) {
+    logger.error(`${path.basename(dir)}: zip failed: ${result.stderr}`);
+    return null;
+  }
+  return id;
+}
+
+/** Repo sources that belong to the extension, not to the shipped add-on. */
+const EXTENSION_PACK_EXCLUDES = ["test/*", "*.md", "build.sh", ".gitignore"];
+
+/**
  * bork add-on pack: the static WebExtension themes in browser-features/themes/
- * are zipped into <app>/distribution/extensions/<gecko-id>.xpi, and the
- * vendored default extensions in browser-features/extensions/ (uBlock Origin,
- * Dark Reader — .xpi files named by their gecko id) are copied in beside them.
+ * are zipped into <app>/distribution/extensions/<gecko-id>.xpi, and everything
+ * in browser-features/extensions/ joins them — third-party add-ons vendored as
+ * .xpi files named by their gecko id (uBlock Origin, Dark Reader) are copied
+ * across, and our OWN extensions, which live there as source directories, are
+ * zipped on every build.
+ *
+ * Our own ones are kept as source rather than a checked-in .xpi deliberately: a
+ * built artifact in the tree is one nobody can date, which is how deleted
+ * add-ons kept shipping for four days after they were removed from this file.
  * Firefox auto-installs everything in that directory into new profiles as
  * ordinary add-ons: user-visible in about:addons, user-removable, no policy
  * machinery involved. The runtime does not enforce add-on signing, so plain
@@ -83,37 +133,28 @@ export function installThemePack(): void {
     let count = 0;
     for (const entry of Deno.readDirSync(themesSrc)) {
       if (!entry.isDirectory) continue;
-      const dir = path.join(themesSrc, entry.name);
-      const manifestPath = path.join(dir, "manifest.json");
-      if (!exists(manifestPath)) continue;
-      const manifest = JSON.parse(Deno.readTextFileSync(manifestPath)) as {
-        browser_specific_settings?: { gecko?: { id?: string } };
-      };
-      const id = manifest.browser_specific_settings?.gecko?.id;
-      if (!id) {
-        logger.warn(`theme ${entry.name}: no gecko id, skipped`);
-        continue;
-      }
-      const xpi = path.join(extDir, `${id}.xpi`);
-      safeRemove(xpi);
-      // Zip contents at archive root (manifest.json top-level), no extras.
-      const result = runCommandChecked("zip", ["-r", "-X", "-q", xpi, "."], dir);
-      if (!result.success) {
-        logger.error(`theme ${entry.name}: zip failed: ${result.stderr}`);
-        continue;
-      }
-      count++;
+      if (packExtensionDir(path.join(themesSrc, entry.name), extDir)) count++;
     }
     let bundled = 0;
     const bundledSrc = path.join(PROJECT_ROOT, "browser-features", "extensions");
     if (exists(bundledSrc)) {
       for (const entry of Deno.readDirSync(bundledSrc)) {
-        if (!entry.isFile || !entry.name.endsWith(".xpi")) continue;
-        Deno.copyFileSync(
+        if (entry.isFile && entry.name.endsWith(".xpi")) {
+          // Third-party add-ons, shipped exactly as their authors built them.
+          Deno.copyFileSync(
+            path.join(bundledSrc, entry.name),
+            path.join(extDir, entry.name),
+          );
+          bundled++;
+          continue;
+        }
+        if (!entry.isDirectory) continue;
+        const packed = packExtensionDir(
           path.join(bundledSrc, entry.name),
-          path.join(extDir, entry.name),
+          extDir,
+          EXTENSION_PACK_EXCLUDES,
         );
-        bundled++;
+        if (packed) bundled++;
       }
     }
     logger.success(

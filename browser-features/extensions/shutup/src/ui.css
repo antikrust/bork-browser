@@ -1,0 +1,268 @@
+/*
+ * Injected into the live_chat iframe.
+ *
+ * Colours follow YouTube's own theme signal: it stamps a `dark` attribute on
+ * <html> when the dark theme is on, which is more reliable here than
+ * prefers-color-scheme (the reader may run YouTube dark on a light system).
+ * prefers-color-scheme is kept as the fallback for the first paint.
+ */
+
+:root {
+  --ytct-bg: #ffffff;
+  --ytct-panel-bg: #f7f7f8;
+  --ytct-fg: #0f0f0f;
+  --ytct-dim: #606060;
+  --ytct-line: rgba(0, 0, 0, 0.12);
+  --ytct-accent: #c00;
+  --ytct-reply-line: rgba(0, 0, 0, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ytct-bg: #0f0f0f;
+    --ytct-panel-bg: #131314;
+    --ytct-fg: #f1f1f1;
+    --ytct-dim: #aaa;
+    --ytct-line: rgba(255, 255, 255, 0.14);
+    --ytct-accent: #ff4e45;
+    --ytct-reply-line: rgba(255, 255, 255, 0.22);
+  }
+}
+
+:root[dark] {
+  --ytct-bg: #0f0f0f;
+  --ytct-panel-bg: #131314;
+  --ytct-fg: #f1f1f1;
+  --ytct-dim: #aaa;
+  --ytct-line: rgba(255, 255, 255, 0.14);
+  --ytct-accent: #ff4e45;
+  --ytct-reply-line: rgba(255, 255, 255, 0.22);
+}
+
+/* --------------------------------------------------------------- filtering */
+
+/*
+ * !important throughout: YouTube's own styles are more specific than anything
+ * a class on the element can be, and losing this particular fight means a
+ * message you asked to never see again stays on screen.
+ */
+.ytct-hidden {
+  display: none !important;
+}
+
+/* Collapsed mode: keep a one-line stub so a mis-typed rule is visible. */
+.ytct-collapsed > #content,
+.ytct-collapsed > #card {
+  display: none !important;
+}
+
+.ytct-collapsed::after {
+  content: attr(data-ytct-reason);
+  display: block;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--ytct-dim);
+  font-style: italic;
+  opacity: 0.75;
+}
+
+/* ------------------------------------------------------------ SHUT UP button */
+
+/* The renderer is the positioning context for our button. */
+yt-live-chat-text-message-renderer,
+yt-live-chat-paid-message-renderer,
+yt-live-chat-paid-sticker-renderer,
+yt-live-chat-membership-item-renderer {
+  position: relative;
+}
+
+.ytct-shutup {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  z-index: 5;
+  display: none;
+  padding: 1px 6px;
+  border: 1px solid var(--ytct-accent);
+  border-radius: 999px;
+  background: var(--ytct-bg);
+  color: var(--ytct-accent);
+  font: 600 10px/1.6 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.ytct-shutup:hover {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+:root.ytct-buttons yt-live-chat-text-message-renderer:hover .ytct-shutup,
+:root.ytct-buttons yt-live-chat-paid-message-renderer:hover .ytct-shutup,
+:root.ytct-buttons yt-live-chat-paid-sticker-renderer:hover .ytct-shutup,
+:root.ytct-buttons yt-live-chat-membership-item-renderer:hover .ytct-shutup {
+  display: inline-flex;
+}
+
+/* ------------------------------------------------------------------- toolbar */
+
+#ytct-bar {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: var(--ytct-bg);
+  color: var(--ytct-fg);
+  font: 500 11px/1.6 Roboto, system-ui, sans-serif;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  opacity: 0.55;
+  transition: opacity 120ms ease;
+}
+
+#ytct-bar:hover {
+  opacity: 1;
+}
+
+.ytct-bar-btn {
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ytct-bar-btn:hover {
+  background: var(--ytct-line);
+}
+
+.ytct-count {
+  color: var(--ytct-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ytct-gear {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------- thread panel */
+
+#ytct-panel {
+  position: fixed;
+  inset: 0 0 0 0;
+  z-index: 9997;
+  display: none;
+  flex-direction: column;
+  background: var(--ytct-panel-bg);
+  color: var(--ytct-fg);
+}
+
+:root.ytct-panel-open #ytct-panel {
+  display: flex;
+}
+
+.ytct-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--ytct-line);
+  font: 600 12px/1.6 Roboto, system-ui, sans-serif;
+  color: var(--ytct-dim);
+}
+
+#ytct-panel-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 8px 40px;
+}
+
+.ytct-thread {
+  margin: 0 0 10px;
+  padding: 4px 0 0;
+  border-top: 1px solid var(--ytct-line);
+}
+
+.ytct-thread:first-child {
+  border-top: 0;
+}
+
+.ytct-replies {
+  margin: 2px 0 0 10px;
+  padding-left: 8px;
+  border-left: 2px solid var(--ytct-reply-line);
+}
+
+.ytct-msg {
+  position: relative;
+  padding: 3px 46px 3px 2px;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  word-wrap: break-word;
+}
+
+.ytct-msg-root {
+  font-weight: 400;
+}
+
+.ytct-msg-reply {
+  color: var(--ytct-fg);
+  opacity: 0.95;
+}
+
+.ytct-msg-author {
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.ytct-msg-mute {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: none;
+  padding: 0 6px;
+  border: 1px solid var(--ytct-accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-accent);
+  font: 600 9px/1.7 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.ytct-msg:hover .ytct-msg-mute {
+  display: block;
+}
+
+/* --------------------------------------------------------------------- toast */
+
+#ytct-toast {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  bottom: 44px;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 8px;
+  background: var(--ytct-bg);
+  color: var(--ytct-fg);
+  font: 500 11px/1.5 Roboto, system-ui, sans-serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+#ytct-toast.ytct-toast-show {
+  display: flex;
+}

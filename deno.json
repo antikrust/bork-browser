@@ -57,7 +57,7 @@
     "feles-build": "deno run -A tools/feles-build.ts",
     "dev-tool": "deno run -A tools/dev-tool.ts",
     "test": "deno run -A tools/src/colocated_test_runner.ts",
-    "test:host": "deno test --allow-read --allow-write tools/src/",
+    "test:host": "deno test --allow-read --allow-write tools/src/ browser-features/extensions/",
     "test:smoke": "deno run -A tools/src/smoke_runner.ts",
     "test:integration": "deno task test"
   },

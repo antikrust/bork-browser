@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SHUT UP — settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <header>
+      <h1>SHUT UP</h1>
+      <p class="sub">YouTube live chat, quieter and readable.</p>
+      <span id="saved" class="saved">saved</span>
+    </header>
+
+    <main>
+      <section class="ban">
+        <h2>Say this and you're gone</h2>
+        <p class="hint">
+          One phrase per line. Anyone who says one of these is blocked outright —
+          not just that message, but everything they already had on screen and
+          everything they say for the rest of time. They land in
+          <em>Blocked people</em> below, so it survives a reload; unblock there if
+          you're feeling merciful.
+        </p>
+        <textarea id="banWords" spellcheck="false" rows="8" placeholder="farage is brilliant&#10;woke&#10;snowflake&#10;communist&#10;binface is a cunt"></textarea>
+        <p class="hint">
+          Paste a JavaScript array straight in if that's how you keep the list —
+          <code>const blockedWords = ['woke', 'snowflake'];</code> — and it gets
+          tidied into one phrase per line.
+        </p>
+        <div id="ban-errors" class="errors"></div>
+      </section>
+
+      <section>
+        <h2>Words and phrases</h2>
+        <p class="hint">
+          These hide the offending message only, leaving the person alone.
+          One rule per line. Plain text matches anywhere in a message.
+          Wrap a rule in slashes for a regular expression —
+          <code>/^first!*$/i</code> — and it keeps exactly the flags you give it.
+          Lines starting with <code>#</code> are ignored, so you can leave notes.
+        </p>
+        <textarea id="words" spellcheck="false" rows="10" placeholder="free vbucks&#10;check my channel&#10;/^(first|1st)!*$/i"></textarea>
+        <div id="rule-errors" class="errors"></div>
+
+        <label class="row"><input type="checkbox" id="wholeWord" /> Match whole words only <span class="hint inline">(stops “ass” hiding “class”; regex rules are unaffected)</span></label>
+        <label class="row"><input type="checkbox" id="caseSensitive" /> Case sensitive</label>
+        <label class="row"><input type="checkbox" id="matchAuthorNames" /> Apply these rules to usernames too</label>
+      </section>
+
+      <section>
+        <h2>Blocked people</h2>
+        <p class="hint">
+          Everyone the SHUT UP button has silenced, plus anyone auto-blocked for
+          repeat offences. Matching ignores case, spacing and the invisible
+          characters spammers pad their names with.
+        </p>
+        <form id="add-author" class="addrow">
+          <input type="text" id="author-input" placeholder="username" autocomplete="off" />
+          <button type="submit">Block</button>
+        </form>
+        <ul id="authors" class="authors"></ul>
+        <p id="authors-empty" class="hint">Nobody blocked yet.</p>
+      </section>
+
+      <section>
+        <h2>Behaviour</h2>
+
+        <label class="row">
+          Hidden messages
+          <select id="hideMode">
+            <option value="hide">disappear completely</option>
+            <option value="collapse">leave a one-line stub saying why</option>
+          </select>
+        </label>
+
+        <label class="row">
+          Auto-block after
+          <input type="number" id="repeatLimit" min="0" max="50" step="1" />
+          messages caught by word rules
+          <span class="hint inline">(0 turns repeat-offender blocking off)</span>
+        </label>
+
+        <label class="row"><input type="checkbox" id="protectStaff" /> Never hide the channel owner or moderators</label>
+        <label class="row"><input type="checkbox" id="showButton" /> Show the SHUT UP button on each message</label>
+        <label class="row"><input type="checkbox" id="threads" /> Enable the threaded reading view</label>
+        <label class="row"><input type="checkbox" id="bumpThreads" /> Move a thread to the bottom when it gets a reply</label>
+        <label class="row"><input type="checkbox" id="enabled" /> Filtering on</label>
+      </section>
+
+      <section>
+        <h2>Backup</h2>
+        <p class="hint">Rules and blocklist as JSON, for keeping or moving to another machine.</p>
+        <div class="addrow">
+          <button type="button" id="export">Copy to clipboard</button>
+          <button type="button" id="import">Paste and replace…</button>
+        </div>
+        <textarea id="io" spellcheck="false" rows="6" placeholder="Exported JSON appears here; paste JSON in and press Paste and replace."></textarea>
+      </section>
+    </main>
+
+    <script src="../src/store.js"></script>
+    <script src="../src/filters.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>
