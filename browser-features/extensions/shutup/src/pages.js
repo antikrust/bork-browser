@@ -50,16 +50,32 @@ globalThis.YTCT = globalThis.YTCT || {};
   function channelOf(card) {
     const named = card.querySelector("ytd-channel-name #text");
     if (named && named.textContent.trim()) return named.textContent.trim();
-    const link = card.querySelector("a[href^='/@']");
-    if (link && link.textContent.trim()) return link.textContent.trim();
-    // Newer lockups carry the channel as the first metadata row, no link.
-    const meta = card.querySelector("yt-content-metadata-view-model span");
+    // Newer lockups (watch sidebar, migrated feeds): the channel is the first
+    // metadata row under the title, usually plain text with no link.
+    const meta = card.querySelector(
+      "yt-content-metadata-view-model span, [class*='content-metadata'] span",
+    );
     if (meta && meta.textContent.trim()) return meta.textContent.trim();
-    if (link) {
-      const handle = /^\/(@[^/?]+)/.exec(link.getAttribute("href") || "");
-      if (handle) return handle[1];
+    let handle = "";
+    for (const a of card.querySelectorAll(
+      "a[href^='/@'], a[href^='/channel/']",
+    )) {
+      const text = a.textContent.trim();
+      if (text) return text;
+      const m = /^\/(@[^/?]+)/.exec(a.getAttribute("href") || "");
+      if (m && !handle) handle = m[1];
     }
-    return "";
+    return handle;
+  }
+
+  /**
+   * On a channel's own pages the cards never name their channel — the page
+   * does. The document title tracks SPA navigation and outlives banner
+   * redesigns, so it is the sturdier source.
+   */
+  function pageChannel() {
+    if (!/^\/(@|channel\/|c\/|user\/)/.test(location.pathname)) return "";
+    return document.title.replace(/ - YouTube$/, "").trim();
   }
 
   /**
@@ -75,32 +91,35 @@ globalThis.YTCT = globalThis.YTCT || {};
   /* ------------------------------------------------------------------ cards */
 
   function handle(card) {
-    // Outside the generation gate: YouTube may throw the button away when it
-    // refills a card, and that alone must not need a rule change to heal.
     ensureButton(card);
 
+    // The generation gate only spares the extraction. Everything below it
+    // runs on every pass: YouTube reasserts the class attribute on its
+    // elements whenever their data refreshes, silently wiping our classes —
+    // a button that shows once and never again is this, healed.
     const key = keyOf(card);
     if (
-      card.dataset.ytctGen === String(generation) &&
-      card.dataset.ytctKey === key
+      card.dataset.ytctGen !== String(generation) ||
+      card.dataset.ytctKey !== key
     ) {
-      return;
+      card.dataset.ytctGen = String(generation);
+      card.dataset.ytctKey = key;
+      card.dataset.ytctChannel = channelOf(card) || pageChannel();
     }
-    card.dataset.ytctGen = String(generation);
-    card.dataset.ytctKey = key;
 
-    const channel = channelOf(card);
-    card.dataset.ytctChannel = channel;
+    const channel = card.dataset.ytctChannel || "";
     card.classList.toggle("ytct-has-channel", !!channel);
-
-    const hide =
+    card.classList.toggle(
+      "ytct-video-hidden",
       config.enabled !== false &&
-      !!channel &&
-      blockedChannels.has(filters.normalizeName(channel));
-    card.classList.toggle("ytct-video-hidden", hide);
+        !!channel &&
+        blockedChannels.has(filters.normalizeName(channel)),
+    );
   }
 
   function ensureButton(card) {
+    // Re-added every pass for the same reason the classes above are.
+    card.classList.add("ytct-card");
     if (card.querySelector(":scope > .ytct-card-btn")) return;
     const btn = document.createElement("button");
     btn.type = "button";
@@ -114,7 +133,6 @@ globalThis.YTCT = globalThis.YTCT || {};
       const name = card.dataset.ytctChannel || "";
       if (name) blockChannel(name);
     });
-    card.classList.add("ytct-card");
     card.appendChild(btn);
   }
 
