@@ -69,20 +69,18 @@ problem: it ships `xpinstall.signatures.required=false`.
 ## Using it
 
 Open a stream with live chat. The chat lives in its own iframe and that is where
-the extension runs, so a pill appears in the bottom-left of the chat column with
-the hidden-message count and a **Threads** toggle. The gear opens the settings.
+the extension runs: a round **Threads** button joins the chat's own controls
+next to the emoji picker. The panel it opens has the Threads and Hidden tabs,
+and Settings lives in its header (also in about:addons → Preferences).
 
-Paste a list in whatever shape you already keep it — one per line, or a
-JavaScript array, which gets tidied into lines:
+Word lists are plain text, one word or phrase per line:
 
-```js
-const blockedWords = [
-  'farage is brilliant',
-  'woke',
-  'snowflake',
-  'communist',
-  'binface is a cunt'
-];
+```
+farage is brilliant
+woke
+snowflake
+communist
+binface is a cunt
 ```
 
 ## Development

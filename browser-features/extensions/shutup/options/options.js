@@ -25,32 +25,6 @@
   let config = null;
   let savingTimer = 0;
 
-  /**
-   * Turn a textarea's contents into a list of rules.
-   *
-   * Accepts a pasted JavaScript/JSON array as well as one-per-line, because a
-   * blocklist is exactly the kind of thing people already keep as
-   * `const blockedWords = [...]` in a file somewhere, and retyping it as lines
-   * is busywork. Anything that does not look like an array falls through to the
-   * plain line split.
-   */
-  function parseList(text) {
-    const trimmed = text.trim();
-    if (/^(?:(?:const|let|var)\s+[\w$]+\s*=\s*)?\[/.test(trimmed)) {
-      const strings = [];
-      const quoted = /(['"`])((?:\\.|(?!\1)[^\\])*)\1/g;
-      let match;
-      while ((match = quoted.exec(trimmed))) {
-        const value = match[2].replace(/\\(['"`\\])/g, "$1").trim();
-        if (value) strings.push(value);
-      }
-      if (strings.length) return { list: strings, rewritten: true };
-    }
-    return {
-      list: text.split("\n").map((line) => line.trim()).filter(Boolean),
-      rewritten: false,
-    };
-  }
 
   function flashSaved() {
     const el = $("saved");
@@ -145,9 +119,10 @@
       // Debounced: every keystroke would otherwise be a storage write that the
       // content script answers with a full rescan of the visible chat.
       timer = setTimeout(async () => {
-        const { list, rewritten } = parseList(event.target.value);
-        config[configKey] = list;
-        if (rewritten) event.target.value = list.join("\n");
+        config[configKey] = event.target.value
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean);
         renderRuleErrors();
         await persist();
       }, 400);
