@@ -60,6 +60,21 @@
       </section>
 
       <section>
+        <h2>Blocked channels</h2>
+        <p class="hint">
+          Gone from YouTube itself — home, search, the sidebar, Shorts. Hover
+          any video card and a SHUT UP button appears; or add a channel by name
+          here without ever meeting it.
+        </p>
+        <form id="add-channel" class="addrow">
+          <input type="text" id="channel-input" placeholder="channel name" autocomplete="off" />
+          <button type="submit">Block</button>
+        </form>
+        <ul id="channels" class="authors"></ul>
+        <p id="channels-empty" class="hint">No channels blocked yet.</p>
+      </section>
+
+      <section>
         <h2>Behaviour</h2>
 
         <label class="row">
@@ -79,6 +94,7 @@
 
         <label class="row"><input type="checkbox" id="protectStaff" /> Never hide the channel owner or moderators</label>
         <label class="row"><input type="checkbox" id="showButton" /> Show the SHUT UP button on each message</label>
+        <label class="row"><input type="checkbox" id="filterVideos" /> Hide videos whose titles match the word lists</label>
         <label class="row"><input type="checkbox" id="threads" /> Enable the threaded reading view</label>
         <label class="row"><input type="checkbox" id="bumpThreads" /> Move a thread to the bottom when it gets a reply</label>
         <label class="row"><input type="checkbox" id="enabled" /> Filtering on</label>

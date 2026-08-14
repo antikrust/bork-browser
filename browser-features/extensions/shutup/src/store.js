@@ -29,6 +29,11 @@ globalThis.YTCT = globalThis.YTCT || {};
     banWords: [],
     /** Blocked authors: { name, at (epoch ms), auto (true if rule-triggered) }. */
     authors: [],
+    /**
+     * Blocked channels: { name, at (epoch ms), why }. Their videos vanish from
+     * home, search, the watch sidebar and Shorts shelves.
+     */
+    channels: [],
 
     /** "hide" removes the row; "collapse" leaves a one-line stub saying why. */
     hideMode: "hide",
@@ -51,6 +56,9 @@ globalThis.YTCT = globalThis.YTCT || {};
 
     /** Show the SHUT UP button on every message row. */
     showButton: true,
+
+    /** Apply the word lists to video titles on normal pages (home, search, sidebar). */
+    filterVideos: true,
 
     stats: { hidden: 0, blocked: 0 },
   };

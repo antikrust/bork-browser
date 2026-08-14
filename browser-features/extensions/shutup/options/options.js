@@ -18,6 +18,7 @@
     "matchAuthorNames",
     "protectStaff",
     "showButton",
+    "filterVideos",
     "threads",
     "bumpThreads",
   ];
@@ -51,7 +52,8 @@
       $("banWords").value = config.banWords.join("\n");
     }
     renderRuleErrors();
-    renderAuthors();
+    renderBlocklist("authors", "authors-empty", "authors");
+    renderBlocklist("channels", "channels-empty", "channels");
   }
 
   function renderRuleErrors() {
@@ -70,43 +72,44 @@
     }
   }
 
-  function renderAuthors() {
-    const list = $("authors");
+  /** Authors and channels render identically: name, why · when, unblock. */
+  function renderBlocklist(listId, emptyId, configKey) {
+    const list = $(listId);
     list.textContent = "";
-    const sorted = config.authors
+    const sorted = config[configKey]
       .slice()
       .sort((a, b) => (b.at || 0) - (a.at || 0));
 
-    for (const author of sorted) {
+    for (const entry of sorted) {
       const li = document.createElement("li");
 
       const name = document.createElement("span");
       name.className = "author-name";
-      name.textContent = author.name;
+      name.textContent = entry.name;
 
       const meta = document.createElement("span");
       meta.className = "author-meta";
-      const when = author.at ? new Date(author.at).toLocaleDateString() : "";
-      meta.textContent = author.why ? `${author.why} · ${when}` : when;
-      meta.title = author.why || "";
+      const when = entry.at ? new Date(entry.at).toLocaleDateString() : "";
+      meta.textContent = entry.why ? `${entry.why} · ${when}` : when;
+      meta.title = entry.why || "";
 
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "unblock";
       remove.textContent = "unblock";
       remove.addEventListener("click", async () => {
-        const key = filters.normalizeName(author.name);
-        config.authors = config.authors.filter(
-          (a) => filters.normalizeName(a.name) !== key,
+        const key = filters.normalizeName(entry.name);
+        config[configKey] = config[configKey].filter(
+          (e) => filters.normalizeName(e.name) !== key,
         );
-        renderAuthors();
+        renderBlocklist(listId, emptyId, configKey);
         await persist();
       });
 
       li.append(name, meta, remove);
       list.appendChild(li);
     }
-    $("authors-empty").style.display = sorted.length ? "none" : "";
+    $(emptyId).style.display = sorted.length ? "none" : "";
   }
 
   /* ------------------------------------------------------------------ wiring */
@@ -162,13 +165,32 @@
         config.authors.push({ name, at: Date.now(), auto: false });
       }
       input.value = "";
-      renderAuthors();
+      renderBlocklist("authors", "authors-empty", "authors");
+      await persist();
+    });
+
+    $("add-channel").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const input = $("channel-input");
+      const name = input.value.trim();
+      if (!name) return;
+      const key = filters.normalizeName(name);
+      if (!config.channels.some((c) => filters.normalizeName(c.name) === key)) {
+        config.channels.push({ name, at: Date.now(), why: "added by hand" });
+      }
+      input.value = "";
+      renderBlocklist("channels", "channels-empty", "channels");
       await persist();
     });
 
     $("export").addEventListener("click", async () => {
       const payload = JSON.stringify(
-        { words: config.words, banWords: config.banWords, authors: config.authors },
+        {
+          words: config.words,
+          banWords: config.banWords,
+          authors: config.authors,
+          channels: config.channels,
+        },
         null,
         2,
       );
@@ -197,6 +219,11 @@
         config.authors = parsed.authors
           .map((a) => (typeof a === "string" ? { name: a, at: Date.now() } : a))
           .filter((a) => a && a.name);
+      }
+      if (Array.isArray(parsed.channels)) {
+        config.channels = parsed.channels
+          .map((c) => (typeof c === "string" ? { name: c, at: Date.now() } : c))
+          .filter((c) => c && c.name);
       }
       render();
       await persist();

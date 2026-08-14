@@ -132,5 +132,19 @@ globalThis.YTCT = globalThis.YTCT || {};
     return { hide: false };
   }
 
-  YTCT.filters = { normalizeName, compile, blockSet, decide };
+  /**
+   * First rule that matches the text, or null. Used for video titles, where
+   * there is no author and no staff to protect — decide() stays chat-shaped.
+   */
+  function firstMatch(rules, text) {
+    for (const rule of rules || []) {
+      if (!rule.re) continue;
+      // Global regexes carry lastIndex between calls.
+      rule.re.lastIndex = 0;
+      if (rule.re.test(text)) return rule;
+    }
+    return null;
+  }
+
+  YTCT.filters = { normalizeName, compile, blockSet, decide, firstMatch };
 })(globalThis.YTCT);

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "SHUT UP — YouTube chat tamer",
-  "version": "0.1.11",
-  "description": "Quiet YouTube live chat: word and author filters, a one-click SHUT UP button, automatic repeat-offender blocking, and a threaded reading view.",
+  "version": "0.2.0",
+  "description": "Quiet YouTube: block whole channels from home, search and recommendations, filter video titles, and tame live chat with word and author filters, a one-click SHUT UP button, repeat-offender blocking, and a threaded reading view.",
   "permissions": ["storage"],
   "content_scripts": [
     {
@@ -19,6 +19,12 @@
         "src/content.js"
       ],
       "css": ["src/ui.css"]
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "run_at": "document_idle",
+      "js": ["src/store.js", "src/filters.js", "src/pages.js"],
+      "css": ["src/pages.css"]
     }
   ],
   "web_accessible_resources": [

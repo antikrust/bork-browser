@@ -1,0 +1,108 @@
+/*
+ * Injected into normal YouTube pages (top frame only).
+ *
+ * Same theme signal as the chat styles: YouTube stamps a `dark` attribute on
+ * <html>, with prefers-color-scheme as the first-paint fallback.
+ */
+
+:root {
+  --ytct-bg: #ffffff;
+  --ytct-fg: #0f0f0f;
+  --ytct-line: rgba(0, 0, 0, 0.12);
+  --ytct-accent: #c00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ytct-bg: #0f0f0f;
+    --ytct-fg: #f1f1f1;
+    --ytct-line: rgba(255, 255, 255, 0.14);
+    --ytct-accent: #ff4e45;
+  }
+}
+
+:root[dark] {
+  --ytct-bg: #0f0f0f;
+  --ytct-fg: #f1f1f1;
+  --ytct-line: rgba(255, 255, 255, 0.14);
+  --ytct-accent: #ff4e45;
+}
+
+/* --------------------------------------------------------------- filtering */
+
+.ytct-video-hidden {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------ card button */
+
+.ytct-card {
+  position: relative;
+}
+
+/*
+ * Top-left of the card: YouTube's own hover buttons (Watch later, queue) own
+ * the thumbnail's top-right corner.
+ */
+.ytct-card-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 100;
+  display: none;
+  padding: 1px 8px;
+  border: 1px solid var(--ytct-accent);
+  border-radius: 999px;
+  background: var(--ytct-bg);
+  color: var(--ytct-accent);
+  font: 600 10px/1.8 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.ytct-card-btn:hover {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+/* Only cards we could actually name a channel for offer the button. */
+:root.ytct-cards-on .ytct-card.ytct-has-channel:hover > .ytct-card-btn {
+  display: inline-flex;
+}
+
+/* --------------------------------------------------------------------- toast */
+
+#ytct-page-toast {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 8px;
+  background: var(--ytct-bg);
+  color: var(--ytct-fg);
+  font: 500 12px/1.5 Roboto, system-ui, sans-serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+#ytct-page-toast.ytct-toast-show {
+  display: flex;
+}
+
+#ytct-page-toast button {
+  padding: 1px 8px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-fg);
+  font: 600 11px/1.6 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+#ytct-page-toast button:hover {
+  border-color: var(--ytct-fg);
+}

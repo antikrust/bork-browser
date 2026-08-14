@@ -19,7 +19,7 @@ for (const file of ["src/filters.js", "src/threads.js"]) {
 
 // deno-lint-ignore no-explicit-any
 const YTCT = (globalThis as any).YTCT;
-const { compile, decide, blockSet, normalizeName } = YTCT.filters;
+const { compile, decide, blockSet, normalizeName, firstMatch } = YTCT.filters;
 const { ThreadStore } = YTCT.threads;
 
 function assert(condition: unknown, message: string): void {
@@ -141,6 +141,28 @@ Deno.test("filtering off means nothing is hidden", () => {
     config: { enabled: false },
   });
   equal(verdict.hide, false, "the master switch should win");
+});
+
+/* ------------------------------------------------------------ video titles */
+
+Deno.test("firstMatch finds the rule that hides a video title", () => {
+  const rules = compile(["woke", "/^live:/i"], baseConfig);
+  assert(firstMatch(rules, "The Woke Agenda Exposed"), "plain rule should match a title");
+  assert(firstMatch(rules, "LIVE: parliament, but forever"), "regex rule should match");
+  equal(firstMatch(rules, "gardening for beginners"), null, "an innocent title should pass");
+});
+
+Deno.test("firstMatch skips broken rules instead of throwing", () => {
+  const rules = compile(["/unclosed(/", "spam"], baseConfig);
+  const match = firstMatch(rules, "buy spam here");
+  assert(match, "the good rule should still catch it");
+  equal(match!.src, "spam", "and it should be the good rule doing the catching");
+});
+
+Deno.test("channel blocklist matching folds names like author matching does", () => {
+  const set = blockSet([{ name: "Talk TV" }]);
+  assert(set.has(normalizeName("talk tv")), "case should fold");
+  assert(set.has(normalizeName("Ｔａｌｋ ＴＶ")), "full-width letters should fold");
 });
 
 /* ------------------------------------------------------------------ threads */
