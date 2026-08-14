@@ -35,6 +35,25 @@ globalThis.YTCT = globalThis.YTCT || {};
   let config = null;
   let blockedChannels = new Set();
   let generation = 0;
+  let subscribed = new Set();
+  let onSubsFeed = false;
+
+  /**
+   * No SHUT UP button on channels the user subscribes to. Video cards never
+   * admit subscription state, but the guide drawer on the left lists every
+   * subscribed channel. On pages where the drawer has not loaded the last
+   * good scrape is kept, so the list survives navigating to a watch page.
+   */
+  function refreshSubscribed() {
+    const found = new Set();
+    for (const a of document.querySelectorAll(
+      "ytd-guide-entry-renderer a[href^='/@'], ytd-guide-entry-renderer a[href^='/channel/']",
+    )) {
+      const name = (a.getAttribute("title") || a.textContent).trim();
+      if (name) found.add(filters.normalizeName(name));
+    }
+    if (found.size) subscribed = found;
+  }
 
   function rebuild() {
     blockedChannels = filters.blockSet(config.channels);
@@ -108,12 +127,16 @@ globalThis.YTCT = globalThis.YTCT || {};
     }
 
     const channel = card.dataset.ytctChannel || "";
-    card.classList.toggle("ytct-has-channel", !!channel);
+    const norm = channel ? filters.normalizeName(channel) : "";
+    // The subscriptions feed is subscribed channels by definition, so no
+    // buttons there even when the guide scrape has nothing.
+    card.classList.toggle(
+      "ytct-has-channel",
+      !!channel && !onSubsFeed && !subscribed.has(norm),
+    );
     card.classList.toggle(
       "ytct-video-hidden",
-      config.enabled !== false &&
-        !!channel &&
-        blockedChannels.has(filters.normalizeName(channel)),
+      config.enabled !== false && !!norm && blockedChannels.has(norm),
     );
   }
 
@@ -207,6 +230,8 @@ globalThis.YTCT = globalThis.YTCT || {};
 
   function scan() {
     if (!config) return;
+    onSubsFeed = location.pathname.startsWith("/feed/subscriptions");
+    refreshSubscribed();
     for (const card of document.querySelectorAll(CARDS)) {
       // Newer feeds nest a lockup inside a rich item; judge the outer one
       // only, or the same card grows two buttons.
