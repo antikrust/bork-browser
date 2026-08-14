@@ -401,15 +401,18 @@
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(NS, "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("width", "22");
-    svg.setAttribute("height", "22");
+    svg.setAttribute("width", "24");
+    svg.setAttribute("height", "24");
     svg.setAttribute("fill", "none");
     svg.setAttribute("stroke", "currentColor");
     svg.setAttribute("stroke-width", "2");
     svg.setAttribute("stroke-linecap", "round");
     svg.setAttribute("stroke-linejoin", "round");
     svg.setAttribute("aria-hidden", "true");
-    for (const d of ["M7 4v13", "M7 10h6", "M7 17h9"]) {
+    // Centred in the 24-square: ink spans y 6-18 and x 8-16, so the optical
+    // middle lands on 12/12. The first pass drew from y4 to y17, which put the
+    // whole glyph a pixel and a half high of the buttons beside it.
+    for (const d of ["M8 6v12", "M8 12h6", "M8 18h8"]) {
       const path = document.createElementNS(NS, "path");
       path.setAttribute("d", d);
       svg.appendChild(path);
