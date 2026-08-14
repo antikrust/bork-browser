@@ -18,7 +18,6 @@
     "matchAuthorNames",
     "protectStaff",
     "showButton",
-    "filterVideos",
     "threads",
     "bumpThreads",
   ];

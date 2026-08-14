@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Normal YouTube pages (top frame): channel blocking and title filtering.
+ * Normal YouTube pages (top frame): channel blocking.
  *
  * The live_chat iframe has its own script (content.js) and this one never runs
  * there — the manifest injects it into top frames only, and the popout chat
@@ -33,17 +33,10 @@ globalThis.YTCT = globalThis.YTCT || {};
   const CARDS = CARD_TAGS.join(",");
 
   let config = null;
-  // words + banWords together: on a video card there is nobody to ban, so
-  // both lists do the same thing here — hide the card.
-  let rules = [];
   let blockedChannels = new Set();
   let generation = 0;
 
   function rebuild() {
-    rules =
-      config.filterVideos === false
-        ? []
-        : filters.compile([...config.words, ...config.banWords], config);
     blockedChannels = filters.blockSet(config.channels);
     generation += 1;
     document.documentElement.classList.toggle(
@@ -67,11 +60,6 @@ globalThis.YTCT = globalThis.YTCT || {};
       if (handle) return handle[1];
     }
     return "";
-  }
-
-  function titleOf(card) {
-    const el = card.querySelector("#video-title") || card.querySelector("h3");
-    return el ? el.textContent.trim() : "";
   }
 
   /**
@@ -105,15 +93,10 @@ globalThis.YTCT = globalThis.YTCT || {};
     card.dataset.ytctChannel = channel;
     card.classList.toggle("ytct-has-channel", !!channel);
 
-    let hide = false;
-    if (config.enabled !== false) {
-      if (channel && blockedChannels.has(filters.normalizeName(channel))) {
-        hide = true;
-      } else {
-        const title = titleOf(card);
-        hide = !!(title && filters.firstMatch(rules, title));
-      }
-    }
+    const hide =
+      config.enabled !== false &&
+      !!channel &&
+      blockedChannels.has(filters.normalizeName(channel));
     card.classList.toggle("ytct-video-hidden", hide);
   }
 

@@ -57,9 +57,6 @@ globalThis.YTCT = globalThis.YTCT || {};
     /** Show the SHUT UP button on every message row. */
     showButton: true,
 
-    /** Apply the word lists to video titles on normal pages (home, search, sidebar). */
-    filterVideos: true,
-
     stats: { hidden: 0, blocked: 0 },
   };
 
