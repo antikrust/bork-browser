@@ -305,6 +305,15 @@ yt-live-chat-membership-item-renderer {
   opacity: 0.95;
 }
 
+.ytct-msg-blocked {
+  display: none;
+}
+
+/* A thread whose every message is blocked has nothing to say. */
+.ytct-thread:not(:has(.ytct-msg:not(.ytct-msg-blocked))) {
+  display: none;
+}
+
 .ytct-msg-author {
   margin-right: 5px;
   font-weight: 600;

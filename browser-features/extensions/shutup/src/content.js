@@ -79,6 +79,18 @@
     applyRootFlags();
     if (!isFirstRun) rescan();
     ensureThreadsButton();
+    syncPanelBlocks();
+  }
+
+  /** Hide blocked authors' rows in the threads panel; unhide on unblock. */
+  function syncPanelBlocks() {
+    if (!panelList) return;
+    for (const row of panelList.querySelectorAll(".ytct-msg")) {
+      row.classList.toggle(
+        "ytct-msg-blocked",
+        blocked.has(row.dataset.ytctAuthor || ""),
+      );
+    }
   }
 
   function applyRootFlags() {
@@ -159,15 +171,22 @@
 
     if (hide) {
       node.dataset.ytctReason = reasonLabel(verdict);
+      // Only a message's FIRST sighting can block its author. A rescan walks
+      // messages already judged once — and re-blocking off those made Unblock
+      // impossible: removing the person triggered a rescan, the old message
+      // matched the ban word again, and they were back on the list before the
+      // click finished. An unblock is a pardon for what is on screen; the rule
+      // stays armed for whatever they say next.
+      const firstSighting = !loggedHidden.has(message.id);
       noteHidden(message, verdict);
       // A ban word costs the author everything, not just this message: blocking
       // them re-runs the whole visible list, so what they said before this
       // disappears too, and so does whatever they say next.
-      if (verdict.reason === "banword") {
+      if (verdict.reason === "banword" && firstSighting) {
         // Deferred: blocking rescans the whole list, and doing that from inside
         // the walk over one message means re-entering this function mid-verdict.
         queueMicrotask(() => blockAuthor(message.author, `said “${verdict.rule}”`));
-      } else if (verdict.reason === "word") {
+      } else if (verdict.reason === "word" && firstSighting) {
         noteOffender(message);
       }
     } else {
@@ -252,14 +271,16 @@
       allow.title = `Stop hiding ${entry.author}`;
       allow.addEventListener("click", async () => {
         await unblockAuthor(entry.author);
-        // A word rule would just re-hide them on the next message, so say so
-        // rather than letting the button look broken.
+        // Always answer the click: the messages reappear in the chat BEHIND
+        // this panel, so without a toast the button reads as doing nothing.
         if (entry.reason !== "author") {
           toast(
-            `${entry.author} unblocked — but “${entry.rule}” will catch them again`,
+            `${entry.author} unblocked — but “${entry.rule}” will catch their next one`,
             "Settings",
             openOptions,
           );
+        } else {
+          toast(`Unblocked ${entry.author}`);
         }
       });
 
@@ -550,6 +571,10 @@
   function messageRow(message, isReply) {
     const row = document.createElement("div");
     row.className = isReply ? "ytct-msg ytct-msg-reply" : "ytct-msg ytct-msg-root";
+    // So blocklist changes can find this row later — the panel is our copy of
+    // the chat, and a block/unblock has to show here too, not just in the list
+    // behind it.
+    row.dataset.ytctAuthor = filters.normalizeName(message.author);
 
     const author = document.createElement("span");
     author.className = "ytct-msg-author";
