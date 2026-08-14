@@ -308,15 +308,28 @@
     }
   }
 
+  /** Height of YouTube's message box, or 0 when there isn't one (replays). */
+  function inputHeight() {
+    const input = document.querySelector("yt-live-chat-message-input-renderer");
+    return input ? Math.ceil(input.getBoundingClientRect().height) : 0;
+  }
+
   /**
-   * Keep YouTube's message box usable underneath the panel: the point is to read
-   * chat differently, not to lose the ability to talk in it.
+   * Keep YouTube's message box usable: the point is to read chat differently,
+   * not to lose the ability to talk in it.
+   *
+   * Everything we add is measured off the input rather than pinned to the
+   * viewport bottom. A fixed offset looks fine at full height and then sits on
+   * top of the message box the moment the window is short — split screen, a
+   * small laptop — which is exactly where the chat column is narrowest and the
+   * collision is worst.
    */
   function layoutPanel() {
-    if (!panel) return;
-    const input = document.querySelector("yt-live-chat-message-input-renderer");
-    const height = input ? Math.ceil(input.getBoundingClientRect().height) : 0;
-    panel.style.bottom = `${height}px`;
+    const height = inputHeight();
+    if (panel) panel.style.bottom = `${height}px`;
+    if (bar) bar.style.bottom = `${height + 8}px`;
+    const toastEl = document.getElementById("ytct-toast");
+    if (toastEl) toastEl.style.bottom = `${height + 44}px`;
   }
 
   function openOptions() {
@@ -447,6 +460,7 @@
     }
 
     el.classList.add("ytct-toast-show");
+    layoutPanel();
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove("ytct-toast-show"), 6000);
   }
