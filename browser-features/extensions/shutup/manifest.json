@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "SHUT UP — YouTube chat tamer",
+  "version": "0.1.11",
+  "description": "Quiet YouTube live chat: word and author filters, a one-click SHUT UP button, automatic repeat-offender blocking, and a threaded reading view.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/live_chat*",
+        "https://www.youtube.com/live_chat_replay*"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle",
+      "js": [
+        "src/store.js",
+        "src/filters.js",
+        "src/threads.js",
+        "src/content.js"
+      ],
+      "css": ["src/ui.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["options/options.html"],
+      "matches": ["*://*.youtube.com/*"]
+    }
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "SHUT UP"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "shutup@bork",
+      "strict_min_version": "115.0"
+    }
+  }
+}

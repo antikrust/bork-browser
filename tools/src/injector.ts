@@ -76,9 +76,16 @@ function packExtensionDir(
   const manifestPath = path.join(dir, "manifest.json");
   if (!exists(manifestPath)) return null;
 
-  const manifest = JSON.parse(Deno.readTextFileSync(manifestPath)) as {
-    browser_specific_settings?: { gecko?: { id?: string } };
-  };
+  // Parse failures stay local to this extension. This ran inside the caller's
+  // try once, and one truncated manifest.json aborted the whole pack loop —
+  // every add-on after it silently missing from a shipped release.
+  let manifest: { browser_specific_settings?: { gecko?: { id?: string } } };
+  try {
+    manifest = JSON.parse(Deno.readTextFileSync(manifestPath));
+  } catch (e) {
+    logger.error(`${path.basename(dir)}: unreadable manifest.json: ${e}`);
+    return null;
+  }
   const id = manifest.browser_specific_settings?.gecko?.id;
   if (!id) {
     logger.warn(`${path.basename(dir)}: no gecko id, skipped`);
