@@ -188,8 +188,8 @@ yt-live-chat-membership-item-renderer {
 }
 
 .ytct-thread {
-  margin: 0 0 10px;
-  padding: 4px 0 0;
+  margin: 0 0 4px;
+  padding: 2px 0 0;
   border-top: 1px solid var(--ytct-line);
 }
 
@@ -198,20 +198,16 @@ yt-live-chat-membership-item-renderer {
 }
 
 .ytct-replies {
-  margin: 2px 0 0 10px;
-  padding-left: 8px;
+  margin: 0 0 0 8px;
+  padding-left: 7px;
   border-left: 2px solid var(--ytct-reply-line);
 }
 
 .ytct-msg {
   position: relative;
-  padding: 3px 46px 3px 2px;
-  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  padding: 1px 2px;
+  font: 400 13px/1.3 Roboto, system-ui, sans-serif;
   word-wrap: break-word;
-}
-
-.ytct-msg-root {
-  font-weight: 400;
 }
 
 .ytct-msg-reply {
@@ -220,26 +216,54 @@ yt-live-chat-membership-item-renderer {
 }
 
 .ytct-msg-author {
-  margin-right: 6px;
+  margin-right: 5px;
   font-weight: 600;
 }
 
-.ytct-msg-mute {
+/*
+ * Buttons float over the text on hover rather than reserving a gutter: a
+ * permanent 74px of right padding for two buttons costs every message a line
+ * wrap in a column this narrow, which is the opposite of readable.
+ */
+.ytct-msg-actions {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 0;
+  right: 0;
   display: none;
-  padding: 0 6px;
-  border: 1px solid var(--ytct-accent);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--ytct-accent);
-  font: 600 9px/1.7 Roboto, system-ui, sans-serif;
-  cursor: pointer;
+  gap: 3px;
+  padding-left: 8px;
+  background: linear-gradient(to right, transparent, var(--ytct-panel-bg) 8px);
 }
 
-.ytct-msg:hover .ytct-msg-mute {
-  display: block;
+.ytct-msg:hover .ytct-msg-actions {
+  display: flex;
+}
+
+.ytct-msg-btn {
+  padding: 0 6px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: var(--ytct-panel-bg);
+  color: var(--ytct-dim);
+  font: 600 9px/1.7 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ytct-msg-btn:hover {
+  border-color: var(--ytct-fg);
+  color: var(--ytct-fg);
+}
+
+.ytct-msg-mute {
+  border-color: var(--ytct-accent);
+  color: var(--ytct-accent);
+}
+
+.ytct-msg-mute:hover {
+  border-color: var(--ytct-accent);
+  background: var(--ytct-accent);
+  color: #fff;
 }
 
 /* --------------------------------------------------------------------- toast */

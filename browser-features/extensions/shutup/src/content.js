@@ -367,15 +367,70 @@
     // textContent, never innerHTML: this is untrusted text from strangers.
     body.textContent = message.text;
 
+    const actions = document.createElement("span");
+    actions.className = "ytct-msg-actions";
+
+    const reply = document.createElement("button");
+    reply.type = "button";
+    reply.className = "ytct-msg-btn";
+    reply.textContent = "Reply";
+    reply.title = `Reply to ${message.author}`;
+    reply.addEventListener("click", () => startReply(message.author));
+
     const mute = document.createElement("button");
     mute.type = "button";
-    mute.className = "ytct-msg-mute";
+    mute.className = "ytct-msg-btn ytct-msg-mute";
     mute.textContent = "SHUT UP";
     mute.title = `Hide every message from ${message.author}`;
-    mute.addEventListener("click", () => blockAuthor(message.author, false));
+    mute.addEventListener("click", () => blockAuthor(message.author));
 
-    row.append(author, body, mute);
+    actions.append(reply, mute);
+    row.append(author, body, actions);
     return row;
+  }
+
+  /**
+   * Start a reply by seeding YouTube's own message box with "@Author ".
+   *
+   * Threads here are built out of the @mentions people already type, so a reply
+   * button that writes the mention is not a shortcut around the model — it IS
+   * the model, and a reply sent this way threads correctly for everyone else
+   * running this, and reads normally for everyone who isn't.
+   *
+   * execCommand is deprecated but is the only insertion that YouTube's own
+   * editor notices: writing textContent directly leaves its internal state
+   * thinking the box is empty, and the send button stays disabled.
+   */
+  function startReply(author) {
+    const box = document.querySelector(
+      "yt-live-chat-message-input-renderer div#input[contenteditable='true']",
+    ) || document.querySelector("div#input[contenteditable='true']");
+    if (!box) return;
+
+    box.focus();
+    const mention = `@${author} `;
+    let inserted = false;
+    try {
+      inserted = document.execCommand("insertText", false, mention);
+    } catch {
+      inserted = false;
+    }
+    if (!inserted) {
+      box.textContent = `${box.textContent || ""}${mention}`;
+      box.dispatchEvent(
+        new InputEvent("input", {
+          bubbles: true,
+          data: mention,
+          inputType: "insertText",
+        }),
+      );
+      const range = document.createRange();
+      range.selectNodeContents(box);
+      range.collapse(false);
+      const selection = globalThis.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
   }
 
   function addToPanel(message) {

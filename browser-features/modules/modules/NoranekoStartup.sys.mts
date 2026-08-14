@@ -117,7 +117,12 @@ function initializeVersionInfo(): void {
  * attempt, so an add-on the user removes stays removed forever.
  */
 async function adoptDistributionAddons(): Promise<void> {
+  // Third-party add-ons: install once, then never touch again — their version
+  // is between the user and the add-on's own updater.
   const ADOPT_IDS = ["uBlock0@raymondhill.net", "addon@darkreader.org"];
+  // Ours: shipped inside the app, so the app is what says which version is
+  // current, and each release should carry its own.
+  const OWN_IDS = ["shutup@bork"];
   const PREF_BASE = "bork.distribution.adopted.";
   try {
     const { AddonManager } = ChromeUtils.importESModule(
@@ -140,6 +145,49 @@ async function adoptDistributionAddons(): Promise<void> {
       await install.install();
       Services.prefs.setBoolPref(PREF_BASE + id, true);
       console.log(`[NoranekoStartup] adopted distribution add-on ${id}`);
+    }
+
+    // Our own bundled add-ons are kept in step with the app, which the
+    // distribution mechanism cannot do for us. XPIProvider skips an add-on it
+    // has already installed unless the GECKO version changed
+    //   (!aAppChanged && prefHasUserValue("extensions.installedDistroAddon."+id))
+    // and a bork release keeps the same runtime, so a bundled add-on installs
+    // exactly once and every later version is ignored — silently, with the new
+    // .xpi sitting right there in the app.
+    for (const id of OWN_IDS) {
+      const xpi = distDir.clone();
+      xpi.append("extensions");
+      xpi.append(`${id}.xpi`);
+      if (!xpi.exists()) continue;
+
+      const existing = await AddonManager.getAddonByID(id);
+
+      // Removed on purpose: Firefox records the first install in
+      // extensions.installedDistroAddon.<id> and honours a later removal by
+      // never bringing it back. Do the same — shipping it should not mean
+      // forcing it.
+      if (!existing) {
+        if (Services.prefs.prefHasUserValue(`extensions.installedDistroAddon.${id}`)) {
+          continue;
+        }
+        const install = await AddonManager.getInstallForFile(xpi);
+        await install.install();
+        console.log(`[NoranekoStartup] installed bundled add-on ${id}`);
+        continue;
+      }
+
+      // getInstallForFile parses the .xpi, so the shipped version is readable
+      // before committing to anything.
+      const install = await AddonManager.getInstallForFile(xpi);
+      const shipped = install?.addon?.version;
+      if (!shipped || Services.vc.compare(shipped, existing.version) <= 0) {
+        install?.cancel();
+        continue;
+      }
+      await install.install();
+      console.log(
+        `[NoranekoStartup] updated bundled add-on ${id}: ${existing.version} -> ${shipped}`,
+      );
     }
   } catch (e) {
     console.error("[NoranekoStartup] distribution add-on adoption failed:", e);
@@ -171,6 +219,15 @@ function healAutomationScrollPrefs(): void {
     "mousewheel.transaction.timeout",
     // dead pref from the deleted tab-strip-wheel-guard feature
     "floorp.tabstrip.wheelguard",
+    // RecommendedPreferences ships extensions.installDistroAddons=false, which
+    // is the master gate on distribution/extensions — the mechanism that
+    // delivers the themes, uBlock, Dark Reader and SHUT UP. Left behind, the
+    // browser keeps whatever was bundled BEFORE the automation session and
+    // silently ignores everything shipped after it, with nothing in the UI to
+    // suggest why: a profile debugged once stops receiving default add-ons
+    // forever. Found on a real profile that had ten renamed themes it could
+    // never install.
+    "extensions.installDistroAddons",
   ];
   // RecommendedPreferences also ships browser.translations.enable=false;
   // left behind it blocks the translate panel with a "To translate text,
