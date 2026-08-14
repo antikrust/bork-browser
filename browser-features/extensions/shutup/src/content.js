@@ -348,21 +348,15 @@
   /* ------------------------------------------------------------------- chrome */
 
   /**
-   * Selectors for the button strip beside YouTube's message box, most specific
-   * first. The strip holding the emoji picker is where this button belongs —
-   * a floating pill sits over the conversation, which is the thing we are here
-   * to make readable.
-   */
-  const INPUT_BUTTON_HOSTS = [
-    "yt-live-chat-message-input-renderer #picker-buttons",
-    "yt-live-chat-message-input-renderer #buttons",
-    "yt-live-chat-message-input-renderer #container",
-  ];
-
-  /**
    * Put the Threads toggle in the chat's own button strip, and keep it there:
    * YouTube rebuilds that row (switching Top chat/Live chat, going from
    * restricted to sendable), which throws our button away with it.
+   *
+   * It goes NEXT TO the emoji picker's container, not inside it. Inside, it got
+   * none of the row's spacing and sat flush against the emoji with the whole
+   * gap left over on the other side; as a sibling in the same flex row it is
+   * spaced by the same rule as every other control, so the circles sit evenly.
+   * The row is flexible, so the message box simply gives up the width.
    */
   function ensureThreadsButton() {
     if (!config.threads) {
@@ -372,12 +366,11 @@
     }
     if (threadsBtn && threadsBtn.isConnected) return;
 
-    let host = null;
-    for (const selector of INPUT_BUTTON_HOSTS) {
-      host = document.querySelector(selector);
-      if (host) break;
-    }
-    if (!host) return;
+    const renderer = document.querySelector("yt-live-chat-message-input-renderer");
+    if (!renderer) return;
+    const anchor = renderer.querySelector("#picker-buttons") ??
+      renderer.querySelector("#buttons");
+    if (!anchor || !anchor.parentElement) return;
 
     threadsBtn = document.createElement("button");
     threadsBtn.id = "ytct-threads-btn";
@@ -386,7 +379,7 @@
     threadsBtn.setAttribute("aria-label", "Threads");
     threadsBtn.appendChild(threadsIcon());
     threadsBtn.addEventListener("click", () => setPanel(!panelOpen));
-    host.insertBefore(threadsBtn, host.firstChild);
+    anchor.parentElement.insertBefore(threadsBtn, anchor.nextSibling);
     syncThreadsButton();
   }
 
