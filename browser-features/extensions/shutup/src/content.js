@@ -46,14 +46,27 @@
 
   let itemsEl = null;
   let observer = null;
-  let bar = null;
-  let countEl = null;
+  let threadsBtn = null;
   let panel = null;
   let panelList = null;
   /** rootId -> { el, repliesEl } */
   const threadEls = new Map();
-  let hiddenThisSession = 0;
   let panelOpen = false;
+  /** "threads" or "hidden" — which list the panel is showing. */
+  let panelView = "threads";
+
+  /**
+   * What has been hidden, newest last, so the reader can audit their own rules.
+   * A filter you cannot see the effects of is a filter you stop trusting: this
+   * is where a rule that is quietly eating half the conversation becomes
+   * obvious.
+   */
+  const hiddenLog = [];
+  const HIDDEN_LOG_MAX = 200;
+  /** Message ids already logged, so a rescan does not duplicate the list. */
+  const loggedHidden = new Set();
+  let hiddenListEl = null;
+  let hiddenTabEl = null;
 
   /* ------------------------------------------------------------------ config */
 
@@ -65,7 +78,7 @@
     generation++;
     applyRootFlags();
     if (!isFirstRun) rescan();
-    updateBar();
+    ensureThreadsButton();
   }
 
   function applyRootFlags() {
@@ -146,7 +159,7 @@
 
     if (hide) {
       node.dataset.ytctReason = reasonLabel(verdict);
-      hiddenThisSession++;
+      noteHidden(message, verdict);
       // A ban word costs the author everything, not just this message: blocking
       // them re-runs the whole visible list, so what they said before this
       // disappears too, and so does whatever they say next.
@@ -161,13 +174,99 @@
       delete node.dataset.ytctReason;
       if (config.threads) addToPanel(message);
     }
-    updateBar();
   }
 
   function rescan() {
-    hiddenThisSession = 0;
     if (!itemsEl) return;
     for (const child of Array.from(itemsEl.children)) handle(child);
+  }
+
+  /* ------------------------------------------------------------- hidden log */
+
+  function noteHidden(message, verdict) {
+    if (loggedHidden.has(message.id)) return;
+    loggedHidden.add(message.id);
+
+    hiddenLog.push({
+      author: message.author,
+      text: message.text,
+      reason: verdict.reason,
+      rule: verdict.rule || "",
+      ts: Date.now(),
+    });
+    if (hiddenLog.length > HIDDEN_LOG_MAX) hiddenLog.shift();
+
+    updateHiddenTab();
+    if (panelOpen && panelView === "hidden") renderHidden();
+  }
+
+  function updateHiddenTab() {
+    if (hiddenTabEl) hiddenTabEl.textContent = `Hidden (${hiddenLog.length})`;
+  }
+
+  function renderHidden() {
+    if (!hiddenListEl) return;
+    hiddenListEl.textContent = "";
+
+    if (!hiddenLog.length) {
+      const empty = document.createElement("div");
+      empty.className = "ytct-empty";
+      empty.textContent = "Nothing hidden yet.";
+      hiddenListEl.appendChild(empty);
+      return;
+    }
+
+    // Newest first here: the question this list answers is almost always "what
+    // just disappeared?"
+    for (let i = hiddenLog.length - 1; i >= 0; i--) {
+      const entry = hiddenLog[i];
+      const row = document.createElement("div");
+      row.className = "ytct-hidden-row";
+
+      const head = document.createElement("div");
+      head.className = "ytct-hidden-head";
+
+      const author = document.createElement("span");
+      author.className = "ytct-msg-author";
+      author.textContent = entry.author;
+      author.style.color = colorFor(entry.author || "");
+
+      const badge = document.createElement("span");
+      badge.className = `ytct-badge ytct-badge-${entry.reason}`;
+      badge.textContent = entry.reason === "author"
+        ? "blocked person"
+        : entry.reason === "banword"
+        ? `ban word: ${entry.rule}`
+        : `rule: ${entry.rule}`;
+
+      head.append(author, badge);
+
+      const body = document.createElement("div");
+      body.className = "ytct-hidden-text";
+      body.textContent = entry.text;
+
+      const allow = document.createElement("button");
+      allow.type = "button";
+      allow.className = "ytct-msg-btn";
+      allow.textContent = "Unblock";
+      allow.title = `Stop hiding ${entry.author}`;
+      allow.addEventListener("click", async () => {
+        await unblockAuthor(entry.author);
+        // A word rule would just re-hide them on the next message, so say so
+        // rather than letting the button look broken.
+        if (entry.reason !== "author") {
+          toast(
+            `${entry.author} unblocked — but “${entry.rule}” will catch them again`,
+            "Settings",
+            openOptions,
+          );
+        }
+      });
+
+      head.appendChild(allow);
+      row.append(head, body);
+      hiddenListEl.appendChild(row);
+    }
   }
 
   /* -------------------------------------------------------- repeat offenders */
@@ -248,49 +347,108 @@
 
   /* ------------------------------------------------------------------- chrome */
 
+  /**
+   * Selectors for the button strip beside YouTube's message box, most specific
+   * first. The strip holding the emoji picker is where this button belongs —
+   * a floating pill sits over the conversation, which is the thing we are here
+   * to make readable.
+   */
+  const INPUT_BUTTON_HOSTS = [
+    "yt-live-chat-message-input-renderer #picker-buttons",
+    "yt-live-chat-message-input-renderer #buttons",
+    "yt-live-chat-message-input-renderer #container",
+  ];
+
+  /**
+   * Put the Threads toggle in the chat's own button strip, and keep it there:
+   * YouTube rebuilds that row (switching Top chat/Live chat, going from
+   * restricted to sendable), which throws our button away with it.
+   */
+  function ensureThreadsButton() {
+    if (!config.threads) {
+      if (threadsBtn) threadsBtn.remove();
+      threadsBtn = null;
+      return;
+    }
+    if (threadsBtn && threadsBtn.isConnected) return;
+
+    let host = null;
+    for (const selector of INPUT_BUTTON_HOSTS) {
+      host = document.querySelector(selector);
+      if (host) break;
+    }
+    if (!host) return;
+
+    threadsBtn = document.createElement("button");
+    threadsBtn.id = "ytct-threads-btn";
+    threadsBtn.type = "button";
+    threadsBtn.textContent = "Threads";
+    threadsBtn.title = "Read this chat as threads";
+    threadsBtn.addEventListener("click", () => setPanel(!panelOpen));
+    host.insertBefore(threadsBtn, host.firstChild);
+    syncThreadsButton();
+  }
+
+  function syncThreadsButton() {
+    if (threadsBtn) threadsBtn.classList.toggle("ytct-active", panelOpen);
+  }
+
   function buildChrome() {
-    if (bar) return;
-
-    bar = document.createElement("div");
-    bar.id = "ytct-bar";
-
-    const toggle = document.createElement("button");
-    toggle.type = "button";
-    toggle.className = "ytct-bar-btn";
-    toggle.textContent = "Threads";
-    toggle.addEventListener("click", () => setPanel(!panelOpen));
-
-    countEl = document.createElement("span");
-    countEl.className = "ytct-count";
-    countEl.title = "Messages hidden since this chat opened — click to see the rules";
-    countEl.addEventListener("click", openOptions);
-
-    const gear = document.createElement("button");
-    gear.type = "button";
-    gear.className = "ytct-bar-btn ytct-gear";
-    gear.textContent = "⚙";
-    gear.title = "SHUT UP settings";
-    gear.addEventListener("click", openOptions);
-
-    bar.append(toggle, countEl, gear);
-    document.body.appendChild(bar);
+    if (panel) return;
 
     panel = document.createElement("div");
     panel.id = "ytct-panel";
     const head = document.createElement("div");
     head.className = "ytct-panel-head";
-    head.textContent = "Threads";
+
+    const tabs = document.createElement("span");
+    tabs.className = "ytct-tabs";
+
+    const threadsTab = document.createElement("button");
+    threadsTab.type = "button";
+    threadsTab.className = "ytct-tab";
+    threadsTab.dataset.view = "threads";
+    threadsTab.textContent = "Threads";
+
+    hiddenTabEl = document.createElement("button");
+    hiddenTabEl.type = "button";
+    hiddenTabEl.className = "ytct-tab";
+    hiddenTabEl.dataset.view = "hidden";
+    hiddenTabEl.textContent = `Hidden (${hiddenLog.length})`;
+
+    for (const tab of [threadsTab, hiddenTabEl]) {
+      tab.addEventListener("click", () => setPanelView(tab.dataset.view));
+    }
+    tabs.append(threadsTab, hiddenTabEl);
+
+    const settings = document.createElement("button");
+    settings.type = "button";
+    settings.className = "ytct-head-btn";
+    settings.textContent = "Settings";
+    settings.title = "Word lists and blocked people";
+    settings.addEventListener("click", openOptions);
+
     const close = document.createElement("button");
     close.type = "button";
-    close.className = "ytct-bar-btn";
+    close.className = "ytct-head-btn";
     close.textContent = "✕";
+    close.title = "Close (Esc)";
     close.addEventListener("click", () => setPanel(false));
-    head.appendChild(close);
+
+    const headActions = document.createElement("span");
+    headActions.className = "ytct-head-actions";
+    headActions.append(settings, close);
+    head.append(tabs, headActions);
 
     panelList = document.createElement("div");
     panelList.id = "ytct-panel-list";
 
-    panel.append(head, panelList);
+    hiddenListEl = document.createElement("div");
+    hiddenListEl.id = "ytct-hidden-list";
+
+    panel.append(head, panelList, hiddenListEl);
+    panel.dataset.view = panelView;
+    threadsTab.classList.add("ytct-active");
     document.body.appendChild(panel);
 
     document.addEventListener("keydown", (event) => {
@@ -302,9 +460,21 @@
   function setPanel(open) {
     panelOpen = open && !!config.threads;
     applyRootFlags();
+    syncThreadsButton();
     if (panelOpen) {
       layoutPanel();
-      stickToBottom();
+      if (panelView === "hidden") renderHidden();
+      else stickToBottom();
+    }
+  }
+
+  function setPanelView(view) {
+    panelView = view;
+    if (panel) panel.dataset.view = view;
+    if (view === "hidden") renderHidden();
+    else stickToBottom();
+    for (const tab of panel.querySelectorAll(".ytct-tab")) {
+      tab.classList.toggle("ytct-active", tab.dataset.view === view);
     }
   }
 
@@ -327,21 +497,21 @@
   function layoutPanel() {
     const height = inputHeight();
     if (panel) panel.style.bottom = `${height}px`;
-    if (bar) bar.style.bottom = `${height + 8}px`;
     const toastEl = document.getElementById("ytct-toast");
     if (toastEl) toastEl.style.bottom = `${height + 44}px`;
   }
 
+  /**
+   * Open the settings page.
+   *
+   * runtime.openOptionsPage is not available to content scripts, and window.open
+   * on a moz-extension: URL is refused unless the page is declared in
+   * web_accessible_resources — which is why the old gear silently did nothing.
+   * The manifest now declares it for youtube.com only.
+   */
   function openOptions() {
     const api = globalThis.browser ?? globalThis.chrome;
-    // runtime.openOptionsPage needs a background page in MV3; from a content
-    // script the options URL opens perfectly well on its own.
     globalThis.open(api.runtime.getURL("options/options.html"), "_blank");
-  }
-
-  function updateBar() {
-    if (!countEl) return;
-    countEl.textContent = hiddenThisSession === 1 ? "1 hidden" : `${hiddenThisSession} hidden`;
   }
 
   /* ------------------------------------------------------------------ threads */
@@ -547,6 +717,7 @@
     observer.observe(itemsEl, { childList: true });
 
     buildChrome();
+    ensureThreadsButton();
     layoutPanel();
     rescan();
   }
@@ -558,6 +729,7 @@
     });
     ensureAttached();
     setInterval(ensureAttached, 1000);
+    setInterval(ensureThreadsButton, 1000);
     setInterval(layoutPanel, 2000);
   }
 

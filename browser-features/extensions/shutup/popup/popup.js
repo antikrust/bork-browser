@@ -41,10 +41,23 @@
         `${updated.authors.length} blocked`;
     });
 
-    $("settings").addEventListener("click", () => {
-      api.tabs
-        ? api.tabs.create({ url: api.runtime.getURL("options/options.html") })
-        : globalThis.open(api.runtime.getURL("options/options.html"), "_blank");
+    // openOptionsPage is the route that works in every browser here; tabs.create
+    // is the fallback, and the popup only closes once one of them has actually
+    // been called — closing first cancelled the navigation and made the button
+    // look dead.
+    $("settings").addEventListener("click", async () => {
+      try {
+        if (api.runtime.openOptionsPage) {
+          await api.runtime.openOptionsPage();
+        } else if (api.tabs) {
+          await api.tabs.create({ url: api.runtime.getURL("options/options.html") });
+        } else {
+          globalThis.open(api.runtime.getURL("options/options.html"), "_blank");
+        }
+      } catch (error) {
+        console.error("[SHUT UP] could not open settings", error);
+        globalThis.open(api.runtime.getURL("options/options.html"), "_blank");
+      }
       globalThis.close();
     });
   });

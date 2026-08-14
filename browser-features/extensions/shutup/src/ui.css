@@ -104,54 +104,56 @@ yt-live-chat-membership-item-renderer {
   display: inline-flex;
 }
 
-/* ------------------------------------------------------------------- toolbar */
+/* --------------------------------------------------- Threads button in the bar */
 
-#ytct-bar {
-  position: fixed;
-  left: 8px;
-  bottom: 8px;
-  z-index: 9998;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 6px;
+/*
+ * Lives in YouTube's own button strip beside the emoji picker, so it reads as
+ * part of the chat rather than something floating over the conversation.
+ */
+#ytct-threads-btn {
+  align-self: center;
+  margin-inline-end: 4px;
+  padding: 3px 9px;
   border: 1px solid var(--ytct-line);
   border-radius: 999px;
-  background: var(--ytct-bg);
+  background: transparent;
+  color: var(--ytct-dim);
+  font: 600 11px/1.5 Roboto, system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#ytct-threads-btn:hover {
+  border-color: var(--ytct-fg);
   color: var(--ytct-fg);
-  font: 500 11px/1.6 Roboto, system-ui, sans-serif;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-  opacity: 0.55;
-  transition: opacity 120ms ease;
 }
 
-#ytct-bar:hover {
-  opacity: 1;
+#ytct-threads-btn.ytct-active {
+  border-color: var(--ytct-accent);
+  background: var(--ytct-accent);
+  color: #fff;
 }
 
+.ytct-head-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ytct-head-btn,
 .ytct-bar-btn {
   padding: 2px 8px;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: inherit;
-  font: inherit;
+  color: var(--ytct-dim);
+  font: 600 11px/1.6 Roboto, system-ui, sans-serif;
   cursor: pointer;
 }
 
+.ytct-head-btn:hover,
 .ytct-bar-btn:hover {
   background: var(--ytct-line);
-}
-
-.ytct-count {
-  color: var(--ytct-dim);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.ytct-gear {
-  font-size: 13px;
-  line-height: 1;
+  color: var(--ytct-fg);
 }
 
 /* --------------------------------------------------------------- thread panel */
@@ -180,11 +182,90 @@ yt-live-chat-membership-item-renderer {
   color: var(--ytct-dim);
 }
 
-#ytct-panel-list {
+#ytct-panel-list,
+#ytct-hidden-list {
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 6px 8px 40px;
+}
+
+#ytct-panel[data-view="threads"] #ytct-hidden-list,
+#ytct-panel[data-view="hidden"] #ytct-panel-list {
+  display: none;
+}
+
+/* ------------------------------------------------------------ tabs + hidden */
+
+.ytct-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.ytct-tab {
+  padding: 2px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-dim);
+  font: 600 11px/1.6 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.ytct-tab:hover {
+  background: var(--ytct-line);
+  color: var(--ytct-fg);
+}
+
+.ytct-tab.ytct-active {
+  background: var(--ytct-line);
+  color: var(--ytct-fg);
+}
+
+.ytct-hidden-row {
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ytct-line);
+  font: 400 12px/1.35 Roboto, system-ui, sans-serif;
+}
+
+.ytct-hidden-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ytct-hidden-head .ytct-msg-btn {
+  display: block;
+  margin-inline-start: auto;
+}
+
+.ytct-hidden-text {
+  margin-top: 1px;
+  color: var(--ytct-dim);
+  word-wrap: break-word;
+}
+
+.ytct-badge {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ytct-line);
+  color: var(--ytct-dim);
+  font: 600 9px/1.8 Roboto, system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+.ytct-badge-banword,
+.ytct-badge-author {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+.ytct-empty {
+  padding: 12px 4px;
+  color: var(--ytct-dim);
+  font: 400 12px/1.5 Roboto, system-ui, sans-serif;
 }
 
 .ytct-thread {

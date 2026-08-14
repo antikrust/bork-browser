@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>bork browser — a Firefox fork with Manifest V2 and Vivaldi workspace import</title>
-<meta name="description" content="bork is a compact Firefox 152 fork. Keeps Manifest V2 so the full uBlock Origin still works, imports your Vivaldi workspaces and their tabs, Vivaldi-style tab stacks, zen mode, and no AI features.">
+<meta name="description" content="bork is a compact Firefox 152 fork. Keeps Manifest V2 so the full uBlock Origin still works, imports your Vivaldi workspaces and their tabs, Vivaldi-style tab stacks, zen mode, a built-in YouTube chat blocker, and no AI features.">
 <meta property="og:title" content="bork browser">
 <meta property="og:description" content="A compact fork of Floorp 12 (Firefox 152). Manifest V2, no AI, no telemetry.">
 <meta property="og:image" content="https://borkbrowser.online/assets/fox-og.jpg">
@@ -336,6 +336,9 @@ a.dl code {
 @media (max-width: 480px) {
   .addendum { grid-template-columns: 1fr; }
 }
+/* second addendum on: no mark to sit beside, so one column and a lighter rule */
+.addendum-solo { grid-template-columns: 1fr; padding-top: clamp(18px, 2.2vw, 24px); }
+.addendum-solo em { color: var(--paper); font-style: normal; font-weight: 600; }
 
 /* NO — headings then the growing chant */
 .no-item + .no-item { margin-top: clamp(30px, 4vw, 44px); }
@@ -495,7 +498,7 @@ footer { border-top: 1px solid var(--line);
 
   <div class="wrap hero-copy">
     <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="686" height="216"></h1>
-    <p class="sub">bork 1.1.14 based on floorp</p>
+    <p class="sub">bork 1.1.20 based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
   </div>
 
@@ -514,7 +517,7 @@ footer { border-top: 1px solid var(--line);
               <b>macOS</b> <small>Apple silicon (arm64) · 187 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 95675b66ef68179dea2b3f203310f1fda91f137296be53048214e39d2911a069</code>
+              <code>sha256 2a6e4304242bfe1b0dd3682e7d289684f74d9f2032bbd7413534907f556a8e65</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the macOS sha256">
@@ -543,7 +546,7 @@ footer { border-top: 1px solid var(--line);
               <b>Linux</b> <small>AppImage · x86_64 · 114 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 90714b0057cbb8758e175d24d3fd437eee9e1f13f3b59f32a8714b36b6d722d5</code>
+              <code>sha256 1fec1d01c34544d04e81c3bfb794eb35d08db9994f071ce280527b755e7f6c19</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Linux AppImage sha256">
@@ -557,7 +560,7 @@ footer { border-top: 1px solid var(--line);
               <b>Linux</b> <small>tarball · x86_64 · 125 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 faa06acfdfe2e3dfc8a40d53920cb6667f15e577d8aa9f4497563ece5ae4bc9d</code>
+              <code>sha256 ac64c24efdcf7f046e6432c2f6002d9135bec6e03f05dee1ea877ac544d271a2</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Linux tarball sha256">
@@ -579,7 +582,7 @@ footer { border-top: 1px solid var(--line);
               <b>Windows</b> <small>x86_64 · 146 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 09e20ec7c501fc177621cc6180b11d6ca1e2a97d0f6f5e4d678ca711179a686d</code>
+              <code>sha256 362d4847070a74e39b671bc09b0cd8c05389b234e50fd60961737d1a4f8ecd60</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Windows sha256">
@@ -616,6 +619,7 @@ footer { border-top: 1px solid var(--line);
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Chromium plugins</span></li>
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Notes</span></li>
         <li><span class="sq" aria-hidden="true"></span><span class="ft">Local translator</span></li>
+        <li><span class="sq" aria-hidden="true"></span><span class="ft"><span class="hl">SHUT UP</span> for YouTube chat</span></li>
       </ul>
 
       <div class="addendum">
@@ -629,6 +633,23 @@ footer { border-top: 1px solid var(--line);
           pieces from several mirrors at once — maxing out a fast line, and
           rescuing a bad one by routing around whichever mirror is crawling.
           The checksum is verified when it lands.
+        </p>
+      </div>
+
+      <div class="addendum addendum-solo">
+        <p class="addendum-text">
+          <span class="addendum-head">SHUT UP &mdash; youtube chat, quieted</span>
+          Live chat is unreadable by design, so bork ships its own cure. Keep a
+          list of phrases where saying one <em>once</em> costs the speaker
+          everything &mdash; that message, whatever they already had on screen,
+          and anything they say afterwards. A second, milder list hides single
+          messages and leaves the person alone. Every row grows a
+          <code>SHUT UP</code> button on hover, repeat offenders are blocked
+          without being asked about, and a threads view turns the
+          <code>@mentions</code> people improvise into real replies, rendered
+          underneath the message they answer. A Hidden tab shows exactly what
+          your rules ate, so a bad rule is obvious rather than mysterious.
+          It is an ordinary add-on: remove it and it stays removed.
         </p>
       </div>
     </div>
