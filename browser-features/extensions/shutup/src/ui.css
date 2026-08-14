@@ -110,26 +110,32 @@ yt-live-chat-membership-item-renderer {
  * Lives in YouTube's own button strip beside the emoji picker, so it reads as
  * part of the chat rather than something floating over the conversation.
  */
+/*
+ * Sized and shaped like YouTube's own emoji and heart buttons — 40px circle,
+ * borderless, icon inheriting colour — so it reads as one of the chat's
+ * controls rather than something bolted beside them.
+ */
 #ytct-threads-btn {
   align-self: center;
-  margin-inline-end: 4px;
-  padding: 3px 9px;
-  border: 1px solid var(--ytct-line);
-  border-radius: 999px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
   background: transparent;
-  color: var(--ytct-dim);
-  font: 600 11px/1.5 Roboto, system-ui, sans-serif;
-  white-space: nowrap;
+  color: var(--ytct-fg);
   cursor: pointer;
 }
 
 #ytct-threads-btn:hover {
-  border-color: var(--ytct-fg);
-  color: var(--ytct-fg);
+  background: var(--ytct-line);
 }
 
 #ytct-threads-btn.ytct-active {
-  border-color: var(--ytct-accent);
   background: var(--ytct-accent);
   color: #fff;
 }

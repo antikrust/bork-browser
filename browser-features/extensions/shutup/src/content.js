@@ -382,11 +382,39 @@
     threadsBtn = document.createElement("button");
     threadsBtn.id = "ytct-threads-btn";
     threadsBtn.type = "button";
-    threadsBtn.textContent = "Threads";
     threadsBtn.title = "Read this chat as threads";
+    threadsBtn.setAttribute("aria-label", "Threads");
+    threadsBtn.appendChild(threadsIcon());
     threadsBtn.addEventListener("click", () => setPanel(!panelOpen));
     host.insertBefore(threadsBtn, host.firstChild);
     syncThreadsButton();
+  }
+
+  /**
+   * A trunk with two branches: the shape of the thing it opens, and legible at
+   * 22px in a way a pair of speech bubbles is not.
+   *
+   * Built with createElementNS rather than innerHTML — YouTube enforces Trusted
+   * Types on some pages, where assigning innerHTML throws outright.
+   */
+  function threadsIcon() {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "22");
+    svg.setAttribute("height", "22");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    for (const d of ["M7 4v13", "M7 10h6", "M7 17h9"]) {
+      const path = document.createElementNS(NS, "path");
+      path.setAttribute("d", d);
+      svg.appendChild(path);
+    }
+    return svg;
   }
 
   function syncThreadsButton() {
