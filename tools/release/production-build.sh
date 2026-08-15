@@ -88,17 +88,38 @@ SITE_URL="${BORK_SITE_URL:-https://example.com/bork/}"
 
 log() { printf '\033[35m[production]\033[0m %s\n' "$*"; }
 
-# The site offers SHUT UP as a standalone download. It is copied out of the
-# built app rather than zipped here, so what people download is byte-for-byte
-# the add-on bork ships — one artifact, no second packing path to drift.
+# The site offers SHUT UP as a standalone download, taken from the built app so
+# it carries the same code bork ships.
+#
+# Once a version has been signed by Mozilla (tools/release/sign-extension.sh)
+# the signed file is the one people need — release Firefox refuses anything
+# else — and it cannot be regenerated here, so this never overwrites it.
+xpi_version() {
+  unzip -p "$1" manifest.json 2>/dev/null |
+    python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' 2>/dev/null
+}
+
 stage_site_extension() {
   local src="$ROOT/build/release/mac/Bork.app/Contents/Resources/distribution/extensions/shutup@bork.xpi"
-  if [ -f "$src" ]; then
-    cp "$src" "$ROOT/tools/release/site/shut-up.xpi"
-    log "staged shut-up.xpi for the site"
-  else
+  local dst="$ROOT/tools/release/site/shut-up.xpi"
+  if [ ! -f "$src" ]; then
     log "WARNING: no built xpi at $src — the site keeps whatever shut-up.xpi it already had"
+    return
   fi
+  if unzip -l "$dst" 2>/dev/null | grep -q "META-INF/mozilla.rsa"; then
+    local signed built
+    signed="$(xpi_version "$dst")"
+    built="$(xpi_version "$src")"
+    if [ "$signed" = "$built" ]; then
+      log "site xpi is the signed $signed — kept"
+    else
+      log "WARNING: site xpi is signed $signed but this build carries $built."
+      log "WARNING: run tools/release/sign-extension.sh or the download stays on $signed"
+    fi
+    return
+  fi
+  cp "$src" "$dst"
+  log "staged shut-up.xpi (unsigned) for the site"
 }
 
 # 0. site-only: the page, nothing else. Same refresh + rsync as the upload step
