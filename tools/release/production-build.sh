@@ -88,6 +88,19 @@ SITE_URL="${BORK_SITE_URL:-https://example.com/bork/}"
 
 log() { printf '\033[35m[production]\033[0m %s\n' "$*"; }
 
+# The site offers SHUT UP as a standalone download. It is copied out of the
+# built app rather than zipped here, so what people download is byte-for-byte
+# the add-on bork ships — one artifact, no second packing path to drift.
+stage_site_extension() {
+  local src="$ROOT/build/release/mac/Bork.app/Contents/Resources/distribution/extensions/shutup@bork.xpi"
+  if [ -f "$src" ]; then
+    cp "$src" "$ROOT/tools/release/site/shut-up.xpi"
+    log "staged shut-up.xpi for the site"
+  else
+    log "WARNING: no built xpi at $src — the site keeps whatever shut-up.xpi it already had"
+  fi
+}
+
 # 0. site-only: the page, nothing else. Same refresh + rsync as the upload step
 # below (deliberately the same two commands, so the page can never be published
 # with hand-edited sums or a stale version subtitle) minus the package upload,
@@ -95,6 +108,7 @@ log() { printf '\033[35m[production]\033[0m %s\n' "$*"; }
 if [ "$SITE_ONLY" = 1 ]; then
   log "site only — refreshing page sums, sizes and version from dist/"
   python3 "$ROOT/tools/release/update-site-sums.py"
+  stage_site_extension
   log "uploading the site to ${WEB_REMOTE%/downloads}"
   rsync -av "$ROOT/tools/release/site/" "${WEB_REMOTE%/downloads}/"
   log "uploaded. live at $SITE_URL"
@@ -186,6 +200,7 @@ if [ "$UPLOAD" = 1 ]; then
   # who runs it. Page goes up last, after the files it describes exist.
   log "refreshing page sums + sizes"
   python3 "$ROOT/tools/release/update-site-sums.py"
+  stage_site_extension
   # The whole site dir, not just index.html: the page now carries its own
   # assets/ (hero photo, screenshots, webfont) and an index shipped without
   # them renders unstyled and imageless. No --delete: downloads/ lives under

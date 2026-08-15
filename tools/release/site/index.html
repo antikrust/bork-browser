@@ -346,6 +346,19 @@ a.dl code {
   margin-bottom: 4px;
 }
 .addendum-solo .addendum-head { font-size: .95rem; letter-spacing: .06em; }
+.addendum-cta { margin-top: 14px; display: flex; flex-wrap: wrap;
+                align-items: baseline; gap: 6px 14px; }
+.addendum-cta a {
+  font-family: var(--mono); font-size: .8rem; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--amber-lt);
+  border: 1px solid var(--line-2); border-radius: 3px; padding: 6px 12px;
+  text-decoration: none;
+}
+.addendum-cta a:hover { border-color: var(--amber); color: var(--paper); }
+.addendum-note {
+  font-family: var(--mono); font-size: .72rem; line-height: 1.6;
+  color: var(--muted); max-width: 52ch;
+}
 .addendum-solo em { color: var(--paper); font-style: normal; font-weight: 600; }
 
 /* NO — headings then the growing chant */
@@ -648,13 +661,23 @@ footer { border-top: 1px solid var(--line);
           <span class="addendum-kicker">Exclusive Firefox Plugin for YouPube</span>
           <span class="addendum-head">SHUT UP</span>
           SHUT UP blocks channels and allows you to control youpube properly.
-          It adds a SHUTUP button on every video card and it will blocks the
-          whole channel. When you SHUTUP a channel its gone from home, search,
+          It adds a SHUTUP button on every video card and it blocks the
+          whole channel. When you SHUTUP a channel it's gone from home, search,
           the sidebar and Shorts. In live chat it silences a person outright,
           and a list of phrases does it for you: say one and you are gone for
           good. A threads view turns the <code>@mentions</code> people
           improvise into real replies. It is an ordinary extension: remove it
           and it stays removed.
+        </p>
+        <p class="addendum-cta">
+          <a href="shut-up.xpi" download>Download SHUT UP</a>
+          <span class="addendum-note">
+            Already inside bork &mdash; this is for putting it in another
+            Firefox: save the file, then <code>about:addons</code> &rarr; the
+            gear &rarr; Install Add-on From File. Mozilla has not signed it, so
+            release Firefox will refuse it; Nightly, Developer Edition and ESR
+            take it as it is.
+          </span>
         </p>
       </div>
     </div>

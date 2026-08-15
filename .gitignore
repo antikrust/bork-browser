@@ -32,3 +32,6 @@ ARCHITECTURE-AUDIT.md
 RUNTIME-FORK-PLAN.md
 /*-AUDIT.md
 /*-PLAN.md
+
+# published from the built app by production-build.sh, not source
+tools/release/site/shut-up.xpi
