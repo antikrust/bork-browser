@@ -23,6 +23,7 @@ globalThis.YTCT = globalThis.YTCT || {};
   const CARD_TAGS = [
     "ytd-rich-item-renderer", // home grid, channel videos
     "ytd-video-renderer", // search results
+    "ytd-channel-renderer", // the channel itself, at the top of a search
     "ytd-compact-video-renderer", // watch sidebar (classic)
     "ytd-grid-video-renderer", // older channel grids
     "ytd-reel-item-renderer", // shorts shelf (older)
@@ -31,6 +32,26 @@ globalThis.YTCT = globalThis.YTCT || {};
     "ytm-shorts-lockup-view-model-v2",
   ];
   const CARDS = CARD_TAGS.join(",");
+
+  /**
+   * Shelves that gather several videos under one heading: "Latest from X" and
+   * "Latest Shorts from X" sit under the channel in search results, and the
+   * plain "Shorts" rows are the same shape. Hiding the videos inside one
+   * leaves the heading standing, which still reads as the channel being there.
+   */
+  const SHELVES = [
+    "ytd-shelf-renderer", // "Latest from X" on search
+    "ytd-reel-shelf-renderer", // "Latest Shorts from X", and plain Shorts rows
+    "grid-shelf-view-model", // the expandable Shorts shelf on search
+    "ytd-rich-section-renderer", // the Shorts shelf on the home grid
+  ].join(",");
+
+  /**
+   * The only reliable mark of a short. A shorts card names no channel
+   * anywhere — not in its markup, and not in the data YouTube attaches to the
+   * element — so the link is all there is to go on.
+   */
+  const SHORTS_LINK = "a[href^='/shorts/']";
 
   let config = null;
   let blockedChannels = new Set();
@@ -89,11 +110,15 @@ globalThis.YTCT = globalThis.YTCT || {};
 
   /**
    * On a channel's own pages the cards never name their channel — the page
-   * does. The document title tracks SPA navigation and outlives banner
-   * redesigns, so it is the sturdier source.
+   * does. The header carries it verbatim; the document title is the fallback
+   * because some tabs prefix it ("Videos - Someone - YouTube").
    */
   function pageChannel() {
     if (!/^\/(@|channel\/|c\/|user\/)/.test(location.pathname)) return "";
+    const header = document.querySelector(
+      "yt-page-header-view-model h1, yt-page-header-renderer h1, #channel-header #text",
+    );
+    if (header && header.textContent.trim()) return header.textContent.trim();
     return document.title.replace(/ - YouTube$/, "").trim();
   }
 
@@ -134,9 +159,15 @@ globalThis.YTCT = globalThis.YTCT || {};
       "ytct-has-channel",
       !!channel && !onSubsFeed && !subscribed.has(norm),
     );
+    // Shorts are judged on where they sit rather than on a channel, because
+    // they never carry one; a blocked channel still loses its normal videos
+    // the usual way.
+    const stray =
+      !!card.querySelector(SHORTS_LINK) && !subscribedShorts(card);
     card.classList.toggle(
       "ytct-video-hidden",
-      config.enabled !== false && !!norm && blockedChannels.has(norm),
+      config.enabled !== false &&
+        ((!!norm && blockedChannels.has(norm)) || stray),
     );
   }
 
@@ -157,6 +188,164 @@ globalThis.YTCT = globalThis.YTCT || {};
       if (name) blockChannel(name);
     });
     card.appendChild(btn);
+  }
+
+  /* ----------------------------------------------------------------- shelves */
+
+  /**
+   * The shelf's own heading, not one of its videos' — a shelf full of cards
+   * has plenty of titles inside it and only the outer one names the channel.
+   */
+  function shelfTitle(shelf) {
+    for (const el of shelf.querySelectorAll("#title, #title-text, h2")) {
+      if (el.closest(CARDS)) continue;
+      const text = el.textContent.trim();
+      if (text) return text;
+    }
+    return "";
+  }
+
+  /**
+   * Shorts survive only where something on the page says whose they are and
+   * you subscribe to them. Since the cards themselves never say, that leaves
+   * three honest answers, and everything outside them is unattributable.
+   */
+  function subscribedShorts(el) {
+    // The subscriptions feed is subscribed channels by definition.
+    if (onSubsFeed) return true;
+    // A channel's own pages, including its Shorts tab. The Subscribe button is
+    // asked first because the guide scrape has nothing to give when the
+    // sidebar is collapsed — and collapsed is the default, where
+    // ytd-guide-renderer is not in the document at all.
+    const page = filters.normalizeName(pageChannel());
+    if (page) {
+      const sub = document.querySelector(SUBSCRIBE);
+      if (sub && saysSubscribed(sub)) return true;
+      if (subscribed.has(page)) return true;
+    }
+    // A shelf gathering one channel's shorts names it in the heading, same as
+    // the blocked-channel test below reads it.
+    const shelf = el.closest(SHELVES);
+    if (shelf) {
+      const title = filters.normalizeName(shelfTitle(shelf));
+      for (const name of subscribed) {
+        if (title.endsWith(name)) return true;
+      }
+    }
+    return false;
+  }
+
+  function handleShelf(shelf) {
+    const title = filters.normalizeName(shelfTitle(shelf));
+    let blocked = false;
+    if (title && config.enabled !== false) {
+      // The heading ends with the channel's name, whatever words YouTube puts
+      // in front of it ("Latest from X", "Latest Shorts from X"), so match the
+      // name rather than the phrase. Anchoring it to the end matters: a plain
+      // substring test on "The Rest Is Politics" also hides the shelves of
+      // "The Rest Is Politics US" and "The Rest Is Politics: Leading", which
+      // are different channels and were not blocked.
+      for (const name of blockedChannels) {
+        if (title.endsWith(name)) {
+          blocked = true;
+          break;
+        }
+      }
+    }
+    // A whole shelf of shorts nobody can attribute to a channel you follow.
+    const strayShorts =
+      config.enabled !== false &&
+      !!shelf.querySelector(SHORTS_LINK) &&
+      !subscribedShorts(shelf);
+    shelf.classList.toggle("ytct-video-hidden", blocked || strayShorts);
+  }
+
+  /* ---------------------------------------------------- channel page button */
+
+  const SUBSCRIBE =
+    "ytd-subscribe-button-renderer, yt-subscribe-button-view-model";
+
+  /**
+   * Does this Subscribe control say you already subscribe?
+   *
+   * Its own label, because the `subscribed` attribute the older renderer
+   * carried is absent from yt-subscribe-button-view-model — that button reads
+   * "Subscribed" and admits it nowhere else.
+   */
+  function saysSubscribed(anchor) {
+    return /^subscribed$/i.test((anchor.textContent || "").trim());
+  }
+
+  /**
+   * A SHUT UP button beside every Subscribe button on the page — the channel
+   * header and the owner bar under a video. Subscribed channels get none, the
+   * same rule the cards follow.
+   */
+  function ensureSubscribeButtons() {
+    for (const anchor of document.querySelectorAll(SUBSCRIBE)) {
+      // Some layouts nest one inside the other; seat against the inner one, or
+      // a single Subscribe grows two buttons.
+      if (anchor.querySelector(SUBSCRIBE) || !anchor.parentElement) continue;
+      const name = channelForAnchor(anchor);
+      if (name) seat(anchor, name);
+    }
+    // A button whose Subscribe has gone — SPA navigation rebuilt the header —
+    // has nothing left to act on.
+    for (const button of document.querySelectorAll(".ytct-sub-btn")) {
+      const previous = button.previousElementSibling;
+      if (!previous || !previous.matches(SUBSCRIBE)) button.remove();
+    }
+  }
+
+  /** Under a video the owner bar names the channel; elsewhere the page does. */
+  function channelForAnchor(anchor) {
+    const owner = anchor.closest("ytd-video-owner-renderer, #owner, #upload-info");
+    if (owner) {
+      const named = owner.querySelector(
+        "ytd-channel-name #text, #channel-name #text",
+      );
+      if (named && named.textContent.trim()) return named.textContent.trim();
+    }
+    return pageChannel();
+  }
+
+  function seat(anchor, name) {
+    let button = anchor.nextElementSibling;
+    if (!button || !button.classList.contains("ytct-sub-btn")) {
+      button = document.createElement("button");
+      button.type = "button";
+      button.className = "ytct-sub-btn";
+      button.addEventListener("click", () => {
+        const current = button.dataset.ytctChannel || "";
+        if (!current) return;
+        if (blockedChannels.has(filters.normalizeName(current))) {
+          unblockChannel(current);
+        } else {
+          blockChannel(current);
+        }
+      });
+      anchor.parentElement.insertBefore(button, anchor.nextSibling);
+    }
+
+    // YouTube gives Subscribe its own wrapper on channel pages, and a wrapper
+    // built for one child stacks the second underneath. Turning that wrapper
+    // into a row cannot disturb anything else, because by this test it holds
+    // nothing else. Where Subscribe shares a bar with other buttons (under a
+    // video) the bar is already a row and is left alone.
+    const wrapper = anchor.parentElement;
+    if (wrapper.children.length === 2) wrapper.classList.add("ytct-row");
+
+    button.dataset.ytctChannel = name;
+    const key = filters.normalizeName(name);
+    const isBlocked = blockedChannels.has(key);
+    button.textContent = isBlocked ? "UNBLOCK" : "SHUT UP";
+    button.title = isBlocked ? `Show ${name} again` : `Block ${name} everywhere`;
+    button.classList.toggle("ytct-on", isBlocked);
+    // The Subscribe button itself is the most direct answer to "do they follow
+    // this channel"; the guide scrape covers layouts that do not say.
+    const subscribedHere = subscribed.has(key) || saysSubscribed(anchor);
+    button.style.display =
+      config.enabled !== false && !subscribedHere ? "inline-flex" : "none";
   }
 
   async function blockChannel(name) {
@@ -232,12 +421,14 @@ globalThis.YTCT = globalThis.YTCT || {};
     if (!config) return;
     onSubsFeed = location.pathname.startsWith("/feed/subscriptions");
     refreshSubscribed();
+    ensureSubscribeButtons();
     for (const card of document.querySelectorAll(CARDS)) {
       // Newer feeds nest a lockup inside a rich item; judge the outer one
       // only, or the same card grows two buttons.
       if (card.parentElement && card.parentElement.closest(CARDS)) continue;
       handle(card);
     }
+    for (const shelf of document.querySelectorAll(SHELVES)) handleShelf(shelf);
   }
 
   store.load().then((loaded) => {

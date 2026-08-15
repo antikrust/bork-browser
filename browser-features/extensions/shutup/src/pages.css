@@ -70,6 +70,60 @@
   display: inline-flex;
 }
 
+/* ------------------------------------------------------- channel page button */
+
+/*
+ * Beside Subscribe, both in the channel header and under a video. YouTube's
+ * buttons there are 36px pills, so this is one too — the size is copied
+ * deliberately rather than inherited, because the header's own classes come
+ * and go with redesigns.
+ */
+.ytct-sub-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  align-self: center;
+  height: 36px;
+  margin-inline-start: 8px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 18px;
+  /* Subscribe's own colours: white on a dark theme, black on a light one.
+     Inverting the theme's own pair gets both without hardcoding either. */
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+  font: 500 14px/1 Roboto, system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Subscribe's wrapper, made a row so our button sits beside it, not under. */
+.ytct-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+}
+
+/* Red on hover, like the button on the cards. Brightness filters are no use
+   here: the resting state is white, which cannot get brighter, so the filter
+   only washed out the text. */
+.ytct-sub-btn:hover {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+.ytct-sub-btn.ytct-on {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+/* Already blocked: hovering shows the state clicking returns it to. */
+.ytct-sub-btn.ytct-on:hover {
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+}
+
 /* --------------------------------------------------------------------- toast */
 
 #ytct-page-toast {
