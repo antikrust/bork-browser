@@ -312,10 +312,14 @@ a.dl code {
   margin-top: clamp(32px, 4vw, 52px);
   padding-top: clamp(24px, 3vw, 32px);
   border-top: 1px solid var(--line);
-  display: grid; grid-template-columns: auto 1fr;
+  display: grid; grid-template-columns: 1fr auto;
   gap: clamp(16px, 2vw, 24px); align-items: start;
 }
+/* Mark on the right, in the same column the SHUT UP buttons occupy, so both
+   addenda share one edge and neither pushes its paragraph off the margin the
+   rest of the page reads against. */
 .addendum-mark {
+  grid-column: 2; grid-row: 1;
   width: 30px; height: auto; margin-top: 2px;
   /* The mark ships orange; the site's amber is close but not the same, so
      leave it as its own colour rather than half-matching. */
@@ -335,6 +339,7 @@ a.dl code {
 }
 @media (max-width: 480px) {
   .addendum { grid-template-columns: 1fr; }
+  .addendum-mark { grid-column: 1; grid-row: auto; }
 }
 /* second addendum on: no mark to sit beside, so one column and a lighter rule */
 .addendum-solo { grid-template-columns: 1fr; padding-top: clamp(18px, 2.2vw, 24px); }
