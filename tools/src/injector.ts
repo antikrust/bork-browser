@@ -79,7 +79,10 @@ function packExtensionDir(
   // Parse failures stay local to this extension. This ran inside the caller's
   // try once, and one truncated manifest.json aborted the whole pack loop —
   // every add-on after it silently missing from a shipped release.
-  let manifest: { browser_specific_settings?: { gecko?: { id?: string } } };
+  let manifest: {
+    version?: string;
+    browser_specific_settings?: { gecko?: { id?: string } };
+  };
   try {
     manifest = JSON.parse(Deno.readTextFileSync(manifestPath));
   } catch (e) {
@@ -94,6 +97,18 @@ function packExtensionDir(
 
   const xpi = path.join(extDir, `${id}.xpi`);
   safeRemove(xpi);
+
+  // Prefer a signed build of this exact version. bork does not require
+  // signatures, but an unsigned add-on wears a "could not be verified" badge
+  // in about:addons, and shipping the same file the website hands out means
+  // one artifact rather than a signed and an unsigned twin.
+  const signed = signedArtifact(dir, manifest.version);
+  if (signed) {
+    Deno.copyFileSync(signed, xpi);
+    logger.info(`${path.basename(dir)}: shipped the signed ${manifest.version}`);
+    return id;
+  }
+
   // Contents at archive root (manifest.json top-level), no extras.
   const args = ["-r", "-X", "-q", xpi, "."];
   if (exclude.length) args.push("-x", ...exclude);
@@ -104,6 +119,47 @@ function packExtensionDir(
     return null;
   }
   return id;
+}
+
+/**
+ * Signed artifacts by extension directory name. These are what the website
+ * hands out, produced by tools/release/sign-extension.sh; the filenames differ
+ * from the directory names because they are public download URLs.
+ */
+const SIGNED_XPI: Record<string, string> = {
+  shutup: "tools/release/site/shut-up.xpi",
+};
+
+/**
+ * A Mozilla-signed xpi for this extension at this version, if one has been
+ * produced by tools/release/sign-extension.sh.
+ *
+ * Version-matched deliberately: a signed artifact one version behind the
+ * source is the wrong code, so it is ignored and the source is packed instead
+ * (unsigned, which bork accepts) rather than silently shipping stale files.
+ */
+function signedArtifact(dir: string, version?: string): string | null {
+  if (!version) return null;
+  const relative = SIGNED_XPI[path.basename(dir)];
+  if (!relative) return null;
+
+  const candidate = path.join(PROJECT_ROOT, relative);
+  if (!exists(candidate)) return null;
+
+  const check = runCommandChecked("unzip", ["-p", candidate, "manifest.json"]);
+  if (!check.success) return null;
+  try {
+    const signedManifest = JSON.parse(check.stdout);
+    if (signedManifest.version !== version) {
+      logger.warn(
+        `${path.basename(dir)}: signed xpi is ${signedManifest.version}, source is ${version} — packing source unsigned`,
+      );
+      return null;
+    }
+  } catch {
+    return null;
+  }
+  return candidate;
 }
 
 /** Repo sources that belong to the extension, not to the shipped add-on. */

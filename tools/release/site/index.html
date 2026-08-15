@@ -346,18 +346,38 @@ a.dl code {
   margin-bottom: 4px;
 }
 .addendum-solo .addendum-head { font-size: .95rem; letter-spacing: .06em; }
-.addendum-cta { margin-top: 14px; display: flex; flex-wrap: wrap;
-                align-items: baseline; gap: 6px 14px; }
-.addendum-cta a {
-  font-family: var(--mono); font-size: .8rem; font-weight: 600;
-  letter-spacing: .04em; text-transform: uppercase; color: var(--amber-lt);
-  border: 1px solid var(--line-2); border-radius: 3px; padding: 6px 12px;
-  text-decoration: none;
+/* Buttons ride at the top right, their first edge level with the kicker line,
+   so the block reads as one thing with its actions rather than a paragraph
+   that happens to have buttons trailing after it. */
+.addendum-solo { grid-template-columns: 1fr auto; align-items: start;
+                 column-gap: clamp(20px, 4vw, 48px); }
+.addendum-buttons {
+  display: flex; flex-direction: column; gap: 8px; flex: none;
+  grid-column: 2; grid-row: 1;
 }
-.addendum-cta a:hover { border-color: var(--amber); color: var(--paper); }
+.addendum-note { margin-top: 14px; }
+.addendum-buttons a {
+  font-family: var(--mono); font-size: .8rem; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; text-align: center;
+  color: var(--amber-lt); border: 1px solid var(--line-2); border-radius: 3px;
+  padding: 9px 16px; text-decoration: none; white-space: nowrap;
+}
+.addendum-buttons a:hover { border-color: var(--amber); color: var(--paper); }
+.addendum-buttons a.cta-primary {
+  background: var(--amber); border-color: var(--amber); color: var(--ink);
+}
+.addendum-buttons a.cta-primary:hover { background: var(--amber-lt);
+                                        border-color: var(--amber-lt);
+                                        color: var(--ink); }
 .addendum-note {
-  font-family: var(--mono); font-size: .72rem; line-height: 1.6;
-  color: var(--muted); max-width: 52ch;
+  display: block; font-family: var(--mono); font-size: .72rem; line-height: 1.6;
+  color: var(--muted); max-width: 62ch;
+}
+/* Narrow: the buttons drop under the copy rather than squeezing it to a ribbon */
+@media (max-width: 720px) {
+  .addendum-solo { grid-template-columns: 1fr; row-gap: 18px; }
+  .addendum-buttons { grid-column: 1; grid-row: auto;
+                      flex-direction: row; flex-wrap: wrap; }
 }
 .addendum-solo em { color: var(--paper); font-style: normal; font-weight: 600; }
 
@@ -519,7 +539,7 @@ footer { border-top: 1px solid var(--line);
 
   <div class="wrap hero-copy">
     <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="686" height="216"></h1>
-    <p class="sub">bork 1.1.32 based on floorp</p>
+    <p class="sub">bork 1.1.34 based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
   </div>
 
@@ -535,10 +555,10 @@ footer { border-top: 1px solid var(--line);
         <div class="dlcard">
           <a class="dl" href="downloads/Bork-macOS-universal.dmg">
             <span class="dl-top">
-              <b>macOS</b> <small>Apple silicon (arm64) · 189 MB</small>
+              <b>macOS</b> <small>Apple silicon (arm64) · 186 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 486aebc10f51d5a16a5956b7f843b18fb6644a603f4769ab0ddfccb0482832cd</code>
+              <code>sha256 4fade2a53c261b141023c7dd11c16e332cd13daa6711fd3788e86286a74128ec</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the macOS sha256">
@@ -567,7 +587,7 @@ footer { border-top: 1px solid var(--line);
               <b>Linux</b> <small>AppImage · x86_64 · 114 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 12c2e111f400633a296908415a36c7f0730e80908430d41aba784dec93ea402d</code>
+              <code>sha256 f312149db2e040186875847b2aa961fffa55cc19b518e682615801e73a373f9e</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Linux AppImage sha256">
@@ -581,7 +601,7 @@ footer { border-top: 1px solid var(--line);
               <b>Linux</b> <small>tarball · x86_64 · 125 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 9893941a929fb62e9d4e4faa8543b7283e07b8464ad3c514bc7fb67b0ff4f8c7</code>
+              <code>sha256 d61f2e1ec61ea6c9d61d9beb92c4d61f2f671144d38dec13742b52430211c2a5</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Linux tarball sha256">
@@ -603,7 +623,7 @@ footer { border-top: 1px solid var(--line);
               <b>Windows</b> <small>x86_64 · 146 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 b985629d1c33b6619a3c1b034eb37fb3a0f79c12ec59ec14a6701739ce4ea703</code>
+              <code>sha256 bec504f72774420d1b6b90f7b98bdd0c5314e5a0995c4420e51f8b3abd3ec5b6</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Windows sha256">
@@ -669,14 +689,17 @@ footer { border-top: 1px solid var(--line);
           improvise into real replies. It is an ordinary extension: remove it
           and it stays removed.
         </p>
-        <p class="addendum-cta">
-          <a href="shut-up.xpi" download>Download SHUT UP</a>
-          <span class="addendum-note">
-            Already inside bork &mdash; this is for putting it in any other
-            Firefox. Signed by Mozilla, so it installs on all of them: save the
-            file, then <code>about:addons</code> &rarr; the gear &rarr; Install
-            Add-on From File.
-          </span>
+        <p class="addendum-buttons">
+          <a href="shut-up.xpi" download>Download .xpi</a>
+          <a class="cta-primary" href="shut-up.xpi">Add to Firefox</a>
+        </p>
+        <p class="addendum-note">
+          Already inside bork &mdash; this is for putting it in any other
+          Firefox. Signed by Mozilla, so it installs anywhere and updates
+          itself afterwards. <em>Add to Firefox</em> installs it there and
+          then; the download is the same file if you would rather keep it and
+          use <code>about:addons</code> &rarr; the gear &rarr; Install Add-on
+          From File.
         </p>
       </div>
     </div>

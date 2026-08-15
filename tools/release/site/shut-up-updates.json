@@ -1,0 +1,13 @@
+{
+  "addons": {
+    "shutup@bork": {
+      "updates": [
+        {
+          "version": "0.2.5",
+          "update_link": "https://borkbrowser.online/shut-up.xpi",
+          "update_hash": "sha256:f7e49af8c7074b989fbe60c5e76320ab2ecaac0ad12114452669e5b3a38f125d"
+        }
+      ]
+    }
+  }
+}

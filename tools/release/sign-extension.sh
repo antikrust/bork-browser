@@ -4,11 +4,15 @@
 # Release Firefox refuses any extension Mozilla has not signed, so the file the
 # site offers has to be a signed one. AMO is the only signer there is.
 #
-# The add-on is distributed UNLISTED (self-hosted): AMO signs it and hands it
-# back, it does not appear in the AMO catalogue. Every new version needs this
-# run again — production-build.sh will not overwrite a signed xpi with unsigned
-# build output, so a forgotten run leaves the download on the old version and
-# says so loudly rather than shipping something release Firefox rejects.
+# The add-on is LISTED: it has a public page in the AMO catalogue and Mozilla
+# serves its updates, which is why the manifest carries no update_url — AMO
+# rejects that field on listed add-ons, and Firefox falls back to Mozilla's own
+# update service without it.
+#
+# Every new version needs this run again — production-build.sh will not
+# overwrite a signed xpi with unsigned build output, so a forgotten run leaves
+# the download on the old version and says so loudly rather than shipping
+# something release Firefox rejects.
 #
 # Credentials come from https://addons.mozilla.org/developers/addon/api/key/
 # and are read from the environment, never stored here:
@@ -30,7 +34,8 @@ OUT="$ROOT/tools/release/site"
 npx --yes web-ext sign \
   --source-dir "$SRC" \
   --artifacts-dir "$OUT" \
-  --channel unlisted \
+  --channel listed \
+  --amo-metadata "$ROOT/tools/release/amo-metadata.json" \
   --api-key "$AMO_JWT_ISSUER" \
   --api-secret "$AMO_JWT_SECRET" \
   --ignore-files "test/**" "*.md" "build.sh"
@@ -40,3 +45,5 @@ npx --yes web-ext sign \
 newest="$(ls -t "$OUT"/*.xpi | grep -v '/shut-up\.xpi$' | head -1)"
 mv "$newest" "$OUT/shut-up.xpi"
 echo "signed: $OUT/shut-up.xpi"
+
+# No update manifest to write: Mozilla serves updates for listed add-ons.
