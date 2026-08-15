@@ -35,3 +35,5 @@ RUNTIME-FORK-PLAN.md
 
 # published from the built app by production-build.sh, not source
 tools/release/site/shut-up.xpi
+
+__pycache__/
