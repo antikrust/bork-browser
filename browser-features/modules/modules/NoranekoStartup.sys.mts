@@ -322,8 +322,74 @@ function healAutomationScrollPrefs(): void {
   }
 }
 
+/**
+ * Wake any extension that owns the proxy, before restored tabs start loading.
+ *
+ * proxy.settings writes REAL Firefox prefs, so a VPN extension's tunnel is
+ * already in prefs.js at startup and live from the very first request. The
+ * extension that has to AUTHENTICATE that tunnel is not: an MV3 background is
+ * an event page, and Firefox deliberately holds its wakeup until after the
+ * first window paints. Restored tabs therefore go out through a proxy with
+ * nobody to answer its auth challenge — the connection is refused and every
+ * tab shows "can't find the page" until the VPN is toggled off and on, which
+ * is the only thing that gets the extension running.
+ *
+ * Clearing the proxy prefs instead would be the easy fix and the wrong one:
+ * the first requests would then go out over the real connection, which is
+ * precisely what someone running a VPN must not have happen. Better a slower
+ * startup than a leak.
+ *
+ * Only extensions actually holding the proxy permission are woken, and only
+ * when a proxy is configured at all, so this costs nothing on a normal start.
+ */
+function wakeProxyExtensions(): void {
+  if (Services.prefs.getIntPref("network.proxy.type", 0) === 0) {
+    return;
+  }
+
+  // Extensions are not reliably started yet at final-ui-startup, and the exact
+  // ordering is not ours to depend on, so look again for a couple of seconds
+  // rather than assume. Every attempt after the first is free once one has
+  // been woken.
+  const RETRY_MS = 100;
+  const MAX_ATTEMPTS = 20;
+  let attempts = 0;
+
+  const { setTimeout } = ChromeUtils.importESModule(
+    "resource://gre/modules/Timer.sys.mjs",
+  );
+
+  const tryWake = () => {
+    attempts += 1;
+    let woke = 0;
+    try {
+      for (const policy of WebExtensionPolicy.getActiveExtensions()) {
+        if (!policy.active || !policy.permissions.includes("proxy")) {
+          continue;
+        }
+        // What ext-backgroundPage.js itself listens for to build a background.
+        policy.extension?.emit("start-background-script");
+        woke += 1;
+        Services.console.logStringMessage(
+          `[NoranekoStartup] woke proxy extension ${policy.id}`,
+        );
+      }
+    } catch (e) {
+      console.error("[NoranekoStartup] waking proxy extensions failed:", e);
+      return;
+    }
+    if (!woke && attempts < MAX_ATTEMPTS) {
+      setTimeout(tryWake, RETRY_MS);
+    }
+  };
+
+  tryWake();
+}
+
 export function onFinalUIStartup(): void {
   Services.obs.removeObserver(onFinalUIStartup, "final-ui-startup");
+
+  wakeProxyExtensions();
 
   healAutomationScrollPrefs();
 
