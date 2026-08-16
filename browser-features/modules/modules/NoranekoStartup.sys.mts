@@ -119,7 +119,11 @@ function initializeVersionInfo(): void {
 async function adoptDistributionAddons(): Promise<void> {
   // Third-party add-ons: install once, then never touch again — their version
   // is between the user and the add-on's own updater.
-  const ADOPT_IDS = ["uBlock0@raymondhill.net", "addon@darkreader.org"];
+  const ADOPT_IDS = [
+    "uBlock0@raymondhill.net",
+    "addon@darkreader.org",
+    "jid1-MnnxcxisBPnSXQ@jetpack", // Privacy Badger
+  ];
   // Ours: shipped inside the app, so the app is what says which version is
   // current, and each release should carry its own.
   const OWN_IDS = ["shutup@bork"];
