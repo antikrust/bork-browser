@@ -266,7 +266,8 @@
       "download-sidebar": "Downloads",
       "notes-sidebar": "Notes",
       "translate-sidebar": "Translate",
-      "synced-tabs-sidebar": "Tabs from other devices"
+      "synced-tabs-sidebar": "Tabs from other devices",
+      "help-sidebar": "Help"
     },
     "modal": {
       "type": "Panel Type",

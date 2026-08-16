@@ -77,6 +77,19 @@ const BASE_STATIC_PANEL_DATA: StaticPanelData = {
 /**
  * 静的パネルデータを取得します
  */
+/**
+ * bork's own help. Static rather than a web panel for the same reason the
+ * translator is: a web panel hosts its page inside a nested
+ * chrome://browser/content/browser.xhtml — a second entire browser UI, laid
+ * out in the parent process, sitting in the sidebar for the whole session.
+ */
+BASE_STATIC_PANEL_DATA["bork//help"] = {
+  url: "chrome://noraneko-help/content/index.html",
+  icon: "chrome://global/skin/icons/help.svg",
+  l10n: "help-sidebar",
+  defaultWidth: 500,
+};
+
 export const STATIC_PANEL_DATA: StaticPanelData = {
   ...BASE_STATIC_PANEL_DATA,
 };

@@ -8,6 +8,7 @@ import { PanelSidebarElem } from "./components/sidebar";
 import { SidebarContextMenuElem } from "./components/sidebar-contextMenu";
 import {
   migrateHelpPanelUrl,
+  migrateWebPanelsAway,
   migratePanelSidebarData,
 } from "./data/migration";
 import { WebsitePanelWindowChild } from "./website-panel-window-child";
@@ -27,6 +28,7 @@ export default class PanelSidebar extends NoraComponentBase {
 
     migratePanelSidebarData();
     migrateHelpPanelUrl();
+    migrateWebPanelsAway();
 
     const ctx = new CPanelSidebar();
     new PanelSidebarElem(ctx);

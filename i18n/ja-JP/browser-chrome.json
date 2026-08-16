@@ -265,7 +265,8 @@
       "download-sidebar": "ダウンロード",
       "notes-sidebar": "メモ",
       "translate-sidebar": "翻訳",
-      "synced-tabs-sidebar": "他のデバイスのタブ"
+      "synced-tabs-sidebar": "他のデバイスのタブ",
+      "help-sidebar": "ヘルプ"
     },
     "modal": {
       "type": "パネルの種類",

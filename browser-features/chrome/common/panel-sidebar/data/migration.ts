@@ -42,6 +42,53 @@ export function migrateHelpPanelUrl() {
   }
 }
 
+/**
+ * Retire web panels.
+ *
+ * A web panel did not show a page — it showed a whole nested
+ * chrome://browser/content/browser.xhtml with the page inside it, a second
+ * browser UI living in the sidebar and laid out in the parent process for the
+ * entire session. bork's panel is links, so the type is gone.
+ *
+ * bork's own help shipped as one, so that is repointed at the static panel
+ * that replaces it. Anything else a user added is dropped: there is nothing
+ * left to render it with, and leaving it would be a button that opens nothing.
+ */
+export function migrateWebPanelsAway() {
+  try {
+    const pref = PanelSidebarStaticNames.panelSidebarDataPrefName;
+    const raw = Services.prefs.getStringPref(pref, "");
+    if (!raw || !raw.includes('"web"')) return;
+
+    const sidebar = JSON.parse(raw) as NewSidebar;
+    const panels = sidebar.data ?? [];
+    let changed = false;
+    const kept = [];
+
+    for (const panel of panels) {
+      if (panel.type !== "web") {
+        kept.push(panel);
+        continue;
+      }
+      changed = true;
+      if (panel.url === BORK_HELP_URL) {
+        panel.type = "static";
+        panel.url = "bork//help";
+        kept.push(panel);
+      }
+    }
+
+    if (!changed) return;
+    sidebar.data = kept;
+    Services.prefs.setStringPref(pref, JSON.stringify(sidebar));
+    console.log(
+      `[panel-sidebar] retired ${panels.length - kept.length} web panel(s)`,
+    );
+  } catch (e) {
+    console.error("[panel-sidebar] Failed to retire web panels", e);
+  }
+}
+
 export function migratePanelSidebarData() {
   const oldData = Services.prefs.getCharPref(
     "floorp.browser.sidebar2.data",

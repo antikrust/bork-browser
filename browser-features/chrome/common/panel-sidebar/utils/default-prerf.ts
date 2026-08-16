@@ -85,14 +85,14 @@ const defaultData: PanelSidebarData = {
     },
     {
       id: "default-panel-bork-help",
-      url: "chrome://noraneko-help/content/index.html",
+      url: "bork//help",
       width: 0,
       icon: undefined,
       userContextId: undefined,
       zoomLevel: undefined,
       userAgent: undefined,
       extensionId: undefined,
-      type: "web",
+      type: "static",
     },
   ],
 };

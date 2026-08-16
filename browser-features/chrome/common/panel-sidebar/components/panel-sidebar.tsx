@@ -7,7 +7,6 @@ import { render } from "@nora/solid-xul";
 import { createRoot, getOwner, type Owner, runWithOwner } from "solid-js";
 import { ChromeSiteBrowser } from "../browsers/chrome-site-browser.tsx";
 import { ExtensionSiteBrowser } from "../browsers/extension-site-browser.tsx";
-import { WebSiteBrowser } from "../browsers/web-site-browser.tsx";
 import {
   panelSidebarConfig,
   panelSidebarData,
@@ -208,11 +207,14 @@ export class CPanelSidebar {
   }
 
   private createBrowserComponent(panel: Panel) {
+    // No "web" entry: web panels hosted their site inside a nested
+    // chrome://browser/content/browser.xhtml — an entire second browser UI
+    // living in the sidebar, laid out in the parent process. Panels are
+    // links now, so anything left over is migrated to a static panel.
     const components = {
-      web: WebSiteBrowser,
       extension: ExtensionSiteBrowser,
       static: ChromeSiteBrowser,
-    };
+    } as const;
 
     const BrowserComponent = components[panel.type];
     if (!BrowserComponent) {

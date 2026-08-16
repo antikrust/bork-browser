@@ -138,7 +138,7 @@ export class PanelSidebarAddModal {
     return container.name;
   }
 
-  private createFormConfig(type: Panel["type"] = "web"): TForm {
+  private createFormConfig(type: Panel["type"] = "static"): TForm {
     const extensions = getFirefoxSidebarPanels();
     const texts = this.texts();
     const staticPanelOptions = Object.entries(STATIC_PANEL_DATA).map(
@@ -181,7 +181,6 @@ export class PanelSidebarAddModal {
         value: type,
         required: true,
         options: [
-          { value: "web", label: texts.typeOptionWeb, icon: "" },
           { value: "static", label: texts.typeOptionStatic, icon: "" },
           { value: "extension", label: texts.typeOptionExtension, icon: "" },
         ],
