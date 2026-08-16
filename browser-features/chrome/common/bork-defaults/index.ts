@@ -37,6 +37,35 @@ const DARK_CONTENT_CSS = `@-moz-document url-prefix("about:") {
   :root {
     background-color: #050506 !important;
     --in-content-page-background: #050506 !important;
+
+    /* The foregrounds have to come with it. Painting the page black while
+       leaving every text and surface token to Firefox works only where the
+       DESKTOP is dark, because that is what picks between the light and dark
+       branches of the in-content sheet. On a light desktop the page went
+       black and the tokens stayed light: near-black text on it, and
+       --in-content-box-background at oklch(100% 0 0) — pure white panels
+       stranded in the middle of a black page, which is exactly how it was
+       reported. color-scheme carries the tokens that use light-dark();
+       these are the ones that do not, taken from what Firefox itself
+       resolves them to in its dark content theme. */
+    color-scheme: dark !important;
+    --in-content-page-color: oklch(97.807% .029 256.847) !important;
+    --in-content-text-color: oklch(97.807% .029 256.847) !important;
+    --in-content-deemphasized-text: rgb(191, 191, 201) !important;
+    --in-content-box-background: oklch(25.33% .016 252.42) !important;
+    --in-content-box-background-odd: oklch(23.26% .014 253.1) !important;
+    --in-content-table-background: oklch(25.33% .016 252.42) !important;
+    --in-content-button-background: oklch(21.15% .012 254.09) !important;
+    --in-content-button-text-color: oklch(97.807% .029 256.847) !important;
+  }
+
+  /* And the text itself, not only the token it is supposed to come from:
+     the in-content sheet also lands a literal light color on the page,
+     which the tokens above never reach. Set on the root so it inherits;
+     anything with a colour of its own still overrides it. */
+  :root,
+  body {
+    color: oklch(97.807% .029 256.847) !important;
   }
 }
 @-moz-document url("about:downloads") {
