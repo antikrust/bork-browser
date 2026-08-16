@@ -126,7 +126,12 @@ async function adoptDistributionAddons(): Promise<void> {
   ];
   // Ours: shipped inside the app, so the app is what says which version is
   // current, and each release should carry its own.
-  const OWN_IDS = ["shutup@bork"];
+  // shuddup@bork, not shutup@bork: AMO permanently retires the id of a deleted
+  // add-on ("Duplicate add-on ID found"), so the original can never be signed
+  // again and had to be re-registered under a new one. The old copy is left
+  // alone in profiles that have it — its settings live under that id, and the
+  // options page can export them across.
+  const OWN_IDS = ["shuddup@bork"];
   const PREF_BASE = "bork.distribution.adopted.";
   try {
     const { AddonManager } = ChromeUtils.importESModule(

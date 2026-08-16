@@ -91,14 +91,32 @@ log() { printf '\033[35m[production]\033[0m %s\n' "$*"; }
 # The site offers SHUT UP as a standalone download, taken from the built app so
 # it carries the same code bork ships.
 stage_site_extension() {
-  local src="$ROOT/build/release/mac/Bork.app/Contents/Resources/distribution/extensions/shutup@bork.xpi"
+  local src="$ROOT/build/release/mac/Bork.app/Contents/Resources/distribution/extensions/shuddup@bork.xpi"
   local dst="$ROOT/tools/release/site/shut-up.xpi"
   if [ ! -f "$src" ]; then
     log "WARNING: no built xpi at $src — the site keeps whatever shut-up.xpi it already had"
     return
   fi
+  # Never overwrite a Mozilla-signed download with an unsigned rebuild. Only
+  # tools/release/sign-extension.sh can produce the signature, and copying the
+  # locally packed xpi over it would hand visitors a file release Firefox
+  # refuses to install — with nothing to show that anything had changed.
+  if unzip -l "$dst" 2>/dev/null | grep -q "META-INF/mozilla.rsa"; then
+    local signed built
+    signed="$(unzip -p "$dst" manifest.json 2>/dev/null |
+      python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' 2>/dev/null)"
+    built="$(unzip -p "$src" manifest.json 2>/dev/null |
+      python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' 2>/dev/null)"
+    if [ "$signed" = "$built" ]; then
+      log "site xpi is the signed $signed — kept"
+    else
+      log "WARNING: site xpi is signed $signed but this build carries $built."
+      log "WARNING: run tools/release/sign-extension.sh or the download stays on $signed"
+    fi
+    return
+  fi
   cp "$src" "$dst"
-  log "staged shut-up.xpi for the site"
+  log "staged shut-up.xpi (unsigned) for the site"
 }
 
 # 0. site-only: the page, nothing else. Same refresh + rsync as the upload step

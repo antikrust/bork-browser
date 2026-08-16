@@ -98,6 +98,19 @@ function packExtensionDir(
   const xpi = path.join(extDir, `${id}.xpi`);
   safeRemove(xpi);
 
+  // Ship the signed build of this exact version when there is one. bork does
+  // not require signatures, but an unsigned add-on wears a "could not be
+  // verified" badge in about:addons, and shipping the same file the website
+  // hands out means one artifact rather than a signed and an unsigned twin.
+  // Version-matched deliberately: a signed xpi one version behind the source
+  // is the wrong code, so it is ignored rather than silently shipped.
+  const signed = signedArtifact(dir, manifest.version);
+  if (signed) {
+    Deno.copyFileSync(signed, xpi);
+    logger.info(`${path.basename(dir)}: shipped the signed ${manifest.version}`);
+    return id;
+  }
+
   // Contents at archive root (manifest.json top-level), no extras.
   const args = ["-r", "-X", "-q", xpi, "."];
   if (exclude.length) args.push("-x", ...exclude);
@@ -108,6 +121,40 @@ function packExtensionDir(
     return null;
   }
   return id;
+}
+
+/**
+ * Signed artifacts by extension directory name — what the website hands out,
+ * produced by tools/release/sign-extension.sh. The filename differs from the
+ * directory name because it is a public download URL.
+ */
+const SIGNED_XPI: Record<string, string> = {
+  shutup: "tools/release/site/shut-up.xpi",
+};
+
+/** A signed xpi for this extension at this version, or null. */
+function signedArtifact(dir: string, version?: string): string | null {
+  if (!version) return null;
+  const relative = SIGNED_XPI[path.basename(dir)];
+  if (!relative) return null;
+
+  const candidate = path.join(PROJECT_ROOT, relative);
+  if (!exists(candidate)) return null;
+
+  const check = runCommandChecked("unzip", ["-p", candidate, "manifest.json"]);
+  if (!check.success) return null;
+  try {
+    const signedManifest = JSON.parse(check.stdout);
+    if (signedManifest.version !== version) {
+      logger.warn(
+        `${path.basename(dir)}: signed xpi is ${signedManifest.version}, source is ${version} — packing source unsigned`,
+      );
+      return null;
+    }
+  } catch {
+    return null;
+  }
+  return candidate;
 }
 
 /** Repo sources that belong to the extension, not to the shipped add-on. */

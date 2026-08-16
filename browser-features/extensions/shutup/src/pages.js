@@ -241,10 +241,10 @@ globalThis.YTCT = globalThis.YTCT || {};
     if (title && config.enabled !== false) {
       // The heading ends with the channel's name, whatever words YouTube puts
       // in front of it ("Latest from X", "Latest Shorts from X"), so match the
-      // name rather than the phrase. Anchoring it to the end matters: a plain
-      // substring test on "The Rest Is Politics" also hides the shelves of
-      // "The Rest Is Politics US" and "The Rest Is Politics: Leading", which
-      // are different channels and were not blocked.
+      // name rather than the phrase. Anchoring it to the end matters: plenty
+      // of channels are named as another channel's name plus a suffix, and a
+      // plain substring test would hide those too — blocking one channel
+      // would silently take out its spin-offs and regional editions.
       for (const name of blockedChannels) {
         if (title.endsWith(name)) {
           blocked = true;
