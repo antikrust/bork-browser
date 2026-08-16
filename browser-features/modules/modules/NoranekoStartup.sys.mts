@@ -193,6 +193,32 @@ async function adoptDistributionAddons(): Promise<void> {
         `[NoranekoStartup] updated bundled add-on ${id}: ${existing.version} -> ${shipped}`,
       );
     }
+
+    // Turn one of our themes on. Shipping ten and enabling none left the stock
+    // "follow the system" theme active, which takes every chrome text and icon
+    // colour from the desktop. macOS answers dark and it looks deliberate; a
+    // GTK desktop whose theme has no dark variant answers LIGHT, and Firefox
+    // then paints black text and black icons onto the black chrome the skin
+    // hardcodes — tab labels, urlbar and the whole panel rail invisible, on a
+    // machine whose desktop was set to dark mode. Our themes carry their own
+    // colours (tab_text #fbfbfe on frame #050506), so enabling one takes the
+    // desktop out of the decision entirely.
+    const THEME_ID = "black-swish@themes.bork";
+    const THEME_PREF = `${PREF_BASE}theme`;
+    if (!Services.prefs.getBoolPref(THEME_PREF, false)) {
+      const theme = await AddonManager.getAddonByID(THEME_ID);
+      if (theme) {
+        // Once, and never over a theme the user picked: the stock default
+        // being active is exactly what "has not chosen one" looks like.
+        const themes = await AddonManager.getAddonsByTypes(["theme"]);
+        const current = themes.find((t: { isActive?: boolean }) => t.isActive);
+        if (!current || current.id === "default-theme@mozilla.org") {
+          await theme.enable();
+          console.log(`[NoranekoStartup] enabled bundled theme ${THEME_ID}`);
+        }
+        Services.prefs.setBoolPref(THEME_PREF, true);
+      }
+    }
   } catch (e) {
     console.error("[NoranekoStartup] distribution add-on adoption failed:", e);
   }
