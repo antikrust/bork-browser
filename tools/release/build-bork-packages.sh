@@ -257,6 +257,16 @@ build_linux() {
     cp -R "$approot" "$appdir/bork"
     cat > "$appdir/AppRun" <<'APPRUN'
 #!/bin/sh
+# An AppImage mounts itself at a fresh /tmp/.mount_XXXXXX on every run, and
+# Gecko keys its profile to a hash of the directory it is installed in. So
+# every launch looked like a brand-new installation and got a brand-new empty
+# profile: tabs, workspaces, history and logins all "lost" each time, and
+# nothing the user did would stick. MOZ_LEGACY_PROFILES turns that
+# per-install keying off and uses the plain default profile from
+# profiles.ini, which is the only thing that makes sense for a build whose
+# path is different every time it starts.
+MOZ_LEGACY_PROFILES=1
+export MOZ_LEGACY_PROFILES
 HERE="$(dirname "$(readlink -f "$0")")"
 exec "$HERE/bork/bork" "$@"
 APPRUN
