@@ -276,6 +276,35 @@ function healAutomationScrollPrefs(): void {
   } catch {
     LEFTOVERS.push("browser.translations.enable");
   }
+
+  // RecommendedPreferences also switches the password manager off wholesale:
+  // signon.autofillForms and signon.rememberSignons both false. Left behind,
+  // saved logins stop filling themselves in — they are still there, and still
+  // offered from the autocomplete dropdown, so it reads as "Firefox has gone
+  // weird on this site" rather than as a setting. Reported from a bank login.
+  //
+  // Both of those are real checkboxes in Settings, so a user can mean them,
+  // and clearing them blindly would undo a deliberate choice. The two beside
+  // them are the tell: breach-alerts and vulnerable-passwords appear in no UI
+  // anywhere, so a user value on one of them can only have come from
+  // automation — and automation writes all four together. Heal the group only
+  // on that fingerprint.
+  const AUTOMATION_ONLY_SIGNON = [
+    "signon.management.page.breach-alerts.enabled",
+    "signon.management.page.vulnerable-passwords.enabled",
+  ];
+  try {
+    if (AUTOMATION_ONLY_SIGNON.some((p) => Services.prefs.prefHasUserValue(p))) {
+      LEFTOVERS.push(
+        ...AUTOMATION_ONLY_SIGNON,
+        "signon.autofillForms",
+        "signon.rememberSignons",
+      );
+    }
+  } catch (e) {
+    console.error("[NoranekoStartup] signon leftover check failed:", e);
+  }
+
   for (const pref of LEFTOVERS) {
     try {
       if (Services.prefs.prefHasUserValue(pref)) {
