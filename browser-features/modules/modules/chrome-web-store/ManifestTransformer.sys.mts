@@ -84,6 +84,28 @@ export function transformManifestFull(
     injectDocumentIdPolyfill(transformed);
   }
 
+  // Inject the proxy polyfill if needed. Both browsers have proxy.settings and
+  // they take incompatible objects, and Firefox accepts Chrome's without
+  // complaint while configuring nothing — so without this a converted VPN
+  // reports itself connected and proxies no traffic.
+  if (manifest.permissions?.includes("proxy")) {
+    injectProxyPolyfill(transformed);
+  }
+
+  // Bridge externally_connectable. Firefox never implemented it, and a page
+  // that cannot reach the extension it is meant to hand a session to just
+  // reports that the extension timed out.
+  if (manifest.externally_connectable?.matches?.length) {
+    injectExternalMessagingPolyfill(transformed);
+  }
+
+  // Anything holding permissions may re-request them, which Chrome answers
+  // instantly and Firefox rejects because a converted manifest declares them
+  // as required rather than optional.
+  if (manifest.permissions?.length || manifest.host_permissions?.length) {
+    injectPermissionsPolyfill(transformed);
+  }
+
   // Remove unsupported permissions
   const permWarnings = filterUnsupportedPermissions(transformed);
   removedPermissions.push(...permWarnings);
@@ -378,6 +400,131 @@ function injectDocumentIdPolyfill(manifest: ChromeManifest): void {
   // Ensure background type is module
   if (!manifest.background.type) {
     manifest.background.type = "module";
+  }
+}
+
+/**
+ * Inject the proxy API polyfill into the background scripts
+ * This translates Chrome's proxy config shape into Firefox's, in both
+ * directions, for extensions holding the "proxy" permission
+ */
+function injectProxyPolyfill(manifest: ChromeManifest): void {
+  const polyfillPath = "__floorp_polyfills__/ProxyPolyfill.js";
+
+  if (!manifest.background) {
+    manifest.background = {
+      scripts: [polyfillPath],
+      type: "module",
+    };
+    return;
+  }
+
+  // Handle service_worker conversion (should already be done by transformMV3Background)
+  if (manifest.background.service_worker) {
+    manifest.background.scripts = [manifest.background.service_worker];
+    delete manifest.background.service_worker;
+    manifest.background.type = "module";
+  }
+
+  if (manifest.background.scripts) {
+    // Add polyfill at the beginning: it has to be in place before the
+    // extension's own code reads or writes proxy.settings
+    if (!manifest.background.scripts.includes(polyfillPath)) {
+      manifest.background.scripts.unshift(polyfillPath);
+    }
+  } else {
+    manifest.background.scripts = [polyfillPath];
+  }
+
+  // Ensure background type is module
+  if (!manifest.background.type) {
+    manifest.background.type = "module";
+  }
+}
+
+/**
+ * Inject the permissions polyfill into the background scripts
+ * Lets an extension re-request permissions it already holds, which Chrome
+ * allows and Firefox refuses unless they were declared optional
+ */
+function injectPermissionsPolyfill(manifest: ChromeManifest): void {
+  const polyfillPath = "__floorp_polyfills__/PermissionsPolyfill.js";
+
+  if (!manifest.background) {
+    manifest.background = { scripts: [polyfillPath], type: "module" };
+    return;
+  }
+
+  if (manifest.background.service_worker) {
+    manifest.background.scripts = [manifest.background.service_worker];
+    delete manifest.background.service_worker;
+    manifest.background.type = "module";
+  }
+
+  if (manifest.background.scripts) {
+    if (!manifest.background.scripts.includes(polyfillPath)) {
+      manifest.background.scripts.unshift(polyfillPath);
+    }
+  } else {
+    manifest.background.scripts = [polyfillPath];
+  }
+
+  if (!manifest.background.type) {
+    manifest.background.type = "module";
+  }
+}
+
+/**
+ * Bridge Chrome's externally_connectable web messaging
+ *
+ * Two halves: a background shim that makes runtime.onMessageExternal fire, and
+ * a content script on exactly the pages the manifest nominated, which gives
+ * those pages the chrome.runtime.sendMessage they expect to find
+ */
+function injectExternalMessagingPolyfill(manifest: ChromeManifest): void {
+  const backgroundPath = "__floorp_polyfills__/ExternalMessagingPolyfill.js";
+  const bridgePath = "__floorp_polyfills__/ExternalMessagingBridge.js";
+  const matches = manifest.externally_connectable?.matches ?? [];
+
+  if (!matches.length) {
+    return;
+  }
+
+  // Background half
+  if (!manifest.background) {
+    manifest.background = { scripts: [backgroundPath], type: "module" };
+  } else {
+    if (manifest.background.service_worker) {
+      manifest.background.scripts = [manifest.background.service_worker];
+      delete manifest.background.service_worker;
+      manifest.background.type = "module";
+    }
+    if (manifest.background.scripts) {
+      if (!manifest.background.scripts.includes(backgroundPath)) {
+        manifest.background.scripts.unshift(backgroundPath);
+      }
+    } else {
+      manifest.background.scripts = [backgroundPath];
+    }
+    if (!manifest.background.type) {
+      manifest.background.type = "module";
+    }
+  }
+
+  // Page half. document_start because the page may message the extension
+  // before it has finished loading, and a bridge that arrives late is a bridge
+  // the page has already given up on.
+  manifest.content_scripts = manifest.content_scripts ?? [];
+  const alreadyBridged = manifest.content_scripts.some((script) =>
+    script.js?.includes(bridgePath)
+  );
+  if (!alreadyBridged) {
+    manifest.content_scripts.push({
+      matches: [...matches],
+      js: [bridgePath],
+      run_at: "document_start",
+      all_frames: false,
+    });
   }
 }
 

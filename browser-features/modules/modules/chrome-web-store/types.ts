@@ -130,8 +130,20 @@ export interface ChromeManifest {
   browser_specific_settings?: BrowserSpecificSettings;
   declarative_net_request?: DeclarativeNetRequestConfig;
   content_security_policy?: ContentSecurityPolicy;
+  externally_connectable?: ChromeExternallyConnectable;
   update_url?: string;
   [key: string]: unknown;
+}
+
+/**
+ * Chrome's "web messaging": the listed pages may message the extension
+ * directly. Firefox has no equivalent — it never defined the manifest key, and
+ * web pages there have no chrome.runtime to call — so the converter bridges it.
+ */
+export interface ChromeExternallyConnectable {
+  matches?: string[];
+  ids?: string[];
+  accepts_tls_channel_id?: boolean;
 }
 
 export interface ChromeManifestBackground {

@@ -37,6 +37,132 @@ import {
 import { unzipSync, zipSync, type Unzipped } from "fflate/browser";
 import { OFFSCREEN_POLYFILL_SOURCE } from "./polyfills/offscreen/OffscreenPolyfillSource.sys.mts";
 import { DOCUMENT_ID_POLYFILL_SOURCE } from "./polyfills/documentId/DocumentIdPolyfillSource.sys.mts";
+import { PROXY_POLYFILL_SOURCE } from "./polyfills/proxy/ProxyPolyfillSource.sys.mts";
+import {
+  EXTERNAL_MESSAGING_BACKGROUND_SOURCE,
+  EXTERNAL_MESSAGING_BRIDGE_SOURCE,
+} from "./polyfills/externalMessaging/ExternalMessagingPolyfillSource.sys.mts";
+import { PERMISSIONS_POLYFILL_SOURCE } from "./polyfills/permissions/PermissionsPolyfillSource.sys.mts";
+
+/**
+ * Statically expand importScripts calls in converted background scripts.
+ *
+ * Chrome MV3 backgrounds are workers and load their code with importScripts;
+ * Firefox runs the converted background as a page, where that function does
+ * not exist. The imported files are listed in the manifest ahead of the
+ * caller — preserving execution order — and importScripts itself becomes a
+ * shim that throws only for a file that was NOT preloaded, so a dynamic
+ * import that this static scan cannot see fails loudly instead of silently.
+ *
+ * Mutates manifest.background.scripts. Returns the shim's source, or null
+ * when no background script calls importScripts.
+ */
+function expandImportScripts(
+  manifest: ChromeManifest,
+  files: Unzipped,
+): string | null {
+  const scripts = manifest.background?.scripts;
+  if (!scripts?.length) {
+    return null;
+  }
+
+  const IMPORT_CALL = /importScripts\s*\(([^)]*)\)/g;
+  const STRING_ARG = /["']([^"']+)["']/g;
+  const decoder = new TextDecoder();
+
+  const preloaded: string[] = [];
+  const expanded: string[] = [];
+  const seen = new Set<string>();
+  let found = false;
+
+  // Worklist, so a preloaded file's own importScripts is expanded too.
+  const expand = (name: string): void => {
+    if (seen.has(name)) {
+      return;
+    }
+    seen.add(name);
+
+    const data = files[name];
+    const imports: string[] = [];
+    if (data) {
+      const source = decoder.decode(data);
+      for (const call of source.matchAll(IMPORT_CALL)) {
+        found = true;
+        for (const arg of call[1].matchAll(STRING_ARG)) {
+          // Chrome resolves "/js/x.js" against the extension root.
+          imports.push(arg[1].replace(/^\//, ""));
+        }
+      }
+    }
+
+    // Imports run before their caller, exactly as importScripts would.
+    for (const dep of imports) {
+      expand(dep);
+      if (!preloaded.includes(dep)) {
+        preloaded.push(dep);
+      }
+    }
+    expanded.push(name);
+  };
+
+  for (const script of scripts) {
+    expand(script);
+  }
+
+  if (!found) {
+    return null;
+  }
+
+  manifest.background!.scripts = [
+    "__floorp_polyfills__/ImportScriptsShim.js",
+    ...expanded.filter(
+      (name, index) => expanded.indexOf(name) === index,
+    ),
+  ];
+
+  return [
+    "// importScripts exists only in workers; this background runs as a page.",
+    "// The statically-found imports are loaded by the manifest in call order,",
+    "// so the original calls only need to not throw for those files.",
+    `var __floorpPreloaded = ${JSON.stringify(preloaded)};`,
+    "globalThis.importScripts = function () {",
+    "  for (var i = 0; i < arguments.length; i++) {",
+    '    var path = String(arguments[i]).replace(/^\\//, "");',
+    "    if (__floorpPreloaded.indexOf(path) < 0) {",
+    '      throw new Error("[Floorp] importScripts(" + arguments[i] + ") was not statically preloaded");',
+    "    }",
+    "  }",
+    "};",
+    "",
+  ].join("\n");
+}
+
+/**
+ * Put a polyfill script into an extension page ahead of its own scripts.
+ *
+ * It has to be first: patching an API after the page's code has already read
+ * it achieves nothing.
+ */
+function injectPolyfillScript(html: string, polyfillPath: string): string {
+  if (html.includes(polyfillPath)) {
+    return html;
+  }
+
+  const tag = `<script src="/${polyfillPath}"></script>`;
+
+  const head = /<head[^>]*>/i.exec(html);
+  if (head) {
+    const at = head.index + head[0].length;
+    return html.slice(0, at) + tag + html.slice(at);
+  }
+
+  const script = /<script[\s>]/i.exec(html);
+  if (script) {
+    return html.slice(0, script.index) + tag + html.slice(script.index);
+  }
+
+  return tag + html;
+}
 
 // =============================================================================
 // Constants
@@ -244,6 +370,19 @@ export class CRXConverterClass {
     log("Creating output XPI...");
     const outputFiles: Unzipped = {};
 
+    // A Chrome service worker pulls its real code in with importScripts, which
+    // only exists in workers — Firefox runs the converted background as a
+    // page, so without this the call throws and the extension's entire
+    // background never runs. The imports are known statically almost always,
+    // so they are preloaded via the manifest and importScripts becomes a
+    // no-op check.
+    const importShim = expandImportScripts(firefoxManifest, unzipped);
+    if (importShim) {
+      log("Expanding background importScripts...");
+      outputFiles["__floorp_polyfills__/ImportScriptsShim.js"] =
+        new TextEncoder().encode(importShim);
+    }
+
     // Add transformed manifest
     const manifestJson = JSON.stringify(firefoxManifest, null, 2);
     outputFiles["manifest.json"] = new TextEncoder().encode(manifestJson);
@@ -268,6 +407,41 @@ export class CRXConverterClass {
       log("Injecting DocumentId Polyfill source...");
       outputFiles["__floorp_polyfills__/DocumentIdPolyfill.js"] =
         new TextEncoder().encode(DOCUMENT_ID_POLYFILL_SOURCE);
+    }
+
+    // Inject Proxy Polyfill if needed
+    if (
+      firefoxManifest.background?.scripts?.includes(
+        "__floorp_polyfills__/ProxyPolyfill.js",
+      )
+    ) {
+      log("Injecting Proxy Polyfill source...");
+      outputFiles["__floorp_polyfills__/ProxyPolyfill.js"] =
+        new TextEncoder().encode(PROXY_POLYFILL_SOURCE);
+    }
+
+    // Inject External Messaging Polyfill if needed. Both halves travel
+    // together: the background shim is useless without the page bridge that
+    // feeds it, and vice versa.
+    if (
+      firefoxManifest.background?.scripts?.includes(
+        "__floorp_polyfills__/ExternalMessagingPolyfill.js",
+      )
+    ) {
+      log("Injecting External Messaging Polyfill source...");
+      outputFiles["__floorp_polyfills__/ExternalMessagingPolyfill.js"] =
+        new TextEncoder().encode(EXTERNAL_MESSAGING_BACKGROUND_SOURCE);
+      outputFiles["__floorp_polyfills__/ExternalMessagingBridge.js"] =
+        new TextEncoder().encode(EXTERNAL_MESSAGING_BRIDGE_SOURCE);
+    }
+
+    // Inject Permissions Polyfill if needed
+    const needsPermissionsPolyfill = !!firefoxManifest.background?.scripts
+      ?.includes("__floorp_polyfills__/PermissionsPolyfill.js");
+    if (needsPermissionsPolyfill) {
+      log("Injecting Permissions Polyfill source...");
+      outputFiles["__floorp_polyfills__/PermissionsPolyfill.js"] =
+        new TextEncoder().encode(PERMISSIONS_POLYFILL_SOURCE);
     }
 
     // Process other files
@@ -308,6 +482,16 @@ export class CRXConverterClass {
           );
           outputFiles[filename] = data;
         }
+      } else if (needsPermissionsPolyfill && filename.endsWith(".html")) {
+        // Extension pages call permissions.request too — the popup is
+        // usually where the button that asks for it lives — and a page
+        // never sees a background script. Give every page the polyfill.
+        outputFiles[filename] = new TextEncoder().encode(
+          injectPolyfillScript(
+            new TextDecoder().decode(data),
+            "__floorp_polyfills__/PermissionsPolyfill.js",
+          ),
+        );
       } else {
         // Copy as-is
         outputFiles[filename] = data;

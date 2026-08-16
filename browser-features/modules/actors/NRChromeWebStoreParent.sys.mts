@@ -267,7 +267,12 @@ export class NRChromeWebStoreParent extends JSWindowActorParent {
 
     try {
       const addon = await lazy.AddonManager.getAddonByID(firefoxId);
-      if (addon) {
+      // An addon awaiting uninstall is still returned here, so without this
+      // the store keeps calling something "Installed" that the user has just
+      // removed — right up until the browser restarts.
+      const uninstalling =
+        addon?.pendingOperations & lazy.AddonManager.PENDING_UNINSTALL;
+      if (addon && !uninstalling) {
         return { name: addon.name };
       }
     } catch {
