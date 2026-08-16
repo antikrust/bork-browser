@@ -559,6 +559,17 @@ menuitem[id^="context-ask-chat"] {
    identical unreadable strip, and identical repair from this one line. */
 :root[data-bork-dark] {
   color-scheme: dark;
+
+  /* And do not merely ask nicely. color-scheme alone fixes macOS and Windows,
+     where the dark palette is built in, but on Linux these resolve out of the
+     GTK theme — -moz-dialogtext IS a GTK colour — and asking a GTK theme with
+     no dark variant for its dark colours gets you the light ones back. The
+     surfaces below are hardcoded black, so their foregrounds are hardcoded
+     light to match, and no desktop gets a vote on legibility. */
+  --lwt-text-color: #fbfbfe;
+  --toolbar-color: #fbfbfe;
+  --tab-selected-textcolor: #fbfbfe;
+  --tab-text-color: #fbfbfe;
 }
 
 :root[data-bork-dark] #TabsToolbar {
