@@ -39,10 +39,16 @@
   min-width: var(--panel-sidebar-width);
   color: var(--toolbar-color);
   background-color: var(--panel-sidebar-background-color);
-  background-image: var(--lwt-additional-images);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
+  /* No --lwt-additional-images here. The theme's artwork was painted into
+     this strip with background-size: cover, so the image had to be
+     re-rasterised at a new size whenever the box changed — every frame of a
+     window resize, which is why dragging the window crawled with the panel
+     shown and was instant without it. Chrome LAYOUT is identical either way
+     (measured: 0.64ms per forced reflow with and without the panel), so the
+     cost was never layout; it was this paint.
+     It is also pointless: the rail is 42px wide, and covering it with a
+     full-frame decoration shows a meaningless sliver of it. bork's own
+     surface colour is what should be there. */
   scrollbar-width: thin;
   border-inline: 1px solid var(--chrome-content-separator-color);
   overflow-y: auto;
@@ -167,10 +173,9 @@
 #panel-sidebar-header {
   height: var(--panel-sidebar-header-height);
   background-color: var(--panel-sidebar-background-color);
-  background-image: var(--lwt-additional-images);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
+  /* Same cover-scaled theme artwork as the rail above, same per-frame
+     re-rasterisation, same removal — and a 28px header has even less use
+     for a full-frame decoration than the rail does. */
   padding: 0 6px;
 }
 
