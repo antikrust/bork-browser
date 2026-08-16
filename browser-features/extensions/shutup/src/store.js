@@ -79,6 +79,18 @@ globalThis.YTCT = globalThis.YTCT || {};
       out[k] = Array.isArray(out[k]) && !Array.isArray(v) ? out[k] : v;
     }
     out.stats = Object.assign(clone(DEFAULTS.stats), stored.stats || {});
+
+    // Drop channel entries that were never channels. Extraction used to take
+    // the first metadata row under a title, which on a channel's own pages is
+    // the view count — so lists filled up with "48K views", one per video,
+    // none of them blocking anything. Cleaned on load so an existing list
+    // tidies itself rather than needing the user to prune it by hand.
+    const filters = globalThis.YTCT && globalThis.YTCT.filters;
+    if (filters && Array.isArray(out.channels)) {
+      out.channels = out.channels.filter((c) =>
+        filters.looksLikeChannel(c && c.name != null ? c.name : c)
+      );
+    }
     return out;
   }
 

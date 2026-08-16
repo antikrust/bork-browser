@@ -67,6 +67,31 @@ globalThis.YTCT = globalThis.YTCT || {};
     return compiled;
   }
 
+  /**
+   * Rows in a video card's metadata line that are plainly not a channel.
+   *
+   * The line is a list of spans and the channel is only sometimes the first
+   * one: on a channel's own pages there is no channel row at all, so the
+   * first span is "48K views" — which is how view counts ended up in the
+   * blocklist, one per video, each blocking nothing.
+   */
+  const NOT_A_CHANNEL = [
+    /^[\d.,]+\s*[KMB]?\s*views?$/i,
+    /^[\d.,]+\s*[KMB]?\s*(watching|waiting)\b/i,
+    /\bago\b/i,
+    /^(streamed|premiered|scheduled|upcoming)\b/i,
+    /^\d+(:\d{2})+$/,
+    /^(live|new)$/i,
+    /^[\d.,]+$/,
+  ];
+
+  /** Could this string be a channel name, or is it a stray metadata cell? */
+  function looksLikeChannel(value) {
+    const name = String(value ?? "").trim();
+    if (!name) return false;
+    return !NOT_A_CHANNEL.some((re) => re.test(name));
+  }
+
   /** Blocked-author lookup set, normalized once per config change. */
   function blockSet(authors) {
     const set = new Set();
@@ -132,5 +157,5 @@ globalThis.YTCT = globalThis.YTCT || {};
     return { hide: false };
   }
 
-  YTCT.filters = { normalizeName, compile, blockSet, decide };
+  YTCT.filters = { normalizeName, looksLikeChannel, compile, blockSet, decide };
 })(globalThis.YTCT);

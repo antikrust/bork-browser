@@ -90,12 +90,18 @@ globalThis.YTCT = globalThis.YTCT || {};
   function channelOf(card) {
     const named = card.querySelector("ytd-channel-name #text");
     if (named && named.textContent.trim()) return named.textContent.trim();
-    // Newer lockups (watch sidebar, migrated feeds): the channel is the first
-    // metadata row under the title, usually plain text with no link.
-    const meta = card.querySelector(
+    // Newer lockups (watch sidebar, migrated feeds): the channel is a metadata
+    // row under the title, plain text with no link. Not reliably the FIRST
+    // row — on a channel's own pages the channel is implied and never
+    // repeated, so row one there is "48K views". Take the first row that
+    // could be a name at all; if none can, fall through to the links below
+    // rather than blocking a view count.
+    for (const meta of card.querySelectorAll(
       "yt-content-metadata-view-model span, [class*='content-metadata'] span",
-    );
-    if (meta && meta.textContent.trim()) return meta.textContent.trim();
+    )) {
+      const text = meta.textContent.trim();
+      if (filters.looksLikeChannel(text)) return text;
+    }
     let handle = "";
     for (const a of card.querySelectorAll(
       "a[href^='/@'], a[href^='/channel/']",
@@ -351,6 +357,12 @@ globalThis.YTCT = globalThis.YTCT || {};
   async function blockChannel(name) {
     const key = filters.normalizeName(name);
     if (!key) return;
+    // Last line of defence: whatever the extraction believed, never write a
+    // view count or a timestamp into the blocklist.
+    if (!filters.looksLikeChannel(name)) {
+      console.warn("[SHUT UP] refusing to block a non-channel:", name);
+      return;
+    }
     await store.update((c) => {
       if (!c.channels.some((ch) => filters.normalizeName(ch.name) === key)) {
         c.channels.push({ name, at: Date.now(), why: "shut up button" });
