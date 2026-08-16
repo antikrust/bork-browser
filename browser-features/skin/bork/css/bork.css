@@ -547,6 +547,20 @@ menuitem[id^="context-ask-chat"] {
    bork-defaults stamps data-bork-dark from the pref, live — no restart.
    Both rows painted: row 2 is normally transparent over the toolbox, so
    leaving it would split the rows into two colours. */
+/* Tell the chrome it IS dark, or only the backgrounds below are.
+   Every text and icon colour in the chrome resolves through light-dark()
+   or a -moz- system colour, and both follow the computed color-scheme —
+   which without this follows the DESKTOP. On a dark desktop that happens
+   to agree and the whole variant looks fine; on a light one Firefox keeps
+   painting near-black text (--tab-selected-textcolor resolves rgb(21,20,26))
+   onto the #050506 surfaces below, and the strip becomes black on black.
+   That is not a Linux bug, it is any light desktop — Linux just defaults
+   to one more often. Verified by forcing ui.systemUsesDarkTheme=0 on macOS:
+   identical unreadable strip, and identical repair from this one line. */
+:root[data-bork-dark] {
+  color-scheme: dark;
+}
+
 :root[data-bork-dark] #TabsToolbar {
   background-color: #050506 !important;
 }
