@@ -106,6 +106,21 @@ stage_site_extension() {
 # with hand-edited sums or a stale version subtitle) minus the package upload,
 # which would re-send hundreds of MB that have not changed.
 if [ "$SITE_ONLY" = 1 ]; then
+  # Same rule as a full upload: the page names a version, so it may only be
+  # published when every lane in dist/ was actually built at that version.
+  # Otherwise --site-only quietly relabels yesterday's packages.
+  want="$(python3 -c 'import json; print(json.load(open("package.json"))["version"])')"
+  stale=()
+  for lane in macos linux windows; do
+    got="$(cat "$ROOT/dist/$lane/.built-version" 2>/dev/null || echo "unknown")"
+    [ "$got" = "$want" ] || stale+=("$lane ($got)")
+  done
+  if [ ${#stale[@]} -gt 0 ]; then
+    echo "refusing to publish the page: these lanes are not built at $want: ${stale[*]}" >&2
+    echo "  bash tools/release/production-build.sh --skip-runtime all" >&2
+    exit 1
+  fi
+
   log "site only — refreshing page sums, sizes and version from dist/"
   python3 "$ROOT/tools/release/update-site-sums.py"
   stage_site_extension
@@ -161,6 +176,18 @@ fi
 log "building feature layer and packaging: ${LANES[*]}"
 "$ROOT/tools/release/build-bork-packages.sh" --build "${LANES[@]}"
 
+# Stamp each lane with the version it was actually built at. The packages carry
+# no version in their filenames, so without this nothing downstream can tell a
+# fresh Bork-linux-x86_64.AppImage from one three releases old sitting in dist/.
+BORK_VERSION="$(python3 -c 'import json; print(json.load(open("package.json"))["version"])')"
+for lane in "${LANES[@]}"; do
+  case "$lane" in
+    mac) d="$ROOT/dist/macos" ;;
+    *) d="$ROOT/dist/$lane" ;;
+  esac
+  [ -d "$d" ] && printf '%s\n' "$BORK_VERSION" > "$d/.built-version"
+done
+
 # 3b. install the freshly packaged mac app locally (opt-in).
 # Deliberately non-fatal: a failed install should not sink a build whose packages
 # are already made, and refusing to overwrite a running copy is the common case.
@@ -183,6 +210,25 @@ fi
 
 # 4. upload
 if [ "$UPLOAD" = 1 ]; then
+  # Every lane goes up together or none does. The page is relabelled from
+  # package.json on every upload, so publishing after a single-lane build used
+  # to advertise the new version over binaries from whenever that lane was last
+  # touched — a linux user downloading "1.1.42" and getting 1.1.39, with nothing
+  # anywhere saying so. Caught in the wild: three mac-only builds while the
+  # AppImage on the site stayed three releases behind.
+  want="$(python3 -c 'import json; print(json.load(open("package.json"))["version"])')"
+  stale=()
+  for lane in macos linux windows; do
+    got="$(cat "$ROOT/dist/$lane/.built-version" 2>/dev/null || echo "unknown")"
+    [ "$got" = "$want" ] || stale+=("$lane ($got)")
+  done
+  if [ ${#stale[@]} -gt 0 ]; then
+    echo "refusing to upload: these lanes are not built at $want: ${stale[*]}" >&2
+    echo "build every lane before publishing:" >&2
+    echo "  bash tools/release/production-build.sh --skip-runtime all" >&2
+    exit 1
+  fi
+
   log "uploading packages to $WEB_REMOTE"
   # upload artifacts before any index so the page never lists absent files
   for d in dist/macos dist/linux dist/windows; do
