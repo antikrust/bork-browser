@@ -238,6 +238,11 @@ export function PopupToolbarElement(props: {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={(event: MouseEvent) => {
+              // Primary button only. XUL click fires for EVERY button, and
+              // on GTK a right-click therefore switched workspace and tore
+              // the panel down under its own context menu — mac never
+              // showed it because native context menus swallow the click.
+              if (event.button !== 0) return;
               if (editing()) return;
               if (Date.now() < suppressClickUntil) return;
               props.ctx.changeWorkspace(props.workspaceId);

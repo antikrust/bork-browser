@@ -122,6 +122,19 @@ panel:has(#workspacesToolbarButtonPanel) {
   max-width: 230px !important;
 }
 
+/* GTK fonts run wider than the mac font at the same sizes, so the same
+   210/230px that fits mac reads cramped on Linux — names truncate sooner
+   and edit chrome crowds the edge. Same layout, one size up. */
+@media (-moz-platform: linux) {
+  #workspacesToolbarButtonPanel {
+    max-width: 260px !important;
+  }
+
+  #workspacesPopupContent {
+    width: 240px;
+  }
+}
+
 #workspacesCreateNewWorkspaceButton .toolbarbutton-text {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -363,7 +376,12 @@ panel:has(#workspacesToolbarButtonPanel) {
   font-size: 12px;
   margin: 2px 6px;
   padding: 4px 6px;
-  min-width: 160px;
+  /* Fill the row, never overflow it. The old min-width: 160px was a hard
+     floor that, plus the icon and row chrome, exceeded the panel's content
+     width on GTK — the input ran off the panel's right edge in rename
+     mode. Flexing to the available space fits every platform's metrics. */
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 /* Footer */
