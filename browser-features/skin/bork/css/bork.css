@@ -295,6 +295,18 @@ menuitem[id^="context-ask-chat"] {
   }
 }
 
+/* ===== Linux: same trim on the pre-tabs drag spacer ===== */
+/* Window controls sit on the right here, so nothing anchors the row's left
+   edge — stock still reserves its full-width drag spacer there and the
+   workspace chip floated well in from the edge. Keep the same 12px breath
+   the mac side keeps after the traffic lights; the spacer stays a window
+   drag handle, just not a gulf. */
+@media (-moz-platform: linux) {
+  .titlebar-spacer[type="pre-tabs"] {
+    width: 12px !important;
+  }
+}
+
 /* ===== Audio indicator lives on the RIGHT ===== */
 /* Stock places the mute toggle immediately after the favicon — the same
    spot the Vivaldi-style close button swaps into on hover. Same recipe as
