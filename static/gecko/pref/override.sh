@@ -134,3 +134,8 @@ if ! mv "$TEMP_FILE" "$FIREFOX_JS_PATH" 2>/dev/null; then
     echo -e "${COLOR_RED}→ Check file permissions for: $FIREFOX_JS_PATH${COLOR_RESET}" >&2
     exit 1
 fi
+
+# mktemp creates its file 0600 and mv carries that mode along. Once the deb
+# installed this root-owned, the browser could not read its own default
+# prefs and shut itself down before the first window. Defaults are public.
+chmod 0644 "$FIREFOX_JS_PATH"

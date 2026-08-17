@@ -473,6 +473,13 @@ MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
 Terminal=false
 DESKTOP
 
+  # Everything under /opt and /usr here is public data, and dpkg installs it
+  # root-owned — so any stray private mode becomes a file the user's browser
+  # cannot read. That is exactly how override.sh's 0600 firefox.js made the
+  # deb boot straight into a silent shutdown. Readable by all; executable
+  # only where already executable.
+  chmod -R a+rX "$debroot"
+
   local installed_kb
   installed_kb="$(du -sk "$debroot" | cut -f1)"
   cat > "$debtmp/control/control" <<CONTROL
