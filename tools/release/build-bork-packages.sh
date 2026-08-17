@@ -293,6 +293,18 @@ bork_offer_desktop_entry() {
   state="${XDG_DATA_HOME:-$HOME/.local/share}/bork"
   [ -f "$apps/bork.desktop" ] && return 0
   [ -f "$state/no-desktop-entry" ] && return 0
+  # A system-wide entry counts as already installed. Without this, anyone who
+  # installed the .deb (which puts its entry in /usr/share/applications) got
+  # asked again on every single launch of the AppImage, and ended up with two
+  # entries both called bork.desktop competing to be the default browser.
+  IFS=:
+  for d in ${XDG_DATA_DIRS:-/usr/local/share:/usr/share}; do
+    if [ -f "$d/applications/bork.desktop" ]; then
+      unset IFS
+      return 0
+    fi
+  done
+  unset IFS
 
   question="Add Bork to your applications menu?
 
@@ -438,7 +450,7 @@ PRERM
   # data.tar.gz, in that order, and nothing else. The format is a magic line
   # and a 60-byte header per member, so it is less trouble to emit it than to
   # coax a toolchain difference into behaving.
-  ( cd "$debtmp" && python3 - "bork_${debver}_amd64.deb" <<'ARPY'
+  ( cd "$debtmp" && python3 - "Bork-linux-x86_64.deb" <<'ARPY'
 import sys, os
 out = sys.argv[1]
 members = ["debian-binary", "control.tar.gz", "data.tar.gz"]
@@ -461,9 +473,12 @@ with open(out, "wb") as deb:
             deb.write(b"\n")
 ARPY
   )
-  mv "$debtmp/bork_${debver}_amd64.deb" "dist/linux/bork_${debver}_amd64.deb"
+  # Unversioned filename like its siblings: the download page links one
+  # stable URL, and the version lives in the package metadata where dpkg
+  # reads it from.
+  mv "$debtmp/Bork-linux-x86_64.deb" "dist/linux/Bork-linux-x86_64.deb"
   rm -rf "$debtmp"
-  log "linux: dist/linux/bork_${debver}_amd64.deb"
+  log "linux: dist/linux/Bork-linux-x86_64.deb ($debver)"
 }
 
 build_windows() {

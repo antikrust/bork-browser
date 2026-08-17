@@ -544,7 +544,7 @@ footer { border-top: 1px solid var(--line);
 
   <div class="wrap hero-copy">
     <h1><img class="h1-mark" src="assets/bork-wordmark.png" alt="bork" width="686" height="216"></h1>
-    <p class="sub">bork 1.1.56 based on floorp</p>
+    <p class="sub">bork 1.1.58 based on floorp</p>
     <p class="tag">a compact fork of Floorp 12 (Firefox 152)</p>
   </div>
 
@@ -560,10 +560,10 @@ footer { border-top: 1px solid var(--line);
         <div class="dlcard">
           <a class="dl" href="downloads/Bork-macOS-universal.dmg">
             <span class="dl-top">
-              <b>macOS</b> <small>Apple silicon (arm64) · 192 MB</small>
+              <b>macOS</b> <small>Apple silicon (arm64) · 190 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 89e724cfe59c451c2a4d2f6a34092007c69524ff07bdb8abe8457865131bf7ef</code>
+              <code>sha256 9f96f05e733757bcdeb1bd1201fbbac2d6feeab6820b0fd727e6f3e095c3e306</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the macOS sha256">
@@ -587,12 +587,26 @@ footer { border-top: 1px solid var(--line);
           <span class="youpill" hidden>your platform</span>
         </div>
         <div class="dlcard">
+          <a class="dl" href="downloads/Bork-linux-x86_64.deb">
+            <span class="dl-top">
+              <b>Linux</b> <small>deb · x86_64 · 129 MB</small>
+            </span>
+            <span class="dl-sum">
+              <code>sha256 5eee4d7895d25d1c427b164f62dbbe470e5a816ae9453eb1ac2b7d27b332970d</code>
+            </span>
+          </a>
+          <button class="copy" type="button" aria-label="Copy the Linux deb sha256">
+            <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+        </div>
+        <div class="dlcard">
           <a class="dl" href="downloads/Bork-linux-x86_64.AppImage">
             <span class="dl-top">
               <b>Linux</b> <small>AppImage · x86_64 · 117 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 16e8ddd1ef339fdd61946f96e2d043ef2aacfd547dff7993e6d29f7cac1ae0d7</code>
+              <code>sha256 e74f66ee5831206e6296837194c4c7ff04cd2f5a1310c9c1d35da28e8439be23</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Linux AppImage sha256">
@@ -606,7 +620,7 @@ footer { border-top: 1px solid var(--line);
               <b>Linux</b> <small>tarball · x86_64 · 129 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 e797df34ef3372fce99f4cd3ee417e63ea65226fa2e0edc843b2fed7f83eea73</code>
+              <code>sha256 cdff8089134775e8c3a6e1a365d8f43fd0e8bc1e71da3f019922d7ea7582dbb7</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Linux tarball sha256">
@@ -628,7 +642,7 @@ footer { border-top: 1px solid var(--line);
               <b>Windows</b> <small>x86_64 · 149 MB</small>
             </span>
             <span class="dl-sum">
-              <code>sha256 3addff190bedcc5a5f774dcbf4ee149eb9591da3042ad13f2fdc9940f95de206</code>
+              <code>sha256 2d47bc1e302f7ba8acbeaa516ca46e72c4b157ab870d0da5271c2611f319f680</code>
             </span>
           </a>
           <button class="copy" type="button" aria-label="Copy the Windows sha256">
@@ -850,8 +864,13 @@ footer { border-top: 1px solid var(--line);
     <ul class="steps">
       <li><b>macOS:</b> open the DMG, drag Bork to Applications. These builds
         are self-signed — first launch is right-click → Open.</li>
+      <li><b>Linux (deb):</b> double-click it, or <code class="inline">sudo apt
+        install ./Bork-linux-x86_64.deb</code> — puts bork in the applications
+        menu and lets you set it as your default browser.</li>
       <li><b>Linux (AppImage):</b> <code class="inline">chmod +x
-        Bork-linux-x86_64.AppImage &amp;&amp; ./Bork-linux-x86_64.AppImage</code></li>
+        Bork-linux-x86_64.AppImage &amp;&amp; ./Bork-linux-x86_64.AppImage</code>
+        — it offers to add itself to the applications menu the first time you
+        run it.</li>
       <li><b>Linux (tarball):</b> <code class="inline">tar -xzf
         Bork-linux-x86_64.tar.gz &amp;&amp; ./bork/bork</code></li>
       <li><b>Windows:</b> unzip anywhere, run

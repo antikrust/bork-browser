@@ -19,6 +19,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 PAGE = ROOT / "tools" / "release" / "site" / "index.html"
 ARTIFACTS = [
     "macos/Bork-macOS-universal.dmg",
+    "linux/Bork-linux-x86_64.deb",
     "linux/Bork-linux-x86_64.AppImage",
     "linux/Bork-linux-x86_64.tar.gz",
     "windows/Bork-windows-x86_64.zip",
