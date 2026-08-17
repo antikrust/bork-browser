@@ -347,6 +347,12 @@ DESKTOP
     gio set "$apps/bork.desktop" metadata::trusted true >/dev/null 2>&1
   command -v update-desktop-database >/dev/null 2>&1 &&
     update-desktop-database "$apps" >/dev/null 2>&1
+  # The portable menu refresh, and the one that matters on Cinnamon/XFCE/MATE:
+  # those build the menu from the XDG spec and keep their own cache, which
+  # update-desktop-database does not touch — the entry sits there, valid and
+  # executable, and the menu never learns about it.
+  command -v xdg-desktop-menu >/dev/null 2>&1 &&
+    xdg-desktop-menu forceupdate >/dev/null 2>&1
   # KDE keeps the menu in its own cache (sycoca) and will not show a new
   # launcher until that is rebuilt — the entry sits there, valid and
   # executable, and nothing displays it. update-desktop-database does not
