@@ -347,7 +347,13 @@ It will appear with the other browsers, keep its icon, and can be set as your de
     return 0
   fi
 
-  cat > "$apps/bork.desktop" <<DESKTOP
+  # Written to a temporary name and renamed into place, the way package
+  # managers land files. Cinnamon's menu applet watches this directory but
+  # can miss a file composed in place mid-session — seen on Mint, where the
+  # entry only turned up after a Cinnamon restart. A rename is one atomic
+  # MOVED_TO event carrying the finished file, which the monitor handles
+  # reliably; the directory touch after it is the belt to those braces.
+  cat > "$apps/.bork.desktop.tmp" <<DESKTOP
 [Desktop Entry]
 Type=Application
 Name=Bork
@@ -360,12 +366,16 @@ StartupWMClass=bork
 MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
 Terminal=false
 DESKTOP
+  mv -f "$apps/.bork.desktop.tmp" "$apps/bork.desktop" 2>/dev/null
 
   # GNOME ignores a launcher it does not trust, silently — the entry is there
-  # and nothing shows it. Both marks are needed.
+  # and nothing shows it. Both marks are needed, and both go on the final
+  # name: gvfs metadata is keyed by path and does not follow a plain mv, so
+  # trusting the temp file would trust nothing.
   chmod +x "$apps/bork.desktop" 2>/dev/null
   command -v gio >/dev/null 2>&1 &&
     gio set "$apps/bork.desktop" metadata::trusted true >/dev/null 2>&1
+  touch "$apps" 2>/dev/null
   command -v update-desktop-database >/dev/null 2>&1 &&
     update-desktop-database "$apps" >/dev/null 2>&1
 
