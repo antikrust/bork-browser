@@ -275,32 +275,25 @@ MOZ_DESKTOP_FILE_NAME=bork.desktop
 export MOZ_DESKTOP_FILE_NAME
 HERE="$(dirname "$(readlink -f "$0")")"
 
-# Put bork in the applications menu, once.
+# Offer to put bork in the applications menu, once.
 #
-# Without this a downloaded AppImage has no icon, no menu entry and cannot be
-# made the default browser without hand-writing a .desktop file — a fair thing
-# to ask of a packager and an absurd thing to ask of somebody who just wants a
-# browser. The file inside this image cannot serve: its Exec=bork only
-# resolves while the image is mounted, so the entry has to be written with the
-# absolute path this copy was launched from.
-#
-# No dialog. It used to ask through zenity or kdialog and do nothing at all
-# when neither was installed — which is a great many desktops, and is why
-# people saw no shortcut however many times they said yes. A menu entry is not
-# worth a question anyway: it is one file, and deleting it makes it stay gone,
-# because the marker below records that we have already done this once.
-bork_add_desktop_entry() {
-  [ -n "$APPIMAGE" ] || return 0
+# Runs SYNCHRONOUSLY, before the browser. It used to be backgrounded and the
+# entry never appeared: the answer arrives after the browser has started, and
+# by then the squashfs the icon is copied from can be gone and the shell that
+# knew $APPIMAGE has been replaced by exec. A second of delay at startup is
+# worth a shortcut that exists.
+bork_offer_desktop_entry() {
+  target="${APPIMAGE:-$ARGV0}"
+  case "$target" in /*) ;; *) target="$(readlink -f "$target" 2>/dev/null)" ;; esac
+  [ -n "$target" ] && [ -f "$target" ] || return 0
+
   apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
   icons="${XDG_DATA_HOME:-$HOME/.local/share}/icons"
   state="${XDG_DATA_HOME:-$HOME/.local/share}/bork"
-
-  # Already done once — including if the user has since deleted the entry.
-  [ -f "$state/desktop-entry-installed" ] && return 0
   [ -f "$apps/bork.desktop" ] && return 0
-  # A system-wide entry counts as installed: the .deb puts one in
-  # /usr/share/applications, and two files both named bork.desktop would
-  # compete over which one "default browser" means.
+  [ -f "$state/no-desktop-entry" ] && return 0
+  # The .deb puts its entry in /usr/share/applications; two files both named
+  # bork.desktop would compete over which one "default browser" means.
   IFS=:
   for d in ${XDG_DATA_DIRS:-/usr/local/share:/usr/share}; do
     if [ -f "$d/applications/bork.desktop" ]; then
@@ -310,29 +303,54 @@ bork_add_desktop_entry() {
   done
   unset IFS
 
+  # Copied while the image is certainly still mounted.
   mkdir -p "$apps" "$icons" "$state" 2>/dev/null || return 0
   cp "$HERE/bork.png" "$icons/bork.png" 2>/dev/null
+
+  question="Add Bork to your applications menu?
+
+It will appear with the other browsers, keep its icon, and can be set as your default browser."
+  if command -v zenity >/dev/null 2>&1; then
+    zenity --question --title="Bork" --text="$question" --ok-label="Add" --cancel-label="No thanks" >/dev/null 2>&1
+    answer=$?
+  elif command -v kdialog >/dev/null 2>&1; then
+    kdialog --title "Bork" --yesno "$question" >/dev/null 2>&1
+    answer=$?
+  else
+    # No dialog tool: write it rather than leave the user with no shortcut and
+    # no way to ask for one.
+    answer=0
+  fi
+
+  if [ "$answer" -ne 0 ]; then
+    : > "$state/no-desktop-entry"
+    return 0
+  fi
+
   cat > "$apps/bork.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
 Name=Bork
 Comment=A compact Firefox fork
-Exec=$APPIMAGE %u
+Exec=$target %u
 Icon=$icons/bork.png
 Categories=Network;WebBrowser;
 StartupWMClass=bork
 MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
 Terminal=false
 DESKTOP
+
+  # GNOME ignores a launcher it does not trust, silently — the entry is there
+  # and nothing shows it. Both marks are needed.
   chmod +x "$apps/bork.desktop" 2>/dev/null
-  : > "$state/desktop-entry-installed"
-  command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$apps" >/dev/null 2>&1
+  command -v gio >/dev/null 2>&1 &&
+    gio set "$apps/bork.desktop" metadata::trusted true >/dev/null 2>&1
+  command -v update-desktop-database >/dev/null 2>&1 &&
+    update-desktop-database "$apps" >/dev/null 2>&1
   return 0
 }
 
-# Runs before the browser so the entry exists by the time anything asks about
-# default-browser status.
-bork_add_desktop_entry
+bork_offer_desktop_entry
 
 exec "$HERE/bork/bork" "$@"
 APPRUN
