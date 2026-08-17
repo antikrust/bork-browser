@@ -507,8 +507,19 @@ PRERM
   chmod 0755 "$debtmp/control/postinst" "$debtmp/control/prerm"
 
   printf '2.0\n' > "$debtmp/debian-binary"
-  ( cd "$debtmp/control" && tar czf ../control.tar.gz ./control ./postinst ./prerm )
-  ( cd "$debroot" && tar czf ../data.tar.gz ./opt ./usr )
+  # dpkg parses these with its own tar reader, which does not understand PAX
+  # extended headers — and macOS BSD tar emits PAX by default, plus Apple
+  # xattr records (com.apple.provenance), which is exactly how this package
+  # died on a real dpkg: "unsupported PAX tar header type 'x'". GNU format
+  # is what dpkg-deb itself produces, and dpkg reads its LongLink entries
+  # fine. Ownership forced to root — without it every file lands on the
+  # user's system owned by this Mac's build uid.
+  deb_tar() {
+    tar --format gnutar --uid 0 --gid 0 --numeric-owner \
+        --no-xattrs --no-acls --no-fflags --no-mac-metadata -czf "$@"
+  }
+  ( cd "$debtmp/control" && deb_tar ../control.tar.gz ./control ./postinst ./prerm )
+  ( cd "$debroot" && deb_tar ../data.tar.gz ./opt ./usr )
   # Written by hand rather than with ar: macOS ships BSD ar, which inserts a
   # __.SYMDEF symbol table member. That makes a valid static library and an
   # invalid .deb — dpkg wants exactly debian-binary, control.tar.gz,
