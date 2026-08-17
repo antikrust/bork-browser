@@ -347,6 +347,25 @@ DESKTOP
     gio set "$apps/bork.desktop" metadata::trusted true >/dev/null 2>&1
   command -v update-desktop-database >/dev/null 2>&1 &&
     update-desktop-database "$apps" >/dev/null 2>&1
+  # And an icon on the desktop itself, which is a different place entirely:
+  # ~/.local/share/applications is the MENU. Cinnamon, XFCE and GNOME all draw
+  # desktop icons from files in the desktop directory, so a launcher that only
+  # goes to the menu is invisible to somebody looking at their desktop — which
+  # is what "desktop shortcut" means and what was being asked for. Both marks
+  # again: without the executable bit and metadata::trusted the icon shows as
+  # an untrusted text file, or not at all.
+  desktopdir=""
+  if command -v xdg-user-dir >/dev/null 2>&1; then
+    desktopdir="$(xdg-user-dir DESKTOP 2>/dev/null)"
+  fi
+  [ -n "$desktopdir" ] && [ -d "$desktopdir" ] || desktopdir="$HOME/Desktop"
+  if [ -d "$desktopdir" ]; then
+    cp "$apps/bork.desktop" "$desktopdir/bork.desktop" 2>/dev/null
+    chmod +x "$desktopdir/bork.desktop" 2>/dev/null
+    command -v gio >/dev/null 2>&1 &&
+      gio set "$desktopdir/bork.desktop" metadata::trusted true >/dev/null 2>&1
+  fi
+
   # The portable menu refresh, and the one that matters on Cinnamon/XFCE/MATE:
   # those build the menu from the XDG spec and keep their own cache, which
   # update-desktop-database does not touch — the entry sits there, valid and
