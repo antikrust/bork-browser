@@ -518,12 +518,21 @@ menuitem[id^="context-ask-chat"] {
   font-size: 11px !important;
 }
 
-/* Chip label vertical alignment: LEAVE IT ALONE. Two attempts (1.1.11
-   align-items:center — moved both platforms, text clamped low; 1.1.12
-   linux-only line-height:29px — still low AND grew the cell so it jutted
-   out of the row) both made it worse than the platform default. The GTK
-   text sitting a touch high in the box is the least-bad state; any next
-   attempt needs the user looking at candidates live, not a blind ship. */
+/* Chip label vertical alignment (GTK): the text rode high because the
+   label is STRETCHED to cell height and paints its line box at the top.
+   History: 1.1.11 align-items:center lost to XUL's align presentation
+   hint (attributes beat CSS — see the landmine list) and clamped text
+   low on both platforms; 1.1.12 line-height:29px grew the cell; 1.1.74
+   translateY(1px) was a dodge, not a centre. This is the real thing:
+   auto cross-axis margins absorb the free space BEFORE the alignment
+   properties are consulted (flexbox spec), so the hint cannot win — the
+   label takes its content height and sits dead centre, cell unchanged.
+   Linux-gated because mac already sits right. */
+@media (-moz-platform: linux) {
+  #workspaces-toolbar-button .toolbarbutton-text {
+    margin-block: auto !important;
+  }
+}
 
 /* ===== Inline address edit: double-click a tab (row 1) ===== */
 /* The input is an overlay in #TabsToolbar space, anchored at the tab and
