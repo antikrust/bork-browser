@@ -267,7 +267,72 @@ build_linux() {
 # path is different every time it starts.
 MOZ_LEGACY_PROFILES=1
 export MOZ_LEGACY_PROFILES
+# "Set as default browser" writes a mimetype association naming a .desktop
+# file. Gecko has to agree with the entry we install about what that file is
+# called, or it writes an association pointing at nothing and silently does
+# nothing at all.
+MOZ_DESKTOP_FILE_NAME=bork.desktop
+export MOZ_DESKTOP_FILE_NAME
 HERE="$(dirname "$(readlink -f "$0")")"
+
+# Offer to put bork in the applications menu, once.
+#
+# Without this a downloaded AppImage has no icon, no menu entry and cannot be
+# made the default browser without hand-writing a .desktop file — which is a
+# fair thing to expect of a packager and an absurd thing to expect of somebody
+# who just wants a browser. The file inside this image cannot serve: its
+# Exec=bork only resolves while the image is mounted, so the entry has to be
+# written with the absolute path this copy was launched from.
+#
+# It asks, and it takes no for an answer permanently. No dialog tool, no
+# question and no files written.
+bork_offer_desktop_entry() {
+  [ -n "$APPIMAGE" ] || return 0
+  apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+  icons="${XDG_DATA_HOME:-$HOME/.local/share}/icons"
+  state="${XDG_DATA_HOME:-$HOME/.local/share}/bork"
+  [ -f "$apps/bork.desktop" ] && return 0
+  [ -f "$state/no-desktop-entry" ] && return 0
+
+  question="Add Bork to your applications menu?
+
+It will appear with the other browsers, keep its icon, and can be set as your default browser."
+  if command -v zenity >/dev/null 2>&1; then
+    zenity --question --title="Bork" --text="$question" --ok-label="Add" --cancel-label="No thanks" >/dev/null 2>&1
+  elif command -v kdialog >/dev/null 2>&1; then
+    kdialog --title "Bork" --yesno "$question" >/dev/null 2>&1
+  else
+    return 0
+  fi
+
+  if [ $? -ne 0 ]; then
+    mkdir -p "$state" 2>/dev/null && : > "$state/no-desktop-entry"
+    return 0
+  fi
+
+  mkdir -p "$apps" "$icons" 2>/dev/null || return 0
+  cp "$HERE/bork.png" "$icons/bork.png" 2>/dev/null
+  cat > "$apps/bork.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=Bork
+Comment=A compact Firefox fork
+Exec=$APPIMAGE %u
+Icon=$icons/bork.png
+Categories=Network;WebBrowser;
+StartupWMClass=bork
+MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
+Terminal=false
+DESKTOP
+  chmod +x "$apps/bork.desktop" 2>/dev/null
+  command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$apps" >/dev/null 2>&1
+  return 0
+}
+
+# Backgrounded so the browser starts now and the question arrives beside it,
+# rather than the window waiting on an answer.
+bork_offer_desktop_entry &
+
 exec "$HERE/bork/bork" "$@"
 APPRUN
     chmod +x "$appdir/AppRun"
@@ -294,6 +359,111 @@ DESKTOP
   else
     log "linux: SKIPPED AppImage (needs mksquashfs + tools/release/appimage/runtime-x86_64)"
   fi
+
+  # .deb: for people who do not want to know what an AppImage is. Double-click,
+  # installed, icon in the menu, works as the default browser, removable with
+  # the package manager — none of which the AppImage gives you for free.
+  #
+  # Built by hand rather than with dpkg-deb, which does not exist on macOS: a
+  # .deb IS an ar archive of debian-binary + control.tar.gz + data.tar.gz, in
+  # that order, and ar and tar are both here.
+  log "linux: building .deb"
+  local debver debroot debtmp
+  debver="$(perl -ne 'print $1 if /"version":\s*"([^"]+)"/' package.json)"
+  debtmp="build/release/linux/deb"
+  debroot="$debtmp/root"
+  rm -rf "$debtmp"
+  mkdir -p "$debroot/opt/bork" "$debroot/usr/bin" \
+           "$debroot/usr/share/applications" \
+           "$debroot/usr/share/icons/hicolor/128x128/apps" \
+           "$debtmp/control"
+
+  cp -R "$approot"/. "$debroot/opt/bork/"
+  cp browser-features/branding/icon128.png \
+     "$debroot/usr/share/icons/hicolor/128x128/apps/bork.png"
+  ln -sf /opt/bork/bork "$debroot/usr/bin/bork"
+
+  cat > "$debroot/usr/share/applications/bork.desktop" <<'DESKTOP'
+[Desktop Entry]
+Type=Application
+Name=Bork
+Comment=A compact Firefox fork
+Exec=/opt/bork/bork %u
+Icon=bork
+Categories=Network;WebBrowser;
+StartupWMClass=bork
+MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
+Terminal=false
+DESKTOP
+
+  local installed_kb
+  installed_kb="$(du -sk "$debroot" | cut -f1)"
+  cat > "$debtmp/control/control" <<CONTROL
+Package: bork
+Version: $debver
+Section: web
+Priority: optional
+Architecture: amd64
+Installed-Size: $installed_kb
+Maintainer: bork <hello@borkbrowser.online>
+Homepage: https://borkbrowser.online/
+Depends: libgtk-3-0, libdbus-glib-1-2, libxt6, libasound2 | libasound2t64
+Description: bork browser
+ A compact fork of Floorp 12 (Firefox 152). Keeps Manifest V2 so the full
+ uBlock Origin still works, imports Vivaldi workspaces, and ships no AI
+ features or telemetry.
+CONTROL
+
+  # Register as an alternative browser so "default browser" works, and refresh
+  # the menu database — the two things a user would otherwise do by hand.
+  cat > "$debtmp/control/postinst" <<'POSTINST'
+#!/bin/sh
+set -e
+update-alternatives --install /usr/bin/x-www-browser x-www-browser /opt/bork/bork 100 || true
+update-desktop-database -q /usr/share/applications 2>/dev/null || true
+POSTINST
+  cat > "$debtmp/control/prerm" <<'PRERM'
+#!/bin/sh
+set -e
+update-alternatives --remove x-www-browser /opt/bork/bork || true
+PRERM
+  chmod 0755 "$debtmp/control/postinst" "$debtmp/control/prerm"
+
+  printf '2.0\n' > "$debtmp/debian-binary"
+  ( cd "$debtmp/control" && tar czf ../control.tar.gz ./control ./postinst ./prerm )
+  ( cd "$debroot" && tar czf ../data.tar.gz ./opt ./usr )
+  # Written by hand rather than with ar: macOS ships BSD ar, which inserts a
+  # __.SYMDEF symbol table member. That makes a valid static library and an
+  # invalid .deb — dpkg wants exactly debian-binary, control.tar.gz,
+  # data.tar.gz, in that order, and nothing else. The format is a magic line
+  # and a 60-byte header per member, so it is less trouble to emit it than to
+  # coax a toolchain difference into behaving.
+  ( cd "$debtmp" && python3 - "bork_${debver}_amd64.deb" <<'ARPY'
+import sys, os
+out = sys.argv[1]
+members = ["debian-binary", "control.tar.gz", "data.tar.gz"]
+with open(out, "wb") as deb:
+    deb.write(b"!<arch>\n")
+    for name in members:
+        data = open(name, "rb").read()
+        header = (
+            name.ljust(16)[:16]
+            + str(int(os.path.getmtime(name))).ljust(12)[:12]
+            + "0".ljust(6)      # uid
+            + "0".ljust(6)      # gid
+            + "100644".ljust(8) # mode
+            + str(len(data)).ljust(10)[:10]
+            + "`\n"
+        ).encode()
+        deb.write(header)
+        deb.write(data)
+        if len(data) % 2:      # members are padded to an even offset
+            deb.write(b"\n")
+ARPY
+  )
+  mv "$debtmp/bork_${debver}_amd64.deb" "dist/linux/bork_${debver}_amd64.deb"
+  rm -rf "$debtmp"
+  log "linux: dist/linux/bork_${debver}_amd64.deb"
 }
 
 build_windows() {
