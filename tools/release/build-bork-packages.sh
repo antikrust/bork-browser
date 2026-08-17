@@ -347,6 +347,13 @@ DESKTOP
     gio set "$apps/bork.desktop" metadata::trusted true >/dev/null 2>&1
   command -v update-desktop-database >/dev/null 2>&1 &&
     update-desktop-database "$apps" >/dev/null 2>&1
+  # KDE keeps the menu in its own cache (sycoca) and will not show a new
+  # launcher until that is rebuilt — the entry sits there, valid and
+  # executable, and nothing displays it. update-desktop-database does not
+  # do this; it only rebuilds the mimetype cache.
+  for k in kbuildsycoca6 kbuildsycoca5 kbuildsycoca; do
+    command -v "$k" >/dev/null 2>&1 && "$k" --noincremental >/dev/null 2>&1 && break
+  done
   return 0
 }
 
