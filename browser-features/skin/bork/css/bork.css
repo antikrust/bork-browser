@@ -518,19 +518,19 @@ menuitem[id^="context-ask-chat"] {
   font-size: 11px !important;
 }
 
-/* Chip label vertical alignment (GTK): the text rode high because the
-   label is STRETCHED to cell height and paints its line box at the top.
-   History: 1.1.11 align-items:center lost to XUL's align presentation
-   hint (attributes beat CSS — see the landmine list) and clamped text
-   low on both platforms; 1.1.12 line-height:29px grew the cell; 1.1.74
-   translateY(1px) was a dodge, not a centre. This is the real thing:
-   auto cross-axis margins absorb the free space BEFORE the alignment
-   properties are consulted (flexbox spec), so the hint cannot win — the
-   label takes its content height and sits dead centre, cell unchanged.
-   Linux-gated because mac already sits right. */
+/* Chip label vertical alignment (GTK). The full story, hard-won:
+   1.1.75's margin-block:auto changed NOTHING, which is the proof that the
+   label box is ALREADY geometrically centred — the defect is optical, not
+   layout: the GTK font's glyphs sit high inside their own line box (more
+   descent than the mac font), so no box centring can ever move the ink.
+   1.1.11 align-items:center and 1.1.12 line-height:29px failed for the
+   same reason and damaged layout doing it. The one lever that moves ink
+   without touching layout is a paint-only offset. Magnitude is calibrated
+   by the user's eyes on the real machine ("at least 3px"): 1.1.76 = 3px.
+   Adjust the number only; keep it transform; keep it linux-gated. */
 @media (-moz-platform: linux) {
   #workspaces-toolbar-button .toolbarbutton-text {
-    margin-block: auto !important;
+    transform: translateY(3px);
   }
 }
 
