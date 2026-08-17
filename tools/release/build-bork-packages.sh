@@ -498,13 +498,30 @@ CONTROL
 set -e
 update-alternatives --install /usr/bin/x-www-browser x-www-browser /opt/bork/bork 100 || true
 update-desktop-database -q /usr/share/applications 2>/dev/null || true
+# The hicolor icon cache is trusted wholesale while its mtime beats the
+# theme's toplevel dir, and installing into an existing subdir never touches
+# the toplevel — so Icon=bork resolved to nothing until the cache was
+# rebuilt. The touch is what the icon-theme spec asks of installers; the
+# rebuild is what GTK actually reads.
+touch -c /usr/share/icons/hicolor 2>/dev/null || true
+command -v gtk-update-icon-cache >/dev/null 2>&1 &&
+  gtk-update-icon-cache -q -f /usr/share/icons/hicolor 2>/dev/null || true
 POSTINST
   cat > "$debtmp/control/prerm" <<'PRERM'
 #!/bin/sh
 set -e
 update-alternatives --remove x-www-browser /opt/bork/bork || true
 PRERM
-  chmod 0755 "$debtmp/control/postinst" "$debtmp/control/prerm"
+  cat > "$debtmp/control/postrm" <<'POSTRM'
+#!/bin/sh
+set -e
+update-desktop-database -q /usr/share/applications 2>/dev/null || true
+touch -c /usr/share/icons/hicolor 2>/dev/null || true
+command -v gtk-update-icon-cache >/dev/null 2>&1 &&
+  gtk-update-icon-cache -q -f /usr/share/icons/hicolor 2>/dev/null || true
+POSTRM
+  chmod 0755 "$debtmp/control/postinst" "$debtmp/control/prerm" \
+             "$debtmp/control/postrm"
 
   printf '2.0\n' > "$debtmp/debian-binary"
   # dpkg parses these with its own tar reader, which does not understand PAX
@@ -518,7 +535,7 @@ PRERM
     tar --format gnutar --uid 0 --gid 0 --numeric-owner \
         --no-xattrs --no-acls --no-fflags --no-mac-metadata -czf "$@"
   }
-  ( cd "$debtmp/control" && deb_tar ../control.tar.gz ./control ./postinst ./prerm )
+  ( cd "$debtmp/control" && deb_tar ../control.tar.gz ./control ./postinst ./prerm ./postrm )
   ( cd "$debroot" && deb_tar ../data.tar.gz ./opt ./usr )
   # Written by hand rather than with ar: macOS ships BSD ar, which inserts a
   # __.SYMDEF symbol table member. That makes a valid static library and an
