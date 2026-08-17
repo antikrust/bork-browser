@@ -47,7 +47,7 @@ function getComponentRegistrar(): nsIComponentRegistrar | null {
 const executedFunctions = new Set<string>();
 // bork has no release blog; the download page is the closest thing to notes,
 // and it beats sending users to upstream's post for a version we did not ship.
-const RELEASE_NOTES_URL = "https://therob.lol/bork/";
+const RELEASE_NOTES_URL = "https://borkbrowser.online/";
 
 export function executeOnce(id: string, callback: () => void): boolean {
   if (executedFunctions.has(id)) {

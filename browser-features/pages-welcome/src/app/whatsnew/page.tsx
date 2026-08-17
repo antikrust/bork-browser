@@ -534,7 +534,7 @@ export default function WhatsNewPage() {
                   <Github size={24} />
                 </a>
                 <a
-                  href="https://therob.lol/bork/"
+                  href="https://borkbrowser.online/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg hover:bg-gray-700 transition-colors"

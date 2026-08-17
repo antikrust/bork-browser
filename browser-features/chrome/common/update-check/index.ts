@@ -25,7 +25,7 @@ const LAST_CHECK_PREF = "bork.update.lastCheck";
 const NOTIFIED_PREF = "bork.update.notifiedVersion";
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const STARTUP_DELAY_MS = 60_000;
-const FALLBACK_DOWNLOAD_URL = "https://therob.lol/bork/";
+const FALLBACK_DOWNLOAD_URL = "https://borkbrowser.online/";
 
 @noraComponent(import.meta.hot)
 export default class UpdateCheck extends NoraComponentBase {
