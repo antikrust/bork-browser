@@ -267,11 +267,23 @@ build_linux() {
 # path is different every time it starts.
 MOZ_LEGACY_PROFILES=1
 export MOZ_LEGACY_PROFILES
-# "Set as default browser" writes a mimetype association naming a .desktop
-# file. Gecko has to agree with the entry we install about what that file is
-# called, or it writes an association pointing at nothing and silently does
-# nothing at all.
-MOZ_DESKTOP_FILE_NAME=bork.desktop
+# Default browser, from the engine source (nsGNOMEShellService.cpp): Gecko
+# decides "am I the default?" by comparing the registered handler's command
+# path against its own path — MOZ_APP_LAUNCHER, falling back to the running
+# binary. For an AppImage that binary is /tmp/.mount_XXXX/bork/bork, a random
+# path that stops existing at shutdown. So "set as default" registered a
+# handler pointing into a dead mount, every boot failed the comparison and
+# asked again, and links from other apps launched nothing. Point it at the
+# AppImage file itself: the handler it registers matches the menu entry's
+# Exec, survives reboots, and in-app restarts go back through this script.
+if [ -n "${APPIMAGE:-}" ] && [ -f "$APPIMAGE" ]; then
+  MOZ_APP_LAUNCHER="$APPIMAGE"
+  export MOZ_APP_LAUNCHER
+fi
+# Read by exactly one thing in the engine — desktop notifications, which
+# want "the part before the .desktop" (nsAlertsIconListener.cpp). It plays
+# no part in default-browser handling, despite what older comments here said.
+MOZ_DESKTOP_FILE_NAME=bork
 export MOZ_DESKTOP_FILE_NAME
 HERE="$(dirname "$(readlink -f "$0")")"
 
