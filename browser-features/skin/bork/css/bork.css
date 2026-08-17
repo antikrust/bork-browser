@@ -526,11 +526,11 @@ menuitem[id^="context-ask-chat"] {
    1.1.11 align-items:center and 1.1.12 line-height:29px failed for the
    same reason and damaged layout doing it. The one lever that moves ink
    without touching layout is a paint-only offset. Magnitude is calibrated
-   by the user's eyes on the real machine ("at least 3px"): 1.1.76 = 3px.
+   by the user's eyes on the real machine: 3px read 1px too low, so 2px.
    Adjust the number only; keep it transform; keep it linux-gated. */
 @media (-moz-platform: linux) {
   #workspaces-toolbar-button .toolbarbutton-text {
-    transform: translateY(3px);
+    transform: translateY(2px);
   }
 }
 
