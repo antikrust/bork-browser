@@ -287,17 +287,6 @@ bork_offer_desktop_entry() {
   icons="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/128x128/apps"
   state="${XDG_DATA_HOME:-$HOME/.local/share}/bork"
 
-  # Undo 1.1.63, which dropped a copy of the launcher in the desktop folder.
-  # That was wrong: this is an application icon and it belongs in the
-  # applications menu, nowhere else. Remove only a file we wrote.
-  deskdir=""
-  command -v xdg-user-dir >/dev/null 2>&1 && deskdir="$(xdg-user-dir DESKTOP 2>/dev/null)"
-  [ -n "$deskdir" ] && [ -d "$deskdir" ] || deskdir="$HOME/Desktop"
-  if [ -f "$deskdir/bork.desktop" ] &&
-     grep -q '^Name=Bork$' "$deskdir/bork.desktop" 2>/dev/null; then
-    rm -f "$deskdir/bork.desktop" 2>/dev/null
-  fi
-
   target="${APPIMAGE:-$ARGV0}"
   case "$target" in /*) ;; *) target="$(readlink -f "$target" 2>/dev/null)" ;; esac
   [ -n "$target" ] && [ -f "$target" ] || return 0
