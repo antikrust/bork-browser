@@ -310,7 +310,7 @@ bork_offer_desktop_entry() {
   # the icon and the corrected Exec line never ran on the machines that
   # already had a broken entry — and the prompt never appeared again either.
   # Stamp what was installed, and redo the install when this number moves.
-  rev=4
+  rev=5
   [ "$(cat "$state/desktop-entry-rev" 2>/dev/null)" = "$rev" ] && return 0
   # The .deb puts its entry in /usr/share/applications; two files both named
   # bork.desktop would compete over which one "default browser" means.
@@ -347,6 +347,14 @@ It will appear with the other browsers, keep its icon, and can be set as your de
     return 0
   fi
 
+  # The panel ties a running window to this entry through WM_CLASS, and the
+  # engine builds WM_CLASS from RemotingName (nsAppRunner g_set_prgname,
+  # nsAppShell gdk_set_program_class). Read it from the runtime itself so
+  # the two can never disagree — a mismatch gives every window its own
+  # second panel button instead of lighting up the pinned one.
+  wmclass="$(sed -n 's/^RemotingName=//p' "$HERE/bork/application.ini" 2>/dev/null | head -n 1)"
+  [ -n "$wmclass" ] || wmclass=bork-default
+
   # Written to a temporary name and renamed into place, the way package
   # managers land files. Cinnamon's menu applet watches this directory but
   # can miss a file composed in place mid-session — seen on Mint, where the
@@ -362,7 +370,7 @@ Exec=$target %u
 Icon=$icons/bork.png
 Version=1.0
 Categories=Network;WebBrowser;
-StartupWMClass=bork
+StartupWMClass=$wmclass
 MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
 Terminal=false
 DESKTOP
@@ -432,8 +440,13 @@ DESKTOP
   # .deb IS an ar archive of debian-binary + control.tar.gz + data.tar.gz, in
   # that order, and ar and tar are both here.
   log "linux: building .deb"
-  local debver debroot debtmp
+  local debver debroot debtmp debwm
   debver="$(perl -ne 'print $1 if /"version":\s*"([^"]+)"/' package.json)"
+  # Same WM_CLASS agreement as the AppImage entry: the panel matches windows
+  # to this entry by StartupWMClass, and the engine derives WM_CLASS from
+  # RemotingName. Take it from the tree being packaged.
+  debwm="$(sed -n 's/^RemotingName=//p' "$approot/application.ini" | head -n 1)"
+  [ -n "$debwm" ] || debwm=bork-default
   debtmp="build/release/linux/deb"
   debroot="$debtmp/root"
   rm -rf "$debtmp"
@@ -447,7 +460,7 @@ DESKTOP
      "$debroot/usr/share/icons/hicolor/128x128/apps/bork.png"
   ln -sf /opt/bork/bork "$debroot/usr/bin/bork"
 
-  cat > "$debroot/usr/share/applications/bork.desktop" <<'DESKTOP'
+  cat > "$debroot/usr/share/applications/bork.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
 Name=Bork
@@ -455,7 +468,7 @@ Comment=A compact Firefox fork
 Exec=/opt/bork/bork %u
 Icon=bork
 Categories=Network;WebBrowser;
-StartupWMClass=bork
+StartupWMClass=$debwm
 MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
 Terminal=false
 DESKTOP
