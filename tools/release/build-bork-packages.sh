@@ -283,15 +283,34 @@ HERE="$(dirname "$(readlink -f "$0")")"
 # knew $APPIMAGE has been replaced by exec. A second of delay at startup is
 # worth a shortcut that exists.
 bork_offer_desktop_entry() {
+  apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+  icons="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/128x128/apps"
+  state="${XDG_DATA_HOME:-$HOME/.local/share}/bork"
+
+  # Undo 1.1.63, which dropped a copy of the launcher in the desktop folder.
+  # That was wrong: this is an application icon and it belongs in the
+  # applications menu, nowhere else. Remove only a file we wrote.
+  deskdir=""
+  command -v xdg-user-dir >/dev/null 2>&1 && deskdir="$(xdg-user-dir DESKTOP 2>/dev/null)"
+  [ -n "$deskdir" ] && [ -d "$deskdir" ] || deskdir="$HOME/Desktop"
+  if [ -f "$deskdir/bork.desktop" ] &&
+     grep -q '^Name=Bork$' "$deskdir/bork.desktop" 2>/dev/null; then
+    rm -f "$deskdir/bork.desktop" 2>/dev/null
+  fi
+
   target="${APPIMAGE:-$ARGV0}"
   case "$target" in /*) ;; *) target="$(readlink -f "$target" 2>/dev/null)" ;; esac
   [ -n "$target" ] && [ -f "$target" ] || return 0
 
-  apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-  icons="${XDG_DATA_HOME:-$HOME/.local/share}/icons"
-  state="${XDG_DATA_HOME:-$HOME/.local/share}/bork"
-  [ -f "$apps/bork.desktop" ] && return 0
   [ -f "$state/no-desktop-entry" ] && return 0
+  # NOT "the entry file exists, so there is nothing to do". That was the bug
+  # behind four versions of fixes that changed nothing: the first build to
+  # write the entry made every later build return here, so the menu refresh,
+  # the icon and the corrected Exec line never ran on the machines that
+  # already had a broken entry — and the prompt never appeared again either.
+  # Stamp what was installed, and redo the install when this number moves.
+  rev=4
+  [ "$(cat "$state/desktop-entry-rev" 2>/dev/null)" = "$rev" ] && return 0
   # The .deb puts its entry in /usr/share/applications; two files both named
   # bork.desktop would compete over which one "default browser" means.
   IFS=:
@@ -334,6 +353,7 @@ Name=Bork
 Comment=A compact Firefox fork
 Exec=$target %u
 Icon=$icons/bork.png
+Version=1.0
 Categories=Network;WebBrowser;
 StartupWMClass=bork
 MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
@@ -347,38 +367,20 @@ DESKTOP
     gio set "$apps/bork.desktop" metadata::trusted true >/dev/null 2>&1
   command -v update-desktop-database >/dev/null 2>&1 &&
     update-desktop-database "$apps" >/dev/null 2>&1
-  # And an icon on the desktop itself, which is a different place entirely:
-  # ~/.local/share/applications is the MENU. Cinnamon, XFCE and GNOME all draw
-  # desktop icons from files in the desktop directory, so a launcher that only
-  # goes to the menu is invisible to somebody looking at their desktop — which
-  # is what "desktop shortcut" means and what was being asked for. Both marks
-  # again: without the executable bit and metadata::trusted the icon shows as
-  # an untrusted text file, or not at all.
-  desktopdir=""
-  if command -v xdg-user-dir >/dev/null 2>&1; then
-    desktopdir="$(xdg-user-dir DESKTOP 2>/dev/null)"
-  fi
-  [ -n "$desktopdir" ] && [ -d "$desktopdir" ] || desktopdir="$HOME/Desktop"
-  if [ -d "$desktopdir" ]; then
-    cp "$apps/bork.desktop" "$desktopdir/bork.desktop" 2>/dev/null
-    chmod +x "$desktopdir/bork.desktop" 2>/dev/null
-    command -v gio >/dev/null 2>&1 &&
-      gio set "$desktopdir/bork.desktop" metadata::trusted true >/dev/null 2>&1
-  fi
 
-  # The portable menu refresh, and the one that matters on Cinnamon/XFCE/MATE:
-  # those build the menu from the XDG spec and keep their own cache, which
-  # update-desktop-database does not touch — the entry sits there, valid and
-  # executable, and the menu never learns about it.
+  # Menus keep their own caches and will not show a new launcher until told.
+  # Every one of these is a no-op where its desktop is not installed, so run
+  # them all rather than guessing which desktop this is.
   command -v xdg-desktop-menu >/dev/null 2>&1 &&
     xdg-desktop-menu forceupdate >/dev/null 2>&1
-  # KDE keeps the menu in its own cache (sycoca) and will not show a new
-  # launcher until that is rebuilt — the entry sits there, valid and
-  # executable, and nothing displays it. update-desktop-database does not
-  # do this; it only rebuilds the mimetype cache.
+  command -v gtk-update-icon-cache >/dev/null 2>&1 &&
+    gtk-update-icon-cache -q -f -t "${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor" \
+      >/dev/null 2>&1
   for k in kbuildsycoca6 kbuildsycoca5 kbuildsycoca; do
     command -v "$k" >/dev/null 2>&1 && "$k" --noincremental >/dev/null 2>&1 && break
   done
+
+  echo "$rev" > "$state/desktop-entry-rev" 2>/dev/null
   return 0
 }
 
