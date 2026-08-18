@@ -154,7 +154,13 @@ globalThis.YTCT = globalThis.YTCT || {};
     ) {
       card.dataset.ytctGen = String(generation);
       card.dataset.ytctKey = key;
-      card.dataset.ytctChannel = channelOf(card) || pageChannel();
+      // Never overwrite a good channel with nothing. Starting the inline
+      // preview rewrites the card's watch link, which reopens this gate while
+      // YouTube is mid-render and the channel name element is briefly absent —
+      // writing "" then would drop ytct-has-channel and take the button with
+      // it, permanently, because the gate has just closed on the new key.
+      const found = channelOf(card) || pageChannel();
+      if (found) card.dataset.ytctChannel = found;
     }
 
     const channel = card.dataset.ytctChannel || "";
@@ -311,6 +317,13 @@ globalThis.YTCT = globalThis.YTCT || {};
         "ytd-channel-name #text, #channel-name #text",
       );
       if (named && named.textContent.trim()) return named.textContent.trim();
+      // The same extractor the cards use. That one already understands the
+      // newer view-model markup and the plain /@ link; this used to know only
+      // the old renderer, so a migrated owner bar named nobody and the button
+      // was never seated — while sidebar cards, which go through channelOf,
+      // kept theirs.
+      const found = channelOf(owner);
+      if (found) return found;
     }
     return pageChannel();
   }
