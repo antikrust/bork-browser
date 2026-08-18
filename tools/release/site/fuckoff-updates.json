@@ -1,0 +1,13 @@
+{
+  "addons": {
+    "fuckoff@bork": {
+      "updates": [
+        {
+          "version": "0.1.1",
+          "update_link": "https://borkbrowser.online/fuckoff.xpi",
+          "update_hash": "sha256:4bb2884f4aacf41d370bb91a0e17aa29b969b27806dedc5a9829a289f65b89f6"
+        }
+      ]
+    }
+  }
+}

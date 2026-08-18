@@ -36,6 +36,9 @@ fi
 # report the missing variable rather than sending AMO a blank JWT.
 [ -n "${AMO_JWT_ISSUER:-}" ] || unset AMO_JWT_ISSUER
 [ -n "${AMO_JWT_SECRET:-}" ] || unset AMO_JWT_SECRET
+# sourcing sets shell variables; the signer is a separate process and reads the
+# environment, so they have to be exported or it sees nothing at all.
+export AMO_JWT_ISSUER AMO_JWT_SECRET
 
 # Which add-on to sign. Everything below is derived from this block, so a new
 # bundled extension needs four lines here and nothing else.
