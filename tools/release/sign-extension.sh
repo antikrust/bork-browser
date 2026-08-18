@@ -24,6 +24,19 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 OUT="$ROOT/tools/release/site"
 
+# Credentials may live in hosts.env (gitignored, same place the Forgejo token
+# lives) rather than being exported by hand every time. Anything already in the
+# environment wins, so a one-off export still overrides the file.
+HOSTS_ENV="${BORK_HOSTS_ENV:-$ROOT/tools/release/hosts.env}"
+if [ -f "$HOSTS_ENV" ]; then
+  # shellcheck source=/dev/null
+  source "$HOSTS_ENV"
+fi
+# An empty value in hosts.env is the same as not having one — the checks below
+# report the missing variable rather than sending AMO a blank JWT.
+[ -n "${AMO_JWT_ISSUER:-}" ] || unset AMO_JWT_ISSUER
+[ -n "${AMO_JWT_SECRET:-}" ] || unset AMO_JWT_SECRET
+
 # Which add-on to sign. Everything below is derived from this block, so a new
 # bundled extension needs four lines here and nothing else.
 case "${1:-shutup}" in
