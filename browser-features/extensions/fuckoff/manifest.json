@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "FUCKOFF",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Outlets you never want to read again, gone from your internet: search results, news aggregators, social feeds and the address bar. Blocked pages explain who owns the thing and why it is on the list.",
   "permissions": [
     "storage",
@@ -40,7 +40,11 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "fuckoff@bork",
-      "strict_min_version": "115.0"
+      "update_url": "https://borkbrowser.online/fuckoff-updates.json",
+      "strict_min_version": "115.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   }
 }

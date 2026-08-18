@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Get SHUT UP signed by Mozilla and stage the signed xpi for the download page.
+# Get a bundled add-on signed by Mozilla and stage the signed xpi for the site.
 #
 # Release Firefox refuses any extension Mozilla has not signed, so the file the
 # site offers has to be a signed one. AMO is the only signer there is.
@@ -9,7 +9,7 @@
 # updates, which is why the manifest carries an update_url and why this
 # rewrites the update manifest beside the xpi.
 #
-#   bash tools/release/sign-extension.sh
+#   bash tools/release/sign-extension.sh [shutup|fuckoff]
 #
 # It returns with the signed xpi already in place; there is nothing to wait for
 # and nothing to collect later.
@@ -22,12 +22,30 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-SRC="$ROOT/browser-features/extensions/shutup"
 OUT="$ROOT/tools/release/site"
-ADDON_ID="shuddup@bork"
-PUBLISHED="$OUT/shut-up.xpi"
-UPDATES="$OUT/shut-up-updates.json"
-UPDATE_LINK="https://borkbrowser.online/shut-up.xpi"
+
+# Which add-on to sign. Everything below is derived from this block, so a new
+# bundled extension needs four lines here and nothing else.
+case "${1:-shutup}" in
+  shutup)
+    SRC="$ROOT/browser-features/extensions/shutup"
+    ADDON_ID="shuddup@bork"
+    SLUG="shut-up"
+    ;;
+  fuckoff)
+    SRC="$ROOT/browser-features/extensions/fuckoff"
+    ADDON_ID="fuckoff@bork"
+    SLUG="fuckoff"
+    ;;
+  *)
+    echo "unknown add-on: ${1:-}. Known: shutup, fuckoff" >&2
+    exit 1
+    ;;
+esac
+
+PUBLISHED="$OUT/$SLUG.xpi"
+UPDATES="$OUT/$SLUG-updates.json"
+UPDATE_LINK="https://borkbrowser.online/$SLUG.xpi"
 
 : "${AMO_JWT_ISSUER:?set AMO_JWT_ISSUER (JWT issuer from the AMO API key page)}"
 : "${AMO_JWT_SECRET:?set AMO_JWT_SECRET (JWT secret from the AMO API key page)}"

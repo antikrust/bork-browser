@@ -88,13 +88,14 @@ SITE_URL="${BORK_SITE_URL:-https://example.com/bork/}"
 
 log() { printf '\033[35m[production]\033[0m %s\n' "$*"; }
 
-# The site offers SHUT UP as a standalone download, taken from the built app so
-# it carries the same code bork ships.
+# The site offers the bundled add-ons as standalone downloads, taken from the
+# built app so they carry the same code bork ships.
+#   stage_site_extension <gecko-id> <site-slug>
 stage_site_extension() {
-  local src="$ROOT/build/release/mac/Bork.app/Contents/Resources/distribution/extensions/shuddup@bork.xpi"
-  local dst="$ROOT/tools/release/site/shut-up.xpi"
+  local src="$ROOT/build/release/mac/Bork.app/Contents/Resources/distribution/extensions/$1.xpi"
+  local dst="$ROOT/tools/release/site/$2.xpi"
   if [ ! -f "$src" ]; then
-    log "WARNING: no built xpi at $src — the site keeps whatever shut-up.xpi it already had"
+    log "WARNING: no built xpi at $src — the site keeps whatever $2.xpi it already had"
     return
   fi
   # Never overwrite a Mozilla-signed download with an unsigned rebuild. Only
@@ -116,7 +117,7 @@ stage_site_extension() {
     return
   fi
   cp "$src" "$dst"
-  log "staged shut-up.xpi (unsigned) for the site"
+  log "staged $2.xpi (unsigned) for the site"
 }
 
 # 0. site-only: the page, nothing else. Same refresh + rsync as the upload step
@@ -141,7 +142,8 @@ if [ "$SITE_ONLY" = 1 ]; then
 
   log "site only — refreshing page sums, sizes and version from dist/"
   python3 "$ROOT/tools/release/update-site-sums.py"
-  stage_site_extension
+  stage_site_extension "shuddup@bork" "shut-up"
+  stage_site_extension "fuckoff@bork" "fuckoff"
   log "uploading the site to ${WEB_REMOTE%/downloads}"
   rsync -av "$ROOT/tools/release/site/" "${WEB_REMOTE%/downloads}/"
   log "uploaded. live at $SITE_URL"
@@ -264,7 +266,8 @@ if [ "$UPLOAD" = 1 ]; then
   # who runs it. Page goes up last, after the files it describes exist.
   log "refreshing page sums + sizes"
   python3 "$ROOT/tools/release/update-site-sums.py"
-  stage_site_extension
+  stage_site_extension "shuddup@bork" "shut-up"
+  stage_site_extension "fuckoff@bork" "fuckoff"
   # The whole site dir, not just index.html: the page now carries its own
   # assets/ (hero photo, screenshots, webfont) and an index shipped without
   # them renders unstyled and imageless. No --delete: downloads/ lives under
