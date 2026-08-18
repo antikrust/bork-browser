@@ -1,0 +1,46 @@
+{
+  "manifest_version": 2,
+  "name": "FUCKOFF",
+  "version": "0.1.0",
+  "description": "Outlets you never want to read again, gone from your internet: search results, news aggregators, social feeds and the address bar. Blocked pages explain who owns the thing and why it is on the list.",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "webRequest",
+    "webRequestBlocking",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "src/store.js",
+      "src/outlets.js",
+      "src/match.js",
+      "src/background.js"
+    ],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "run_at": "document_idle",
+      "all_frames": false,
+      "js": ["src/store.js", "src/outlets.js", "src/match.js", "src/content.js"],
+      "css": ["src/content.css"]
+    }
+  ],
+  "web_accessible_resources": ["blocked/blocked.html", "options/options.html"],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "FUCKOFF"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "fuckoff@bork",
+      "strict_min_version": "115.0"
+    }
+  }
+}

@@ -1,0 +1,109 @@
+:root {
+  color-scheme: dark light;
+  --bg: #0f0f10;
+  --fg: #f1f1f1;
+  --dim: #a6a29c;
+  --line: rgba(255, 255, 255, 0.14);
+  --accent: #ff4e45;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f7f6f4;
+    --fg: #14120f;
+    --dim: #5f5a53;
+    --line: rgba(0, 0, 0, 0.14);
+    --accent: #c00;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 8vh 24px 64px;
+}
+
+main { max-width: 640px; margin: 0 auto; }
+
+.mark {
+  font: 800 12px/1 system-ui, sans-serif;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
+}
+
+.host {
+  color: var(--dim);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  margin-bottom: 34px;
+  word-break: break-all;
+}
+
+section { margin-bottom: 28px; }
+
+h2 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+ul { margin: 0; padding-left: 20px; }
+li { margin-bottom: 10px; }
+
+.asof {
+  margin-top: 8px;
+  color: var(--dim);
+  font-size: 0.82rem;
+}
+
+#sources { list-style: none; padding-left: 0; }
+#sources li { font-size: 0.85rem; word-break: break-word; }
+a { color: var(--accent); }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 36px 0 28px;
+}
+
+button {
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  font: 600 13px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+button:hover { border-color: var(--fg); }
+
+#back {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.foot {
+  color: var(--dim);
+  font-size: 0.82rem;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}

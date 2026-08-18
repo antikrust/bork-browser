@@ -1,0 +1,88 @@
+/*
+ * Injected into every page, so it stays small and namespaced. Every rule is
+ * !important: a site's own styles are more specific than a class we add, and
+ * losing that fight means a result you asked never to see stays on screen.
+ */
+
+.fkof-hidden {
+  display: none !important;
+}
+
+/* A blocked link that was not inside any card — struck through and dimmed
+   rather than hidden, because removing a word mid-sentence reads as a bug. */
+.fkof-link {
+  opacity: 0.35 !important;
+  text-decoration: line-through !important;
+  pointer-events: none !important;
+}
+
+.fkof-card {
+  position: relative !important;
+}
+
+.fkof-btn {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  z-index: 2147483000 !important;
+  display: none !important;
+  padding: 1px 8px !important;
+  border: 1px solid #c00 !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #c00 !important;
+  font: 600 10px/1.8 system-ui, sans-serif !important;
+  letter-spacing: 0.04em !important;
+  cursor: pointer !important;
+}
+
+.fkof-btn:hover {
+  background: #c00 !important;
+  color: #fff !important;
+}
+
+html.fkof-buttons .fkof-card:hover > .fkof-btn {
+  display: inline-flex !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fkof-btn {
+    background: #1a1a1a !important;
+    border-color: #ff4e45 !important;
+    color: #ff4e45 !important;
+  }
+  .fkof-btn:hover {
+    background: #ff4e45 !important;
+    color: #fff !important;
+  }
+}
+
+#fkof-toast {
+  position: fixed !important;
+  left: 16px !important;
+  bottom: 16px !important;
+  z-index: 2147483001 !important;
+  display: none !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  background: #1a1a1a !important;
+  color: #f1f1f1 !important;
+  font: 500 12px/1.5 system-ui, sans-serif !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+#fkof-toast.fkof-toast-show {
+  display: flex !important;
+}
+
+#fkof-toast button {
+  padding: 1px 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #f1f1f1 !important;
+  font: 600 11px/1.6 system-ui, sans-serif !important;
+  cursor: pointer !important;
+}

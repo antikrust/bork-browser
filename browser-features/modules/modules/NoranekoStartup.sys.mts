@@ -131,7 +131,7 @@ async function adoptDistributionAddons(): Promise<void> {
   // again and had to be re-registered under a new one. The old copy is left
   // alone in profiles that have it — its settings live under that id, and the
   // options page can export them across.
-  const OWN_IDS = ["shuddup@bork"];
+  const OWN_IDS = ["shuddup@bork", "fuckoff@bork"];
   const PREF_BASE = "bork.distribution.adopted.";
   try {
     const { AddonManager } = ChromeUtils.importESModule(

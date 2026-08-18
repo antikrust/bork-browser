@@ -1,0 +1,38 @@
+:root { color-scheme: dark light; }
+
+body {
+  width: 220px;
+  margin: 0;
+  padding: 14px;
+  background: #0f0f10;
+  color: #f1f1f1;
+  font: 400 13px/1.5 system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  body { background: #fff; color: #14120f; }
+}
+
+.mark {
+  margin: 0 0 4px;
+  font: 800 12px/1 system-ui, sans-serif;
+  letter-spacing: 0.2em;
+  color: #ff4e45;
+}
+
+.count { margin: 0 0 12px; opacity: 0.7; font-size: 12px; }
+
+button {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: 600 12px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+button:hover { border-color: currentColor; }

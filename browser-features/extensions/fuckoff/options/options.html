@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FUCKOFF — settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <header>
+      <h1>FUCKOFF</h1>
+      <p class="sub">Outlets that never reach you again.</p>
+      <span id="saved" class="saved">saved</span>
+    </header>
+
+    <main>
+      <section>
+        <h2>The list</h2>
+        <p class="hint">
+          Bundled outlets, each with who owns it and why it is here. Untick one
+          to let it back in.
+        </p>
+        <ul id="outlets" class="outlets"></ul>
+      </section>
+
+      <section>
+        <h2>Yours</h2>
+        <p class="hint">
+          Anything you blocked with the button or the right-click menu, plus
+          whatever you add here. One domain per line is not needed — add them
+          one at a time and they stay listed with the date.
+        </p>
+        <form id="add" class="addrow">
+          <input type="text" id="domain" placeholder="example.co.uk" autocomplete="off" />
+          <button type="submit">Block</button>
+        </form>
+        <ul id="custom" class="outlets"></ul>
+        <p id="custom-empty" class="hint">Nothing added yet.</p>
+      </section>
+
+      <section>
+        <h2>Behaviour</h2>
+        <label class="row"><input type="checkbox" id="blockNav" /> Stop the page loading and explain why</label>
+        <label class="row"><input type="checkbox" id="hideCards" /> Hide their links in search results and feeds</label>
+        <label class="row"><input type="checkbox" id="showButton" /> Show the FUCKOFF button on result cards</label>
+        <label class="row"><input type="checkbox" id="enabled" /> Turn the whole thing on</label>
+      </section>
+
+      <section>
+        <h2>Backup</h2>
+        <p class="hint">Your list as JSON, for keeping or moving to another machine.</p>
+        <div class="addrow">
+          <button type="button" id="export">Copy to clipboard</button>
+          <button type="button" id="import">Paste and replace…</button>
+        </div>
+        <textarea id="io" spellcheck="false" rows="6"></textarea>
+      </section>
+    </main>
+
+    <script src="../src/store.js"></script>
+    <script src="../src/outlets.js"></script>
+    <script src="../src/match.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

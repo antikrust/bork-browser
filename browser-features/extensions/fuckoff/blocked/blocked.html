@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FUCKOFF</title>
+    <link rel="stylesheet" href="blocked.css" />
+  </head>
+  <body>
+    <main>
+      <p class="mark">FUCKOFF</p>
+      <h1 id="name">This one is on the list.</h1>
+      <p class="host" id="host"></p>
+
+      <section id="owner-box">
+        <h2>Who owns it</h2>
+        <p id="owner"></p>
+        <p class="asof" id="asof"></p>
+      </section>
+
+      <section id="record-box">
+        <h2>On the record</h2>
+        <ul id="record"></ul>
+      </section>
+
+      <section id="sources-box">
+        <h2>Check it yourself</h2>
+        <ul id="sources"></ul>
+      </section>
+
+      <section id="note-box">
+        <h2>Your note</h2>
+        <p id="note"></p>
+      </section>
+
+      <div class="actions">
+        <button type="button" id="back">Go back</button>
+        <button type="button" id="pass">Let me through for 15 minutes</button>
+        <button type="button" id="unblock">Take it off the list</button>
+      </div>
+
+      <p class="foot">
+        Blocked by <strong>FUCKOFF</strong>, which is part of bork and can be
+        removed like any other add-on.
+        <a href="#" id="settings">Settings</a>
+      </p>
+    </main>
+
+    <script src="../src/store.js"></script>
+    <script src="../src/outlets.js"></script>
+    <script src="../src/match.js"></script>
+    <script src="blocked.js"></script>
+  </body>
+</html>

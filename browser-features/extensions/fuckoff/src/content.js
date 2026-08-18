@@ -1,0 +1,243 @@
+"use strict";
+/**
+ * Runs on every page.
+ *
+ * Two jobs: take out anything that links to a blocked outlet, and offer a
+ * button to add one. Hiding is by class and never by removing nodes — sites
+ * recycle their own elements and removing them breaks their rendering.
+ */
+(function () {
+  const api = globalThis.browser ?? globalThis.chrome;
+  const { store, match, outlets } = globalThis.FKOF;
+
+  if (location.protocol !== "http:" && location.protocol !== "https:") return;
+
+  /**
+   * Containers that are known to be one item in a list. Used for two things:
+   * hiding the whole result rather than just its headline, and deciding where
+   * a hover button may appear. Anything not listed still gets hidden — the
+   * climb below works it out — it just gets no button.
+   */
+  const CARD_SELECTORS = [
+    // Search
+    "div.g", // Google, classic result
+    "div[data-hveid] > div[data-ved]", // Google, newer wrappers
+    "div.MjjYud", // Google, result block
+    "article[data-testid='result']", // DuckDuckGo
+    "li.b_algo", // Bing
+    "div.result", // Startpage, Searx and friends
+    // News aggregators
+    "article", // Google News, most news front pages
+    "main c-wiz div[jscontroller]", // Google News cluster cards
+    // Social
+    "shreddit-post", // Reddit
+    "div.thing", // old.reddit
+    "article[data-testid='tweet']", // X
+    "div[data-testid='cellInnerDiv']", // X timeline cell
+    "div[role='article']", // Facebook, Mastodon, Bluesky
+    "li.athing", // Hacker News
+  ];
+  const CARD_QUERY = CARD_SELECTORS.join(",");
+
+  /** How far up from a link we are willing to hide. */
+  const MAX_CLIMB = 6;
+  const CLIMB_STOP = new Set([
+    "BODY", "HTML", "MAIN", "NAV", "HEADER", "FOOTER", "ASIDE", "SECTION", "FORM",
+  ]);
+
+  let config = null;
+  let index = new Map();
+  let generation = 0;
+
+  function rebuild() {
+    index = match.buildIndex(config, outlets);
+    generation += 1;
+    document.documentElement.classList.toggle(
+      "fkof-buttons",
+      config.enabled !== false && config.showButton !== false,
+    );
+  }
+
+  /* ------------------------------------------------------------- the climb */
+
+  /**
+   * From a link, find the thing worth hiding.
+   *
+   * Known containers win outright. Otherwise climb while the box is still
+   * about this one link: the moment an ancestor also holds a link to somebody
+   * else, we have left the item and entered the list, so the previous
+   * ancestor was the item. Six levels is the ceiling — beyond that a wrong
+   * guess starts hiding half the page, and hiding nothing is the better
+   * failure.
+   */
+  function cardFor(link, host) {
+    const known = link.closest(CARD_QUERY);
+    if (known) return known;
+
+    let best = link;
+    let node = link.parentElement;
+    for (let i = 0; i < MAX_CLIMB && node; i++) {
+      if (CLIMB_STOP.has(node.tagName)) break;
+      if (holdsOtherLinks(node, host)) break;
+      best = node;
+      node = node.parentElement;
+    }
+    // A bare inline link in a sentence: the paragraph is not the item, the
+    // link is. Hiding the paragraph would eat somebody else's prose.
+    return best === link ? null : best;
+  }
+
+  function holdsOtherLinks(node, host) {
+    for (const other of node.querySelectorAll("a[href]")) {
+      const otherHost = match.hostOf(other.getAttribute("href"), location.href);
+      if (!otherHost || otherHost === host) continue;
+      if (otherHost === match.normalizeHost(location.hostname)) continue;
+      return true;
+    }
+    return false;
+  }
+
+  /* ------------------------------------------------------------------ links */
+
+  function handleLink(link) {
+    if (link.dataset.fkofGen === String(generation)) return;
+    link.dataset.fkofGen = String(generation);
+
+    const href = link.getAttribute("href");
+    const host = match.hostOf(href, location.href);
+    if (!host) return;
+
+    const outlet = config.enabled !== false ? match.lookup(host, index) : null;
+
+    if (outlet) {
+      link.classList.add("fkof-link");
+      link.dataset.fkofOutlet = outlet.name;
+      if (config.hideCards !== false) {
+        const card = cardFor(link, host);
+        if (card) {
+          card.classList.add("fkof-hidden");
+          card.dataset.fkofWhy = outlet.name;
+        }
+      }
+      return;
+    }
+
+    link.classList.remove("fkof-link");
+
+    // Buttons only on recognised result cards, and only for links leaving this
+    // site: a button on every link on every page is litter, and the right-click
+    // menu already covers everything else.
+    if (config.showButton === false || config.enabled === false) return;
+    if (host === match.normalizeHost(location.hostname)) return;
+    const card = link.closest(CARD_QUERY);
+    if (card) ensureButton(card, host);
+  }
+
+  function ensureButton(card, host) {
+    if (card.querySelector(":scope > .fkof-btn")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "fkof-btn";
+    btn.textContent = "FUCKOFF";
+    btn.title = `Block ${host} everywhere`;
+    btn.addEventListener("click", (event) => {
+      // Cards are usually one big link; a block must not also be a click-through.
+      event.preventDefault();
+      event.stopPropagation();
+      block(host);
+    });
+    card.classList.add("fkof-card");
+    card.appendChild(btn);
+  }
+
+  function block(host) {
+    api.runtime.sendMessage({ type: "fkof-block", host }).then(
+      () => toast(`Blocked ${host}`, () => unblock(host)),
+      () => {},
+    );
+  }
+
+  function unblock(host) {
+    api.runtime.sendMessage({ type: "fkof-unblock", host }).then(
+      () => toast(`Unblocked ${host}`),
+      () => {},
+    );
+  }
+
+  /* ------------------------------------------------------------------ toast */
+
+  let toastEl = null;
+  let toastTimer = 0;
+
+  function toast(text, undo) {
+    if (!toastEl) {
+      toastEl = document.createElement("div");
+      toastEl.id = "fkof-toast";
+      document.documentElement.appendChild(toastEl);
+    }
+    toastEl.textContent = "";
+    const label = document.createElement("span");
+    label.textContent = text;
+    toastEl.appendChild(label);
+    if (undo) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "Undo";
+      btn.addEventListener("click", () => {
+        toastEl.classList.remove("fkof-toast-show");
+        undo();
+      });
+      toastEl.appendChild(btn);
+    }
+    toastEl.classList.add("fkof-toast-show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(
+      () => toastEl.classList.remove("fkof-toast-show"),
+      5000,
+    );
+  }
+
+  api.runtime.onMessage.addListener((message) => {
+    if (message && message.type === "fkof-blocked") {
+      toast(`Blocked ${message.host}`, () => unblock(message.host));
+    }
+  });
+
+  /* ------------------------------------------------------------------- scan */
+
+  let scanTimer = 0;
+
+  function queueScan() {
+    if (scanTimer) return;
+    scanTimer = setTimeout(() => {
+      scanTimer = 0;
+      scan();
+    }, 200);
+  }
+
+  function scan() {
+    if (!config) return;
+    for (const link of document.querySelectorAll("a[href]")) handleLink(link);
+  }
+
+  store.load().then((loaded) => {
+    config = loaded;
+    rebuild();
+    scan();
+
+    store.onChange((next) => {
+      config = next;
+      rebuild();
+      queueScan();
+    });
+
+    new MutationObserver(queueScan).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Single-page apps swap results without touching the tree we observed.
+    window.addEventListener("popstate", queueScan);
+    setInterval(queueScan, 1500);
+  });
+})();
