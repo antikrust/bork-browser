@@ -112,6 +112,98 @@ globalThis.FKOF = globalThis.FKOF || {};
         "https://www.ofcom.org.uk/tv-radio-and-on-demand/broadcast-bulletins — Ofcom Broadcast and On Demand Bulletins",
       ],
     },
+    {
+      key: "fox",
+      name: "Fox News",
+      domains: ["foxnews.com", "foxbusiness.com"],
+      owner:
+        "Fox Corporation, controlled by the Murdoch family trust. Split out of 21st Century Fox in 2019; Rupert Murdoch stepped back as chairman in 2023, leaving Lachlan Murdoch as executive chair.",
+      ownerAsOf: "2024",
+      record: [
+        "Paid Dominion Voting Systems $787.5 million in April 2023 to settle a defamation claim over its 2020 election coverage — among the largest defamation settlements in US history, agreed on the morning the trial was due to open. The judge had already ruled it was “CRYSTAL clear” that none of the challenged statements about Dominion were true.",
+        "Internal messages disclosed during that case showed presenters and executives privately disputing claims the network was putting on air.",
+        "Smartmatic brought a separate $2.7 billion claim over the same coverage.",
+      ],
+      sources: [
+        "https://courts.delaware.gov/ — US Dominion Inc. v. Fox News Network, Delaware Superior Court",
+        "https://www.foxcorporation.com/ — Fox Corporation ownership and SEC filings",
+      ],
+    },
+    {
+      key: "nypost",
+      name: "New York Post",
+      domains: ["nypost.com"],
+      owner:
+        "News Corp — the same Murdoch-controlled company that owns The Sun and The Times.",
+      ownerAsOf: "2025",
+      record: [
+        "Has been reported to run at a loss for decades, sustained by its parent rather than by its readers.",
+      ],
+      sources: ["https://www.newscorp.com/ — News Corp annual filings"],
+    },
+    {
+      key: "breitbart",
+      name: "Breitbart",
+      domains: ["breitbart.com"],
+      owner:
+        "Breitbart News Network. Substantially funded by the Mercer family; Steve Bannon was executive chairman until 2018.",
+      ownerAsOf: "2024",
+      record: [
+        "Bannon described the site as “the platform for the alt-right” in a 2016 interview with Mother Jones, while he was running it.",
+      ],
+      sources: [
+        "https://www.motherjones.com/politics/2016/08/stephen-bannon-donald-trump-alt-right-breitbart-news/ — Mother Jones, August 2016",
+      ],
+    },
+    {
+      key: "newsmax",
+      name: "Newsmax",
+      domains: ["newsmax.com"],
+      owner: "Newsmax Media, founded and controlled by Christopher Ruddy.",
+      ownerAsOf: "2024",
+      record: [
+        "Broadcast an on-air retraction in December 2020 of claims it had aired about Dominion and Smartmatic staff.",
+        "Settled Smartmatic's defamation claim in 2024.",
+      ],
+      sources: [
+        "https://www.courtlistener.com/ — Smartmatic USA Corp. v. Newsmax Media, Delaware Superior Court",
+      ],
+    },
+    {
+      key: "oan",
+      name: "One America News",
+      domains: ["oann.com"],
+      owner: "Herring Networks, owned by the Herring family.",
+      ownerAsOf: "2024",
+      record: [
+        "DirecTV and Verizon Fios dropped the channel in 2022, removing most of its carriage at a stroke.",
+        "Settled defamation claims brought by Dominion Voting Systems.",
+      ],
+      sources: ["https://www.courtlistener.com/ — Dominion litigation dockets"],
+    },
+    {
+      key: "gatewaypundit",
+      name: "The Gateway Pundit",
+      domains: ["thegatewaypundit.com"],
+      owner: "TGP Communications, run by Jim Hoft.",
+      ownerAsOf: "2024",
+      record: [
+        "Filed for Chapter 11 bankruptcy in 2024 while facing defamation claims from two Georgia election workers over its 2020 election coverage.",
+      ],
+      sources: ["https://www.courtlistener.com/ — Freeman and Moss litigation dockets"],
+    },
+    {
+      key: "dailybeast",
+      name: "The Daily Beast",
+      domains: ["thedailybeast.com"],
+      owner:
+        "IAC, the holding company controlled by Barry Diller. Launched in 2008 under Tina Brown; merged with Newsweek between 2010 and 2013.",
+      ownerAsOf: "2024",
+      record: [
+        "Included by preference rather than for a documented record — it is a liberal-leaning site, not a right-wing one, and is here because it was asked for. Untick it in settings if that is not what you wanted.",
+      ],
+      sources: ["https://www.iac.com/ — IAC brands and filings"],
+    },
   ];
 
   /** Bundled entries are matched on these, plus whatever the user adds. */
