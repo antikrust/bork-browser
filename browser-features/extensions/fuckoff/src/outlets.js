@@ -121,6 +121,26 @@ globalThis.FKOF = globalThis.FKOF || {};
         "fox.com", // the broadcast network
         "livenowfox.com", // LiveNOW from FOX
         "foxweather.com",
+        "foxsports.com",
+        "tubitv.com", // Fox bought Tubi in 2020
+        // Fox Television Stations, the owned-and-operated locals. FOX-branded
+        // affiliates owned by Sinclair or Nexstar are NOT Fox Corporation and
+        // are deliberately not listed here.
+        "fox5ny.com",
+        "foxla.com",
+        "fox32chicago.com",
+        "fox29.com",
+        "fox5dc.com",
+        "fox2detroit.com",
+        "fox26houston.com",
+        "fox4news.com",
+        "fox7austin.com",
+        "fox9.com",
+        "fox13news.com",
+        "fox35orlando.com",
+        "fox6now.com",
+        "fox5atlanta.com",
+        "fox13seattle.com",
       ],
       owner:
         "Fox Corporation, controlled by the Murdoch family trust. Split out of 21st Century Fox in 2019; Rupert Murdoch stepped back as chairman in 2023, leaving Lachlan Murdoch as executive chair.",
@@ -210,6 +230,55 @@ globalThis.FKOF = globalThis.FKOF || {};
         "Included by preference rather than for a documented record — it is a liberal-leaning site, not a right-wing one, and is here because it was asked for. Untick it in settings if that is not what you wanted.",
       ],
       sources: ["https://www.iac.com/ — IAC brands and filings"],
+    },
+    {
+      key: "buzzfeed",
+      name: "BuzzFeed",
+      domains: ["buzzfeed.com", "buzzfeednews.com"],
+      owner: "BuzzFeed, Inc.",
+      ownerAsOf: "2024",
+      record: [
+        "Shut BuzzFeed News, the arm that did the reporting, in 2023 — it had won a Pulitzer in 2021 — while keeping the quizzes and list posts that pay.",
+        "Its commercial model is built on content designed to be shared rather than to be right; much of the site is aggregation of other people's posts.",
+      ],
+      sources: ["https://investors.buzzfeed.com/ — BuzzFeed, Inc. filings and the 2023 closure announcement"],
+    },
+    {
+      key: "boredpanda",
+      name: "Bored Panda",
+      domains: ["boredpanda.com"],
+      owner: "Bored Panda, a Lithuanian company founded by Tomas Banišauskas.",
+      ownerAsOf: "2024",
+      record: [
+        "A viral-content site: nearly everything on it is other people's social media posts collected into list articles, with the engagement, not the reporting, as the product.",
+      ],
+      sources: ["https://www.boredpanda.com/about/ — the site's own account of itself"],
+    },
+    {
+      key: "ynet",
+      name: "Ynet / Yedioth Ahronoth",
+      domains: ["ynetnews.com", "ynet.co.il", "yediot.co.il"],
+      owner:
+        "Yedioth Ahronoth Group, controlled by the Mozes family — Arnon “Noni” Mozes is the publisher.",
+      ownerAsOf: "2024",
+      record: [
+        "Mozes was charged with bribery in November 2019 over Case 2000: recorded conversations with Benjamin Netanyahu about trading more favourable coverage in Yedioth for legislation that would curb its rival Israel Hayom. Both men denied wrongdoing; the case went to trial.",
+      ],
+      sources: [
+        "https://www.gov.il/en/departments/ministry_of_justice — Israeli Ministry of Justice, Case 2000 indictment",
+      ],
+    },
+    {
+      key: "jpost",
+      name: "The Jerusalem Post",
+      domains: ["jpost.com"],
+      owner:
+        "The Jerusalem Post Group, owned by Eli Azur, who bought it in 2014. Azur also owns the Israeli sports broadcaster Sport 5 and Radio 103FM.",
+      ownerAsOf: "2024",
+      record: [
+        "An English-language paper written largely for readers outside Israel rather than for the domestic Hebrew audience, which is a different editorial job from the Hebrew press it is often taken to represent.",
+      ],
+      sources: ["https://www.jpost.com/about-us — the paper's own account of its ownership"],
     },
   ];
 
