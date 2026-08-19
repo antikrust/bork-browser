@@ -184,22 +184,110 @@ globalThis.YTCT = globalThis.YTCT || {};
   }
 
   function ensureButton(card) {
-    // Re-added every pass for the same reason the classes above are.
+    // The class is what the hover tracker below looks for; the button itself
+    // is a single floating element, not one per card. See floatButton().
     card.classList.add("ytct-card");
-    if (card.querySelector(":scope > .ytct-card-btn")) return;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "ytct-card-btn";
-    btn.textContent = "SHUT UP";
-    btn.title = "Block this channel everywhere";
-    btn.addEventListener("click", (event) => {
-      // The whole card is a link; a block must not also be a click-through.
+  }
+
+  /* ------------------------------------------------------------ the button */
+
+  /*
+   * One button, parked on <body>, moved to whichever card the pointer is over.
+   *
+   * It cannot live inside the card, and it cannot be driven by :hover, because
+   * of what YouTube does when a thumbnail starts previewing (measured, not
+   * guessed):
+   *
+   *   - the preview player is mounted under ytd-app, NOT inside the card, and
+   *     positioned over the thumbnail. The pointer is then inside an element
+   *     that is not a descendant of the card, so the card stops matching
+   *     :hover and any CSS keyed on it hides the button.
+   *   - nothing is set on the card to say it is the one previewing — only the
+   *     player carries an `active` attribute — so no selector can name it.
+   *   - the player sits in its own positioned subtree, so a button inside the
+   *     card loses the paint order however large its z-index: the card's
+   *     z-index only orders things within the card's own stacking context.
+   *
+   * A fixed element on <body> is a sibling of that subtree, so it wins, and
+   * hit-testing the pointer finds the card underneath the player.
+   */
+  let floatBtn = null;
+  let hoverCard = null;
+
+  function floatButton() {
+    if (floatBtn && floatBtn.isConnected) return floatBtn;
+    floatBtn = document.createElement("button");
+    floatBtn.type = "button";
+    floatBtn.id = "ytct-float-btn";
+    floatBtn.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const name = card.dataset.ytctChannel || "";
-      if (name) blockChannel(name);
+      const name = floatBtn.dataset.ytctChannel || "";
+      if (!name) return;
+      if (blockedChannels.has(filters.normalizeName(name))) unblockChannel(name);
+      else blockChannel(name);
     });
-    card.appendChild(btn);
+    document.body.appendChild(floatBtn);
+    return floatBtn;
+  }
+
+  function hideFloat() {
+    hoverCard = null;
+    if (floatBtn) floatBtn.classList.remove("ytct-float-on");
+  }
+
+  /** The card under the pointer, seen through whatever is painted over it. */
+  function cardUnder(x, y) {
+    for (const el of document.elementsFromPoint(x, y)) {
+      const card = el.closest && el.closest(CARDS);
+      if (card) return card;
+    }
+    return null;
+  }
+
+  function trackPointer(x, y) {
+    if (!config || config.enabled === false || config.showButton === false) {
+      hideFloat();
+      return;
+    }
+    const card = cardUnder(x, y);
+    if (!card || !card.classList.contains("ytct-has-channel")) {
+      hideFloat();
+      return;
+    }
+    const name = card.dataset.ytctChannel || "";
+    if (!name) {
+      hideFloat();
+      return;
+    }
+
+    const btn = floatButton();
+    const rect = card.getBoundingClientRect();
+    const blocked = blockedChannels.has(filters.normalizeName(name));
+    btn.dataset.ytctChannel = name;
+    btn.textContent = blocked ? "UNBLOCK" : "SHUT UP";
+    btn.title = blocked ? `Show ${name} again` : `Block ${name} everywhere`;
+    btn.classList.toggle("ytct-float-blocked", blocked);
+    btn.style.left = `${Math.round(rect.left + 6)}px`;
+    btn.style.top = `${Math.round(rect.top + 6)}px`;
+    btn.classList.add("ytct-float-on");
+    hoverCard = card;
+  }
+
+  let pointerFrame = 0;
+  let lastX = 0;
+  let lastY = 0;
+
+  function onPointerMove(event) {
+    lastX = event.clientX;
+    lastY = event.clientY;
+    if (pointerFrame) return;
+    // One hit-test per frame at most: mousemove fires far faster than anything
+    // here needs to run.
+    pointerFrame = requestAnimationFrame(() => {
+      pointerFrame = 0;
+      trackPointer(lastX, lastY);
+    });
   }
 
   /* ----------------------------------------------------------------- shelves */
@@ -472,8 +560,19 @@ globalThis.YTCT = globalThis.YTCT || {};
       subtree: true,
     });
 
+    document.addEventListener("mousemove", onPointerMove, { passive: true });
+    // The button is placed in viewport coordinates, so anything that moves the
+    // page under it has to take it away or it is left pointing at nothing; the
+    // next mousemove puts it back.
+    document.addEventListener("scroll", hideFloat, {
+      passive: true,
+      capture: true,
+    });
+    window.addEventListener("blur", hideFloat);
+
     // YouTube is a single-page app; this fires after every in-app navigation.
     document.addEventListener("yt-navigate-finish", queueScan);
+    document.addEventListener("yt-navigate-start", hideFloat);
 
     // Safety net for card content swapped in without a childList mutation.
     setInterval(queueScan, 1000);

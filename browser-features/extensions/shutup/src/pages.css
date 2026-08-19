@@ -36,19 +36,24 @@
 
 /* ------------------------------------------------------------ card button */
 
-.ytct-card {
-  position: relative;
-}
-
 /*
- * Top-left of the card: YouTube's own hover buttons (Watch later, queue) own
- * the thumbnail's top-right corner.
+ * ONE button, fixed on <body>, moved to the hovered card — not one per card.
+ *
+ * Both halves of that are forced by what YouTube does when a thumbnail starts
+ * previewing (all measured on a live page):
+ *   - the preview player mounts under ytd-app, outside the card, and covers
+ *     the thumbnail. The pointer is then in a non-descendant, so the card
+ *     stops matching :hover and any rule keyed on it hides the button.
+ *   - nothing on the card says it is the previewing one, so no selector can
+ *     find it; only the player carries `active`.
+ *   - the player is in its own positioned subtree, so a button inside the card
+ *     loses the paint order no matter how large its z-index — z-index only
+ *     orders within the card's own stacking context.
+ * A fixed element on <body> is a sibling of that subtree and paints over it.
  */
-.ytct-card-btn {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  z-index: 100;
+#ytct-float-btn {
+  position: fixed;
+  z-index: 2147483000;
   display: none;
   padding: 1px 8px;
   border: 1px solid var(--ytct-accent);
@@ -57,17 +62,27 @@
   color: var(--ytct-accent);
   font: 600 10px/1.8 Roboto, system-ui, sans-serif;
   letter-spacing: 0.04em;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.ytct-card-btn:hover {
+#ytct-float-btn.ytct-float-on {
+  display: inline-flex;
+}
+
+#ytct-float-btn:hover {
   background: var(--ytct-accent);
   color: #fff;
 }
 
-/* Only cards we could actually name a channel for offer the button. */
-:root.ytct-cards-on .ytct-card.ytct-has-channel:hover > .ytct-card-btn {
-  display: inline-flex;
+#ytct-float-btn.ytct-float-blocked {
+  background: var(--ytct-accent);
+  color: #fff;
+}
+
+#ytct-float-btn.ytct-float-blocked:hover {
+  background: var(--ytct-bg);
+  color: var(--ytct-accent);
 }
 
 /* ------------------------------------------------------- channel page button */
