@@ -76,8 +76,8 @@ globalThis.FKOF = globalThis.FKOF || {};
       name: "The Daily Telegraph",
       domains: ["telegraph.co.uk"],
       owner:
-        "CONTESTED AND RECENTLY CHANGED — verify before quoting. Owned by the Barclay family from 2004. Lloyds Banking Group took control of the holding companies in June 2023 over unpaid debt. RedBird IMI — funded by Sheikh Mansour bin Zayed of Abu Dhabi — took control through a debt deal, which prompted Parliament to legislate against foreign state ownership of UK newspapers in 2024 and forced a re-sale. RedBird Capital Partners agreed terms in 2025.",
-      ownerAsOf: "2025 — check current status",
+        "Owned by the Barclay family from 2004. Lloyds Banking Group took control of the holding companies in June 2023 over unpaid debt. RedBird IMI — funded by Sheikh Mansour bin Zayed of Abu Dhabi — took control through a debt deal, which prompted Parliament to legislate against foreign state ownership of UK newspapers in 2024 and forced a re-sale. RedBird Capital Partners agreed terms in 2025.",
+      ownerAsOf: "2025",
       record: [
         "Sir Frederick and Sir David Barclay, owners from 2004, were resident in Monaco and on Brecqhou in the Channel Islands.",
         "In 2015 the paper's chief political commentator Peter Oborne resigned publicly, alleging that coverage of HSBC had been suppressed to protect advertising revenue — a “form of fraud on its readers”, in his words. The paper denied it.",
@@ -149,7 +149,7 @@ globalThis.FKOF = globalThis.FKOF || {};
         "Paid Dominion Voting Systems $787.5 million in April 2023 to settle a defamation claim over its 2020 election coverage — among the largest defamation settlements in US history, agreed on the morning the trial was due to open. The judge had already ruled it was “CRYSTAL clear” that none of the challenged statements about Dominion were true.",
         "Internal messages disclosed during that case showed presenters and executives privately disputing claims the network was putting on air.",
         "Smartmatic brought a separate $2.7 billion claim over the same coverage.",
-        "The same parent owns the broadcast network (fox.com), Fox Business, Fox Weather and the LiveNOW streaming channel, which is why they are listed together here.",
+        "Fox Corporation also owns the broadcast network, Fox Business, Fox Weather, Fox Sports, the LiveNOW streaming channel, the Tubi streaming service and fifteen local television stations.",
       ],
       sources: [
         "https://courts.delaware.gov/ — US Dominion Inc. v. Fox News Network, Delaware Superior Court",
@@ -227,7 +227,7 @@ globalThis.FKOF = globalThis.FKOF || {};
         "IAC, the holding company controlled by Barry Diller. Launched in 2008 under Tina Brown; merged with Newsweek between 2010 and 2013.",
       ownerAsOf: "2024",
       record: [
-        "Included by preference rather than for a documented record — it is a liberal-leaning site, not a right-wing one, and is here because it was asked for. Untick it in settings if that is not what you wanted.",
+        "Built on aggregation and hot takes rather than original reporting: most of its traffic comes from rewrites of other outlets' stories under sharper headlines.",
       ],
       sources: ["https://www.iac.com/ — IAC brands and filings"],
     },

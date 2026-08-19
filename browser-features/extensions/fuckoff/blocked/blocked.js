@@ -33,7 +33,7 @@
     if (outlet.owner) {
       $("owner").textContent = outlet.owner;
       $("asof").textContent = outlet.ownerAsOf
-        ? `Ownership as of ${outlet.ownerAsOf}. Newspapers change hands — check before you quote this.`
+        ? `Ownership as of ${outlet.ownerAsOf}.`
         : "";
     } else {
       hide("owner-box");
