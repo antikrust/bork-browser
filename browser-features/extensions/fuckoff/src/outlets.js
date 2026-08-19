@@ -114,8 +114,14 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "fox",
-      name: "Fox News",
-      domains: ["foxnews.com", "foxbusiness.com"],
+      name: "Fox",
+      domains: [
+        "foxnews.com",
+        "foxbusiness.com",
+        "fox.com", // the broadcast network
+        "livenowfox.com", // LiveNOW from FOX
+        "foxweather.com",
+      ],
       owner:
         "Fox Corporation, controlled by the Murdoch family trust. Split out of 21st Century Fox in 2019; Rupert Murdoch stepped back as chairman in 2023, leaving Lachlan Murdoch as executive chair.",
       ownerAsOf: "2024",
@@ -123,6 +129,7 @@ globalThis.FKOF = globalThis.FKOF || {};
         "Paid Dominion Voting Systems $787.5 million in April 2023 to settle a defamation claim over its 2020 election coverage — among the largest defamation settlements in US history, agreed on the morning the trial was due to open. The judge had already ruled it was “CRYSTAL clear” that none of the challenged statements about Dominion were true.",
         "Internal messages disclosed during that case showed presenters and executives privately disputing claims the network was putting on air.",
         "Smartmatic brought a separate $2.7 billion claim over the same coverage.",
+        "The same parent owns the broadcast network (fox.com), Fox Business, Fox Weather and the LiveNOW streaming channel, which is why they are listed together here.",
       ],
       sources: [
         "https://courts.delaware.gov/ — US Dominion Inc. v. Fox News Network, Delaware Superior Court",
