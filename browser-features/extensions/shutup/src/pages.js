@@ -171,11 +171,13 @@ globalThis.YTCT = globalThis.YTCT || {};
       "ytct-has-channel",
       !!channel && !onSubsFeed && !subscribed.has(norm),
     );
-    // Shorts are judged on where they sit rather than on a channel, because
-    // they never carry one; a blocked channel still loses its normal videos
-    // the usual way.
+    // Shorts get binned only when nothing can say whose they are. On a
+    // channel's own pages the page itself names the channel, so they are
+    // attributable and get judged on the blocklist like any other video —
+    // binning them there emptied the grid, and YouTube answered an empty grid
+    // by fetching more forever.
     const stray =
-      !!card.querySelector(SHORTS_LINK) && !subscribedShorts(card);
+      !!card.querySelector(SHORTS_LINK) && !channel && !subscribedShorts(card);
     card.classList.toggle(
       "ytct-video-hidden",
       config.enabled !== false &&

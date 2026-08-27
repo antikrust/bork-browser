@@ -36,6 +36,14 @@
     "div[data-testid='cellInnerDiv']", // X timeline cell
     "div[role='article']", // Facebook, Mastodon, Bluesky
     "li.athing", // Hacker News
+    // Entity panels: the box a search engine shows ABOUT an outlet — logo,
+    // blurb, "official website" link. Named directly because the general rule
+    // cannot find them: they also link the outlet's Wikipedia entry and its
+    // YouTube channel, which anywhere else would mean "this box holds other
+    // sites' results, stop".
+    "ol.react-results--sidebar", // DuckDuckGo sidebar
+    "div.kp-wholepage", // Google knowledge panel
+    "#rhs", // Google right-hand column
   ];
   const CARD_QUERY = CARD_SELECTORS.join(",");
 
