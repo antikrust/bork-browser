@@ -277,11 +277,14 @@
       const outlet = labelIndex.get((el.textContent || "").trim().toLowerCase());
       if (!outlet) continue;
 
-      const card = cardForLabel(el);
-      if (card) {
-        card.classList.add("fkof-hidden");
-        card.dataset.fkofWhy = outlet.name;
-      }
+      // No article around it means it is not an article card: on Google News
+      // that is the "Topics" chip in the sidebar, which is its own leaf — its
+      // parent already holds the next topic along, so there is nothing between
+      // the two and the label IS the entry. Hiding the leaf is therefore both
+      // correct and the smallest thing that can be hidden.
+      const target = cardForLabel(el) || el;
+      target.classList.add("fkof-hidden");
+      target.dataset.fkofWhy = outlet.name;
     }
   }
 
