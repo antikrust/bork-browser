@@ -289,19 +289,105 @@
   }
 
   /**
-   * From a publisher label up to the article it belongs to: the nearest
-   * ancestor that also holds a link to an article. Structural, so it does not
-   * depend on class names that change every few months.
+   * From a publisher label to the thing that should disappear with it.
+   *
+   * Three shapes, measured on the page rather than assumed:
+   *
+   *   1. an article card — the biggest ancestor still holding exactly ONE
+   *      article link. Stopping at the first ancestor with an article link is
+   *      too low: that block is the label and headline only, and hiding it
+   *      leaves the thumbnail and timestamp behind as an empty panel.
+   *   2. a Topics chip — a button whose entire text is the outlet's name.
+   *      Hiding the label alone left the button's outline sitting there empty.
+   *   3. the source panel — the card with the outlet's logo and a Follow
+   *      button, which has no article links at all.
    */
   function cardForLabel(label) {
-    const ARTICLE_LINK = "a[href^='./read'], a[href^='./articles'], a[href*='/read/']";
+    const ARTICLE_LINK =
+      "a[href^='./read'], a[href^='./articles'], a[href*='/read/']";
+
+    // (1) article card: climb while everything inside is still blocked.
+    //
+    // "Exactly one article link" is too strict — a story block holds the
+    // article plus a related one, and carries the timestamp at ITS level, so
+    // stopping below left the timestamp and thumbnail behind as an empty
+    // panel. Instead, keep going while every article in the box has a blocked
+    // publisher, and stop as soon as somebody else's article is in there too.
+    // MAX_CARD_LINKS bounds it: a story block is small, a results list is not.
+    const MAX_CARD_LINKS = 3;
+    // Deeper than the link-based climb: the story wrapper that carries the
+    // timestamp measured SEVEN levels above the publisher label, so a limit of
+    // six could never reach it however right the rule was — the block kept its
+    // timestamp and thumbnail. What bounds this is MAX_CARD_LINKS and the
+    // all-blocked test, not the number.
+    const LABEL_CLIMB = 10;
     let node = label.parentElement;
+    let card = null;
+    for (let i = 0; i < LABEL_CLIMB && node; i++) {
+      if (CLIMB_STOP.has(node.tagName)) break;
+      // Distinct articles, by href — an article is linked twice, once from
+      // its thumbnail and once from its headline, so counting link elements
+      // made every single-article block look like two and the all-blocked
+      // test failed on its own card.
+      const articles = new Set(
+        [...node.querySelectorAll(ARTICLE_LINK)].map((a) =>
+          a.getAttribute("href"),
+        ),
+      ).size;
+      if (articles > MAX_CARD_LINKS) break;
+      if (articles >= 1) {
+        if (blockedLabelsIn(node) < articles) break; // somebody else is in here
+        card = node;
+      }
+      node = node.parentElement;
+    }
+    if (card) return card;
+
+    // (2) chip: an ancestor that says nothing but the outlet's name
+    const name = (label.textContent || "").trim();
+    node = label.parentElement;
+    let chip = null;
+    for (let i = 0; i < 3 && node; i++) {
+      if (text(node) !== name) break;
+      chip = node;
+      node = node.parentElement;
+    }
+    if (chip) return chip;
+
+    // (3) source panel: nearest ancestor carrying its Follow control
+    node = label.parentElement;
     for (let i = 0; i < MAX_CLIMB && node; i++) {
-      if (CLIMB_STOP.has(node.tagName)) return null;
-      if (node.querySelector(ARTICLE_LINK)) return node;
+      if (CLIMB_STOP.has(node.tagName)) break;
+      if (node.querySelectorAll(ARTICLE_LINK).length) break;
+      if (/^(follow|share)$/im.test(text(node)) || hasFollow(node)) return node;
       node = node.parentElement;
     }
     return null;
+  }
+
+  /** How many publisher labels inside this box name an outlet we block. */
+  function blockedLabelsIn(node) {
+    let n = 0;
+    for (const el of node.querySelectorAll("div, span")) {
+      if (el.childElementCount !== 0) continue;
+      // textContent, not innerText: innerText is empty for anything already
+      // hidden, so counting with it undercounted every label we had just
+      // hidden and the wrapper around them survived.
+      if (labelIndex.has((el.textContent || "").trim().toLowerCase())) n += 1;
+    }
+    return n;
+  }
+
+  /** innerText, not textContent: the latter includes <style> rules as text. */
+  function text(el) {
+    return ((el.innerText != null ? el.innerText : el.textContent) || "").trim();
+  }
+
+  function hasFollow(el) {
+    for (const b of el.querySelectorAll("button, [role='button']")) {
+      if (/^(follow|share)$/i.test(text(b))) return true;
+    }
+    return false;
   }
 
   store.load().then((loaded) => {
