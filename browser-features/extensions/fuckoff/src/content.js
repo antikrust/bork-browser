@@ -57,8 +57,36 @@
   let index = new Map();
   let generation = 0;
 
+  /**
+   * Aggregators that link every article through their own redirect, so the
+   * publisher's domain never appears in the markup and only the printed name
+   * says who wrote it.
+   */
+  const LABEL_SITES = ["news.google.com"];
+  const onLabelSite = LABEL_SITES.includes(
+    match.normalizeHost(location.hostname),
+  );
+
+  /** Printed publisher name -> outlet. Only built where it is needed. */
+  let labelIndex = new Map();
+
+  function buildLabelIndex() {
+    const map = new Map();
+    if (!onLabelSite) return map;
+    const allowed = new Set(config.allowed || []);
+    for (const outlet of outlets) {
+      if (allowed.has(outlet.key)) continue;
+      for (const label of [outlet.name, ...(outlet.labels || [])]) {
+        const key = String(label || "").trim().toLowerCase();
+        if (key) map.set(key, outlet);
+      }
+    }
+    return map;
+  }
+
   function rebuild() {
     index = match.buildIndex(config, outlets);
+    labelIndex = buildLabelIndex();
     generation += 1;
     document.documentElement.classList.toggle(
       "fkof-buttons",
@@ -226,6 +254,51 @@
   function scan() {
     if (!config) return;
     for (const link of document.querySelectorAll("a[href]")) handleLink(link);
+    if (onLabelSite) scanLabels();
+  }
+
+  /**
+   * Hide by printed publisher name, for sites where the link cannot say who
+   * wrote it.
+   *
+   * Matching is whole-text equality against a leaf element, never a substring:
+   * the publisher label is its own little element reading exactly "Fox News",
+   * while a headline mentioning Fox News is a longer string in a different
+   * one. That distinction is the only thing keeping this from hiding every
+   * article ABOUT an outlet as well as every article BY it.
+   */
+  function scanLabels() {
+    if (labelIndex.size === 0) return;
+    for (const el of document.querySelectorAll("div, span")) {
+      if (el.childElementCount !== 0) continue;
+      if (el.dataset.fkofLabelGen === String(generation)) continue;
+      el.dataset.fkofLabelGen = String(generation);
+
+      const outlet = labelIndex.get((el.textContent || "").trim().toLowerCase());
+      if (!outlet) continue;
+
+      const card = cardForLabel(el);
+      if (card) {
+        card.classList.add("fkof-hidden");
+        card.dataset.fkofWhy = outlet.name;
+      }
+    }
+  }
+
+  /**
+   * From a publisher label up to the article it belongs to: the nearest
+   * ancestor that also holds a link to an article. Structural, so it does not
+   * depend on class names that change every few months.
+   */
+  function cardForLabel(label) {
+    const ARTICLE_LINK = "a[href^='./read'], a[href^='./articles'], a[href*='/read/']";
+    let node = label.parentElement;
+    for (let i = 0; i < MAX_CLIMB && node; i++) {
+      if (CLIMB_STOP.has(node.tagName)) return null;
+      if (node.querySelector(ARTICLE_LINK)) return node;
+      node = node.parentElement;
+    }
+    return null;
   }
 
   store.load().then((loaded) => {

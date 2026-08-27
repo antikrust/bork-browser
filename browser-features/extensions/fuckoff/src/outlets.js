@@ -12,12 +12,16 @@
  * `owner` — who controls it, "as of" a date.
  * `record` — specific, checkable events. Not characterisations.
  * `sources` — where to verify each one.
+ * `labels` — how aggregators NAME this outlet. Google News links every
+ *   article through its own ./read/ redirect, so the publisher's domain is
+ *   nowhere in the markup and only the printed name identifies them.
  */
 globalThis.FKOF = globalThis.FKOF || {};
 (function (FKOF) {
   const OUTLETS = [
     {
       key: "mail",
+      labels: ["Daily Mail", "MailOnline", "Daily Mail Online", "This is Money"],
       name: "Daily Mail / MailOnline",
       domains: [
         "dailymail.co.uk",
@@ -41,6 +45,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "sun",
+      labels: ["The Sun", "The US Sun"],
       name: "The Sun",
       domains: ["thesun.co.uk", "the-sun.com", "thesun.ie"],
       owner:
@@ -57,6 +62,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "express",
+      labels: ["Daily Express", "Express.co.uk", "Express"],
       name: "Daily Express",
       domains: ["express.co.uk"],
       owner:
@@ -73,6 +79,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "telegraph",
+      labels: ["The Telegraph", "The Daily Telegraph", "Telegraph.co.uk"],
       name: "The Daily Telegraph",
       domains: ["telegraph.co.uk"],
       owner:
@@ -89,6 +96,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "star",
+      labels: ["Daily Star"],
       name: "Daily Star",
       domains: ["dailystar.co.uk"],
       owner: "Reach plc, acquired from Northern & Shell in the same 2018 deal as the Express.",
@@ -100,6 +108,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "gbnews",
+      labels: ["GB News"],
       name: "GB News",
       domains: ["gbnews.com", "gbnews.uk"],
       owner:
@@ -114,6 +123,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "fox",
+      labels: ["Fox News", "Fox Business", "Fox Weather", "FOX Sports", "Fox News Digital", "LiveNOW from FOX", "FOX 5", "Fox 5"],
       name: "Fox",
       domains: [
         "foxnews.com",
@@ -158,6 +168,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "nypost",
+      labels: ["New York Post", "NY Post"],
       name: "New York Post",
       domains: ["nypost.com"],
       owner:
@@ -170,6 +181,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "breitbart",
+      labels: ["Breitbart", "Breitbart News"],
       name: "Breitbart",
       domains: ["breitbart.com"],
       owner:
@@ -184,6 +196,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "newsmax",
+      labels: ["Newsmax"],
       name: "Newsmax",
       domains: ["newsmax.com"],
       owner: "Newsmax Media, founded and controlled by Christopher Ruddy.",
@@ -198,6 +211,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "oan",
+      labels: ["One America News", "OAN", "One America News Network"],
       name: "One America News",
       domains: ["oann.com"],
       owner: "Herring Networks, owned by the Herring family.",
@@ -210,6 +224,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "gatewaypundit",
+      labels: ["The Gateway Pundit"],
       name: "The Gateway Pundit",
       domains: ["thegatewaypundit.com"],
       owner: "TGP Communications, run by Jim Hoft.",
@@ -221,6 +236,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "dailybeast",
+      labels: ["The Daily Beast"],
       name: "The Daily Beast",
       domains: ["thedailybeast.com"],
       owner:
@@ -233,6 +249,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "buzzfeed",
+      labels: ["BuzzFeed", "BuzzFeed News"],
       name: "BuzzFeed",
       domains: ["buzzfeed.com", "buzzfeednews.com"],
       owner: "BuzzFeed, Inc.",
@@ -245,6 +262,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "boredpanda",
+      labels: ["Bored Panda"],
       name: "Bored Panda",
       domains: ["boredpanda.com"],
       owner: "Bored Panda, a Lithuanian company founded by Tomas Banišauskas.",
@@ -256,6 +274,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "ynet",
+      labels: ["Ynetnews", "Ynet", "Yedioth Ahronoth"],
       name: "Ynet / Yedioth Ahronoth",
       domains: ["ynetnews.com", "ynet.co.il", "yediot.co.il"],
       owner:
@@ -270,6 +289,7 @@ globalThis.FKOF = globalThis.FKOF || {};
     },
     {
       key: "jpost",
+      labels: ["The Jerusalem Post", "Jerusalem Post"],
       name: "The Jerusalem Post",
       domains: ["jpost.com"],
       owner:
