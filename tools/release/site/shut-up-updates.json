@@ -3,9 +3,9 @@
     "shuddup@bork": {
       "updates": [
         {
-          "version": "0.2.19",
+          "version": "0.2.21",
           "update_link": "https://borkbrowser.online/shut-up.xpi",
-          "update_hash": "sha256:5fc1cadfd96efc2684d851fc14d1e40e94ae561ac7ad000c7578b5d2528ae145"
+          "update_hash": "sha256:b18dd241a9735ff75ceb4a7bbcfa42c97afab638f068240c7a7203d8fbd9cb67"
         }
       ]
     }

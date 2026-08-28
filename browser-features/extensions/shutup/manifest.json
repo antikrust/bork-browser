@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SHUT UP — Youpube Tamer",
-  "version": "0.2.19",
+  "version": "0.2.21",
   "description": "Quiet YouTube: block whole channels from home, search and recommendations, and tame live chat with word and author filters, a one-click SHUT UP button, repeat-offender blocking, and a threaded reading view.",
   "permissions": ["storage"],
   "content_scripts": [

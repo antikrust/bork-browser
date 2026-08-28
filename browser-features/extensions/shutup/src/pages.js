@@ -55,6 +55,7 @@ globalThis.YTCT = globalThis.YTCT || {};
 
   let config = null;
   let blockedChannels = new Set();
+  let blockedHandles = new Set();
   let generation = 0;
   let subscribed = new Set();
   let onSubsFeed = false;
@@ -78,6 +79,13 @@ globalThis.YTCT = globalThis.YTCT || {};
 
   function rebuild() {
     blockedChannels = filters.blockSet(config.channels);
+    blockedHandles = new Set();
+    for (const entry of config.channels || []) {
+      for (const h of (entry && entry.handles) || []) {
+        const squashed = squashHandle(h);
+        if (squashed) blockedHandles.add(squashed);
+      }
+    }
     generation += 1;
     document.documentElement.classList.toggle(
       "ytct-cards-on",
@@ -112,6 +120,34 @@ globalThis.YTCT = globalThis.YTCT || {};
       if (m && !handle) handle = m[1];
     }
     return handle;
+  }
+
+  /**
+   * Every /@handle the card links to.
+   *
+   * A collaboration names all its channels in one string — "The Daily Beast
+   * and Glenn Kirschner", "The Ezra Klein Show and 2 more" — and that string
+   * is not any channel's name, so storing it blocked nothing and the video
+   * kept coming back. The handles are the same claim without the guesswork:
+   * no splitting, no parsing of a sentence, and blocking a collaboration
+   * blocks every channel on it.
+   */
+  function handlesOf(card) {
+    const out = [];
+    for (const a of card.querySelectorAll("a[href^='/@']")) {
+      const m = /^\/@([^/?]+)/.exec(a.getAttribute("href") || "");
+      const squashed = m ? squashHandle(m[1]) : "";
+      if (squashed && !out.includes(squashed)) out.push(squashed);
+    }
+    return out;
+  }
+
+  /** Letters and digits only, so @Ezra_Klein and @ezraklein are one thing. */
+  function squashHandle(value) {
+    return String(value || "")
+      .replace(/^@/, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
   }
 
   /**
@@ -176,12 +212,19 @@ globalThis.YTCT = globalThis.YTCT || {};
     // attributable and get judged on the blocklist like any other video —
     // binning them there emptied the grid, and YouTube answered an empty grid
     // by fetching more forever.
+    // Handles are recorded on the card so a click can store them, and are
+    // checked here so a channel blocked from a collaboration is recognised on
+    // its own videos too.
+    const handles = handlesOf(card);
+    card.dataset.ytctHandles = handles.join(" ");
+    const byHandle = handles.some((h) => blockedHandles.has(h));
+
     const stray =
       !!card.querySelector(SHORTS_LINK) && !channel && !subscribedShorts(card);
     card.classList.toggle(
       "ytct-video-hidden",
       config.enabled !== false &&
-        ((!!norm && blockedChannels.has(norm)) || stray),
+        ((!!norm && blockedChannels.has(norm)) || byHandle || stray),
     );
   }
 
@@ -225,6 +268,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       event.preventDefault();
       event.stopPropagation();
       const name = floatBtn.dataset.ytctChannel || "";
+      const handles = (floatBtn.dataset.ytctHandles || "").split(" ").filter(Boolean);
       if (!name) return;
       // Block, never unblock. This used to toggle, and the button is still on
       // screen for a moment after the first press because the card has not
@@ -232,7 +276,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       // yet took the block straight back off, while the label still said
       // SHUT UP. Blocking something repeatedly left it unblocked on every
       // even-numbered press. Undo lives in the toast and in settings.
-      blockChannel(name);
+      blockChannel(name, handles);
     });
     document.body.appendChild(floatBtn);
     return floatBtn;
@@ -282,6 +326,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     const btn = floatButton();
     const rect = card.getBoundingClientRect();
     btn.dataset.ytctChannel = name;
+    btn.dataset.ytctHandles = card.dataset.ytctHandles || "";
     btn.textContent = "SHUT UP";
     btn.title = `Block ${name} everywhere`;
     btn.style.left = `${Math.round(rect.left + 6)}px`;
@@ -471,7 +516,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       config.enabled !== false && !subscribedHere ? "inline-flex" : "none";
   }
 
-  async function blockChannel(name) {
+  async function blockChannel(name, handles) {
     const key = filters.normalizeName(name);
     if (!key) return;
     // Last line of defence: whatever the extraction believed, never write a
@@ -480,9 +525,24 @@ globalThis.YTCT = globalThis.YTCT || {};
       console.warn("[SHUT UP] refusing to block a non-channel:", name);
       return;
     }
+    const list = Array.isArray(handles) ? handles.filter(Boolean) : [];
     await store.update((c) => {
-      if (!c.channels.some((ch) => filters.normalizeName(ch.name) === key)) {
-        c.channels.push({ name, at: Date.now(), why: "shut up button" });
+      const existing = c.channels.find(
+        (ch) => filters.normalizeName(ch.name) === key,
+      );
+      if (existing) {
+        // Same name, new handles: a later card may link channels the first one
+        // did not, and every one of them belongs on the entry.
+        existing.handles = [
+          ...new Set([...(existing.handles || []), ...list]),
+        ];
+      } else {
+        c.channels.push({
+          name,
+          handles: list,
+          at: Date.now(),
+          why: "shut up button",
+        });
       }
       return c;
     });
