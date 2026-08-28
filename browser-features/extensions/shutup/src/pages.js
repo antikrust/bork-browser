@@ -142,6 +142,31 @@ globalThis.YTCT = globalThis.YTCT || {};
     return out;
   }
 
+  /**
+   * Does this byline name a blocked channel?
+   *
+   * Exact match first, which is every ordinary card. Otherwise the byline is
+   * checked for a blocked name sitting either side of an " and ", which is how
+   * YouTube joins the channels on a collaboration. The name has to be the
+   * whole of its side — "Sky News" does not match "Sky News Australia and X" —
+   * so a short name cannot swallow a longer one.
+   */
+  function bylineNames(norm) {
+    if (blockedChannels.has(norm)) return true;
+    if (!norm.includes(" and ")) return false;
+    for (const blocked of blockedChannels) {
+      if (!blocked) continue;
+      if (
+        norm.startsWith(`${blocked} and `) ||
+        norm.endsWith(` and ${blocked}`) ||
+        norm.includes(` and ${blocked} and `)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Letters and digits only, so @Ezra_Klein and @ezraklein are one thing. */
   function squashHandle(value) {
     return String(value || "")
@@ -201,6 +226,13 @@ globalThis.YTCT = globalThis.YTCT || {};
 
     const channel = card.dataset.ytctChannel || "";
     const norm = channel ? filters.normalizeName(channel) : "";
+    // A collaboration byline names several channels at once — "The Ezra Klein
+    // Show and New York Times Podcast" — and equals none of their names, so a
+    // channel blocked on its own never matched its collaborations. Recognise
+    // the blocked name inside the byline instead. This reads the byline, it
+    // never rewrites it: nothing is split, and what is stored stays exactly as
+    // the user blocked it.
+    const named = norm && bylineNames(norm);
     // The subscriptions feed is subscribed channels by definition, so no
     // buttons there even when the guide scrape has nothing.
     card.classList.toggle(
@@ -224,7 +256,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     card.classList.toggle(
       "ytct-video-hidden",
       config.enabled !== false &&
-        ((!!norm && blockedChannels.has(norm)) || byHandle || stray),
+        (named || byHandle || stray),
     );
   }
 
