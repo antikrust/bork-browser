@@ -226,8 +226,13 @@ globalThis.YTCT = globalThis.YTCT || {};
       event.stopPropagation();
       const name = floatBtn.dataset.ytctChannel || "";
       if (!name) return;
-      if (blockedChannels.has(filters.normalizeName(name))) unblockChannel(name);
-      else blockChannel(name);
+      // Block, never unblock. This used to toggle, and the button is still on
+      // screen for a moment after the first press because the card has not
+      // been re-judged yet — so a second press on a card that had not vanished
+      // yet took the block straight back off, while the label still said
+      // SHUT UP. Blocking something repeatedly left it unblocked on every
+      // even-numbered press. Undo lives in the toast and in settings.
+      blockChannel(name);
     });
     document.body.appendChild(floatBtn);
     return floatBtn;
@@ -252,6 +257,17 @@ globalThis.YTCT = globalThis.YTCT || {};
       hideFloat();
       return;
     }
+
+    // Once the button is up, the pointer moving ONTO it must not re-aim it.
+    // Reaching for the button is itself a mouse move, and the sidebar shifts
+    // under the cursor as YouTube re-renders — so re-targeting at that moment
+    // blocked whichever channel had slid underneath instead of the one being
+    // pointed at. The card you aimed at stayed, and a channel you never chose
+    // went on the list.
+    if (floatBtn && floatBtn.classList.contains("ytct-float-on")) {
+      const top = document.elementFromPoint(x, y);
+      if (top === floatBtn || floatBtn.contains(top)) return;
+    }
     const card = cardUnder(x, y);
     if (!card || !card.classList.contains("ytct-has-channel")) {
       hideFloat();
@@ -265,11 +281,9 @@ globalThis.YTCT = globalThis.YTCT || {};
 
     const btn = floatButton();
     const rect = card.getBoundingClientRect();
-    const blocked = blockedChannels.has(filters.normalizeName(name));
     btn.dataset.ytctChannel = name;
-    btn.textContent = blocked ? "UNBLOCK" : "SHUT UP";
-    btn.title = blocked ? `Show ${name} again` : `Block ${name} everywhere`;
-    btn.classList.toggle("ytct-float-blocked", blocked);
+    btn.textContent = "SHUT UP";
+    btn.title = `Block ${name} everywhere`;
     btn.style.left = `${Math.round(rect.left + 6)}px`;
     btn.style.top = `${Math.round(rect.top + 6)}px`;
     btn.classList.add("ytct-float-on");
