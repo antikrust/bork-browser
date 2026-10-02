@@ -330,20 +330,41 @@ globalThis.YTCT = globalThis.YTCT || {};
     return null;
   }
 
+  /**
+   * Menu items that are actually on screen.
+   *
+   * A closed menu leaves its items in the document — measured: four items in
+   * the DOM, none of them visible. Searching the document without this found
+   * the PREVIOUS menu's Hide on the second press, clicked something nobody
+   * could see, hid nothing, and left the new menu standing open.
+   */
+  function visibleMenuItems() {
+    return [...document.querySelectorAll(MENU_ITEM)].filter(
+      (entry) => entry.getBoundingClientRect().width > 0,
+    );
+  }
+
   async function hideForNow(card) {
     const menu = menuButtonOf(card);
     if (!menu) return;
+
+    // Start from nothing open, so what is found below can only be ours.
+    if (visibleMenuItems().length) {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+      await waitFor(() => visibleMenuItems().length === 0);
+    }
+
     menu.click();
     // The menu renders into a popup container at the end of the document, not
     // inside the card, so it is looked for on the whole page.
-    const item = await waitFor(() => {
-      for (const entry of document.querySelectorAll(MENU_ITEM)) {
-        if ((entry.textContent || "").trim().toLowerCase() === HIDE_ITEM) {
-          return entry;
-        }
-      }
-      return null;
-    });
+    const item = await waitFor(
+      () =>
+        visibleMenuItems().find(
+          (entry) => (entry.textContent || "").trim().toLowerCase() === HIDE_ITEM,
+        ) || null,
+    );
     if (!item) {
       // No Hide in this menu. Shut it again rather than pressing whatever else
       // happens to be in there.
