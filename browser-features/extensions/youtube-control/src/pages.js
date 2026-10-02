@@ -91,6 +91,24 @@ globalThis.YTCT = globalThis.YTCT || {};
       "ytct-cards-on",
       config.enabled !== false && config.showButton !== false,
     );
+    applyTabClass();
+  }
+
+  /**
+   * While a tab is selected a cell has to EARN its place: the stylesheet hides
+   * every cell not marked as belonging to the tab. The other way round —
+   * judging a cell and then hiding it — leaves every cell YouTube has just
+   * added on screen until the next pass, which is a faceful of the wrong
+   * videos each time the feed pages.
+   *
+   * Set from scan(), because that is where the page is known: rebuild() runs
+   * before the first scan and would have the wrong answer on a fresh load.
+   */
+  function applyTabClass() {
+    document.documentElement.classList.toggle(
+      "ytct-tabbed",
+      !!config && config.enabled !== false && onSubsFeed && !!config.subTab,
+    );
   }
 
   /* ------------------------------------------------------------- extraction */
@@ -260,18 +278,18 @@ globalThis.YTCT = globalThis.YTCT || {};
       config.subsShorts === false &&
       !!card.querySelector(SHORTS_LINK);
 
-    // A tab is a filter over what the feed is showing: anything not in the
-    // selected one is simply not on screen while it is selected.
-    const offTab =
-      onSubsFeed &&
-      !!config.subTab &&
-      !inTab(norm, keyOf(card), config.subTab);
+    // A tab is a filter over what the feed is showing. The mark is what the
+    // stylesheet looks for; a cell without it is not on screen while a tab is
+    // selected, which is also true of cells nothing has judged yet.
+    const tab = onSubsFeed ? config.subTab || "" : "";
+    if (tab && inTab(norm, keyOf(card), tab)) card.dataset.ytctTab = tab;
+    else delete card.dataset.ytctTab;
 
     const hid = hidStateOf(card);
     card.classList.toggle(
       "ytct-video-hidden",
       config.enabled !== false &&
-        (named || byHandle || stray || shortsOff || offTab || hid === "gone"),
+        (named || byHandle || stray || shortsOff || hid === "gone"),
     );
   }
 
@@ -849,6 +867,33 @@ globalThis.YTCT = globalThis.YTCT || {};
     return tabsOfChannel(norm).includes(tab) || tabsOfVideo(key).includes(tab);
   }
 
+  /**
+   * Where the tabs go: in the feed's own heading row, beside "Latest".
+   *
+   * That row is a flex box about twelve hundred pixels wide holding a heading
+   * sixty wide, so the tabs sit in the space already there rather than taking
+   * a row of their own. Placed after the heading, not appended, because the
+   * row's other children are YouTube's and sit at its end.
+   *
+   * Falls back to above the grid when the heading is not there — the feed does
+   * not always have one, and a tab bar that vanishes with it would be worse.
+   */
+  function tabsSpot() {
+    const row = document.querySelector(
+      "ytd-shelf-renderer .grid-subheader #title-container, ytd-shelf-renderer #title-container",
+    );
+    if (row) {
+      const heading = row.querySelector("h2");
+      return {
+        parent: row,
+        before: heading ? heading.nextSibling : row.firstChild,
+        inline: true,
+      };
+    }
+    const top = feedTop();
+    return top && { ...top, inline: false };
+  }
+
   function ensureTabBar() {
     const wanted =
       onSubsFeed && config.enabled !== false && (config.subTabs || []).length;
@@ -856,7 +901,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       for (const stale of document.querySelectorAll(".ytct-tabs")) stale.remove();
       return;
     }
-    const spot = feedTop();
+    const spot = tabsSpot();
     if (!spot) return;
 
     let bar = spot.parent.querySelector(":scope > .ytct-tabs");
@@ -865,6 +910,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       bar.className = "ytct-tabs";
       spot.parent.insertBefore(bar, spot.before || null);
     }
+    bar.classList.toggle("ytct-inline", !!spot.inline);
     for (const stale of document.querySelectorAll(".ytct-tabs")) {
       if (stale !== bar) stale.remove();
     }
@@ -893,33 +939,6 @@ globalThis.YTCT = globalThis.YTCT || {};
       });
       bar.appendChild(tab);
     }
-  }
-
-  /**
-   * A spacer at the bottom of the grid while a tab is selected.
-   *
-   * A filter that hides most of the feed leaves the grid shorter than the
-   * window, and YouTube answers a grid that does not fill the screen by
-   * fetching the next page, over and over — measured climbing past 450 cards
-   * on a feed with two matches in it. This keeps the grid taller than the
-   * viewport so its loader stays quiet until the page is actually scrolled,
-   * which is when more really is wanted.
-   */
-  function ensureTabSpacer() {
-    const contents = document.querySelector("ytd-rich-grid-renderer #contents");
-    const wanted = onSubsFeed && config.enabled !== false && !!config.subTab;
-    const existing = contents && contents.querySelector(":scope > .ytct-spacer");
-    if (!wanted || !contents) {
-      if (existing) existing.remove();
-      return;
-    }
-    if (existing) {
-      contents.appendChild(existing);
-      return;
-    }
-    const spacer = document.createElement("div");
-    spacer.className = "ytct-spacer";
-    contents.appendChild(spacer);
   }
 
   /* --------------------------------------------------------------- tag menu */
@@ -1269,10 +1288,10 @@ globalThis.YTCT = globalThis.YTCT || {};
   function scan() {
     if (!config) return;
     onSubsFeed = location.pathname.startsWith("/feed/subscriptions");
+    applyTabClass();
     refreshSubscribed();
     ensureSubscribeButtons();
     ensureTabBar();
-    ensureTabSpacer();
     ensureShortsBar();
     ensureDoneButtons();
     for (const card of document.querySelectorAll(CARDS)) {
@@ -1290,9 +1309,13 @@ globalThis.YTCT = globalThis.YTCT || {};
     scan();
 
     store.onChange((next) => {
+      const tabChanged = (config && config.subTab) !== next.subTab;
       config = next;
       rebuild();
-      queueScan();
+      // A tab being picked is a direct answer to a click, so it happens now.
+      // Everything else can wait for the next pass.
+      if (tabChanged) scan();
+      else queueScan();
     });
 
     new MutationObserver(queueScan).observe(document.documentElement, {

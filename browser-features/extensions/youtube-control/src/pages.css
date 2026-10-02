@@ -338,11 +338,45 @@
   content: "✓ ";
 }
 
-/* Holds the grid taller than the window while a tab is selected, so YouTube's
-   own "fetch the next page" does not fire on a grid it thinks is too short. */
-.ytct-spacer {
-  grid-column: 1 / -1;
-  width: 100%;
-  min-height: 150vh;
-  pointer-events: none;
+/*
+ * Nothing props the grid's height open while a tab is selected, and that is
+ * deliberate.
+ *
+ * A filter that hides most of the feed leaves the grid short, and YouTube
+ * answers a short grid by fetching the next page until the feed runs out —
+ * measured going 30 to 450 cards in five seconds, then stopping. Two attempts
+ * were made at quieting that: an element appended to the grid, which YouTube
+ * threw away on its own re-renders, and a min-height rule, which held.
+ *
+ * Both were removed, because the paging turns out to be the thing that makes a
+ * tab work. A tab's videos are scattered through the whole feed, not sitting
+ * in the first page of it, so a feed that stops loading shows only the matches
+ * near the top. It is one pass and then quiet, and the cost of stopping it is
+ * a screen and a half of blank space under a tab with few matches.
+ */
+
+/*
+ * While a tab is selected, a cell is off screen until something has marked it
+ * as belonging to that tab — including cells YouTube has only just added.
+ *
+ * Only the feed's own cell element is named here, never the lockups nested
+ * inside one: the nested ones are never judged (the outer cell is), so hiding
+ * anything unmarked would empty the very cards that passed.
+ */
+:root.ytct-tabbed ytd-rich-item-renderer:not([data-ytct-tab]) {
+  display: none !important;
+}
+
+/* In the feed's own heading row beside "Latest", rather than on a row of its
+   own: no block margins, and the gap does the spacing. */
+.ytct-tabs.ytct-inline {
+  margin: 0;
+  padding: 0 0 0 16px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.ytct-tabs.ytct-inline .ytct-tab {
+  padding: 3px 10px;
+  font-size: 12px;
 }

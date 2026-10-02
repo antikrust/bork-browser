@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Control",
-  "version": "0.2.31",
+  "version": "0.2.32",
   "description": "Quiet YouTube: block whole channels from home, search and recommendations, and tame live chat with word and author filters, a one-click SHUT UP button, repeat-offender blocking, and a threaded reading view.",
   "icons": {
     "16": "icons/icon-16.png",

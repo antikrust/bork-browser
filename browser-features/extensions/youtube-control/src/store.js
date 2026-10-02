@@ -81,7 +81,15 @@ globalThis.YTCT = globalThis.YTCT || {};
      * Tabs across the top of the subscriptions feed. Editable — this is only
      * the set it starts with, and the order here is the order they appear in.
      */
-    subTabs: ["Watch", "News", "Podcasts", "Science", "Comedy", "Favourites"],
+    subTabs: [
+      "Watch",
+      "News",
+      "Podcasts",
+      "Science",
+      "Comedy",
+      "Music",
+      "Favourites",
+    ],
     /**
      * Which tabs a channel appears under: { normalised channel name: [tab] }.
      *
@@ -101,9 +109,14 @@ globalThis.YTCT = globalThis.YTCT || {};
     subVideoTags: {},
     /** The tab currently showing. "" is All, and nothing is filtered. */
     subTab: "",
+    /** How many times the shipped tab list has been merged in. See load(). */
+    subTabsVersion: 0,
 
     stats: { hidden: 0, blocked: 0 },
   };
+
+  /** Bumped when a tab is added to DEFAULTS.subTabs and should reach everyone. */
+  const DEFAULTS_TABS_VERSION = 1;
 
   function clone(value) {
     return typeof structuredClone === "function"
@@ -125,6 +138,20 @@ globalThis.YTCT = globalThis.YTCT || {};
     }
     out.stats = Object.assign(clone(DEFAULTS.stats), stored.stats || {});
 
+    // A tab added to the shipped list has to reach configs that already have a
+    // list of their own, or it never appears for anyone who used the feature
+    // before it was added — the stored list shadows the default entirely.
+    //
+    // Once, counted, and not on every load: run every time, this would put
+    // back a default tab somebody deliberately deleted, over and over.
+    if ((stored.subTabsVersion || 0) < DEFAULTS_TABS_VERSION) {
+      const have = new Set(out.subTabs.map((t) => String(t).toLowerCase()));
+      for (const name of DEFAULTS.subTabs) {
+        if (!have.has(name.toLowerCase())) out.subTabs.push(name);
+      }
+      out.subTabsVersion = DEFAULTS_TABS_VERSION;
+    }
+
     // Drop channel entries that were never channels. Extraction used to take
     // the first metadata row under a title, which on a channel's own pages is
     // the view count — so lists filled up with "48K views", one per video,
@@ -141,7 +168,14 @@ globalThis.YTCT = globalThis.YTCT || {};
 
   async function load() {
     const got = await api.storage.local.get(KEY);
-    return withDefaults(got && got[KEY]);
+    const stored = got && got[KEY];
+    const config = withDefaults(stored);
+    // The merge above has to be written down to count as done. Left unsaved it
+    // would happen on every load, which is the same as never having counted.
+    if (stored && config.subTabsVersion !== (stored.subTabsVersion || 0)) {
+      await save(config);
+    }
+    return config;
   }
 
   async function save(config) {
