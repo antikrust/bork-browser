@@ -192,8 +192,14 @@ def describe(addon: str) -> None:
     so nothing here is invented for it.
     """
     fields = {}
+    # The catalogue name is held by AMO, not read from the manifest: it was
+    # taken from whatever the first submission said and stays there until it is
+    # written over. Renaming the extension does not rename the page.
+    name = os.environ.get("AMO_NAME")
     summary = os.environ.get("AMO_SUMMARY")
     category = os.environ.get("AMO_CATEGORY")
+    if name:
+        fields["name"] = {"en-US": name}
     if summary:
         fields["summary"] = {"en-US": summary}
     if category:

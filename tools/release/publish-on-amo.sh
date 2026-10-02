@@ -62,7 +62,7 @@ LISTED_VERSION="$(AMO_ADDON_ID="$ADDON_ID" AMO_MODE=next-listed-version \
 echo "catalogue version: $LISTED_VERSION"
 
 cp -R "$SRC" "$work/src"
-SUMMARY="$(python3 - "$work/src/manifest.json" "$LISTED_VERSION" <<'PY'
+FIELDS="$(python3 - "$work/src/manifest.json" "$LISTED_VERSION" <<'PY'
 import json, sys
 manifest = json.load(open(sys.argv[1]))
 manifest["version"] = sys.argv[2]
@@ -70,15 +70,20 @@ gecko = manifest.setdefault("browser_specific_settings", {}).setdefault("gecko",
 gecko.pop("update_url", None)
 json.dump(manifest, open(sys.argv[1], "w"), indent=2, ensure_ascii=False)
 # AMO caps the summary at 250 characters.
+print(manifest["name"])
 print(manifest.get("description", "")[:250])
 PY
 )"
+# Two lines out of one call, so the manifest is only parsed once.
+NAME="$(printf '%s\n' "$FIELDS" | sed -n 1p)"
+SUMMARY="$(printf '%s\n' "$FIELDS" | sed -n 2p)"
 
 ( cd "$work/src" && zip -qr -X "$work/upload.zip" . -x 'test/*' '*.md' 'build.sh' '.gitignore' )
 
 AMO_ADDON_ID="$ADDON_ID" \
 AMO_ZIP="$work/upload.zip" \
 AMO_CHANNEL="listed" \
+AMO_NAME="$NAME" \
 AMO_SUMMARY="$SUMMARY" \
 AMO_CATEGORY="$CATEGORY" \
 python3 "$ROOT/tools/release/amo-sign.py"
