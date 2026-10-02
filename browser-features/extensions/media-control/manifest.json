@@ -1,8 +1,15 @@
 {
   "manifest_version": 2,
   "name": "Media Control",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Outlets you never want to read again, gone from your internet: search results, news aggregators, social feeds and the address bar. Blocked pages explain who owns the thing and why it is on the list.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
   "permissions": [
     "storage",
     "contextMenus",
@@ -21,21 +28,37 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "<all_urls>"
+      ],
       "run_at": "document_idle",
       "all_frames": false,
-      "js": ["src/store.js", "src/outlets.js", "src/match.js", "src/content.js"],
-      "css": ["src/content.css"]
+      "js": [
+        "src/store.js",
+        "src/outlets.js",
+        "src/match.js",
+        "src/content.js"
+      ],
+      "css": [
+        "src/content.css"
+      ]
     }
   ],
-  "web_accessible_resources": ["blocked/blocked.html", "options/options.html"],
+  "web_accessible_resources": [
+    "blocked/blocked.html",
+    "options/options.html"
+  ],
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": true
   },
   "browser_action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Media Control"
+    "default_title": "Media Control",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
   },
   "browser_specific_settings": {
     "gecko": {
@@ -43,7 +66,9 @@
       "update_url": "https://borkbrowser.online/media-control-updates.json",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": [
+          "none"
+        ]
       }
     }
   }

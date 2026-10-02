@@ -3,9 +3,9 @@
     "media-control@bork": {
       "updates": [
         {
-          "version": "0.1.15",
+          "version": "0.1.16",
           "update_link": "https://borkbrowser.online/media-control.xpi",
-          "update_hash": "sha256:98e558615e55cb42d5b7016b898f99aa44d13c5e4c8b9953b237d3306f89bff9"
+          "update_hash": "sha256:5a60130f1ebfcf2ef904a218a436674c3b73c388f94a511906120a4c29024cda"
         }
       ]
     }

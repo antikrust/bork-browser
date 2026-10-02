@@ -1,9 +1,18 @@
 {
   "manifest_version": 3,
   "name": "YouTube Control",
-  "version": "0.2.25",
+  "version": "0.2.26",
   "description": "Quiet YouTube: block whole channels from home, search and recommendations, and tame live chat with word and author filters, a one-click SHUT UP button, repeat-offender blocking, and a threaded reading view.",
-  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
   "content_scripts": [
     {
       "matches": [
@@ -18,19 +27,33 @@
         "src/threads.js",
         "src/content.js"
       ],
-      "css": ["src/ui.css"]
+      "css": [
+        "src/ui.css"
+      ]
     },
     {
-      "matches": ["https://www.youtube.com/*"],
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
       "run_at": "document_idle",
-      "js": ["src/store.js", "src/filters.js", "src/pages.js"],
-      "css": ["src/pages.css"]
+      "js": [
+        "src/store.js",
+        "src/filters.js",
+        "src/pages.js"
+      ],
+      "css": [
+        "src/pages.css"
+      ]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["options/options.html"],
-      "matches": ["*://*.youtube.com/*"]
+      "resources": [
+        "options/options.html"
+      ],
+      "matches": [
+        "*://*.youtube.com/*"
+      ]
     }
   ],
   "options_ui": {
@@ -39,7 +62,11 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "YouTube Control"
+    "default_title": "YouTube Control",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
   },
   "browser_specific_settings": {
     "gecko": {
@@ -47,7 +74,9 @@
       "update_url": "https://borkbrowser.online/youtube-control-updates.json",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": [
+          "none"
+        ]
       }
     }
   }
