@@ -244,3 +244,105 @@
 #ytct-page-toast button:hover {
   border-color: var(--ytct-fg);
 }
+
+/* ------------------------------------------------------------------- tabs */
+
+/*
+ * Across the top of the subscriptions feed, in the same place the Shorts
+ * switch sits — anchored to the feed rather than to anything YouTube renders,
+ * so selecting a tab cannot move the tabs.
+ */
+.ytct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0 16px;
+}
+
+.ytct-tab {
+  padding: 6px 14px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-fg);
+  font: 500 13px/1.4 Roboto, system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ytct-tab:hover {
+  border-color: var(--ytct-fg);
+}
+
+.ytct-tab.ytct-on {
+  border-color: var(--ytct-fg);
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+}
+
+/* ---------------------------------------------------------------- tag menu */
+
+#ytct-tag-btn {
+  border-color: var(--ytct-line);
+  color: var(--ytct-fg);
+}
+
+#ytct-tag-btn:hover {
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+}
+
+/* Fixed, like the bar that opens it, and for the same reason: it has to paint
+   over YouTube's own preview player. */
+#ytct-tag-menu {
+  position: fixed;
+  z-index: 2147483001;
+  min-width: 200px;
+  padding: 6px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 10px;
+  background: var(--ytct-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.ytct-tag-head {
+  margin: 4px 8px 6px;
+  overflow: hidden;
+  color: var(--ytct-fg);
+  font: 600 11px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.65;
+}
+
+.ytct-tag-row {
+  display: block;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ytct-fg);
+  font: 500 13px/1.4 Roboto, system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ytct-tag-row:hover {
+  background: var(--ytct-line);
+}
+
+.ytct-tag-row.ytct-on::before {
+  content: "✓ ";
+}
+
+/* Holds the grid taller than the window while a tab is selected, so YouTube's
+   own "fetch the next page" does not fire on a grid it thinks is too short. */
+.ytct-spacer {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 150vh;
+  pointer-events: none;
+}

@@ -260,11 +260,18 @@ globalThis.YTCT = globalThis.YTCT || {};
       config.subsShorts === false &&
       !!card.querySelector(SHORTS_LINK);
 
+    // A tab is a filter over what the feed is showing: anything not in the
+    // selected one is simply not on screen while it is selected.
+    const offTab =
+      onSubsFeed &&
+      !!config.subTab &&
+      !inTab(norm, keyOf(card), config.subTab);
+
     const hid = hidStateOf(card);
     card.classList.toggle(
       "ytct-video-hidden",
       config.enabled !== false &&
-        (named || byHandle || stray || shortsOff || hid === "gone"),
+        (named || byHandle || stray || shortsOff || offTab || hid === "gone"),
     );
   }
 
@@ -344,9 +351,16 @@ globalThis.YTCT = globalThis.YTCT || {};
     );
   }
 
-  async function hideForNow(card) {
+  /**
+   * Press one item in the card's own ⋮ menu, by what it says.
+   *
+   * Everything that acts on a single video goes through here rather than
+   * reimplementing it: YouTube's own menu entry already does the real thing
+   * and keeps doing it after this extension is gone.
+   */
+  async function pressMenuItem(card, matches) {
     const menu = menuButtonOf(card);
-    if (!menu) return;
+    if (!menu) return false;
 
     // Start from nothing open, so what is found below can only be ours.
     if (visibleMenuItems().length) {
@@ -359,23 +373,51 @@ globalThis.YTCT = globalThis.YTCT || {};
     menu.click();
     // The menu renders into a popup container at the end of the document, not
     // inside the card, so it is looked for on the whole page.
-    const item = await waitFor(
-      () =>
-        visibleMenuItems().find(
-          (entry) => (entry.textContent || "").trim().toLowerCase() === HIDE_ITEM,
-        ) || null,
-    );
+    const item = await waitFor(() => visibleMenuItems().find(matches) || null);
     if (!item) {
-      // No Hide in this menu. Shut it again rather than pressing whatever else
+      // Not in this menu. Shut it again rather than pressing whatever else
       // happens to be in there.
       document.dispatchEvent(
         new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
       );
-      return;
+      return false;
     }
     item.click();
+    return true;
+  }
+
+  const saysHide = (el) =>
+    (el.textContent || "").trim().toLowerCase() === HIDE_ITEM;
+  /** "Save to Watch later" — matched loosely, because the wording moves about. */
+  const saysWatchLater = (el) => /watch later/i.test(el.textContent || "");
+
+  async function hideForNow(card) {
+    if (!(await pressMenuItem(card, saysHide))) return;
     card.dataset.ytctDone = "wait";
+    // Every press pushes the deadline out, so a run of them clears in one go.
+    restartNoticeTimer();
     queueScan();
+  }
+
+  /**
+   * YouTube's own Save to Watch later, with a note kept here so the Watch tab
+   * can find it again in the feed.
+   *
+   * The saving is YouTube's: it persists, it is in their sidebar, and it is
+   * what "watch later" already means. The note is only an index for the tab —
+   * no second list of videos to keep.
+   */
+  async function saveForLater(card, key) {
+    if (!(await pressMenuItem(card, saysWatchLater))) {
+      toast("No Watch later in this menu");
+      return;
+    }
+    await store.update((c) => {
+      const where = (c.subVideoTags = c.subVideoTags || {});
+      if (key) where[key] = [...new Set([...(where[key] || []), WATCH_TAB])];
+      return c;
+    });
+    toast("Saved to Watch later");
   }
 
   /**
@@ -407,13 +449,28 @@ globalThis.YTCT = globalThis.YTCT || {};
     return named || card;
   }
 
-  /** Ten seconds, then the cell goes on its own. DONE is for not waiting. */
+  /**
+   * Ten seconds, then the cells go on their own. DONE is for not waiting.
+   *
+   * ONE timer for all of them, restarted by every press. A timer per card made
+   * a run of hides vanish one at a time, seconds apart, with the grid closing
+   * up under the pointer between each — so they go together now, ten seconds
+   * after the last press rather than ten after each.
+   */
   const NOTICE_LINGER = 10000;
-  const noticeTimers = new WeakMap();
+  let noticeTimer = 0;
+
+  function restartNoticeTimer() {
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => {
+      noticeTimer = 0;
+      for (const card of document.querySelectorAll("[data-ytct-done='wait']")) {
+        clearCell(card);
+      }
+    }, NOTICE_LINGER);
+  }
 
   function clearCell(card) {
-    clearTimeout(noticeTimers.get(card));
-    noticeTimers.delete(card);
     delete card.dataset.ytctDone;
     card.dataset.ytctHid = "gone";
     card.dataset.ytctHidKey = keyOf(card);
@@ -424,8 +481,6 @@ globalThis.YTCT = globalThis.YTCT || {};
     for (const card of document.querySelectorAll("[data-ytct-done='wait']")) {
       // Undo puts the video back, and then this is an ordinary card again.
       if (card.querySelector("a[href*='/watch'], a[href^='/shorts/']")) {
-        clearTimeout(noticeTimers.get(card));
-        noticeTimers.delete(card);
         delete card.dataset.ytctDone;
         const stale = card.querySelector(".ytct-done");
         if (stale) stale.remove();
@@ -433,14 +488,6 @@ globalThis.YTCT = globalThis.YTCT || {};
       }
       const notice = noticeIn(card);
       if (!notice || notice.querySelector(":scope > .ytct-done")) continue;
-      if (!noticeTimers.has(card)) {
-        noticeTimers.set(
-          card,
-          setTimeout(() => {
-            if (card.dataset.ytctDone === "wait") clearCell(card);
-          }, NOTICE_LINGER),
-        );
-      }
       const done = document.createElement("button");
       done.type = "button";
       done.className = "ytct-done";
@@ -501,6 +548,7 @@ globalThis.YTCT = globalThis.YTCT || {};
   let floatBar = null;
   let blockBtn = null;
   let hideBtn = null;
+  let tagBtn = null;
   let hoverCard = null;
 
   function bar() {
@@ -542,7 +590,18 @@ globalThis.YTCT = globalThis.YTCT || {};
       if (card) hideForNow(card);
     });
 
-    floatBar.append(blockBtn, hideBtn);
+    tagBtn = document.createElement("button");
+    tagBtn.type = "button";
+    tagBtn.id = "ytct-tag-btn";
+    tagBtn.textContent = "TAG";
+    tagBtn.title = "Put this in one of the feed's tabs";
+    tagBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openTagMenu(floatBar.dataset.ytctChannel || "", floatBar.dataset.ytctKey || "");
+    });
+
+    floatBar.append(blockBtn, hideBtn, tagBtn);
     document.body.appendChild(floatBar);
     return floatBar;
   }
@@ -611,6 +670,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     if (floatBar && floatBar.classList.contains("ytct-float-on")) {
       const top = document.elementFromPoint(x, y);
       if (top === floatBar || floatBar.contains(top)) return;
+      if (tagMenu && (top === tagMenu || tagMenu.contains(top))) return;
     }
     const card = cardUnder(x, y);
     if (!card || card.classList.contains("ytct-video-hidden")) {
@@ -644,6 +704,11 @@ globalThis.YTCT = globalThis.YTCT || {};
     blockBtn.style.display = canBlock ? "inline-flex" : "none";
     blockBtn.title = name ? `Block ${name} everywhere` : "";
     hideBtn.style.display = canHide ? "inline-flex" : "none";
+    // Tagging is the subscriptions feed's other job: sorting what is there
+    // rather than getting rid of it.
+    const canTag = onSubsFeed && (config.subTabs || []).length > 0;
+    el.dataset.ytctKey = keyOf(card);
+    tagBtn.style.display = canTag ? "inline-flex" : "none";
     el.style.left = `${Math.round(rect.left + 6)}px`;
     el.style.top = `${Math.round(rect.top + 6)}px`;
     el.classList.add("ytct-float-on");
@@ -733,7 +798,201 @@ globalThis.YTCT = globalThis.YTCT || {};
       config.enabled !== false &&
       !!shelf.querySelector(SHORTS_LINK) &&
       !subscribedShorts(shelf);
-    shelf.classList.toggle("ytct-video-hidden", blocked || strayShorts);
+    const tabbed =
+      onSubsFeed && !!config.subTab && !!shelf.querySelector(SHORTS_LINK);
+    shelf.classList.toggle(
+      "ytct-video-hidden",
+      blocked || strayShorts || tabbed,
+    );
+  }
+
+  /* ----------------------------------------------------- tabs on the feed */
+
+  /*
+   * Tabs across the top of the subscriptions feed, each one a filter over what
+   * the feed is already showing.
+   *
+   * Keyed by CHANNEL, with single videos as the exception. A feed replaces
+   * itself every few hours, so tagging videos one at a time would never be
+   * finished — tag the channel once and everything it posts arrives in that
+   * tab from then on. "Watch" is the exception because one video you mean to
+   * come back to is not a statement about its channel.
+   *
+   * Worth knowing what these cannot do: they filter, they do not fetch. A
+   * video kept under a tab is reachable for as long as YouTube still puts it
+   * in the feed, and no longer.
+   */
+  /** The one tab that holds single videos rather than whole channels. */
+  const WATCH_TAB = "Watch";
+
+  /** The card currently showing a given video, for acting on it after a click. */
+  function cardForKey(key) {
+    if (!key) return null;
+    for (const card of document.querySelectorAll(CARDS)) {
+      if (card.parentElement && card.parentElement.closest(CARDS)) continue;
+      if (keyOf(card) === key) return card;
+    }
+    return null;
+  }
+
+  function tabsOfChannel(norm) {
+    const tags = (config && config.subTags) || {};
+    return (norm && tags[norm]) || [];
+  }
+
+  function tabsOfVideo(key) {
+    const tags = (config && config.subVideoTags) || {};
+    return (key && tags[key]) || [];
+  }
+
+  function inTab(norm, key, tab) {
+    return tabsOfChannel(norm).includes(tab) || tabsOfVideo(key).includes(tab);
+  }
+
+  function ensureTabBar() {
+    const wanted =
+      onSubsFeed && config.enabled !== false && (config.subTabs || []).length;
+    if (!wanted) {
+      for (const stale of document.querySelectorAll(".ytct-tabs")) stale.remove();
+      return;
+    }
+    const spot = feedTop();
+    if (!spot) return;
+
+    let bar = spot.parent.querySelector(":scope > .ytct-tabs");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "ytct-tabs";
+      spot.parent.insertBefore(bar, spot.before || null);
+    }
+    for (const stale of document.querySelectorAll(".ytct-tabs")) {
+      if (stale !== bar) stale.remove();
+    }
+
+    const names = ["", ...(config.subTabs || [])];
+    const current = config.subTab || "";
+    // Rebuilt only when the set or the selection changes. The scan runs every
+    // second and replacing the buttons under the pointer every time would eat
+    // the click that is being made.
+    const signature = JSON.stringify([names, current]);
+    if (bar.dataset.ytctSig === signature) return;
+    bar.dataset.ytctSig = signature;
+
+    bar.textContent = "";
+    for (const name of names) {
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.className = "ytct-tab";
+      tab.textContent = name || "All";
+      tab.classList.toggle("ytct-on", name === current);
+      tab.addEventListener("click", () => {
+        store.update((c) => {
+          c.subTab = c.subTab === name ? "" : name;
+          return c;
+        });
+      });
+      bar.appendChild(tab);
+    }
+  }
+
+  /**
+   * A spacer at the bottom of the grid while a tab is selected.
+   *
+   * A filter that hides most of the feed leaves the grid shorter than the
+   * window, and YouTube answers a grid that does not fill the screen by
+   * fetching the next page, over and over — measured climbing past 450 cards
+   * on a feed with two matches in it. This keeps the grid taller than the
+   * viewport so its loader stays quiet until the page is actually scrolled,
+   * which is when more really is wanted.
+   */
+  function ensureTabSpacer() {
+    const contents = document.querySelector("ytd-rich-grid-renderer #contents");
+    const wanted = onSubsFeed && config.enabled !== false && !!config.subTab;
+    const existing = contents && contents.querySelector(":scope > .ytct-spacer");
+    if (!wanted || !contents) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) {
+      contents.appendChild(existing);
+      return;
+    }
+    const spacer = document.createElement("div");
+    spacer.className = "ytct-spacer";
+    contents.appendChild(spacer);
+  }
+
+  /* --------------------------------------------------------------- tag menu */
+
+  let tagMenu = null;
+
+  function closeTagMenu() {
+    if (!tagMenu) return;
+    tagMenu.remove();
+    tagMenu = null;
+  }
+
+  function openTagMenu(name, key) {
+    const norm = name ? filters.normalizeName(name) : "";
+    if (!norm && !key) return;
+    closeTagMenu();
+
+    tagMenu = document.createElement("div");
+    tagMenu.id = "ytct-tag-menu";
+    const head = document.createElement("p");
+    head.className = "ytct-tag-head";
+    head.textContent = name || "this video";
+    tagMenu.appendChild(head);
+
+    for (const tab of config.subTabs || []) {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "ytct-tag-row";
+      // Whole channel, except Watch — see the comment above inTab.
+      const perVideo = tab === WATCH_TAB;
+      const on = perVideo
+        ? tabsOfVideo(key).includes(tab)
+        : tabsOfChannel(norm).includes(tab);
+      row.textContent = perVideo ? `${tab} — just this video` : tab;
+      row.classList.toggle("ytct-on", on);
+      row.addEventListener("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeTagMenu();
+        // Putting a single video in Watch means saving it with YouTube's own
+        // Save to Watch later. Taking it out again only drops our note: the
+        // saving is theirs and theirs is where it is undone.
+        if (perVideo && !on) {
+          const card = cardForKey(key);
+          if (card) await saveForLater(card, key);
+          return;
+        }
+        await store.update((c) => {
+          const where = perVideo
+            ? (c.subVideoTags = c.subVideoTags || {})
+            : (c.subTags = c.subTags || {});
+          const id = perVideo ? key : norm;
+          if (!id) return c;
+          const list = new Set(where[id] || []);
+          if (list.has(tab)) list.delete(tab);
+          else list.add(tab);
+          if (list.size) where[id] = [...list];
+          else delete where[id];
+          return c;
+        });
+        toast(on ? `Out of ${tab}` : `In ${tab}`);
+      });
+      tagMenu.appendChild(row);
+    }
+
+    const rect = floatBar.getBoundingClientRect();
+    tagMenu.style.left = `${Math.round(rect.left)}px`;
+    tagMenu.style.top = `${Math.round(rect.bottom + 6)}px`;
+    document.body.appendChild(tagMenu);
+    // Next tick, or the click that opened it closes it again.
+    setTimeout(() => {
+      document.addEventListener("click", closeTagMenu, { once: true });
+    }, 0);
   }
 
   /* ------------------------------------------------- shorts on the feed */
@@ -1012,6 +1271,8 @@ globalThis.YTCT = globalThis.YTCT || {};
     onSubsFeed = location.pathname.startsWith("/feed/subscriptions");
     refreshSubscribed();
     ensureSubscribeButtons();
+    ensureTabBar();
+    ensureTabSpacer();
     ensureShortsBar();
     ensureDoneButtons();
     for (const card of document.querySelectorAll(CARDS)) {

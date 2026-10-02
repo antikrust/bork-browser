@@ -75,6 +75,34 @@
       </section>
 
       <section>
+        <h2>Subscription tabs</h2>
+        <p class="hint">
+          Tabs across the top of your subscriptions feed. Hover a video there,
+          press <strong>TAG</strong>, and pick one: the channel goes in that
+          tab and everything it posts from then on arrives under it. Tagging a
+          channel rather than a video is deliberate — a feed turns over every
+          few hours, so tagging videos one at a time would never be finished.
+        </p>
+        <p class="hint">
+          <em>Watch</em> is the exception, and holds single videos. Putting one
+          there saves it with YouTube's own <em>Save to Watch later</em>, so it
+          is in their sidebar and survives everything. Taking it out again only
+          drops the note kept here for the tab; the saving is theirs to undo.
+        </p>
+        <p class="hint">
+          These tabs filter what the feed is already showing. They fetch
+          nothing, so a video is reachable under a tab for exactly as long as
+          YouTube keeps putting it in the feed.
+        </p>
+        <form id="add-tab" class="addrow">
+          <input type="text" id="tab-input" placeholder="tab name" autocomplete="off" />
+          <button type="submit">Add</button>
+        </form>
+        <ul id="tabs" class="authors"></ul>
+        <p id="tabs-empty" class="hint">No tabs yet.</p>
+      </section>
+
+      <section>
         <h2>Behaviour</h2>
 
         <label class="row">

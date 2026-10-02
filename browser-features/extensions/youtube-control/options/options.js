@@ -53,6 +53,111 @@
     renderRuleErrors();
     renderBlocklist("authors", "authors-empty", "authors");
     renderBlocklist("channels", "channels-empty", "channels");
+    renderTabs();
+  }
+
+  /* -------------------------------------------------------------------- tabs */
+
+  /** How many things a tab holds, so an unused one is obvious. */
+  function tabCounts(name) {
+    const channels = Object.values(config.subTags || {}).filter((tabs) =>
+      (tabs || []).includes(name),
+    ).length;
+    const videos = Object.values(config.subVideoTags || {}).filter((tabs) =>
+      (tabs || []).includes(name),
+    ).length;
+    const parts = [];
+    if (channels) parts.push(`${channels} channel${channels === 1 ? "" : "s"}`);
+    if (videos) parts.push(`${videos} video${videos === 1 ? "" : "s"}`);
+    return parts.join(" · ") || "empty";
+  }
+
+  /** Renaming has to carry the memberships with it, or the tab empties. */
+  function renameEverywhere(from, to) {
+    config.subTabs = (config.subTabs || []).map((t) => (t === from ? to : t));
+    for (const map of [config.subTags || {}, config.subVideoTags || {}]) {
+      for (const [id, tabs] of Object.entries(map)) {
+        if (!(tabs || []).includes(from)) continue;
+        map[id] = [...new Set(tabs.map((t) => (t === from ? to : t)))];
+      }
+    }
+    if (config.subTab === from) config.subTab = to;
+  }
+
+  function forgetEverywhere(name) {
+    config.subTabs = (config.subTabs || []).filter((t) => t !== name);
+    for (const map of [config.subTags || {}, config.subVideoTags || {}]) {
+      for (const [id, tabs] of Object.entries(map)) {
+        const left = (tabs || []).filter((t) => t !== name);
+        if (left.length) map[id] = left;
+        else delete map[id];
+      }
+    }
+    if (config.subTab === name) config.subTab = "";
+  }
+
+  function renderTabs() {
+    const list = $("tabs");
+    list.textContent = "";
+    const tabs = config.subTabs || [];
+
+    for (const name of tabs) {
+      const li = document.createElement("li");
+
+      const label = document.createElement("span");
+      label.className = "author-name";
+      label.textContent = name;
+
+      const meta = document.createElement("span");
+      meta.className = "author-meta";
+      meta.textContent = tabCounts(name);
+
+      // Renamed in place rather than through a dialog: an options page in a
+      // tab is not a reliable place to put one.
+      const rename = document.createElement("button");
+      rename.type = "button";
+      rename.className = "unblock";
+      rename.textContent = "rename";
+      rename.addEventListener("click", () => {
+        const field = document.createElement("input");
+        field.type = "text";
+        field.value = name;
+        field.className = "tabname";
+        label.replaceWith(field);
+        field.focus();
+        field.select();
+        let done = false;
+        const commit = async (keep) => {
+          if (done) return;
+          done = true;
+          const next = field.value.trim();
+          if (keep && next && next !== name && !tabs.includes(next)) {
+            renameEverywhere(name, next);
+            await persist();
+          }
+          renderTabs();
+        };
+        field.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") commit(true);
+          if (event.key === "Escape") commit(false);
+        });
+        field.addEventListener("blur", () => commit(false));
+      });
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "unblock";
+      remove.textContent = "remove";
+      remove.addEventListener("click", async () => {
+        forgetEverywhere(name);
+        renderTabs();
+        await persist();
+      });
+
+      li.append(label, meta, rename, remove);
+      list.appendChild(li);
+    }
+    $("tabs-empty").style.display = tabs.length ? "none" : "";
   }
 
   function renderRuleErrors() {
@@ -182,6 +287,17 @@
       }
       input.value = "";
       renderBlocklist("channels", "channels-empty", "channels");
+      await persist();
+    });
+
+    $("add-tab").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const value = $("tab-input").value.trim();
+      if (!value) return;
+      config.subTabs = config.subTabs || [];
+      if (!config.subTabs.includes(value)) config.subTabs.push(value);
+      $("tab-input").value = "";
+      renderTabs();
       await persist();
     });
 

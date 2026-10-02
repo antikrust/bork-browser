@@ -77,6 +77,31 @@ globalThis.YTCT = globalThis.YTCT || {};
      */
     subsShorts: true,
 
+    /**
+     * Tabs across the top of the subscriptions feed. Editable — this is only
+     * the set it starts with, and the order here is the order they appear in.
+     */
+    subTabs: ["Watch", "News", "Podcasts", "Science", "Comedy", "Favourites"],
+    /**
+     * Which tabs a channel appears under: { normalised channel name: [tab] }.
+     *
+     * Keyed by CHANNEL, not by video. A feed replaces itself every few hours,
+     * so tagging videos one at a time would never be finished; tagging the
+     * channel once routes everything it posts from then on.
+     */
+    subTags: {},
+    /**
+     * Single videos put in a tab: { watch link: [tab] }. What "Watch" is for —
+     * one video you mean to come back to, rather than a whole channel.
+     *
+     * These tabs filter what the feed is showing, they do not fetch anything,
+     * so a video kept here is reachable for as long as YouTube still puts it
+     * in the feed and no longer. It is a pile for today, not a list.
+     */
+    subVideoTags: {},
+    /** The tab currently showing. "" is All, and nothing is filtered. */
+    subTab: "",
+
     stats: { hidden: 0, blocked: 0 },
   };
 
