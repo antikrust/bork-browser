@@ -367,6 +367,32 @@
   display: none !important;
 }
 
+/*
+ * With the unwanted cells gone, what is left of a thin tab is YouTube's own
+ * loading furniture: a block of grey placeholder squares
+ * (ytd-ghost-grid-renderer, inside #ghost-cards) and the continuation spinner.
+ * Nothing had marked those as belonging to a tab, but neither is a cell, so
+ * the rule above never touched them and they were the whole of the first
+ * screen — measured at 1741x664 of ghost against 11 real cards.
+ *
+ * Both live INSIDE ytd-continuation-item-renderer, which is the element
+ * YouTube's IntersectionObserver watches to page the feed, and paging is
+ * exactly what lets a sparse tab find its matches further down. So the
+ * continuation itself is never hidden and never collapsed: the ghost block
+ * goes (it is 664 of the continuation's 724px and purely decorative), while
+ * the spinner only stops painting, which leaves the continuation a box with
+ * real height for the observer to see. display:none on both would zero that
+ * box and quietly end the paging.
+ */
+:root.ytct-tabbed ytd-continuation-item-renderer #ghost-cards,
+:root.ytct-tabbed ytd-continuation-item-renderer ytd-ghost-grid-renderer {
+  display: none !important;
+}
+
+:root.ytct-tabbed ytd-continuation-item-renderer tp-yt-paper-spinner {
+  visibility: hidden !important;
+}
+
 /* In the feed's own heading row beside "Latest", rather than on a row of its
    own: no block margins, and the gap does the spacing. */
 .ytct-tabs.ytct-inline {
