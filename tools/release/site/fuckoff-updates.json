@@ -3,9 +3,9 @@
     "fuckoff@bork": {
       "updates": [
         {
-          "version": "0.1.13",
+          "version": "0.1.14",
           "update_link": "https://borkbrowser.online/fuckoff.xpi",
-          "update_hash": "sha256:a6d3eee42f660ab9c0153876a754ca093b3db73d311cdc2c744ff18fb3105390"
+          "update_hash": "sha256:42edbb7daebcecde4ac7bacfe2ed3a524cef86c3d1b86bb96b4afaa7cf4ab028"
         }
       ]
     }

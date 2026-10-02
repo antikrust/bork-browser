@@ -57,6 +57,12 @@ globalThis.YTCT = globalThis.YTCT || {};
     /** Show the SHUT UP button on every message row. */
     showButton: true,
 
+    /**
+     * Shorts on the subscriptions feed. Off hides the shelf; the switch beside
+     * it stays, which is why the switch is not inside the shelf.
+     */
+    subsShorts: true,
+
     stats: { hidden: 0, blocked: 0 },
   };
 

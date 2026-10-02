@@ -253,11 +253,79 @@ globalThis.YTCT = globalThis.YTCT || {};
 
     const stray =
       !!card.querySelector(SHORTS_LINK) && !channel && !subscribedShorts(card);
+    // Shorts switched off on the subscriptions feed take the loose cards with
+    // them, not only the shelf they usually arrive in.
+    const shortsOff =
+      onSubsFeed &&
+      config.subsShorts === false &&
+      !!card.querySelector(SHORTS_LINK);
+
+    const hid = hidStateOf(card);
+    if (hid === "stub") ensureStub(card);
+    card.classList.toggle(
+      "ytct-hidden-card",
+      config.enabled !== false && hid === "stub",
+    );
     card.classList.toggle(
       "ytct-video-hidden",
       config.enabled !== false &&
-        (named || byHandle || stray),
+        (named || byHandle || stray || shortsOff || hid === "gone"),
     );
+  }
+
+  /* ------------------------------------------------------------ hide for now */
+
+  /*
+   * One video out of the way, for this visit only.
+   *
+   * Nothing is written down. YouTube's own Hide lasts until the feed is
+   * refreshed and a refresh brings this one back the same way, so there is no
+   * list of hidden videos to keep, prune or outgrow.
+   *
+   * Two steps, because the cell is the only thing that can say what just
+   * happened: "stub" leaves it reading as hidden with a DONE button under the
+   * message, and DONE takes the cell off the page.
+   */
+  function hideForNow(card) {
+    card.dataset.ytctHid = "stub";
+    card.dataset.ytctHidKey = keyOf(card);
+    handle(card);
+  }
+
+  /** The hide state — but only while the card still holds the video it was set on. */
+  function hidStateOf(card) {
+    const state = card.dataset.ytctHid || "";
+    if (!state) return "";
+    // YouTube refills card elements with different videos as you scroll; a
+    // mark left behind would hide whatever landed in the cell next.
+    if (card.dataset.ytctHidKey !== keyOf(card)) {
+      delete card.dataset.ytctHid;
+      delete card.dataset.ytctHidKey;
+      return "";
+    }
+    return state;
+  }
+
+  function ensureStub(card) {
+    const existing = card.querySelector(":scope > .ytct-stub");
+    if (existing) return existing;
+    const stub = document.createElement("div");
+    stub.className = "ytct-stub";
+    const label = document.createElement("span");
+    label.textContent = "Hidden until you refresh";
+    const done = document.createElement("button");
+    done.type = "button";
+    done.className = "ytct-done";
+    done.textContent = "DONE";
+    done.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      card.dataset.ytctHid = "gone";
+      handle(card);
+    });
+    stub.append(label, done);
+    card.appendChild(stub);
+    return stub;
   }
 
   function ensureButton(card) {
@@ -288,19 +356,27 @@ globalThis.YTCT = globalThis.YTCT || {};
    * A fixed element on <body> is a sibling of that subtree, so it wins, and
    * hit-testing the pointer finds the card underneath the player.
    */
-  let floatBtn = null;
+  let floatBar = null;
+  let blockBtn = null;
+  let hideBtn = null;
   let hoverCard = null;
 
-  function floatButton() {
-    if (floatBtn && floatBtn.isConnected) return floatBtn;
-    floatBtn = document.createElement("button");
-    floatBtn.type = "button";
-    floatBtn.id = "ytct-float-btn";
-    floatBtn.addEventListener("click", (event) => {
+  function bar() {
+    if (floatBar && floatBar.isConnected) return floatBar;
+    floatBar = document.createElement("div");
+    floatBar.id = "ytct-float-bar";
+
+    blockBtn = document.createElement("button");
+    blockBtn.type = "button";
+    blockBtn.id = "ytct-float-btn";
+    blockBtn.textContent = "SHUT UP";
+    blockBtn.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const name = floatBtn.dataset.ytctChannel || "";
-      const handles = (floatBtn.dataset.ytctHandles || "").split(" ").filter(Boolean);
+      const name = floatBar.dataset.ytctChannel || "";
+      const handles = (floatBar.dataset.ytctHandles || "")
+        .split(" ")
+        .filter(Boolean);
       if (!name) return;
       // Block, never unblock. This used to toggle, and the button is still on
       // screen for a moment after the first press because the card has not
@@ -310,20 +386,43 @@ globalThis.YTCT = globalThis.YTCT || {};
       // even-numbered press. Undo lives in the toast and in settings.
       blockChannel(name, handles);
     });
-    document.body.appendChild(floatBtn);
-    return floatBtn;
+
+    hideBtn = document.createElement("button");
+    hideBtn.type = "button";
+    hideBtn.id = "ytct-hide-btn";
+    hideBtn.textContent = "HIDE";
+    hideBtn.title = "Hide this video until the feed is refreshed";
+    hideBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const card = hoverCard;
+      hideFloat();
+      if (card) hideForNow(card);
+    });
+
+    floatBar.append(blockBtn, hideBtn);
+    document.body.appendChild(floatBar);
+    return floatBar;
   }
 
   function hideFloat() {
     hoverCard = null;
-    if (floatBtn) floatBtn.classList.remove("ytct-float-on");
+    if (floatBar) floatBar.classList.remove("ytct-float-on");
   }
 
   /** The card under the pointer, seen through whatever is painted over it. */
   function cardUnder(x, y) {
     for (const el of document.elementsFromPoint(x, y)) {
-      const card = el.closest && el.closest(CARDS);
-      if (card) return card;
+      const inner = el.closest && el.closest(CARDS);
+      if (!inner) continue;
+      // Newer feeds nest a lockup inside a rich item. The outer one is the
+      // cell — it is the one scan() judges, the one carrying the channel, and
+      // the one that has to go when a video is hidden.
+      let card = inner;
+      while (card.parentElement && card.parentElement.closest(CARDS)) {
+        card = card.parentElement.closest(CARDS);
+      }
+      return card;
     }
     return null;
   }
@@ -334,36 +433,47 @@ globalThis.YTCT = globalThis.YTCT || {};
       return;
     }
 
-    // Once the button is up, the pointer moving ONTO it must not re-aim it.
-    // Reaching for the button is itself a mouse move, and the sidebar shifts
+    // Once the bar is up, the pointer moving ONTO it must not re-aim it.
+    // Reaching for a button is itself a mouse move, and the sidebar shifts
     // under the cursor as YouTube re-renders — so re-targeting at that moment
     // blocked whichever channel had slid underneath instead of the one being
     // pointed at. The card you aimed at stayed, and a channel you never chose
     // went on the list.
-    if (floatBtn && floatBtn.classList.contains("ytct-float-on")) {
+    if (floatBar && floatBar.classList.contains("ytct-float-on")) {
       const top = document.elementFromPoint(x, y);
-      if (top === floatBtn || floatBtn.contains(top)) return;
+      if (top === floatBar || floatBar.contains(top)) return;
     }
     const card = cardUnder(x, y);
-    if (!card || !card.classList.contains("ytct-has-channel")) {
-      hideFloat();
-      return;
-    }
-    const name = card.dataset.ytctChannel || "";
-    if (!name) {
+    if (!card || card.classList.contains("ytct-video-hidden")) {
       hideFloat();
       return;
     }
 
-    const btn = floatButton();
+    const name = card.dataset.ytctChannel || "";
+    const canBlock = !!name && card.classList.contains("ytct-has-channel");
+    // HIDE belongs to the subscriptions feed. Everything there is a channel
+    // the user follows — which is why no SHUT UP button is offered — so the
+    // only thing left to want is this one video out of the way.
+    const canHide =
+      onSubsFeed &&
+      !card.querySelector(SHORTS_LINK) &&
+      !hidStateOf(card) &&
+      !!keyOf(card);
+    if (!canBlock && !canHide) {
+      hideFloat();
+      return;
+    }
+
+    const el = bar();
     const rect = card.getBoundingClientRect();
-    btn.dataset.ytctChannel = name;
-    btn.dataset.ytctHandles = card.dataset.ytctHandles || "";
-    btn.textContent = "SHUT UP";
-    btn.title = `Block ${name} everywhere`;
-    btn.style.left = `${Math.round(rect.left + 6)}px`;
-    btn.style.top = `${Math.round(rect.top + 6)}px`;
-    btn.classList.add("ytct-float-on");
+    el.dataset.ytctChannel = name;
+    el.dataset.ytctHandles = card.dataset.ytctHandles || "";
+    blockBtn.style.display = canBlock ? "inline-flex" : "none";
+    blockBtn.title = name ? `Block ${name} everywhere` : "";
+    hideBtn.style.display = canHide ? "inline-flex" : "none";
+    el.style.left = `${Math.round(rect.left + 6)}px`;
+    el.style.top = `${Math.round(rect.top + 6)}px`;
+    el.classList.add("ytct-float-on");
     hoverCard = card;
   }
 
@@ -451,6 +561,70 @@ globalThis.YTCT = globalThis.YTCT || {};
       !!shelf.querySelector(SHORTS_LINK) &&
       !subscribedShorts(shelf);
     shelf.classList.toggle("ytct-video-hidden", blocked || strayShorts);
+  }
+
+  /* ------------------------------------------------- shorts on the feed */
+
+  /**
+   * Shelves holding shorts, outermost only.
+   *
+   * Found by what is inside them rather than by renderer name or heading:
+   * YouTube has shipped four different elements for this row and renames the
+   * heading by locale, but a shelf of shorts always links to /shorts/.
+   */
+  function shortsShelves() {
+    const out = [];
+    for (const shelf of document.querySelectorAll(SHELVES)) {
+      if (!shelf.querySelector(SHORTS_LINK)) continue;
+      if (shelf.parentElement && shelf.parentElement.closest(SHELVES)) continue;
+      out.push(shelf);
+    }
+    return out;
+  }
+
+  /**
+   * A Shorts on/off switch beside the shelf on the subscriptions feed.
+   *
+   * It sits BEFORE the shelf rather than inside it, which is the whole point:
+   * switching shorts off hides the shelf, and a switch living inside it would
+   * go with it and never come back.
+   */
+  function ensureShortsBar() {
+    const wanted = onSubsFeed && config.enabled !== false;
+    for (const existing of document.querySelectorAll(".ytct-shorts-bar")) {
+      const next = existing.nextElementSibling;
+      if (!wanted || !next || !next.matches(SHELVES)) existing.remove();
+    }
+    if (!wanted) return;
+
+    const on = config.subsShorts !== false;
+    for (const shelf of shortsShelves()) {
+      let strip = shelf.previousElementSibling;
+      if (!strip || !strip.classList.contains("ytct-shorts-bar")) {
+        strip = document.createElement("div");
+        strip.className = "ytct-shorts-bar";
+        const label = document.createElement("span");
+        label.textContent = "Shorts";
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "ytct-shorts-btn";
+        button.addEventListener("click", () => {
+          store.update((c) => {
+            c.subsShorts = c.subsShorts === false;
+            return c;
+          });
+        });
+        strip.append(label, button);
+        shelf.parentElement.insertBefore(strip, shelf);
+      }
+      const button = strip.querySelector(".ytct-shorts-btn");
+      button.textContent = on ? "ON" : "OFF";
+      button.title = on
+        ? "Hide Shorts on this feed"
+        : "Show Shorts on this feed";
+      button.classList.toggle("ytct-on", on);
+      shelf.classList.toggle("ytct-shorts-off", !on);
+    }
   }
 
   /* ---------------------------------------------------- channel page button */
@@ -643,6 +817,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     onSubsFeed = location.pathname.startsWith("/feed/subscriptions");
     refreshSubscribed();
     ensureSubscribeButtons();
+    ensureShortsBar();
     for (const card of document.querySelectorAll(CARDS)) {
       // Newer feeds nest a lockup inside a rich item; judge the outer one
       // only, or the same card grows two buttons.

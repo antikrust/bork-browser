@@ -51,10 +51,19 @@
  *     orders within the card's own stacking context.
  * A fixed element on <body> is a sibling of that subtree and paints over it.
  */
-#ytct-float-btn {
+#ytct-float-bar {
   position: fixed;
   z-index: 2147483000;
   display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+#ytct-float-bar.ytct-float-on {
+  display: inline-flex;
+}
+
+#ytct-float-bar button {
   padding: 1px 8px;
   border: 1px solid var(--ytct-accent);
   border-radius: 999px;
@@ -66,23 +75,109 @@
   cursor: pointer;
 }
 
-#ytct-float-btn.ytct-float-on {
-  display: inline-flex;
-}
-
-#ytct-float-btn:hover {
+#ytct-float-bar button:hover {
   background: var(--ytct-accent);
   color: #fff;
 }
 
-#ytct-float-btn.ytct-float-blocked {
-  background: var(--ytct-accent);
-  color: #fff;
+/* HIDE is not a block: it takes one video off this page and forgets it, so it
+   does not wear the colour the blocking buttons use. */
+#ytct-hide-btn {
+  border-color: var(--ytct-line);
+  color: var(--ytct-fg);
 }
 
-#ytct-float-btn.ytct-float-blocked:hover {
+#ytct-hide-btn:hover {
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+}
+
+/* ------------------------------------------------------------- hidden for now */
+
+/*
+ * The cell stays in the grid and says so, rather than closing up straight
+ * away: the videos either side would jump under the pointer mid-click.
+ * Everything YouTube put in the cell is hidden; our own note takes its place.
+ */
+.ytct-hidden-card > * {
+  display: none !important;
+}
+
+.ytct-hidden-card > .ytct-stub {
+  display: flex !important;
+}
+
+.ytct-stub {
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 150px;
+  padding: 20px 12px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 12px;
   background: var(--ytct-bg);
+  color: var(--ytct-fg);
+  font: 400 13px/1.4 Roboto, system-ui, sans-serif;
+  text-align: center;
+}
+
+.ytct-stub .ytct-done {
+  margin-top: auto;
+  padding: 4px 14px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-fg);
+  font: 600 11px/1.6 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.ytct-stub .ytct-done:hover {
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+}
+
+/* ------------------------------------------------------------- shorts switch */
+
+/* Sits above the Shorts shelf, not in it — switching shorts off hides the
+   shelf, and a switch inside it would go too. */
+.ytct-shorts-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 2px 0;
+  color: var(--ytct-fg);
+  font: 500 14px/1.4 Roboto, system-ui, sans-serif;
+}
+
+.ytct-shorts-btn {
+  padding: 1px 10px;
+  border: 1px solid var(--ytct-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ytct-fg);
+  font: 600 10px/1.8 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.ytct-shorts-btn.ytct-on {
+  border-color: var(--ytct-accent);
   color: var(--ytct-accent);
+}
+
+.ytct-shorts-btn:hover {
+  background: var(--ytct-fg);
+  color: var(--ytct-bg);
+}
+
+.ytct-shorts-off {
+  display: none !important;
 }
 
 /* ------------------------------------------------------- channel page button */

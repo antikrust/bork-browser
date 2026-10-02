@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "SHUT UP — Youpube Tamer",
-  "version": "0.2.22",
+  "name": "YouTube Control",
+  "version": "0.2.23",
   "description": "Quiet YouTube: block whole channels from home, search and recommendations, and tame live chat with word and author filters, a one-click SHUT UP button, repeat-offender blocking, and a threaded reading view.",
   "permissions": ["storage"],
   "content_scripts": [
@@ -39,7 +39,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "SHUT UP"
+    "default_title": "YouTube Control"
   },
   "browser_specific_settings": {
     "gecko": {
