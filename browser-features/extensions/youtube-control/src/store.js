@@ -87,6 +87,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       "Politics",
       "Podcasts",
       "Science",
+      "Tech",
       "Comedy",
       "Music",
       "Favourites",
@@ -122,7 +123,7 @@ globalThis.YTCT = globalThis.YTCT || {};
   };
 
   /** Bumped when DEFAULTS.subTabs changes in a way that should reach everyone. */
-  const DEFAULTS_TABS_VERSION = 2;
+  const DEFAULTS_TABS_VERSION = 3;
 
   function clone(value) {
     return typeof structuredClone === "function"
