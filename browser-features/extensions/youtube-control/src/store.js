@@ -118,6 +118,15 @@ globalThis.YTCT = globalThis.YTCT || {};
     subTab: "",
     /** How many times the shipped tab list has been merged in. See load(). */
     subTabsVersion: 0,
+    /**
+     * Shipped tabs the user has deleted, lowercased.
+     *
+     * The merge below re-applies the whole shipped list, so without a record
+     * of what was thrown away it comes back: delete Science, and the next
+     * release that adds any tab resurrects it. Remembering the deletions is
+     * what makes "remove" mean removed.
+     */
+    subTabsRemoved: [],
 
     stats: { hidden: 0, blocked: 0 },
   };
@@ -156,8 +165,11 @@ globalThis.YTCT = globalThis.YTCT || {};
       // (Favourites to the end, say) reaches a list that already exists, then
       // anything added by hand, kept in the order it was added.
       const shipped = new Set(DEFAULTS.subTabs.map((t) => t.toLowerCase()));
+      const binned = new Set(
+        (out.subTabsRemoved || []).map((t) => String(t).toLowerCase()),
+      );
       out.subTabs = [
-        ...DEFAULTS.subTabs,
+        ...DEFAULTS.subTabs.filter((name) => !binned.has(name.toLowerCase())),
         ...out.subTabs.filter((t) => !shipped.has(String(t).toLowerCase())),
       ];
       out.subTabsVersion = DEFAULTS_TABS_VERSION;

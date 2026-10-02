@@ -75,6 +75,14 @@
   /** Renaming has to carry the memberships with it, or the tab empties. */
   function renameEverywhere(from, to) {
     config.subTabs = (config.subTabs || []).map((t) => (t === from ? to : t));
+    // A renamed shipped tab is a shipped tab that is no longer there under its
+    // own name, so the merge must not bring the original back beside it.
+    const binned = new Set(
+      (config.subTabsRemoved || []).map((t) => String(t).toLowerCase()),
+    );
+    binned.add(from.toLowerCase());
+    binned.delete(to.toLowerCase());
+    config.subTabsRemoved = [...binned];
     for (const map of [config.subTags || {}, config.subVideoTags || {}]) {
       for (const [id, tabs] of Object.entries(map)) {
         if (!(tabs || []).includes(from)) continue;
@@ -86,6 +94,13 @@
 
   function forgetEverywhere(name) {
     config.subTabs = (config.subTabs || []).filter((t) => t !== name);
+    // Written down, or the next release that adds a tab brings this one back:
+    // the merge that delivers new tabs re-applies the whole shipped list.
+    const binned = new Set(
+      (config.subTabsRemoved || []).map((t) => String(t).toLowerCase()),
+    );
+    binned.add(name.toLowerCase());
+    config.subTabsRemoved = [...binned];
     for (const map of [config.subTags || {}, config.subVideoTags || {}]) {
       for (const [id, tabs] of Object.entries(map)) {
         const left = (tabs || []).filter((t) => t !== name);
@@ -296,6 +311,10 @@
       if (!value) return;
       config.subTabs = config.subTabs || [];
       if (!config.subTabs.includes(value)) config.subTabs.push(value);
+      // Adding one back is a change of mind about having removed it.
+      config.subTabsRemoved = (config.subTabsRemoved || []).filter(
+        (t) => String(t).toLowerCase() !== value.toLowerCase(),
+      );
       $("tab-input").value = "";
       renderTabs();
       await persist();
