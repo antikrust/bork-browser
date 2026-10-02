@@ -261,11 +261,6 @@ globalThis.YTCT = globalThis.YTCT || {};
       !!card.querySelector(SHORTS_LINK);
 
     const hid = hidStateOf(card);
-    if (hid === "stub") ensureStub(card);
-    card.classList.toggle(
-      "ytct-hidden-card",
-      config.enabled !== false && hid === "stub",
-    );
     card.classList.toggle(
       "ytct-video-hidden",
       config.enabled !== false &&
@@ -276,56 +271,138 @@ globalThis.YTCT = globalThis.YTCT || {};
   /* ------------------------------------------------------------ hide for now */
 
   /*
-   * One video out of the way, for this visit only.
+   * HIDE presses YouTube's own Hide — the one in the card's ⋮ menu — and then
+   * puts a DONE button on the card YouTube leaves behind.
    *
-   * Nothing is written down. YouTube's own Hide lasts until the feed is
-   * refreshed and a refresh brings this one back the same way, so there is no
-   * list of hidden videos to keep, prune or outgrow.
-   *
-   * Two steps, because the cell is the only thing that can say what just
-   * happened: "stub" leaves it reading as hidden with a DONE button under the
-   * message, and DONE takes the cell off the page.
+   * Pressing YouTube's own is the whole point of it. That Hide already tells
+   * the feed not to serve the video again until it is refreshed, and the card
+   * it leaves already carries Undo. The only thing missing was a way to get
+   * that card off the screen afterwards, and that is all DONE is: nothing is
+   * written down here and no second notice is invented.
    */
-  function hideForNow(card) {
-    card.dataset.ytctHid = "stub";
-    card.dataset.ytctHidKey = keyOf(card);
-    handle(card);
+  /*
+   * The ⋮ button, and nothing else on the card.
+   *
+   * Tried one selector at a time, because a comma-separated querySelector
+   * returns whatever comes first in the DOCUMENT rather than the first
+   * selector that matches — and on a hovered card the thumbnail's own overlay
+   * buttons come first. Written as one list, this pressed Watch Later.
+   */
+  const MENU_BUTTONS = [
+    "ytd-menu-renderer yt-icon-button#button",
+    "ytd-menu-renderer button",
+    "button[aria-label='More actions']",
+    "yt-lockup-metadata-view-model button[aria-label]",
+  ];
+  /** Three dots in a column — the icon that button has kept through every redesign. */
+  const DOTS = /^M12 4a2 2 0/;
+  const MENU_ITEM = "[role='menuitem']";
+  /** YouTube's own word for it. Nothing else in that menu is ever pressed. */
+  const HIDE_ITEM = "hide";
+  /** What YouTube puts in the cell instead of the video. */
+  const NOTICE =
+    "ytd-notification-multi-action-renderer, ytd-dismissal-follow-up-renderer, ytd-feed-nudge-renderer";
+
+  /** Poll until find() returns something, or give up. */
+  function waitFor(find, tries = 40, gap = 50) {
+    return new Promise((resolve) => {
+      let left = tries;
+      const tick = () => {
+        const found = find();
+        if (found || --left <= 0) resolve(found || null);
+        else setTimeout(tick, gap);
+      };
+      tick();
+    });
   }
 
-  /** The hide state — but only while the card still holds the video it was set on. */
+  function menuButtonOf(card) {
+    for (const selector of MENU_BUTTONS) {
+      const found = card.querySelector(selector);
+      if (found) return found;
+    }
+    // Last resort, and locale-free: the button wearing the three-dot icon.
+    // Never "any button" — that is how the overlay buttons got pressed.
+    for (const button of card.querySelectorAll("button")) {
+      const path = button.querySelector("svg path");
+      if (path && DOTS.test(path.getAttribute("d") || "")) return button;
+    }
+    return null;
+  }
+
+  async function hideForNow(card) {
+    const menu = menuButtonOf(card);
+    if (!menu) return;
+    menu.click();
+    // The menu renders into a popup container at the end of the document, not
+    // inside the card, so it is looked for on the whole page.
+    const item = await waitFor(() => {
+      for (const entry of document.querySelectorAll(MENU_ITEM)) {
+        if ((entry.textContent || "").trim().toLowerCase() === HIDE_ITEM) {
+          return entry;
+        }
+      }
+      return null;
+    });
+    if (!item) {
+      // No Hide in this menu. Shut it again rather than pressing whatever else
+      // happens to be in there.
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+      return;
+    }
+    item.click();
+    card.dataset.ytctDone = "wait";
+    queueScan();
+  }
+
+  /**
+   * What YouTube left in the cell. Its own renderers first; otherwise the cell
+   * itself once it has stopped linking to a video, which is the one thing the
+   * notice and the card it replaced cannot both do.
+   */
+  function noticeIn(card) {
+    const named = card.querySelector(NOTICE);
+    if (named) return named;
+    if (card.querySelector("a[href*='/watch'], a[href^='/shorts/']")) return null;
+    return card;
+  }
+
+  function ensureDoneButtons() {
+    for (const card of document.querySelectorAll("[data-ytct-done='wait']")) {
+      const notice = noticeIn(card);
+      if (!notice || notice.querySelector(":scope > .ytct-done")) continue;
+      const done = document.createElement("button");
+      done.type = "button";
+      done.className = "ytct-done";
+      done.textContent = "DONE";
+      done.title = "Take this off the page";
+      done.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        delete card.dataset.ytctDone;
+        card.dataset.ytctHid = "gone";
+        // Recorded as it is now — empty, because the notice links to nothing.
+        // If YouTube refills the cell with a video later the key stops
+        // matching and the cell comes back, which is what should happen.
+        card.dataset.ytctHidKey = keyOf(card);
+        handle(card);
+      });
+      notice.appendChild(done);
+    }
+  }
+
+  /** The hide state — but only while the cell still holds what it was set on. */
   function hidStateOf(card) {
     const state = card.dataset.ytctHid || "";
     if (!state) return "";
-    // YouTube refills card elements with different videos as you scroll; a
-    // mark left behind would hide whatever landed in the cell next.
     if (card.dataset.ytctHidKey !== keyOf(card)) {
       delete card.dataset.ytctHid;
       delete card.dataset.ytctHidKey;
       return "";
     }
     return state;
-  }
-
-  function ensureStub(card) {
-    const existing = card.querySelector(":scope > .ytct-stub");
-    if (existing) return existing;
-    const stub = document.createElement("div");
-    stub.className = "ytct-stub";
-    const label = document.createElement("span");
-    label.textContent = "Hidden until you refresh";
-    const done = document.createElement("button");
-    done.type = "button";
-    done.className = "ytct-done";
-    done.textContent = "DONE";
-    done.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      card.dataset.ytctHid = "gone";
-      handle(card);
-    });
-    stub.append(label, done);
-    card.appendChild(stub);
-    return stub;
   }
 
   function ensureButton(card) {
@@ -454,11 +531,15 @@ globalThis.YTCT = globalThis.YTCT || {};
     // HIDE belongs to the subscriptions feed. Everything there is a channel
     // the user follows — which is why no SHUT UP button is offered — so the
     // only thing left to want is this one video out of the way.
+    // Only where YouTube offers it: HIDE presses the Hide in the card's own ⋮
+    // menu, so a card without that menu has nothing to press.
     const canHide =
       onSubsFeed &&
       !card.querySelector(SHORTS_LINK) &&
+      !card.dataset.ytctDone &&
       !hidStateOf(card) &&
-      !!keyOf(card);
+      !!keyOf(card) &&
+      !!menuButtonOf(card);
     if (!canBlock && !canHide) {
       hideFloat();
       return;
@@ -603,8 +684,6 @@ globalThis.YTCT = globalThis.YTCT || {};
       if (!strip || !strip.classList.contains("ytct-shorts-bar")) {
         strip = document.createElement("div");
         strip.className = "ytct-shorts-bar";
-        const label = document.createElement("span");
-        label.textContent = "Shorts";
         const button = document.createElement("button");
         button.type = "button";
         button.className = "ytct-shorts-btn";
@@ -614,7 +693,7 @@ globalThis.YTCT = globalThis.YTCT || {};
             return c;
           });
         });
-        strip.append(label, button);
+        strip.append(button);
         shelf.parentElement.insertBefore(strip, shelf);
       }
       const button = strip.querySelector(".ytct-shorts-btn");
@@ -818,6 +897,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     refreshSubscribed();
     ensureSubscribeButtons();
     ensureShortsBar();
+    ensureDoneButtons();
     for (const card of document.querySelectorAll(CARDS)) {
       // Newer feeds nest a lockup inside a rich item; judge the outer one
       // only, or the same card grows two buttons.

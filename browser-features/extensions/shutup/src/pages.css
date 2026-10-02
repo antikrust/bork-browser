@@ -94,38 +94,10 @@
 
 /* ------------------------------------------------------------- hidden for now */
 
-/*
- * The cell stays in the grid and says so, rather than closing up straight
- * away: the videos either side would jump under the pointer mid-click.
- * Everything YouTube put in the cell is hidden; our own note takes its place.
- */
-.ytct-hidden-card > * {
-  display: none !important;
-}
-
-.ytct-hidden-card > .ytct-stub {
-  display: flex !important;
-}
-
-.ytct-stub {
-  box-sizing: border-box;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  width: 100%;
-  min-height: 150px;
-  padding: 20px 12px;
-  border: 1px solid var(--ytct-line);
-  border-radius: 12px;
-  background: var(--ytct-bg);
-  color: var(--ytct-fg);
-  font: 400 13px/1.4 Roboto, system-ui, sans-serif;
-  text-align: center;
-}
-
-.ytct-stub .ytct-done {
-  margin-top: auto;
+/* Added to the card YouTube leaves behind after its own Hide, beside the Undo
+   that card already has. Pressing it takes the card off the page. */
+.ytct-done {
+  margin: 0 0 12px 12px;
   padding: 4px 14px;
   border: 1px solid var(--ytct-line);
   border-radius: 999px;
@@ -136,7 +108,7 @@
   cursor: pointer;
 }
 
-.ytct-stub .ytct-done:hover {
+.ytct-done:hover {
   background: var(--ytct-fg);
   color: var(--ytct-bg);
 }
@@ -148,11 +120,8 @@
 .ytct-shorts-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
   margin: 0 0 4px;
   padding: 2px 0;
-  color: var(--ytct-fg);
-  font: 500 14px/1.4 Roboto, system-ui, sans-serif;
 }
 
 .ytct-shorts-btn {
