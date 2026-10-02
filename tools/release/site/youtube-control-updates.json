@@ -1,0 +1,13 @@
+{
+  "addons": {
+    "youtube-control@bork": {
+      "updates": [
+        {
+          "version": "0.2.24",
+          "update_link": "https://borkbrowser.online/youtube-control.xpi",
+          "update_hash": "sha256:4b702f71755040a6c9d1970f16caf271f692c00c90e76e2780bc26ac630676f9"
+        }
+      ]
+    }
+  }
+}
