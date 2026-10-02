@@ -5,12 +5,25 @@
   const api = globalThis.browser ?? globalThis.chrome;
   const $ = (id) => document.getElementById(id);
 
+  /**
+   * What is on the lists. Channels are named, because leaving them out made the
+   * popup report "0 blocked" to someone whose channel blocklist was full — the
+   * number only ever counted blocked chat authors, and nothing said so.
+   */
+  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+  function summarise(config) {
+    return [
+      plural(config.words.length, "rule"),
+      plural(config.channels.length, "channel"),
+      plural(config.authors.length, "person").replace("persons", "people"),
+    ].join(" · ");
+  }
+
   store.load().then((config) => {
     $("enabled").checked = !!config.enabled;
     $("threads").checked = !!config.threads;
-    $("counts").textContent =
-      `${config.words.length} rule${config.words.length === 1 ? "" : "s"} · ` +
-      `${config.authors.length} blocked`;
+    $("counts").textContent = summarise(config);
 
     $("enabled").addEventListener("change", async (event) => {
       await store.update((cfg) => {
@@ -35,10 +48,7 @@
         return cfg;
       });
       $("word").value = "";
-      const updated = await store.load();
-      $("counts").textContent =
-        `${updated.words.length} rule${updated.words.length === 1 ? "" : "s"} · ` +
-        `${updated.authors.length} blocked`;
+      $("counts").textContent = summarise(await store.load());
     });
 
     // openOptionsPage is the route that works in every browser here; tabs.create
