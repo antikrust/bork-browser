@@ -84,6 +84,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     subTabs: [
       "Watch",
       "News",
+      "Politics",
       "Podcasts",
       "Science",
       "Comedy",
@@ -107,7 +108,12 @@ globalThis.YTCT = globalThis.YTCT || {};
      * in the feed and no longer. It is a pile for today, not a list.
      */
     subVideoTags: {},
-    /** The tab currently showing. "" is All, and nothing is filtered. */
+    /**
+     * The view currently showing.
+     *
+     * "" is Unsorted: videos in no tab at all, which is the pile left to sort.
+     * "*" is All: everything, filtered by nothing. Anything else is that tab.
+     */
     subTab: "",
     /** How many times the shipped tab list has been merged in. See load(). */
     subTabsVersion: 0,
@@ -115,8 +121,8 @@ globalThis.YTCT = globalThis.YTCT || {};
     stats: { hidden: 0, blocked: 0 },
   };
 
-  /** Bumped when a tab is added to DEFAULTS.subTabs and should reach everyone. */
-  const DEFAULTS_TABS_VERSION = 1;
+  /** Bumped when DEFAULTS.subTabs changes in a way that should reach everyone. */
+  const DEFAULTS_TABS_VERSION = 2;
 
   function clone(value) {
     return typeof structuredClone === "function"
@@ -145,10 +151,14 @@ globalThis.YTCT = globalThis.YTCT || {};
     // Once, counted, and not on every load: run every time, this would put
     // back a default tab somebody deliberately deleted, over and over.
     if ((stored.subTabsVersion || 0) < DEFAULTS_TABS_VERSION) {
-      const have = new Set(out.subTabs.map((t) => String(t).toLowerCase()));
-      for (const name of DEFAULTS.subTabs) {
-        if (!have.has(name.toLowerCase())) out.subTabs.push(name);
-      }
+      // The shipped ones in the shipped order, so a reshuffle of the defaults
+      // (Favourites to the end, say) reaches a list that already exists, then
+      // anything added by hand, kept in the order it was added.
+      const shipped = new Set(DEFAULTS.subTabs.map((t) => t.toLowerCase()));
+      out.subTabs = [
+        ...DEFAULTS.subTabs,
+        ...out.subTabs.filter((t) => !shipped.has(String(t).toLowerCase())),
+      ];
       out.subTabsVersion = DEFAULTS_TABS_VERSION;
     }
 

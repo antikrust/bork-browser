@@ -105,10 +105,7 @@ globalThis.YTCT = globalThis.YTCT || {};
    * before the first scan and would have the wrong answer on a fresh load.
    */
   function applyTabClass() {
-    document.documentElement.classList.toggle(
-      "ytct-tabbed",
-      !!config && config.enabled !== false && onSubsFeed && !!config.subTab,
-    );
+    document.documentElement.classList.toggle("ytct-tabbed", filtering());
   }
 
   /* ------------------------------------------------------------- extraction */
@@ -240,6 +237,14 @@ globalThis.YTCT = globalThis.YTCT || {};
       // it, permanently, because the gate has just closed on the new key.
       const found = channelOf(card) || pageChannel();
       if (found) card.dataset.ytctChannel = found;
+      // Collected here rather than every pass. This walks the card's links,
+      // and the pass runs once a second over every cell the feed has loaded —
+      // which after a while is hundreds of them, and selecting a tab makes
+      // YouTube load hundreds more. Nothing about a card's own links changes
+      // while it is showing the same video, so reading them once per video is
+      // all it is worth.
+      card.dataset.ytctHandles = handlesOf(card).join(" ");
+      card.dataset.ytctShorts = card.querySelector(SHORTS_LINK) ? "1" : "";
     }
 
     const channel = card.dataset.ytctChannel || "";
@@ -265,24 +270,29 @@ globalThis.YTCT = globalThis.YTCT || {};
     // Handles are recorded on the card so a click can store them, and are
     // checked here so a channel blocked from a collaboration is recognised on
     // its own videos too.
-    const handles = handlesOf(card);
-    card.dataset.ytctHandles = handles.join(" ");
+    const handles = (card.dataset.ytctHandles || "").split(" ").filter(Boolean);
     const byHandle = handles.some((h) => blockedHandles.has(h));
 
-    const stray =
-      !!card.querySelector(SHORTS_LINK) && !channel && !subscribedShorts(card);
+    const isShorts = card.dataset.ytctShorts === "1";
+    const stray = isShorts && !channel && !subscribedShorts(card);
     // Shorts switched off on the subscriptions feed take the loose cards with
     // them, not only the shelf they usually arrive in.
-    const shortsOff =
-      onSubsFeed &&
-      config.subsShorts === false &&
-      !!card.querySelector(SHORTS_LINK);
+    const shortsOff = onSubsFeed && config.subsShorts === false && isShorts;
 
-    // A tab is a filter over what the feed is showing. The mark is what the
-    // stylesheet looks for; a cell without it is not on screen while a tab is
-    // selected, which is also true of cells nothing has judged yet.
-    const tab = onSubsFeed ? config.subTab || "" : "";
-    if (tab && inTab(norm, keyOf(card), tab)) card.dataset.ytctTab = tab;
+    // A view is a filter over what the feed is showing. The mark is what the
+    // stylesheet looks for; a cell without it is off screen while filtering,
+    // which is also true of cells nothing has judged yet.
+    //
+    // Unsorted ("") is the one that earns its keep: a video put in a tab
+    // leaves it, so what is left is the pile still to sort.
+    const view = onSubsFeed ? config.subTab || "" : ALL_VIEW;
+    let belongs = true;
+    if (onSubsFeed) {
+      if (view === ALL_VIEW) belongs = true;
+      else if (view === "") belongs = !inAnyTab(norm, key);
+      else belongs = inTab(norm, key, view);
+    }
+    if (filtering() && belongs) card.dataset.ytctTab = view || "unsorted";
     else delete card.dataset.ytctTab;
 
     const hid = hidStateOf(card);
@@ -705,7 +715,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     // menu, so a card without that menu has nothing to press.
     const canHide =
       onSubsFeed &&
-      !card.querySelector(SHORTS_LINK) &&
+      card.dataset.ytctShorts !== "1" &&
       !card.dataset.ytctDone &&
       !hidStateOf(card) &&
       !!keyOf(card) &&
@@ -817,7 +827,10 @@ globalThis.YTCT = globalThis.YTCT || {};
       !!shelf.querySelector(SHORTS_LINK) &&
       !subscribedShorts(shelf);
     const tabbed =
-      onSubsFeed && !!config.subTab && !!shelf.querySelector(SHORTS_LINK);
+      onSubsFeed &&
+      !!config.subTab &&
+      config.subTab !== ALL_VIEW &&
+      !!shelf.querySelector(SHORTS_LINK);
     shelf.classList.toggle(
       "ytct-video-hidden",
       blocked || strayShorts || tabbed,
@@ -865,6 +878,24 @@ globalThis.YTCT = globalThis.YTCT || {};
 
   function inTab(norm, key, tab) {
     return tabsOfChannel(norm).includes(tab) || tabsOfVideo(key).includes(tab);
+  }
+
+  /** In any tab at all — what Unsorted is the absence of. */
+  function inAnyTab(norm, key) {
+    return tabsOfChannel(norm).length > 0 || tabsOfVideo(key).length > 0;
+  }
+
+  /** All: everything, filtered by nothing. Not a tab, and not stored as one. */
+  const ALL_VIEW = "*";
+
+  /** Is the feed being filtered at all right now? */
+  function filtering() {
+    return (
+      !!config &&
+      config.enabled !== false &&
+      onSubsFeed &&
+      (config.subTab || "") !== ALL_VIEW
+    );
   }
 
   /**
@@ -915,7 +946,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       if (stale !== bar) stale.remove();
     }
 
-    const names = ["", ...(config.subTabs || [])];
+    const names = ["", ALL_VIEW, ...(config.subTabs || [])];
     const current = config.subTab || "";
     // Rebuilt only when the set or the selection changes. The scan runs every
     // second and replacing the buttons under the pointer every time would eat
@@ -929,11 +960,19 @@ globalThis.YTCT = globalThis.YTCT || {};
       const tab = document.createElement("button");
       tab.type = "button";
       tab.className = "ytct-tab";
-      tab.textContent = name || "All";
+      tab.textContent = name === "" ? "Unsorted" : name === ALL_VIEW ? "All" : name;
       tab.classList.toggle("ytct-on", name === current);
       tab.addEventListener("click", () => {
+        const next = (config.subTab || "") === name ? "" : name;
+        // Applied here and now, before the write. Going through storage and
+        // waiting for the change to come back made pressing a tab feel dead:
+        // a write, a round trip and a scan before anything moved on screen.
+        config.subTab = next;
+        applyTabClass();
+        bar.dataset.ytctSig = "";
+        scan();
         store.update((c) => {
-          c.subTab = c.subTab === name ? "" : name;
+          c.subTab = next;
           return c;
         });
       });
