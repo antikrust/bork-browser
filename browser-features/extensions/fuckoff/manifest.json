@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Media Control",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Outlets you never want to read again, gone from your internet: search results, news aggregators, social feeds and the address bar. Blocked pages explain who owns the thing and why it is on the list.",
   "permissions": [
     "storage",

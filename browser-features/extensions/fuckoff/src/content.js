@@ -174,7 +174,7 @@
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "fkof-btn";
-    btn.textContent = "FUCKOFF";
+    btn.textContent = "GTFO";
     btn.title = `Block ${host} everywhere`;
     btn.addEventListener("click", (event) => {
       // Cards are usually one big link; a block must not also be a click-through.
