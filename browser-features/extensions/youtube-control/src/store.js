@@ -16,6 +16,15 @@ globalThis.YTCT = globalThis.YTCT || {};
   const api = globalThis.browser ?? globalThis.chrome;
   const KEY = "config";
 
+  /** The starting blocklist as blocklist entries. No date: nothing happened. */
+  function shippedChannels() {
+    return (YTCT.shippedChannels || []).map((name) => ({
+      name,
+      at: 0,
+      why: "shipped with the extension",
+    }));
+  }
+
   const DEFAULTS = {
     enabled: true,
 
@@ -32,8 +41,13 @@ globalThis.YTCT = globalThis.YTCT || {};
     /**
      * Blocked channels: { name, at (epoch ms), why }. Their videos vanish from
      * home, search, the watch sidebar and Shorts shelves.
+     *
+     * Ships with a list rather than empty — see src/channels.js. Being the
+     * DEFAULT is the whole of it: the first write replaces it with the user's
+     * own list, and anyone who already has a blocklist never sees it, because
+     * a default is only consulted when there is nothing stored.
      */
-    channels: [],
+    channels: shippedChannels(),
 
     /** "hide" removes the row; "collapse" leaves a one-line stub saying why. */
     hideMode: "hide",

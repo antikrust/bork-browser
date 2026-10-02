@@ -363,16 +363,63 @@ globalThis.YTCT = globalThis.YTCT || {};
    * notice and the card it replaced cannot both do.
    */
   function noticeIn(card) {
-    const named = card.querySelector(NOTICE);
-    if (named) return named;
     if (card.querySelector("a[href*='/watch'], a[href^='/shorts/']")) return null;
-    return card;
+
+    // Inside YouTube's own box, beside its Undo — not appended to the cell,
+    // which left DONE floating in the empty space below the box with nothing
+    // around it.
+    //
+    // Found by climbing from the Undo button until the ancestor holds more
+    // than the button does, which is the box that also holds the message. The
+    // renderer's name has changed before; "the thing with the button and the
+    // words in it" has not.
+    const button = card.querySelector("button, tp-yt-paper-button");
+    if (button) {
+      const label = (button.textContent || "").trim().length;
+      let box = button.parentElement;
+      for (let i = 0; i < 5 && box && box !== card; i++) {
+        if ((box.textContent || "").trim().length > label) return box;
+        box = box.parentElement;
+      }
+    }
+    const named = card.querySelector(NOTICE);
+    return named || card;
+  }
+
+  /** Ten seconds, then the cell goes on its own. DONE is for not waiting. */
+  const NOTICE_LINGER = 10000;
+  const noticeTimers = new WeakMap();
+
+  function clearCell(card) {
+    clearTimeout(noticeTimers.get(card));
+    noticeTimers.delete(card);
+    delete card.dataset.ytctDone;
+    card.dataset.ytctHid = "gone";
+    card.dataset.ytctHidKey = keyOf(card);
+    handle(card);
   }
 
   function ensureDoneButtons() {
     for (const card of document.querySelectorAll("[data-ytct-done='wait']")) {
+      // Undo puts the video back, and then this is an ordinary card again.
+      if (card.querySelector("a[href*='/watch'], a[href^='/shorts/']")) {
+        clearTimeout(noticeTimers.get(card));
+        noticeTimers.delete(card);
+        delete card.dataset.ytctDone;
+        const stale = card.querySelector(".ytct-done");
+        if (stale) stale.remove();
+        continue;
+      }
       const notice = noticeIn(card);
       if (!notice || notice.querySelector(":scope > .ytct-done")) continue;
+      if (!noticeTimers.has(card)) {
+        noticeTimers.set(
+          card,
+          setTimeout(() => {
+            if (card.dataset.ytctDone === "wait") clearCell(card);
+          }, NOTICE_LINGER),
+        );
+      }
       const done = document.createElement("button");
       done.type = "button";
       done.className = "ytct-done";
@@ -381,13 +428,10 @@ globalThis.YTCT = globalThis.YTCT || {};
       done.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        delete card.dataset.ytctDone;
-        card.dataset.ytctHid = "gone";
-        // Recorded as it is now — empty, because the notice links to nothing.
-        // If YouTube refills the cell with a video later the key stops
+        // The key is recorded as it is now — empty, because the notice links to
+        // nothing. If YouTube refills the cell with a video later the key stops
         // matching and the cell comes back, which is what should happen.
-        card.dataset.ytctHidKey = keyOf(card);
-        handle(card);
+        clearCell(card);
       });
       notice.appendChild(done);
     }
@@ -487,8 +531,35 @@ globalThis.YTCT = globalThis.YTCT || {};
     if (floatBar) floatBar.classList.remove("ytct-float-on");
   }
 
-  /** The card under the pointer, seen through whatever is painted over it. */
+  /*
+   * Panels that sit OVER the page: the notifications dropdown, the ⋮ menus,
+   * dialogs, the guide drawer.
+   *
+   * Hit testing below deliberately looks through whatever is painted on top,
+   * because the inline preview player covers the thumbnail and the card has to
+   * be found underneath it. That is right for the player and wrong for
+   * everything else — hovering the notifications panel found whichever card
+   * happened to lie behind it and offered to block ITS channel, from a row
+   * about somebody liking a comment.
+   */
+  const OVERLAYS = [
+    "ytd-popup-container",
+    "tp-yt-iron-dropdown",
+    "tp-yt-paper-dialog",
+    "ytd-multi-page-menu-renderer",
+    "yt-sheet-view-model",
+    "tp-yt-app-drawer",
+    "#guide",
+    "#masthead-container",
+  ].join(",");
+
+  /** The card under the pointer, seen through the preview player only. */
   function cardUnder(x, y) {
+    // What the pointer is actually ON. If that is a panel, the card behind it
+    // is not what is being pointed at.
+    const top = document.elementFromPoint(x, y);
+    if (top && top.closest && top.closest(OVERLAYS)) return null;
+
     for (const el of document.elementsFromPoint(x, y)) {
       const inner = el.closest && el.closest(CARDS);
       if (!inner) continue;
@@ -664,44 +735,68 @@ globalThis.YTCT = globalThis.YTCT || {};
   }
 
   /**
-   * A Shorts on/off switch beside the shelf on the subscriptions feed.
+   * Where the switch lives: the top of the feed, above everything.
    *
-   * It sits BEFORE the shelf rather than inside it, which is the whole point:
-   * switching shorts off hides the shelf, and a switch living inside it would
-   * go with it and never come back.
+   * It used to sit against the shelf, which was fine until the shelf was
+   * switched off — then the shelf went and the switch was left stranded
+   * halfway down the page beside nothing. Anchored to the feed instead, it is
+   * in the same place whichever way it is set.
    */
-  function ensureShortsBar() {
-    const wanted = onSubsFeed && config.enabled !== false;
-    for (const existing of document.querySelectorAll(".ytct-shorts-bar")) {
-      const next = existing.nextElementSibling;
-      if (!wanted || !next || !next.matches(SHELVES)) existing.remove();
+  function feedTop() {
+    const grid = document.querySelector("ytd-rich-grid-renderer");
+    if (grid) {
+      // Before the grid's own contents, not inside them: the contents box lays
+      // its children out as grid cells and would make a cell of this.
+      return { parent: grid, before: grid.querySelector("#contents") };
     }
-    if (!wanted) return;
+    const shelf = shortsShelves()[0];
+    if (shelf && shelf.parentElement) {
+      return { parent: shelf.parentElement, before: shelf };
+    }
+    return null;
+  }
+
+  function ensureShortsBar() {
+    const wanted =
+      onSubsFeed && config.enabled !== false && shortsShelves().length > 0;
+    if (!wanted) {
+      for (const stale of document.querySelectorAll(".ytct-shorts-bar")) {
+        stale.remove();
+      }
+      return;
+    }
+
+    const spot = feedTop();
+    if (!spot) return;
+    let strip = spot.parent.querySelector(":scope > .ytct-shorts-bar");
+    if (!strip) {
+      strip = document.createElement("div");
+      strip.className = "ytct-shorts-bar";
+      const label = document.createElement("span");
+      label.textContent = "Shorts";
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ytct-shorts-btn";
+      button.addEventListener("click", () => {
+        store.update((c) => {
+          c.subsShorts = c.subsShorts === false;
+          return c;
+        });
+      });
+      strip.append(label, button);
+      spot.parent.insertBefore(strip, spot.before || null);
+    }
+    // One switch. Anything left somewhere else is from a previous layout.
+    for (const stale of document.querySelectorAll(".ytct-shorts-bar")) {
+      if (stale !== strip) stale.remove();
+    }
 
     const on = config.subsShorts !== false;
+    const button = strip.querySelector(".ytct-shorts-btn");
+    button.textContent = on ? "ON" : "OFF";
+    button.title = on ? "Hide Shorts on this feed" : "Show Shorts on this feed";
+    button.classList.toggle("ytct-on", on);
     for (const shelf of shortsShelves()) {
-      let strip = shelf.previousElementSibling;
-      if (!strip || !strip.classList.contains("ytct-shorts-bar")) {
-        strip = document.createElement("div");
-        strip.className = "ytct-shorts-bar";
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "ytct-shorts-btn";
-        button.addEventListener("click", () => {
-          store.update((c) => {
-            c.subsShorts = c.subsShorts === false;
-            return c;
-          });
-        });
-        strip.append(button);
-        shelf.parentElement.insertBefore(strip, shelf);
-      }
-      const button = strip.querySelector(".ytct-shorts-btn");
-      button.textContent = on ? "ON" : "OFF";
-      button.title = on
-        ? "Hide Shorts on this feed"
-        : "Show Shorts on this feed";
-      button.classList.toggle("ytct-on", on);
       shelf.classList.toggle("ytct-shorts-off", !on);
     }
   }

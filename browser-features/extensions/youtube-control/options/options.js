@@ -88,8 +88,11 @@
 
       const meta = document.createElement("span");
       meta.className = "author-meta";
+      // The separator only earns its place between two things. Entries that
+      // shipped with the extension carry no date — nothing happened on a day —
+      // and used to render as "shipped with the extension · " on every row.
       const when = entry.at ? new Date(entry.at).toLocaleDateString() : "";
-      meta.textContent = entry.why ? `${entry.why} · ${when}` : when;
+      meta.textContent = [entry.why, when].filter(Boolean).join(" · ");
       meta.title = entry.why || "";
 
       const remove = document.createElement("button");

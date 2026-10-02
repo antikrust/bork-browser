@@ -212,6 +212,25 @@ def describe(addon: str) -> None:
         fields["categories"] = [category]
     if not fields:
         return
+
+    # Only write what would actually change. Every later submission would
+    # otherwise re-send the same name and summary it sent last time, and AMO
+    # rate-limits writes hard enough that this one pointless call is what
+    # blocks the submission behind it.
+    status, current = json_request(f"{API}/addons/addon/{addon}/", allow=(404,))
+    if status == 200:
+        same = True
+        for key, value in fields.items():
+            held = current.get(key)
+            if isinstance(value, dict):
+                same = same and (held or {}).get("en-US") == value["en-US"]
+            else:
+                # Categories come back as a list, in whatever order AMO likes.
+                same = same and sorted(held or []) == sorted(value)
+        if same:
+            print("listing fields already set: leaving them alone")
+            return
+
     status, answer = json_request(
         f"{API}/addons/addon/{addon}/", "PATCH", fields, allow=(400,)
     )

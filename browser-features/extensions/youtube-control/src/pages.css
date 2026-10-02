@@ -97,7 +97,9 @@
 /* Added to the card YouTube leaves behind after its own Hide, beside the Undo
    that card already has. Pressing it takes the card off the page. */
 .ytct-done {
-  margin: 0 0 12px 12px;
+  display: block;
+  width: 100%;
+  margin: 8px 0 0;
   padding: 4px 14px;
   border: 1px solid var(--ytct-line);
   border-radius: 999px;
@@ -120,8 +122,11 @@
 .ytct-shorts-bar {
   display: flex;
   align-items: center;
-  margin: 0 0 4px;
-  padding: 2px 0;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 0 16px;
+  color: var(--ytct-fg);
+  font: 500 16px/1.4 Roboto, system-ui, sans-serif;
 }
 
 .ytct-shorts-btn {
