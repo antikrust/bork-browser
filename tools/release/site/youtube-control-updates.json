@@ -3,9 +3,9 @@
     "youtube-control@bork": {
       "updates": [
         {
-          "version": "0.2.32",
+          "version": "0.2.33",
           "update_link": "https://borkbrowser.online/youtube-control.xpi",
-          "update_hash": "sha256:b060fd72f670086aa4e277f92a786d575d9405c51e40de9eb6e441ad34da21be"
+          "update_hash": "sha256:bc5658123a578a43908a907ff42960e054379711d5f0bd6d08e017bbbf2e9737"
         }
       ]
     }
