@@ -166,8 +166,14 @@ def next_listed_version(addon: str) -> str:
     Asked of AMO rather than kept in the repo: AMO is the only thing that knows
     what has actually been submitted.
     """
+    # all_with_unlisted, because the plain listing leaves out anything not yet
+    # approved — and a version waiting in the review queue is exactly the one
+    # whose number must not be handed out again. Without it this returns a
+    # number AMO already holds and the submission dies on a 409.
     status, page = json_request(
-        f"{API}/addons/addon/{addon}/versions/?page_size=50", allow=(404,)
+        f"{API}/addons/addon/{addon}/versions/"
+        f"?page_size=50&filter=all_with_unlisted",
+        allow=(400, 404),
     )
     highest = (1, 0, -1)
     if status != 404:
