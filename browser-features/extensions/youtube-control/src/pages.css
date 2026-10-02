@@ -393,6 +393,17 @@
   visibility: hidden !important;
 }
 
+/* The one line left standing on a tab with no matches. Same 16px gutter as the
+   Shorts switch, so it sits on the feed's own left edge instead of floating. */
+.ytct-empty {
+  /* No left padding: it sits in the heading row's own box, so zero lines the
+     message up with "Latest" rather than indenting it from the feed edge. */
+  padding: 24px 0 12px;
+  color: var(--ytct-fg);
+  opacity: 0.6;
+  font: 400 16px/1.4 Roboto, system-ui, sans-serif;
+}
+
 /* In the feed's own heading row beside "Latest", rather than on a row of its
    own: no block margins, and the gap does the spacing. */
 .ytct-tabs.ytct-inline {

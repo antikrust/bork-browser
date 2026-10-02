@@ -1139,6 +1139,88 @@ globalThis.YTCT = globalThis.YTCT || {};
     }
   }
 
+  /* --------------------------------------------------------- the empty tab */
+
+  /*
+   * A tab with no matches is otherwise a blank page. The cells that do not
+   * belong are hidden, and YouTube's own loading furniture is hidden with
+   * them, so nothing on screen says the tab was understood rather than
+   * broken.
+   *
+   * Held back for EMPTY_GRACE of unbroken emptiness. The feed goes on paging
+   * while a thin tab looks for its matches further down, so a message put up
+   * the moment a tab is picked would flash on every switch and on every fresh
+   * load before the first cells have been judged. The wait is timed from the
+   * first empty pass of THIS view, so changing tabs starts it over.
+   */
+  /*
+   * Where the message goes: under the tabs, in the shelf's own block flow,
+   * right after the heading row they sit in.
+   *
+   * The two obvious places are both wrong, measured on the live feed. The
+   * grid's #contents is a flex box, so a message put among the cells is laid
+   * out as one of them — 208px of a 1741px row. And #contents is also what
+   * holds the heading row, so anything placed before it lands ABOVE the tabs,
+   * which reads as a stray line at the top of the page rather than an answer
+   * about the tab just pressed.
+   */
+  function emptySpot() {
+    const subheader = document.querySelector(
+      "ytd-shelf-renderer .grid-subheader",
+    );
+    if (subheader && subheader.parentElement) {
+      return { parent: subheader.parentElement, before: subheader.nextSibling };
+    }
+    return feedTop();
+  }
+
+  const EMPTY_GRACE = 1200;
+  let emptyView = null;
+  let emptySince = 0;
+
+  function ensureEmptyNotice() {
+    // null means nothing is being filtered, so emptiness is not ours to
+    // report: All, a disabled add-on, or any page but the feed.
+    const view = filtering() ? config.subTab || "" : null;
+    // One marked cell that is still painting is enough. Counting them all
+    // would walk every cell in a feed that runs to four figures.
+    const matched =
+      view !== null &&
+      !!document.querySelector("[data-ytct-tab]:not(.ytct-video-hidden)");
+
+    if (view !== emptyView) {
+      emptyView = view;
+      emptySince = 0;
+    }
+    if (view === null || matched) emptySince = 0;
+    else if (!emptySince) emptySince = Date.now();
+
+    if (!emptySince || Date.now() - emptySince < EMPTY_GRACE) {
+      for (const stale of document.querySelectorAll(".ytct-empty")) {
+        stale.remove();
+      }
+      return;
+    }
+
+    const spot = emptySpot();
+    if (!spot) return;
+    let note = spot.parent.querySelector(":scope > .ytct-empty");
+    if (!note) {
+      note = document.createElement("div");
+      note.className = "ytct-empty";
+      spot.parent.insertBefore(note, spot.before || null);
+    }
+    // One message. Anything left elsewhere is from a previous layout.
+    for (const stale of document.querySelectorAll(".ytct-empty")) {
+      if (stale !== note) stale.remove();
+    }
+    // Unsorted empty is the good ending, not an absence: everything has been
+    // filed. The named tabs say "yet", because the feed may still be paging
+    // its way down to a match.
+    note.textContent =
+      view === "" ? "Nothing left to sort" : `Nothing in ${view} yet`;
+  }
+
   /* ---------------------------------------------------- channel page button */
 
   const SUBSCRIBE =
@@ -1340,6 +1422,8 @@ globalThis.YTCT = globalThis.YTCT || {};
       handle(card);
     }
     for (const shelf of document.querySelectorAll(SHELVES)) handleShelf(shelf);
+    // Last, because it reads the marks the loop above has just set.
+    ensureEmptyNotice();
   }
 
   store.load().then((loaded) => {
