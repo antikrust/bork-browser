@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
-"""Sign an unlisted add-on through AMO's API and write the signed xpi out.
+"""Put a version of an add-on on AMO, in either channel.
 
-Unlisted means AMO's robot signs it without human review, so this returns
-with a finished file rather than leaving something in a queue.
+UNLISTED (the default) is signed by AMO's robot without human review, so it
+returns with a finished file rather than leaving something in a queue — which
+is what the bundled copies and the site download need.
+
+LISTED is the public catalogue. A human reviews it, which takes however long it
+takes, so there is no file to collect and nothing to wait for here: it uploads,
+creates the version, sets the listing fields AMO requires before it will show a
+page, and reports where in the process it got to.
 
 Straight against the API rather than through web-ext: web-ext arrives via
 `npx`, which fetches and runs a package off npm in the middle of a release.
@@ -12,7 +18,9 @@ Environment:
   AMO_JWT_ISSUER / AMO_JWT_SECRET   from the AMO API key page
   AMO_ADDON_ID                      the add-on's gecko id
   AMO_ZIP                           packed extension to submit
-  AMO_OUT                           where to write the signed xpi
+  AMO_OUT                           where to write the signed xpi (unlisted)
+  AMO_CHANNEL                       "unlisted" (default) or "listed"
+  AMO_SUMMARY / AMO_CATEGORY        listed only: the catalogue page's fields
 """
 
 import base64
@@ -124,12 +132,12 @@ def await_validation(upload_uuid: str) -> None:
     raise SystemExit("timed out waiting for AMO to validate the upload")
 
 
-def create_version(addon: str, upload_uuid: str) -> tuple:
+def create_version(addon: str, upload_uuid: str, body: dict) -> tuple:
     """Add a version to the add-on, registering the add-on first if needed."""
     status, version = json_request(
         f"{API}/addons/addon/{addon}/versions/",
         "POST",
-        {"upload": upload_uuid},
+        dict(body, upload=upload_uuid),
         allow=(404,),
     )
     if status != 404:
@@ -139,9 +147,68 @@ def create_version(addon: str, upload_uuid: str) -> tuple:
     # was deleted. Register it; AMO takes the id from the manifest.
     print("no existing add-on for this id; registering it")
     _, created = json_request(
-        f"{API}/addons/addon/", "POST", {"version": {"upload": upload_uuid}}
+        f"{API}/addons/addon/",
+        "POST",
+        {"version": dict(body, upload=upload_uuid)},
     )
     return created.get("guid", addon), created.get("version") or created
+
+
+def next_listed_version(addon: str) -> str:
+    """The version number the next catalogue submission should carry.
+
+    AMO version numbers are unique per add-on across BOTH channels, so the
+    public listing can never reuse one the self-hosted channel has spent — and
+    the self-hosted one is bumped several times a day. Rather than reserving
+    numbers by hand and finding out by 409, the catalogue keeps a line of its
+    own starting at 1.0.0, which the self-hosted 0.x line cannot run into.
+
+    Asked of AMO rather than kept in the repo: AMO is the only thing that knows
+    what has actually been submitted.
+    """
+    status, page = json_request(
+        f"{API}/addons/addon/{addon}/versions/?page_size=50", allow=(404,)
+    )
+    highest = (1, 0, -1)
+    if status != 404:
+        for item in page.get("results") or []:
+            parts = str(item.get("version", "")).split(".")
+            try:
+                numbers = tuple(int(part) for part in parts)
+            except ValueError:
+                continue
+            # Only the catalogue's own line. The self-hosted 0.x versions come
+            # back here too and must not drag the number backwards.
+            if len(numbers) == 3 and numbers[0] >= 1 and numbers > highest:
+                highest = numbers
+    return f"{highest[0]}.{highest[1]}.{highest[2] + 1}"
+
+
+def describe(addon: str) -> None:
+    """Fill in what AMO insists on before it will show a catalogue page.
+
+    Only the fields that are required, and only from what the manifest and the
+    release already say — a listing page is public writing in someone's name,
+    so nothing here is invented for it.
+    """
+    fields = {}
+    summary = os.environ.get("AMO_SUMMARY")
+    category = os.environ.get("AMO_CATEGORY")
+    if summary:
+        fields["summary"] = {"en-US": summary}
+    if category:
+        fields["categories"] = [category]
+    if not fields:
+        return
+    status, answer = json_request(
+        f"{API}/addons/addon/{addon}/", "PATCH", fields, allow=(400,)
+    )
+    if status == 400:
+        raise SystemExit(
+            f"AMO would not take the listing fields: {json.dumps(answer)[:600]}\n"
+            "Set them on the Developer Hub page and run this again."
+        )
+    print(f"listing fields set: {', '.join(sorted(fields))}")
 
 
 def await_signature(addon: str, version_id: int) -> str:
@@ -159,18 +226,42 @@ def await_signature(addon: str, version_id: int) -> str:
 
 def main() -> int:
     addon = os.environ["AMO_ADDON_ID"]
+    channel = os.environ.get("AMO_CHANNEL", "unlisted")
+
+    # Asked for before the extension is packed, because the answer goes inside
+    # the zip.
+    if os.environ.get("AMO_MODE") == "next-listed-version":
+        print(next_listed_version(addon))
+        return 0
+
     zip_path = os.environ["AMO_ZIP"]
-    out = os.environ["AMO_OUT"]
 
     print("uploading to AMO")
-    upload_uuid = upload(zip_path)
+    upload_uuid = upload(zip_path, channel)
     print(f"upload {upload_uuid}: validating")
     await_validation(upload_uuid)
 
-    print("creating unlisted version")
-    addon, version = create_version(addon, upload_uuid)
-    print(f"version {version.get('version')} created: waiting for signature")
+    body = {}
+    if channel == "listed":
+        # Before the version, not after: AMO refuses to create a listed version
+        # at all until the add-on has the fields its catalogue page needs.
+        describe(addon)
+        body["license"] = os.environ.get("AMO_LICENSE", "MPL-2.0")
 
+    print(f"creating {channel} version")
+    addon, version = create_version(addon, upload_uuid, body)
+    print(f"version {version.get('version')} created")
+
+    if channel == "listed":
+        print(
+            "submitted for review. Nothing else happens here: a person at "
+            "Mozilla looks at it, and the catalogue page appears when they "
+            f"approve it.\nhttps://addons.mozilla.org/developers/addon/{addon}/versions"
+        )
+        return 0
+
+    out = os.environ["AMO_OUT"]
+    print("waiting for signature")
     url = await_signature(addon, version["id"])
     _, blob = request(url)
     with open(out, "wb") as handle:
