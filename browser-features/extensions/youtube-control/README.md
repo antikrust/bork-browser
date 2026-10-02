@@ -37,7 +37,7 @@ exactly this kind of list.
 ## How it ships
 
 This is part of bork. `installThemePack()` in `tools/src/injector.ts` zips this
-directory into `distribution/extensions/shutup@bork.xpi` on every build, next to
+directory into `distribution/extensions/youtube-control@bork.xpi` on every build, next to
 uBlock Origin and Dark Reader, and Firefox installs everything in that directory
 as an ordinary add-on.
 

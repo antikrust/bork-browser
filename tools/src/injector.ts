@@ -129,7 +129,8 @@ function packExtensionDir(
  * directory name because it is a public download URL.
  */
 const SIGNED_XPI: Record<string, string> = {
-  shutup: "tools/release/site/shut-up.xpi",
+  "youtube-control": "tools/release/site/youtube-control.xpi",
+  "media-control": "tools/release/site/media-control.xpi",
 };
 
 /** A signed xpi for this extension at this version, or null. */

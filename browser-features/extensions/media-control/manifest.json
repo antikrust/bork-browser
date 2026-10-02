@@ -39,8 +39,8 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "fuckoff@bork",
-      "update_url": "https://borkbrowser.online/fuckoff-updates.json",
+      "id": "media-control@bork",
+      "update_url": "https://borkbrowser.online/media-control-updates.json",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
         "required": ["none"]

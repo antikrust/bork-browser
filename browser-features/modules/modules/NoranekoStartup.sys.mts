@@ -126,12 +126,18 @@ async function adoptDistributionAddons(): Promise<void> {
   ];
   // Ours: shipped inside the app, so the app is what says which version is
   // current, and each release should carry its own.
-  // shuddup@bork, not shutup@bork: AMO permanently retires the id of a deleted
-  // add-on ("Duplicate add-on ID found"), so the original can never be signed
-  // again and had to be re-registered under a new one. The old copy is left
-  // alone in profiles that have it — its settings live under that id, and the
-  // options page can export them across.
-  const OWN_IDS = ["shuddup@bork", "fuckoff@bork"];
+  // These ids have moved twice now, and an id is never reused: AMO permanently
+  // retires the id of a deleted add-on ("Duplicate add-on ID found"), so an id
+  // that has been registered once can never be registered again — not by this
+  // account and not by another one. shutup@bork became shuddup@bork that way,
+  // and shuddup@bork and fuckoff@bork became these when the pair moved to the
+  // account that publishes them.
+  //
+  // Older copies are left alone in profiles that have them. Their settings —
+  // the blocklist above all — live under the old id and no extension can read
+  // another's storage, so the way across is the options page's own export and
+  // import. Removing them here would take the list with it.
+  const OWN_IDS = ["youtube-control@bork", "media-control@bork"];
   const PREF_BASE = "bork.distribution.adopted.";
   try {
     const { AddonManager } = ChromeUtils.importESModule(

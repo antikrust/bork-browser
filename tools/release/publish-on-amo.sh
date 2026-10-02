@@ -10,7 +10,7 @@
 # by strangers, updated by Mozilla. A person reviews every version, so this
 # returns with the version in a queue rather than with a file.
 #
-#   bash tools/release/publish-on-amo.sh [shutup|fuckoff]
+#   bash tools/release/publish-on-amo.sh [youtube-control|media-control]
 #
 # The upload is the same tree as the signed one with ONE change: the
 # update_url comes out. A listed add-on is updated by AMO, and AMO rejects a
@@ -32,19 +32,19 @@ export AMO_JWT_ISSUER AMO_JWT_SECRET
 # The catalogue page needs a one-line summary and a category. Both come from
 # what the add-on already says about itself rather than being written for the
 # listing: the summary is the manifest's own description.
-case "${1:-shutup}" in
-  shutup)
-    SRC="$ROOT/browser-features/extensions/shutup"
-    ADDON_ID="shuddup@bork"
+case "${1:-youtube-control}" in
+  youtube-control)
+    SRC="$ROOT/browser-features/extensions/youtube-control"
+    ADDON_ID="youtube-control@bork"
     CATEGORY="photos-music-videos"
     ;;
-  fuckoff)
-    SRC="$ROOT/browser-features/extensions/fuckoff"
-    ADDON_ID="fuckoff@bork"
+  media-control)
+    SRC="$ROOT/browser-features/extensions/media-control"
+    ADDON_ID="media-control@bork"
     CATEGORY="privacy-security"
     ;;
   *)
-    echo "unknown add-on: ${1:-}. Known: shutup, fuckoff" >&2
+    echo "unknown add-on: ${1:-}. Known: youtube-control, media-control" >&2
     exit 1
     ;;
 esac

@@ -43,8 +43,8 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "shuddup@bork",
-      "update_url": "https://borkbrowser.online/shut-up-updates.json",
+      "id": "youtube-control@bork",
+      "update_url": "https://borkbrowser.online/youtube-control-updates.json",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
         "required": ["none"]
