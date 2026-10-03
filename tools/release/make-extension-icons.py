@@ -2,13 +2,9 @@
 """Draw the bundled extensions' icons.
 
 YouTube Control is three bars stepping down to nothing: sound going quiet.
-Media Control is a front page — masthead, photo block, two columns.
+Cyberswine is a pig's head: ears, snout, two nostrils.
 
-The press one started as the same ramp lying down, which was wrong: rotating
-one shape twice reads as one idea drawn twice, not as a newspaper. Two other
-attempts, a pair of offset sheets and a page with a turned corner, both read as
-"document" rather than "newspaper". Only the front page says press at a glance,
-and it costs some clarity at 16px, which is the trade worth making.
+The blocker was a newspaper front page while it was called Media Control.
 
 Everything is a rectangle on a filled chip, for one reason: the icon has to
 survive 16x16 in a toolbar, where strokes, gradients and detail turn to mush.
@@ -56,12 +52,20 @@ def vertical(draw, size: int) -> None:
         x += size * (BAR + GAP)
 
 
-def newspaper(draw, size: int, ink: str) -> None:
-    """A front page: masthead, photo block, two columns.
+def pig(draw, size: int, ink: str) -> None:
+    """A pig's head: two ears, a wide face, a snout with two nostrils.
 
-    Deliberately few, fat elements. Anything finer — a strapline, a third
-    column, a rule between them — is gone by 32px and mud by 16px.
+    The nostrils are what make it a pig. Without them the same drawing reads
+    as a cat — pointed ears over a round face — and three attempts at fixing
+    that by reshaping the ears all stayed cat. Two holes punched out of the
+    snout settle it at a glance, and they are the only detail here fine enough
+    to blur at 16px, where they merge into a lighter patch that still reads as
+    a snout.
+
+    Ears first, then the face over them, so the face's own curve cuts them
+    into triangles sitting ON the head rather than beside it.
     """
+
     def block(x0, y0, x1, y1, radius, fill):
         draw.rounded_rectangle(
             (size * x0, size * y0, size * x1, size * y1),
@@ -69,16 +73,25 @@ def newspaper(draw, size: int, ink: str) -> None:
             fill=fill,
         )
 
-    block(0.15, 0.18, 0.85, 0.82, 0.07, "white")      # the page
-    block(0.23, 0.26, 0.77, 0.385, 0.02, ink)         # masthead
-    block(0.23, 0.47, 0.47, 0.74, 0.02, ink)          # photo
-    block(0.545, 0.47, 0.77, 0.565, 0.02, ink)        # column
-    block(0.545, 0.645, 0.77, 0.74, 0.02, ink)
+    draw.polygon(
+        [(size * 0.12, size * 0.46), (size * 0.15, size * 0.13), (size * 0.43, size * 0.33)],
+        fill="white",
+    )
+    draw.polygon(
+        [(size * 0.88, size * 0.46), (size * 0.85, size * 0.13), (size * 0.57, size * 0.33)],
+        fill="white",
+    )
+    block(0.10, 0.30, 0.90, 0.84, 0.27, "white")        # the face
+    block(0.33, 0.53, 0.67, 0.78, 0.12, ink)            # the snout
+    block(0.405, 0.605, 0.465, 0.715, 0.03, "white")    # nostrils
+    block(0.535, 0.605, 0.595, 0.715, 0.03, "white")
+    block(0.23, 0.40, 0.335, 0.49, 0.05, ink)           # eyes
+    block(0.665, 0.40, 0.77, 0.49, 0.05, ink)
 
 
 ICONS = {
     "youtube-control": ("#F97316", lambda draw, size, ink: vertical(draw, size)),
-    "media-control": ("#4F46E5", newspaper),
+    "media-control": ("#EC4899", pig),
 }
 
 

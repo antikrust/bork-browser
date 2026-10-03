@@ -89,12 +89,12 @@
     api.contextMenus.removeAll(() => {
       api.contextMenus.create({
         id: "fkof-block-link",
-        title: "Media Control — block this site",
+        title: "Cyberswine — block this site",
         contexts: ["link"],
       });
       api.contextMenus.create({
         id: "fkof-block-page",
-        title: "Media Control — block the site I am on",
+        title: "Cyberswine — block the site I am on",
         contexts: ["page"],
       });
     });
