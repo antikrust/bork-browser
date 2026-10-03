@@ -48,13 +48,13 @@ case "${1:-youtube-control}" in
     ADDON_ID="youtube-control@bork"
     SLUG="youtube-control"
     ;;
-  media-control)
+  cyberswine)
     SRC="$ROOT/browser-features/extensions/media-control"
     ADDON_ID="media-control@bork"
-    SLUG="media-control"
+    SLUG="cyberswine"
     ;;
   *)
-    echo "unknown add-on: ${1:-}. Known: youtube-control, media-control" >&2
+    echo "unknown add-on: ${1:-}. Known: youtube-control, cyberswine" >&2
     exit 1
     ;;
 esac

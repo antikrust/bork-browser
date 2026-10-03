@@ -204,12 +204,18 @@ def describe(addon: str) -> None:
     name = os.environ.get("AMO_NAME")
     summary = os.environ.get("AMO_SUMMARY")
     category = os.environ.get("AMO_CATEGORY")
+    # The slug is the name in the catalogue URL and the name AMO gives the file
+    # it serves, so a renamed add-on still downloads under the old one until
+    # this is written over too.
+    slug = os.environ.get("AMO_SLUG")
     if name:
         fields["name"] = {"en-US": name}
     if summary:
         fields["summary"] = {"en-US": summary}
     if category:
         fields["categories"] = [category]
+    if slug:
+        fields["slug"] = slug
     if not fields:
         return
 
@@ -224,9 +230,11 @@ def describe(addon: str) -> None:
             held = current.get(key)
             if isinstance(value, dict):
                 same = same and (held or {}).get("en-US") == value["en-US"]
-            else:
+            elif isinstance(value, list):
                 # Categories come back as a list, in whatever order AMO likes.
                 same = same and sorted(held or []) == sorted(value)
+            else:
+                same = same and held == value
         if same:
             print("listing fields already set: leaving them alone")
             return
@@ -263,6 +271,13 @@ def main() -> int:
     # the zip.
     if os.environ.get("AMO_MODE") == "next-listed-version":
         print(next_listed_version(addon))
+        return 0
+
+    # Listing metadata on its own, with no version to go with it. Creating a
+    # version is quota'd by the day; renaming the page is not, so a rename does
+    # not have to wait for a release it has nothing to do with.
+    if os.environ.get("AMO_MODE") == "describe":
+        describe(addon)
         return 0
 
     zip_path = os.environ["AMO_ZIP"]

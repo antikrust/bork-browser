@@ -37,14 +37,16 @@ case "${1:-youtube-control}" in
     SRC="$ROOT/browser-features/extensions/youtube-control"
     ADDON_ID="youtube-control@bork"
     CATEGORY="photos-music-videos"
+    SLUG="youtube-control"
     ;;
-  media-control)
+  cyberswine)
     SRC="$ROOT/browser-features/extensions/media-control"
     ADDON_ID="media-control@bork"
     CATEGORY="privacy-security"
+    SLUG="cyberswine"
     ;;
   *)
-    echo "unknown add-on: ${1:-}. Known: youtube-control, media-control" >&2
+    echo "unknown add-on: ${1:-}. Known: youtube-control, cyberswine" >&2
     exit 1
     ;;
 esac
@@ -86,4 +88,5 @@ AMO_CHANNEL="listed" \
 AMO_NAME="$NAME" \
 AMO_SUMMARY="$SUMMARY" \
 AMO_CATEGORY="$CATEGORY" \
+AMO_SLUG="$SLUG" \
 python3 "$ROOT/tools/release/amo-sign.py"

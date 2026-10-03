@@ -143,7 +143,7 @@ if [ "$SITE_ONLY" = 1 ]; then
   log "site only — refreshing page sums, sizes and version from dist/"
   python3 "$ROOT/tools/release/update-site-sums.py"
   stage_site_extension "youtube-control@bork" "youtube-control"
-  stage_site_extension "media-control@bork" "media-control"
+  stage_site_extension "media-control@bork" "cyberswine"
   log "uploading the site to ${WEB_REMOTE%/downloads}"
   rsync -av "$ROOT/tools/release/site/" "${WEB_REMOTE%/downloads}/"
   log "uploaded. live at $SITE_URL"
@@ -267,7 +267,7 @@ if [ "$UPLOAD" = 1 ]; then
   log "refreshing page sums + sizes"
   python3 "$ROOT/tools/release/update-site-sums.py"
   stage_site_extension "youtube-control@bork" "youtube-control"
-  stage_site_extension "media-control@bork" "media-control"
+  stage_site_extension "media-control@bork" "cyberswine"
   # The whole site dir, not just index.html: the page now carries its own
   # assets/ (hero photo, screenshots, webfont) and an index shipped without
   # them renders unstyled and imageless. No --delete: downloads/ lives under
