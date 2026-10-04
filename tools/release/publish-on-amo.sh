@@ -40,7 +40,7 @@ case "${1:-youtube-manager}" in
     SLUG="youtube-manager"
     ;;
   cyberswine)
-    SRC="$ROOT/browser-features/extensions/media-control"
+    SRC="$ROOT/browser-features/extensions/cyberswine"
     ADDON_ID="cyberswine@bork"
     CATEGORY="privacy-security"
     SLUG="cyberswine"

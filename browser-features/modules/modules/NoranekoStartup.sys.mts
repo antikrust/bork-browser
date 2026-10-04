@@ -126,29 +126,9 @@ async function adoptDistributionAddons(): Promise<void> {
   ];
   // Ours: shipped inside the app, so the app is what says which version is
   // current, and each release should carry its own.
-  // These ids have moved four times now, and an id is never reused: AMO
-  // permanently retires the id of a deleted add-on ("Duplicate add-on ID
-  // found"), so an id that has been registered once can never be registered
-  // again — not by this account and not by another one. shutup@bork became
-  // shuddup@bork that way, and shuddup@bork and fuckoff@bork became
-  // youtube-control@bork and media-control@bork when the pair moved to the
-  // account that publishes them. Those were then renamed to
-  // youtube-manager@bork and cyberswine@bork.
+  // An id is never reused: AMO permanently retires the id of a deleted add-on,
+  // so renaming one of these means giving it a new id.
   const OWN_IDS = ["youtube-manager@bork", "cyberswine@bork"];
-  // Every id these have ever had. A profile that still has one of them has the
-  // same add-on twice the moment the current one installs — both running, both
-  // drawing their buttons — so they are uninstalled, not left to the user.
-  // Their settings live under the old id and no extension can read another's
-  // storage, so an uninstall takes the old blocklist with it: export it from
-  // the old copy's settings page BEFORE the first launch of a build with this.
-  const RETIRED_IDS = [
-    "shutup@bork",
-    "shuddup@bork",
-    "fuckoff@bork",
-    "youtube-control@bork",
-    "media-control@bork",
-  ];
-
   const PREF_BASE = "bork.distribution.adopted.";
   try {
     const { AddonManager } = ChromeUtils.importESModule(
@@ -214,13 +194,6 @@ async function adoptDistributionAddons(): Promise<void> {
       console.log(
         `[NoranekoStartup] updated bundled add-on ${id}: ${existing.version} -> ${shipped}`,
       );
-    }
-
-    for (const id of RETIRED_IDS) {
-      const old = await AddonManager.getAddonByID(id);
-      if (!old) continue;
-      await old.uninstall();
-      console.log(`[NoranekoStartup] removed retired add-on ${id}`);
     }
 
     // Turn one of our themes on. Shipping ten and enabling none left the stock

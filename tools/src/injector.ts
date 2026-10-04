@@ -130,7 +130,7 @@ function packExtensionDir(
  */
 const SIGNED_XPI: Record<string, string> = {
   "youtube-manager": "tools/release/site/youtube-manager.xpi",
-  "media-control": "tools/release/site/cyberswine.xpi",
+  "cyberswine": "tools/release/site/cyberswine.xpi",
 };
 
 /** A signed xpi for this extension at this version, or null. */

@@ -4,7 +4,6 @@
 YouTube Manager is three bars stepping down to nothing: sound going quiet.
 Cyberswine is a pig's head: ears, snout, two nostrils.
 
-The blocker was a newspaper front page while it was called Media Control.
 
 Everything is a rectangle on a filled chip, for one reason: the icon has to
 survive 16x16 in a toolbar, where strokes, gradients and detail turn to mush.
@@ -91,7 +90,7 @@ def pig(draw, size: int, ink: str) -> None:
 
 ICONS = {
     "youtube-manager": ("#F97316", lambda draw, size, ink: vertical(draw, size)),
-    "media-control": ("#EC4899", pig),
+    "cyberswine": ("#EC4899", pig),
 }
 
 

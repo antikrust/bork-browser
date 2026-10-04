@@ -47,7 +47,7 @@ What that means for someone running bork:
   is fine — a new one is not required.
 - It is visible and removable in `about:addons` like anything else.
 - **Removing it sticks.** `installDistributionAddon` records
-  `extensions.installedDistroAddon.shutup@bork`, and on later startups it sees
+  `extensions.installedDistroAddon.youtube-manager@bork`, and on later startups it sees
   the add-on is gone but the pref is set, and leaves it uninstalled. A bork
   update will not push it back.
 - Raising `version` in `manifest.json` upgrades it in place for everyone who
