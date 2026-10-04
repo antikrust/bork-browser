@@ -137,7 +137,7 @@ async function adoptDistributionAddons(): Promise<void> {
   // the blocklist above all — live under the old id and no extension can read
   // another's storage, so the way across is the options page's own export and
   // import. Removing them here would take the list with it.
-  const OWN_IDS = ["youtube-control@bork", "media-control@bork"];
+  const OWN_IDS = ["youtube-control@bork", "cyberswine@bork"];
   const PREF_BASE = "bork.distribution.adopted.";
   try {
     const { AddonManager } = ChromeUtils.importESModule(

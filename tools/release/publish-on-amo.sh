@@ -37,11 +37,14 @@ case "${1:-youtube-control}" in
     SRC="$ROOT/browser-features/extensions/youtube-control"
     ADDON_ID="youtube-control@bork"
     CATEGORY="photos-music-videos"
-    SLUG="youtube-control"
+    # Empty: "youtube-control" is taken on AMO, whose slugs are one global
+    # namespace rather than one per account, so this page keeps the id AMO
+    # generated for it. A slug is only sent when there is one to send.
+    SLUG=""
     ;;
   cyberswine)
     SRC="$ROOT/browser-features/extensions/media-control"
-    ADDON_ID="media-control@bork"
+    ADDON_ID="cyberswine@bork"
     CATEGORY="privacy-security"
     SLUG="cyberswine"
     ;;

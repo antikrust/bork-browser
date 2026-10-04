@@ -50,7 +50,7 @@ case "${1:-youtube-control}" in
     ;;
   cyberswine)
     SRC="$ROOT/browser-features/extensions/media-control"
-    ADDON_ID="media-control@bork"
+    ADDON_ID="cyberswine@bork"
     SLUG="cyberswine"
     ;;
   *)

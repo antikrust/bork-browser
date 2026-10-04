@@ -62,7 +62,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "media-control@bork",
+      "id": "cyberswine@bork",
       "update_url": "https://borkbrowser.online/cyberswine-updates.json",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
