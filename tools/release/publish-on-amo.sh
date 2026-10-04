@@ -37,10 +37,11 @@ case "${1:-youtube-control}" in
     SRC="$ROOT/browser-features/extensions/youtube-control"
     ADDON_ID="youtube-control@bork"
     CATEGORY="photos-music-videos"
-    # Empty: "youtube-control" is taken on AMO, whose slugs are one global
-    # namespace rather than one per account, so this page keeps the id AMO
-    # generated for it. A slug is only sent when there is one to send.
-    SLUG=""
+    # Not "youtube-control": AMO's slugs are one global namespace rather than
+    # one per account, and that word belongs to an unrelated add-on doing
+    # much the same job. The slug is only the listing URL and the name AMO
+    # gives the file it serves, so it does not have to match the add-on's.
+    SLUG="youtube-manager"
     ;;
   cyberswine)
     SRC="$ROOT/browser-features/extensions/media-control"
