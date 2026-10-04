@@ -129,7 +129,7 @@ function packExtensionDir(
  * directory name because it is a public download URL.
  */
 const SIGNED_XPI: Record<string, string> = {
-  "youtube-control": "tools/release/site/youtube-control.xpi",
+  "youtube-manager": "tools/release/site/youtube-manager.xpi",
   "media-control": "tools/release/site/cyberswine.xpi",
 };
 

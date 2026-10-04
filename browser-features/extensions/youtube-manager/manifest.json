@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Control",
-  "version": "0.2.36",
-  "description": "Quiet YouTube: block whole channels from home, search and recommendations, and tame live chat with word and author filters, a one-click SHUT UP button, repeat-offender blocking, and a threaded reading view.",
+  "name": "YouTube Manager",
+  "version": "0.2.37",
+  "description": "Quiet YouTube: block whole channels from home, search and the sidebar, sort your subscriptions into tabs of your own, switch Shorts off, and tame live chat with word and author filters, SHUT UP and a threaded view.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -64,7 +64,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "YouTube Control",
+    "default_title": "YouTube Manager",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"
@@ -73,7 +73,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "youtube-control@bork",
-      "update_url": "https://borkbrowser.online/youtube-control-updates.json",
+      "update_url": "https://borkbrowser.online/youtube-manager-updates.json",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
         "required": [

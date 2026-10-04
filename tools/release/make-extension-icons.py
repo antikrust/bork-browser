@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draw the bundled extensions' icons.
 
-YouTube Control is three bars stepping down to nothing: sound going quiet.
+YouTube Manager is three bars stepping down to nothing: sound going quiet.
 Cyberswine is a pig's head: ears, snout, two nostrils.
 
 The blocker was a newspaper front page while it was called Media Control.
@@ -90,7 +90,7 @@ def pig(draw, size: int, ink: str) -> None:
 
 
 ICONS = {
-    "youtube-control": ("#F97316", lambda draw, size, ink: vertical(draw, size)),
+    "youtube-manager": ("#F97316", lambda draw, size, ink: vertical(draw, size)),
     "media-control": ("#EC4899", pig),
 }
 

@@ -1,4 +1,4 @@
-# YouTube Control
+# YouTube Manager
 
 A browser extension that makes YouTube live chat readable: filter by word or by
 person, silence someone in one click, let a phrase get them blocked outright,

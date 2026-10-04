@@ -142,7 +142,7 @@ if [ "$SITE_ONLY" = 1 ]; then
 
   log "site only — refreshing page sums, sizes and version from dist/"
   python3 "$ROOT/tools/release/update-site-sums.py"
-  stage_site_extension "youtube-control@bork" "youtube-control"
+  stage_site_extension "youtube-control@bork" "youtube-manager"
   stage_site_extension "cyberswine@bork" "cyberswine"
   log "uploading the site to ${WEB_REMOTE%/downloads}"
   rsync -av "$ROOT/tools/release/site/" "${WEB_REMOTE%/downloads}/"
@@ -266,7 +266,7 @@ if [ "$UPLOAD" = 1 ]; then
   # who runs it. Page goes up last, after the files it describes exist.
   log "refreshing page sums + sizes"
   python3 "$ROOT/tools/release/update-site-sums.py"
-  stage_site_extension "youtube-control@bork" "youtube-control"
+  stage_site_extension "youtube-control@bork" "youtube-manager"
   stage_site_extension "cyberswine@bork" "cyberswine"
   # The whole site dir, not just index.html: the page now carries its own
   # assets/ (hero photo, screenshots, webfont) and an index shipped without

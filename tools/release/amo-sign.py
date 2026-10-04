@@ -208,6 +208,7 @@ def describe(addon: str) -> None:
     # it serves, so a renamed add-on still downloads under the old one until
     # this is written over too.
     slug = os.environ.get("AMO_SLUG")
+    description = os.environ.get("AMO_DESCRIPTION")
     if name:
         fields["name"] = {"en-US": name}
     if summary:
@@ -216,6 +217,10 @@ def describe(addon: str) -> None:
         fields["categories"] = [category]
     if slug:
         fields["slug"] = slug
+    # The page's long text, as against the one-line summary above. Optional: a
+    # listing with nothing to say here is left as it is.
+    if description:
+        fields["description"] = {"en-US": description}
     if not fields:
         return
 

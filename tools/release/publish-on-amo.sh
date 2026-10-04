@@ -10,7 +10,7 @@
 # by strangers, updated by Mozilla. A person reviews every version, so this
 # returns with the version in a queue rather than with a file.
 #
-#   bash tools/release/publish-on-amo.sh [youtube-control|media-control]
+#   bash tools/release/publish-on-amo.sh [youtube-manager|cyberswine]
 #
 # The upload is the same tree as the signed one with ONE change: the
 # update_url comes out. A listed add-on is updated by AMO, and AMO rejects a
@@ -32,9 +32,9 @@ export AMO_JWT_ISSUER AMO_JWT_SECRET
 # The catalogue page needs a one-line summary and a category. Both come from
 # what the add-on already says about itself rather than being written for the
 # listing: the summary is the manifest's own description.
-case "${1:-youtube-control}" in
-  youtube-control)
-    SRC="$ROOT/browser-features/extensions/youtube-control"
+case "${1:-youtube-manager}" in
+  youtube-manager)
+    SRC="$ROOT/browser-features/extensions/youtube-manager"
     ADDON_ID="youtube-control@bork"
     CATEGORY="photos-music-videos"
     # Not "youtube-control": AMO's slugs are one global namespace rather than
@@ -50,7 +50,7 @@ case "${1:-youtube-control}" in
     SLUG="cyberswine"
     ;;
   *)
-    echo "unknown add-on: ${1:-}. Known: youtube-control, cyberswine" >&2
+    echo "unknown add-on: ${1:-}. Known: youtube-manager, cyberswine" >&2
     exit 1
     ;;
 esac
@@ -84,6 +84,11 @@ PY
 NAME="$(printf '%s\n' "$FIELDS" | sed -n 1p)"
 SUMMARY="$(printf '%s\n' "$FIELDS" | sed -n 2p)"
 
+# The page's long text lives beside the add-on as AMO-LISTING.md. Markdown files
+# stay out of the zip below, so it is never inside the shipped add-on.
+DESCRIPTION=""
+[ -f "$SRC/AMO-LISTING.md" ] && DESCRIPTION="$(cat "$SRC/AMO-LISTING.md")"
+
 ( cd "$work/src" && zip -qr -X "$work/upload.zip" . -x 'test/*' '*.md' 'build.sh' '.gitignore' )
 
 AMO_ADDON_ID="$ADDON_ID" \
@@ -93,4 +98,5 @@ AMO_NAME="$NAME" \
 AMO_SUMMARY="$SUMMARY" \
 AMO_CATEGORY="$CATEGORY" \
 AMO_SLUG="$SLUG" \
+AMO_DESCRIPTION="$DESCRIPTION" \
 python3 "$ROOT/tools/release/amo-sign.py"

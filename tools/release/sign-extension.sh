@@ -9,7 +9,7 @@
 # updates, which is why the manifest carries an update_url and why this
 # rewrites the update manifest beside the xpi.
 #
-#   bash tools/release/sign-extension.sh [youtube-control|media-control]
+#   bash tools/release/sign-extension.sh [youtube-manager|cyberswine]
 #
 # It returns with the signed xpi already in place; there is nothing to wait for
 # and nothing to collect later.
@@ -42,11 +42,11 @@ export AMO_JWT_ISSUER AMO_JWT_SECRET
 
 # Which add-on to sign. Everything below is derived from this block, so a new
 # bundled extension needs four lines here and nothing else.
-case "${1:-youtube-control}" in
-  youtube-control)
-    SRC="$ROOT/browser-features/extensions/youtube-control"
+case "${1:-youtube-manager}" in
+  youtube-manager)
+    SRC="$ROOT/browser-features/extensions/youtube-manager"
     ADDON_ID="youtube-control@bork"
-    SLUG="youtube-control"
+    SLUG="youtube-manager"
     ;;
   cyberswine)
     SRC="$ROOT/browser-features/extensions/media-control"
@@ -54,7 +54,7 @@ case "${1:-youtube-control}" in
     SLUG="cyberswine"
     ;;
   *)
-    echo "unknown add-on: ${1:-}. Known: youtube-control, cyberswine" >&2
+    echo "unknown add-on: ${1:-}. Known: youtube-manager, cyberswine" >&2
     exit 1
     ;;
 esac
