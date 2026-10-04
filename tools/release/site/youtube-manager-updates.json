@@ -1,11 +1,11 @@
 {
   "addons": {
-    "youtube-control@bork": {
+    "youtube-manager@bork": {
       "updates": [
         {
-          "version": "0.2.36",
+          "version": "0.2.37",
           "update_link": "https://borkbrowser.online/youtube-manager.xpi",
-          "update_hash": "sha256:9ce439e01974652d60d73647f464615428740362a5a41fab08149f0d6059e38e"
+          "update_hash": "sha256:7943bec5fe282d1fd64b94ea6e21d7542dc74f27768091e85694810fc5a56c6a"
         }
       ]
     }

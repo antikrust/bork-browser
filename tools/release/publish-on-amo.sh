@@ -35,12 +35,8 @@ export AMO_JWT_ISSUER AMO_JWT_SECRET
 case "${1:-youtube-manager}" in
   youtube-manager)
     SRC="$ROOT/browser-features/extensions/youtube-manager"
-    ADDON_ID="youtube-control@bork"
+    ADDON_ID="youtube-manager@bork"
     CATEGORY="photos-music-videos"
-    # Not "youtube-control": AMO's slugs are one global namespace rather than
-    # one per account, and that word belongs to an unrelated add-on doing
-    # much the same job. The slug is only the listing URL and the name AMO
-    # gives the file it serves, so it does not have to match the add-on's.
     SLUG="youtube-manager"
     ;;
   cyberswine)
@@ -84,10 +80,9 @@ PY
 NAME="$(printf '%s\n' "$FIELDS" | sed -n 1p)"
 SUMMARY="$(printf '%s\n' "$FIELDS" | sed -n 2p)"
 
-# The page's long text lives beside the add-on as AMO-LISTING.md. Markdown files
-# stay out of the zip below, so it is never inside the shipped add-on.
-DESCRIPTION=""
-[ -f "$SRC/AMO-LISTING.md" ] && DESCRIPTION="$(cat "$SRC/AMO-LISTING.md")"
+# AMO_DESCRIPTION, when set, is the page's long text; nothing is kept in the
+# repo for it, and a publish without it leaves the page's text as it is.
+DESCRIPTION="${AMO_DESCRIPTION:-}"
 
 ( cd "$work/src" && zip -qr -X "$work/upload.zip" . -x 'test/*' '*.md' 'build.sh' '.gitignore' )
 

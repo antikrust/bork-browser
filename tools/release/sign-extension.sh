@@ -45,7 +45,7 @@ export AMO_JWT_ISSUER AMO_JWT_SECRET
 case "${1:-youtube-manager}" in
   youtube-manager)
     SRC="$ROOT/browser-features/extensions/youtube-manager"
-    ADDON_ID="youtube-control@bork"
+    ADDON_ID="youtube-manager@bork"
     SLUG="youtube-manager"
     ;;
   cyberswine)

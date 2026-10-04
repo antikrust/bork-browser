@@ -72,7 +72,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "youtube-control@bork",
+      "id": "youtube-manager@bork",
       "update_url": "https://borkbrowser.online/youtube-manager-updates.json",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
