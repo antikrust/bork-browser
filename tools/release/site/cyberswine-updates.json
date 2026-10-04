@@ -3,9 +3,9 @@
     "cyberswine@bork": {
       "updates": [
         {
-          "version": "0.1.17",
+          "version": "0.1.18",
           "update_link": "https://borkbrowser.online/cyberswine.xpi",
-          "update_hash": "sha256:57a8603504eac8ad380ac964b53203bf27da76193aff856609fd129f5a33f8df"
+          "update_hash": "sha256:76b1c0a2326b9832294b0010a1c1c72bf8c87e99d6477bacb84a02953a82ee0e"
         }
       ]
     }
