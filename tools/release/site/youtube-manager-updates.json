@@ -3,9 +3,9 @@
     "youtube-manager@bork": {
       "updates": [
         {
-          "version": "0.2.37",
+          "version": "0.2.38",
           "update_link": "https://borkbrowser.online/youtube-manager.xpi",
-          "update_hash": "sha256:7943bec5fe282d1fd64b94ea6e21d7542dc74f27768091e85694810fc5a56c6a"
+          "update_hash": "sha256:3af27b53634527b1f785d7d0c3d40b47ae580ade1002c69567792af334dbcc94"
         }
       ]
     }
