@@ -909,8 +909,25 @@ globalThis.YTCT = globalThis.YTCT || {};
    * Falls back to above the grid when the heading is not there — the feed does
    * not always have one, and a tab bar that vanishes with it would be worse.
    */
+  /**
+   * The subscriptions page that is on screen. YouTube keeps every page opened
+   * in a session in the DOM, hidden, in the order they were first opened, so
+   * after a channel page the channel's heading rows come before ours and a
+   * search of the whole document put the tabs inside the hidden channel page —
+   * gone until a refresh cleared the hidden pages out. Measured: channel, then
+   * Subscriptions in-app, leaves ytd-browse[page-subtype="channels"] hidden
+   * and first in document order.
+   */
+  function feedRoot() {
+    return (
+      document.querySelector(
+        'ytd-browse[page-subtype="subscriptions"]:not([hidden])',
+      ) || document
+    );
+  }
+
   function tabsSpot() {
-    const row = document.querySelector(
+    const row = feedRoot().querySelector(
       "ytd-shelf-renderer .grid-subheader #title-container, ytd-shelf-renderer #title-container",
     );
     if (row) {
@@ -1064,7 +1081,7 @@ globalThis.YTCT = globalThis.YTCT || {};
    */
   function shortsShelves() {
     const out = [];
-    for (const shelf of document.querySelectorAll(SHELVES)) {
+    for (const shelf of feedRoot().querySelectorAll(SHELVES)) {
       if (!shelf.querySelector(SHORTS_LINK)) continue;
       if (shelf.parentElement && shelf.parentElement.closest(SHELVES)) continue;
       out.push(shelf);
@@ -1081,7 +1098,7 @@ globalThis.YTCT = globalThis.YTCT || {};
    * in the same place whichever way it is set.
    */
   function feedTop() {
-    const grid = document.querySelector("ytd-rich-grid-renderer");
+    const grid = feedRoot().querySelector("ytd-rich-grid-renderer");
     if (grid) {
       // Before the grid's own contents, not inside them: the contents box lays
       // its children out as grid cells and would make a cell of this.
@@ -1165,7 +1182,7 @@ globalThis.YTCT = globalThis.YTCT || {};
    * about the tab just pressed.
    */
   function emptySpot() {
-    const subheader = document.querySelector(
+    const subheader = feedRoot().querySelector(
       "ytd-shelf-renderer .grid-subheader",
     );
     if (subheader && subheader.parentElement) {
