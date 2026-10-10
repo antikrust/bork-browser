@@ -351,6 +351,11 @@ a.dl code {
   margin-bottom: 4px;
 }
 .addendum-solo .addendum-head { font-size: .95rem; letter-spacing: .06em; }
+/* The add-on's own icon beside its kicker and name, as on antikrust.io: the
+   same 128px file the extension ships, shown at 44 so it stays sharp on HiDPI. */
+.addendum-icon {
+  float: left; width: 44px; height: 44px; margin: 1px 14px 6px 0;
+}
 /* Buttons ride at the top right, their first edge level with the kicker line,
    so the block reads as one thing with its actions rather than a paragraph
    that happens to have buttons trailing after it. */
@@ -697,6 +702,7 @@ footer { border-top: 1px solid var(--line);
 
       <div class="addendum addendum-solo">
         <p class="addendum-text">
+          <img class="addendum-icon" src="assets/youtube-manager.png" width="44" height="44" alt="">
           <span class="addendum-kicker">Exclusive Firefox Plugin for YouPube</span>
           <span class="addendum-head">YouTube Manager</span>
           YouTube Manager blocks channels and lets you run youpube properly.
@@ -723,6 +729,7 @@ footer { border-top: 1px solid var(--line);
 
       <div class="addendum addendum-solo">
         <p class="addendum-text">
+          <img class="addendum-icon" src="assets/cyberswine.png" width="44" height="44" alt="">
           <span class="addendum-kicker">Exclusive Firefox Plugin for the Press</span>
           <span class="addendum-head">Cyberswine</span>
           Outlets you are done with, gone from your internet. Not hidden on one
