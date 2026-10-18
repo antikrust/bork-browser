@@ -87,7 +87,8 @@ globalThis.YTCT = globalThis.YTCT || {};
       }
     }
     generation += 1;
-    document.documentElement.classList.toggle(
+    setClass(
+      document.documentElement,
       "ytct-cards-on",
       config.enabled !== false && config.showButton !== false,
     );
@@ -104,8 +105,20 @@ globalThis.YTCT = globalThis.YTCT || {};
    * Set from scan(), because that is where the page is known: rebuild() runs
    * before the first scan and would have the wrong answer on a fresh load.
    */
+  /**
+   * A class set to what it should be, and the attribute left untouched when it
+   * already is. scan() runs every pass over every card, and a write that
+   * changes nothing still reaches YouTube as a mutation: the inline preview
+   * player under the pointer was being disturbed often enough that about one
+   * click in fifteen on a playing preview never arrived. classList.toggle with
+   * a force argument is not safe for this — Gecko records the write anyway.
+   */
+  function setClass(el, name, on) {
+    if (el.classList.contains(name) !== !!on) el.classList.toggle(name, !!on);
+  }
+
   function applyTabClass() {
-    document.documentElement.classList.toggle("ytct-tabbed", filtering());
+    setClass(document.documentElement, "ytct-tabbed", filtering());
   }
 
   /* ------------------------------------------------------------- extraction */
@@ -258,7 +271,8 @@ globalThis.YTCT = globalThis.YTCT || {};
     const named = norm && bylineNames(norm);
     // The subscriptions feed is subscribed channels by definition, so no
     // buttons there even when the guide scrape has nothing.
-    card.classList.toggle(
+    setClass(
+      card,
       "ytct-has-channel",
       !!channel && !onSubsFeed && !subscribed.has(norm),
     );
@@ -292,11 +306,16 @@ globalThis.YTCT = globalThis.YTCT || {};
       else if (view === "") belongs = !inAnyTab(norm, key);
       else belongs = inTab(norm, key, view);
     }
-    if (filtering() && belongs) card.dataset.ytctTab = view || "unsorted";
-    else delete card.dataset.ytctTab;
+    const mark = filtering() && belongs ? view || "unsorted" : null;
+    if (mark === null) {
+      if ("ytctTab" in card.dataset) delete card.dataset.ytctTab;
+    } else if (card.dataset.ytctTab !== mark) {
+      card.dataset.ytctTab = mark;
+    }
 
     const hid = hidStateOf(card);
-    card.classList.toggle(
+    setClass(
+      card,
       "ytct-video-hidden",
       config.enabled !== false &&
         (named || byHandle || stray || shortsOff || hid === "gone"),
@@ -548,7 +567,7 @@ globalThis.YTCT = globalThis.YTCT || {};
   function ensureButton(card) {
     // The class is what the hover tracker below looks for; the button itself
     // is a single floating element, not one per card. See floatButton().
-    card.classList.add("ytct-card");
+    setClass(card, "ytct-card", true);
   }
 
   /* ------------------------------------------------------------ the button */
@@ -831,7 +850,8 @@ globalThis.YTCT = globalThis.YTCT || {};
       !!config.subTab &&
       config.subTab !== ALL_VIEW &&
       !!shelf.querySelector(SHORTS_LINK);
-    shelf.classList.toggle(
+    setClass(
+      shelf,
       "ytct-video-hidden",
       blocked || strayShorts || tabbed,
     );
@@ -958,7 +978,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       bar.className = "ytct-tabs";
       spot.parent.insertBefore(bar, spot.before || null);
     }
-    bar.classList.toggle("ytct-inline", !!spot.inline);
+    setClass(bar, "ytct-inline", !!spot.inline);
     for (const stale of document.querySelectorAll(".ytct-tabs")) {
       if (stale !== bar) stale.remove();
     }
@@ -1148,11 +1168,17 @@ globalThis.YTCT = globalThis.YTCT || {};
 
     const on = config.subsShorts !== false;
     const button = strip.querySelector(".ytct-shorts-btn");
-    button.textContent = on ? "ON" : "OFF";
-    button.title = on ? "Hide Shorts on this feed" : "Show Shorts on this feed";
-    button.classList.toggle("ytct-on", on);
+    // Only when it changes. Setting the label replaces its text node, which
+    // the page observer sees as a change and answers with another scan — so
+    // writing it every pass kept the scan running five times a second for as
+    // long as the feed was open.
+    const label = on ? "ON" : "OFF";
+    if (button.textContent !== label) button.textContent = label;
+    const title = on ? "Hide Shorts on this feed" : "Show Shorts on this feed";
+    if (button.title !== title) button.title = title;
+    setClass(button, "ytct-on", on);
     for (const shelf of shortsShelves()) {
-      shelf.classList.toggle("ytct-shorts-off", !on);
+      setClass(shelf, "ytct-shorts-off", !on);
     }
   }
 
@@ -1325,7 +1351,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     const isBlocked = blockedChannels.has(key);
     button.textContent = isBlocked ? "UNBLOCK" : "SHUT UP";
     button.title = isBlocked ? `Show ${name} again` : `Block ${name} everywhere`;
-    button.classList.toggle("ytct-on", isBlocked);
+    setClass(button, "ytct-on", isBlocked);
     // The Subscribe button itself is the most direct answer to "do they follow
     // this channel"; the guide scrape covers layouts that do not say.
     const subscribedHere = subscribed.has(key) || saysSubscribed(anchor);
