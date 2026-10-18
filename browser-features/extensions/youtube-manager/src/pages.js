@@ -1449,6 +1449,37 @@ globalThis.YTCT = globalThis.YTCT || {};
     }, 200);
   }
 
+  /* ------------------------------------------------ the end-of-video wall */
+
+  /*
+   * The suggestions the player lays over a video once it has ended. There are
+   * two of them in the player at once and only one is shown: the current one
+   * is the .ytp-fullscreen-grid of a.ytp-modern-videowall-still tiles, three
+   * to a page with arrows, whose author line is the channel name alone; the
+   * older a.ytp-videowall-still wall is still built underneath, display:none,
+   * with "Channel • 15K" in its author line. Both are judged, so whichever
+   * the player decides to show is already filtered. The player builds them
+   * while the video is still playing, so a tile is decided before anyone sees
+   * it. Hidden tiles drop out of the grid and the rest close up.
+   *
+   * The creator's own end cards (.ytp-ce-video) are not touched: they carry a
+   * title and a duration and no channel at all.
+   */
+  const WALL_TILES = "a.ytp-modern-videowall-still, a.ytp-videowall-still";
+
+  function handleWallTile(tile) {
+    const author = tile.querySelector(
+      ".ytp-modern-videowall-still-info-author, .ytp-videowall-still-info-author",
+    );
+    const channel = author ? author.textContent.split(" \u2022 ")[0].trim() : "";
+    const norm = channel ? filters.normalizeName(channel) : "";
+    setClass(
+      tile,
+      "ytct-video-hidden",
+      config.enabled !== false && !!norm && !!bylineNames(norm),
+    );
+  }
+
   function scan() {
     if (!config) return;
     onSubsFeed = location.pathname.startsWith("/feed/subscriptions");
@@ -1465,6 +1496,7 @@ globalThis.YTCT = globalThis.YTCT || {};
       handle(card);
     }
     for (const shelf of document.querySelectorAll(SHELVES)) handleShelf(shelf);
+    for (const tile of document.querySelectorAll(WALL_TILES)) handleWallTile(tile);
     // Last, because it reads the marks the loop above has just set.
     ensureEmptyNotice();
   }
