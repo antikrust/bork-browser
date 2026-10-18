@@ -134,6 +134,9 @@ globalThis.YTCT = globalThis.YTCT || {};
   /** Bumped when DEFAULTS.subTabs changes in a way that should reach everyone. */
   const DEFAULTS_TABS_VERSION = 3;
 
+  /** Taken off the shipped list; see withDefaults(). Lower case. */
+  const WITHDRAWN = new Set(["hasanabi productions", "adam mockler"]);
+
   function clone(value) {
     return typeof structuredClone === "function"
       ? structuredClone(value)
@@ -184,6 +187,16 @@ globalThis.YTCT = globalThis.YTCT || {};
     if (filters && Array.isArray(out.channels)) {
       out.channels = out.channels.filter((c) =>
         filters.looksLikeChannel(c && c.name != null ? c.name : c)
+      );
+    }
+
+    // Names taken off the shipped list after it had already been copied into
+    // existing lists. Only the copies that came from the list go: a channel
+    // somebody blocked themselves, with SHUT UP or by name, is theirs to keep.
+    if (Array.isArray(out.channels)) {
+      out.channels = out.channels.filter((c) =>
+        !(c && c.why === "shipped with the extension" &&
+          WITHDRAWN.has(String(c.name).trim().toLowerCase()))
       );
     }
     return out;
