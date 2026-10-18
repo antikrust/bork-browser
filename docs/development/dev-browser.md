@@ -93,6 +93,13 @@ An existing profile only replaces an installed distribution add-on when the
 the old build. Removing a distribution add-on in `about:addons` sticks
 (`extensions.installedDistroAddon.<id>` is recorded); later builds will not reinstall it.
 
+### Helpers
+
+`tools/testing/marionette.py` is a small Marionette client for driving the dev browser
+from Python — trusted mouse input, several tabs, async page scripts.
+`tools/testing/extension_storage.py` reads an extension's `storage.local` out of a
+copied profile database, read-only.
+
 ### Logic tests
 
 Extension logic that has no DOM or storage (YouTube Manager's `src/filters.js` and

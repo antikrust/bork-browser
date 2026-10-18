@@ -118,6 +118,7 @@ globalThis.YTCT = globalThis.YTCT || {};
     subTab: "",
     /** How many times the shipped tab list has been merged in. See load(). */
     subTabsVersion: 0,
+    channelsWithdrawn: 0,
     /**
      * Shipped tabs the user has deleted, lowercased.
      *
@@ -134,8 +135,9 @@ globalThis.YTCT = globalThis.YTCT || {};
   /** Bumped when DEFAULTS.subTabs changes in a way that should reach everyone. */
   const DEFAULTS_TABS_VERSION = 3;
 
-  /** Taken off the shipped list; see withDefaults(). Lower case. */
+  /** Taken off every list once; see withDefaults(). Lower case. */
   const WITHDRAWN = new Set(["hasanabi productions", "adam mockler"]);
+  const WITHDRAWN_VERSION = 1;
 
   function clone(value) {
     return typeof structuredClone === "function"
@@ -190,14 +192,14 @@ globalThis.YTCT = globalThis.YTCT || {};
       );
     }
 
-    // Names taken off the shipped list after it had already been copied into
-    // existing lists. Only the copies that came from the list go: a channel
-    // somebody blocked themselves, with SHUT UP or by name, is theirs to keep.
-    if (Array.isArray(out.channels)) {
+    // Names taken off the shipped list, removed from every existing list
+    // however they got there. Once and counted, not on every load, so blocking
+    // one of them again afterwards sticks.
+    if ((stored.channelsWithdrawn || 0) < WITHDRAWN_VERSION && Array.isArray(out.channels)) {
       out.channels = out.channels.filter((c) =>
-        !(c && c.why === "shipped with the extension" &&
-          WITHDRAWN.has(String(c.name).trim().toLowerCase()))
+        !WITHDRAWN.has(String(c && c.name != null ? c.name : c).trim().toLowerCase())
       );
+      out.channelsWithdrawn = WITHDRAWN_VERSION;
     }
     return out;
   }
@@ -208,7 +210,11 @@ globalThis.YTCT = globalThis.YTCT || {};
     const config = withDefaults(stored);
     // The merge above has to be written down to count as done. Left unsaved it
     // would happen on every load, which is the same as never having counted.
-    if (stored && config.subTabsVersion !== (stored.subTabsVersion || 0)) {
+    if (
+      stored &&
+      (config.subTabsVersion !== (stored.subTabsVersion || 0) ||
+        config.channelsWithdrawn !== (stored.channelsWithdrawn || 0))
+    ) {
       await save(config);
     }
     return config;
