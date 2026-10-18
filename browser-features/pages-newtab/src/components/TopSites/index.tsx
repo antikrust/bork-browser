@@ -61,16 +61,24 @@ function BlockModal({
   );
 }
 
-function AddSiteModal({
-  onAdd,
+/**
+ * Add a site, or — given `initial` — change one that is already there. Same two
+ * fields and the same validation either way; only the heading and the button
+ * differ, so a tile whose address or name came out wrong is fixed in place
+ * rather than removed and typed in again.
+ */
+function SiteModal({
+  initial,
+  onSubmit,
   onCancel,
 }: {
-  onAdd: (url: string, label: string) => void;
+  initial?: { url: string; label: string };
+  onSubmit: (url: string, label: string) => void;
   onCancel: () => void;
 }) {
   const { t } = useTranslation();
-  const [url, setUrl] = useState("");
-  const [label, setLabel] = useState("");
+  const [url, setUrl] = useState(initial?.url ?? "");
+  const [label, setLabel] = useState(initial?.label ?? "");
   const [error, setError] = useState<string | null>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
 
@@ -103,13 +111,17 @@ function AddSiteModal({
       setError(t("topSites.invalidUrl", { defaultValue: "Invalid URL" }));
       return;
     }
-    onAdd(normalized, label.trim() || normalized);
+    onSubmit(normalized, label.trim() || normalized);
   };
 
   return (
     <dialog className="modal modal-open">
       <div className="modal-box">
-        <h3 className="font-bold text-lg mb-2">{t("topSites.addNewSite")}</h3>
+        <h3 className="font-bold text-lg mb-2">
+          {initial
+            ? t("topSites.editSite", { defaultValue: "Edit site" })
+            : t("topSites.addNewSite")}
+        </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-control">
             <label className="label">
@@ -145,7 +157,9 @@ function AddSiteModal({
               {t("topSites.cancel")}
             </button>
             <button type="submit" className="btn btn-primary">
-              {t("topSites.add")}
+              {initial
+                ? t("topSites.save", { defaultValue: "Save" })
+                : t("topSites.add")}
             </button>
           </div>
         </form>
@@ -154,7 +168,9 @@ function AddSiteModal({
   );
 }
 
-export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean }) {
+export function TopSites(
+  { isFirefoxMode = false }: { isFirefoxMode?: boolean },
+) {
   const { t } = useTranslation();
   const [pinnedSites, setPinnedSites] = useState<PinnedSite[]>([]);
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
@@ -169,6 +185,7 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
     null,
   );
   const [showAddModal, setShowAddModal] = useState(false);
+  const [siteToEdit, setSiteToEdit] = useState<PinnedSite | null>(null);
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
@@ -176,7 +193,6 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
     const settings = await getNewTabSettings();
     setPinnedSites(settings.topSites.pinned);
     setBlockedSites(settings.topSites.blocked);
-
   };
 
   useEffect(() => {
@@ -237,6 +253,19 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
     setShowAddModal(false);
   };
 
+  /** Change a tile's address or name where it stands; its position is kept. */
+  const editSite = async (original: PinnedSite, url: string, title: string) => {
+    const newPinnedSites = pinnedSites
+      .map((p) => (p.url === original.url ? { url, title } : p))
+      // Changing one tile's address to another tile's address leaves one tile,
+      // not two with the same link.
+      .filter((p, i, all) => all.findIndex((q) => q.url === p.url) === i);
+    await handleSaveSettings({
+      topSites: { pinned: newPinnedSites, blocked: blockedSites },
+    });
+    setSiteToEdit(null);
+  };
+
   /**
    * Take a tile off the page and forget it, without adding the URL to the
    * blocked list - the page only shows sites you added, so there is no
@@ -292,9 +321,16 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
         />
       )}
       {showAddModal && (
-        <AddSiteModal
-          onAdd={addCustomSite}
+        <SiteModal
+          onSubmit={addCustomSite}
           onCancel={() => setShowAddModal(false)}
+        />
+      )}
+      {siteToEdit && (
+        <SiteModal
+          initial={{ url: siteToEdit.url, label: siteToEdit.title }}
+          onSubmit={(url, title) => editSite(siteToEdit, url, title)}
+          onCancel={() => setSiteToEdit(null)}
         />
       )}
       <div
@@ -345,6 +381,16 @@ export function TopSites({ isFirefoxMode = false }: { isFirefoxMode?: boolean })
           }}
         >
           <ul className="menu p-2">
+            {isPinned(contextMenu.site) && (
+              <li
+                onClick={() => {
+                  setSiteToEdit(contextMenu.site as PinnedSite);
+                  setContextMenu(null);
+                }}
+              >
+                <a>{t("topSites.edit", { defaultValue: "Edit" })}</a>
+              </li>
+            )}
             {isPinned(contextMenu.site)
               ? (
                 <li onClick={() => unpinSite(contextMenu.site as PinnedSite)}>
