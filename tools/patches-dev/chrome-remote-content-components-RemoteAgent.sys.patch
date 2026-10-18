@@ -1,0 +1,17 @@
+diff --git a/chrome/remote/content/components/RemoteAgent.sys.mjs b/chrome/remote/content/components/RemoteAgent.sys.mjs
+index 2d006b2..18e4ffc 100644
+--- ./chrome/remote/content/components/RemoteAgent.sys.mjs
++++ ./chrome/remote/content/components/RemoteAgent.sys.mjs
+@@ -537,8 +537,11 @@ class RemoteAgentParentProcess {
+ }
+ 
+ class RemoteAgentContentProcess {
++  // Bork dev runtime: content processes never see the automation server as
++  // running, so navigator.webdriver stays false and sites treat the dev
++  // browser like any other. The parent-process instance is untouched.
+   get running() {
+-    return Services.cpmm.sharedData.get(SHARED_DATA_ACTIVE_KEY) ?? false;
++    return false;
+   }
+ 
+   // XPCOM

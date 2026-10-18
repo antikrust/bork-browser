@@ -636,6 +636,14 @@ build_mac() {
     # workflow — overlay refreshes content, manifest and prefs on the copy.
     log "mac: assembling from local runtime"
     cp -R _dist/bin/floorp/Floorp.app "$app"
+    # The dev tree also carries tools/patches-dev (dev-runtime-only changes,
+    # e.g. navigator.webdriver never reported); take them back out of the copy.
+    local p
+    for p in _dist/bin/applied_dev_patches/*.patch; do
+      [ -e "$p" ] || continue
+      patch -R -p0 -d "$res" --silent < "$p" \
+        || fail "reverse of dev patch failed: $(basename "$p")"
+    done
     rm -rf "$res/noraneko-devdir" && mkdir "$res/noraneko-devdir"
     cp -RL _dist/noraneko/ "$res/noraneko-devdir/"
     deno run -A --config deno.json tools/release/gen-noraneko-manifest.ts \

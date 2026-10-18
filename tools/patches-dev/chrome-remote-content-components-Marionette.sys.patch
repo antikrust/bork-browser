@@ -1,0 +1,17 @@
+diff --git a/chrome/remote/content/components/Marionette.sys.mjs b/chrome/remote/content/components/Marionette.sys.mjs
+index a7c9eb4..bf72ded 100644
+--- ./chrome/remote/content/components/Marionette.sys.mjs
++++ ./chrome/remote/content/components/Marionette.sys.mjs
+@@ -308,8 +308,11 @@ class MarionetteParentProcess {
+ }
+ 
+ class MarionetteContentProcess {
++  // Bork dev runtime: content processes never see the automation server as
++  // running, so navigator.webdriver stays false and sites treat the dev
++  // browser like any other. The parent-process instance is untouched.
+   get running() {
+-    return Services.cpmm.sharedData.get(SHARED_DATA_ACTIVE_KEY) ?? false;
++    return false;
+   }
+ 
+   // XPCOM

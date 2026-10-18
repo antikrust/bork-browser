@@ -31,6 +31,10 @@ user_pref("dom.security.https_first", false);
 user_pref("network.dns.disableIPv6", true);
 user_pref("security.sandbox.content.level", 1);
 user_pref("remote.active-protocols", 1);
+// --marionette otherwise applies the remote agent's RecommendedPreferences
+// (password saving off, ...) and only resets them on a clean shutdown, so
+// every killed dev browser stranded them here and logins never stuck.
+user_pref("remote.prefs.recommended", false);
 user_pref("browser.newtabpage.enabled", true);
 user_pref("browser.sessionstore.resume_from_crash", false);
 user_pref("nora.dev.allow_http_loader", true);

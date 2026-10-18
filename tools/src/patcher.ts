@@ -8,6 +8,22 @@ const logger = new Logger("patcher");
 
 const PATCHES_DIR = "tools/patches";
 const PATCHES_TMP = "_dist/bin/applied_patches";
+
+/**
+ * A patch set: source dir in the repo + the marker dir in _dist/bin recording
+ * what is currently applied. `tools/patches` ships — release packaging replays
+ * `_dist/bin/applied_patches` onto every runtime. `tools/patches-dev` changes
+ * only the dev runtime in _dist/bin; nothing in tools/release reads its marker.
+ */
+interface PatchSet {
+  dir: string;
+  tmp: string;
+}
+
+const PATCH_SETS: PatchSet[] = [
+  { dir: PATCHES_DIR, tmp: PATCHES_TMP },
+  { dir: "tools/patches-dev", tmp: "_dist/bin/applied_dev_patches" },
+];
 const PLATFORM_PATCH_SUFFIX_RE = /\.(darwin|linux|windows)\.patch$/;
 
 function binDir(): string {
@@ -20,9 +36,9 @@ export function patchAppliesToCurrentPlatform(filename: string): boolean {
   return match[1] === PLATFORM;
 }
 
-function listPatchFiles(): string[] {
-  if (!exists(PATCHES_DIR)) return [];
-  return Array.from(Deno.readDirSync(PATCHES_DIR))
+function listPatchFiles(dir: string): string[] {
+  if (!exists(dir)) return [];
+  return Array.from(Deno.readDirSync(dir))
     .map((entry) => entry.name)
     .filter((name) =>
       name.endsWith(".patch") && patchAppliesToCurrentPlatform(name)
@@ -62,12 +78,12 @@ export function initializeBinGit(): void {
   logger.success("Git repository initialization complete.");
 }
 
-export function patchNeeded(): boolean {
-  if (!exists(PATCHES_DIR)) return false;
-  if (!exists(PATCHES_TMP)) return true;
+function patchNeeded({ dir, tmp }: PatchSet): boolean {
+  if (!exists(dir)) return false;
+  if (!exists(tmp)) return true;
 
-  const patchesDirFiles = listPatchFiles();
-  const patchesTmpFiles = Array.from(Deno.readDirSync(PATCHES_TMP))
+  const patchesDirFiles = listPatchFiles(dir);
+  const patchesTmpFiles = Array.from(Deno.readDirSync(tmp))
     .map((e) => e.name)
     .filter((name) => patchAppliesToCurrentPlatform(name))
     .sort();
@@ -77,30 +93,31 @@ export function patchNeeded(): boolean {
   }
 
   for (const patch of patchesDirFiles) {
-    const patchInDir = Deno.readTextFileSync(path.join(PATCHES_DIR, patch));
-    const patchInTmp = Deno.readTextFileSync(path.join(PATCHES_TMP, patch));
+    const patchInDir = Deno.readTextFileSync(path.join(dir, patch));
+    const patchInTmp = Deno.readTextFileSync(path.join(tmp, patch));
     if (patchInDir !== patchInTmp) return true;
   }
 
   return false;
 }
 
-export function applyPatches(): void {
-  if (!patchNeeded()) {
-    logger.info("No patches needed to apply.");
+function applyPatchSet(set: PatchSet): void {
+  const { dir, tmp } = set;
+  if (!patchNeeded(set)) {
+    logger.info(`No patches needed to apply from ${dir}.`);
     return;
   }
 
   // Reverse previously applied patches if any
-  if (exists(PATCHES_TMP)) {
-    logger.info("Reversing previously applied patches.");
+  if (exists(tmp)) {
+    logger.info(`Reversing previously applied patches from ${tmp}.`);
     let reverseIsAborted = false;
-    const entries = Array.from(Deno.readDirSync(PATCHES_TMP))
+    const entries = Array.from(Deno.readDirSync(tmp))
       .map((e) => e.name)
       .filter((name) => patchAppliesToCurrentPlatform(name))
       .sort();
     for (const patch of entries) {
-      const patchPath = path.join(PATCHES_TMP, patch);
+      const patchPath = path.join(tmp, patch);
       const result = runCommandChecked(
         "git",
         [
@@ -123,18 +140,18 @@ export function applyPatches(): void {
     }
     if (reverseIsAborted) throw new Error("Reverse Patch Failed: aborted");
     try {
-      safeRemove(PATCHES_TMP);
+      safeRemove(tmp);
     } catch {
       // ignore
     }
   }
 
   // Apply new patches
-  logger.info("Applying new patches.");
-  Deno.mkdirSync(PATCHES_TMP, { recursive: true });
+  logger.info(`Applying new patches from ${dir}.`);
+  Deno.mkdirSync(tmp, { recursive: true });
   let aborted = false;
-  for (const patch of listPatchFiles()) {
-    const patchPath = path.join(PATCHES_DIR, patch);
+  for (const patch of listPatchFiles(dir)) {
+    const patchPath = path.join(dir, patch);
     logger.info(`Applying patch: ${patchPath}`);
     const result = runCommandChecked(
       "git",
@@ -151,7 +168,7 @@ export function applyPatches(): void {
     );
     if (result.success) {
       try {
-        Deno.copyFileSync(patchPath, path.join(PATCHES_TMP, patch));
+        Deno.copyFileSync(patchPath, path.join(tmp, patch));
         // deno-lint-ignore no-explicit-any
       } catch (e: any) {
         logger.warn(`Failed to copy patch to tmp: ${e?.message ?? e}`);
@@ -164,7 +181,11 @@ export function applyPatches(): void {
     }
   }
   if (aborted) throw new Error("Patch failed: aborted");
-  logger.success("All patches applied successfully.");
+  logger.success(`All patches from ${dir} applied successfully.`);
+}
+
+export function applyPatches(): void {
+  for (const set of PATCH_SETS) applyPatchSet(set);
 }
 
 export function createPatches(): void {

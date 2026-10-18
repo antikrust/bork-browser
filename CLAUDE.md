@@ -73,7 +73,7 @@ Gotchas that cost real time:
   injects into whatever app sits there and never refreshes it. It rotted to a jul-20
   derp-branded runtime that crashed (SIGSEGV, main thread) 5s–5min after boot regardless of
   feature code (verified by stash test). When the runtime is rebuilt, re-copy
-  `bork-build/obj-mac-aarch64/dist/Bork.app` over `_dist/bin/floorp/Floorp.app` (keep the
+  `../bork-runtime/obj-mac-aarch64/dist/Bork.app` over `_dist/bin/floorp/Floorp.app` (keep the
   Floorp.app name; delete the profile's `compatibility.ini` + `startupCache` after).
 - **The harness kills backgrounded launchers.** `nohup ... &` from a tool shell dies with the
   shell and takes the vite servers or browser with it. Launch stage (and anything long-lived)
@@ -88,15 +88,17 @@ Gotchas that cost real time:
   Recreate with `echo 2828 > _dist/marionette-port.txt` (Marionette's default port).
 - **`deno check` fails even on untouched upstream files.** Vite/the build is the authority.
   Type-check single files if useful, don't trust a clean tree.
-- Anchor process greps: `pgrep -f "^/Users/blah/github/bork/_dist/bin/floorp"` — an unanchored
+- Anchor process greps: `pgrep -f "^/Volumes/DATA/github/bork/bork-browser/_dist/bin/floorp"` — an unanchored
   `-f` match also hits your own wrapper shells.
 - **Verify the running code by a code-level marker**, not by prefs or boot log lines. A pref
   says what the profile holds; only something the new code uniquely produces proves the build
   carrying it is what you are looking at.
-- **Marionette rewrites prefs.** Launching with `--marionette` applies the remote agent's
-  RecommendedPreferences as user prefs — safe-browsing off, updates off, and dozens more.
-  A "wrong" pref read from the dev browser may be automation hygiene, not your config:
-  check `prefHasUserValue` and whether the name appears anywhere in the tree before chasing it.
+- **The dev browser does not look automated.** The dev `user.js` sets
+  `remote.prefs.recommended=false`, so `--marionette` no longer applies the remote agent's
+  RecommendedPreferences (they used to strand in the profile on every kill: password saving,
+  popup blocker, safe browsing off). `tools/patches-dev/` patches only the dev runtime so
+  content processes never see Marionette as running: `navigator.webdriver` stays false and
+  Google etc. sign in normally. Release packaging never applies `tools/patches-dev/`.
 - **Hover/timer tests need one eval.** Each Marionette eval is an interaction (popups
   auto-hide, hover retargets). Verify time-dependent UI inside a single eval with
   `Services.tm.spinEventLoopUntil(...)`, not across two connections.
