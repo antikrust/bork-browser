@@ -94,6 +94,7 @@
     },
     "menu": {
       "moveTabToAnotherWorkspace": "Move Tab to Another Workspace",
+      "openExternalLinksHere": "Open Links from Other Apps Here",
       "openLinkInWorkspace": "Open Link in Another Workspace",
       "noOtherWorkspace": "No other workspaces available"
     },

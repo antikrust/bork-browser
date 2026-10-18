@@ -65,6 +65,11 @@ export const zWorkspacesServicesConfigs = t.type({
   exitOnLastTabClose: t.boolean,
 });
 
+export const zExternalLinkTarget = t.type({
+  workspaceId: t.string,
+  userContextId: t.number,
+});
+
 export const zWorkspaceSnapshotTab = t.type({
   state: t.union([t.UnknownRecord, t.null]),
   title: t.union([t.string, t.null]),
@@ -98,6 +103,7 @@ export type TWorkspacesBackup = t.TypeOf<typeof zWorkspacesServicesBackup>;
 export type TWorkspacesServicesConfigs = t.TypeOf<
   typeof zWorkspacesServicesConfigs
 >;
+export type TExternalLinkTarget = t.TypeOf<typeof zExternalLinkTarget>;
 export type TWorkspaceSnapshotTab = t.TypeOf<typeof zWorkspaceSnapshotTab>;
 export type TWorkspaceSnapshot = t.TypeOf<typeof zWorkspaceSnapshot>;
 

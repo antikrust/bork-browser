@@ -21,6 +21,7 @@ import { migrateWorkspacesData } from "./data/migrate/migration.ts";
 import { createRoot, getOwner, onCleanup, runWithOwner } from "solid-js";
 import { WORKSPACES_INIT_OBSERVER_TOPIC } from "./utils/workspaces-static-names.ts";
 import { WorkspacesLinkContextMenu } from "./link-context-menu.tsx";
+import { WorkspacesExternalLinkTarget } from "./external-link-target.tsx";
 
 @noraComponent(import.meta.hot)
 export default class Workspaces extends NoraComponentBase {
@@ -84,6 +85,7 @@ export default class Workspaces extends NoraComponentBase {
         new WorkspacesPopupContextMenu(ctx);
         new WorkspacesTabContextMenu(ctx);
         new WorkspacesLinkContextMenu(ctx);
+        new WorkspacesExternalLinkTarget(ctx);
       };
       if (owner) runWithOwner(owner, exec);
       else createRoot(exec);

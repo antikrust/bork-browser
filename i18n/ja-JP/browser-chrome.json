@@ -93,6 +93,7 @@
     },
     "menu": {
       "moveTabToAnotherWorkspace": "タブを他のワークスペースに移動",
+      "openExternalLinksHere": "他のアプリのリンクをここで開く",
       "openLinkInWorkspace": "リンクを別のワークスペースで開く",
       "noOtherWorkspace": "他のワークスペースがありません"
     },

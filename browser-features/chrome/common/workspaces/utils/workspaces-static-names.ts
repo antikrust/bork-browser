@@ -36,3 +36,10 @@ export const WORKSPACES_CHANGED_OBSERVER_TOPIC = "floorp.workspaces.changed";
  */
 export const WORKSPACE_PENDING_EXIT_PREF_NAME =
   "floorp.workspaces.pending-exit-from-workspace-empty";
+
+/**
+ * The tab context the user picked for links opened by other apps: the
+ * workspace and container a link from outside the browser opens into.
+ */
+export const WORKSPACE_EXTERNAL_LINK_TARGET_PREF_NAME =
+  "floorp.workspaces.externalLinkTarget";
