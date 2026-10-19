@@ -30,6 +30,7 @@ tools/release/hosts.env
 # Internal design/audit docs — kept out of the public repo.
 ARCHITECTURE-AUDIT.md
 RUNTIME-FORK-PLAN.md
+docs/development/firefox-release-update.md
 /*-AUDIT.md
 /*-PLAN.md
 
