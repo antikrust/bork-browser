@@ -61,7 +61,7 @@ PUBLISH="$ROOT/tools/release/publish-runtime-artifact.sh"
 # (mozconfigs, upstream patches, branding) committed off the VM, so its branch is
 # canonical + that recipe rather than canonical itself.
 RUNTIME_GIT_URL="${BORK_RUNTIME_GIT_URL:-https://${BORK_FORGEJO_HOST:-shithub.space}/${RUNTIME_REPO}.git}"
-RUNTIME_BRANCH="${BORK_RUNTIME_BRANCH:-nora-0.2.0}"
+RUNTIME_BRANCH="${BORK_RUNTIME_BRANCH:-main}"
 WIN_RUNTIME_BRANCH="${BORK_WIN_RUNTIME_BRANCH:-winbuild-canonical}"
 
 # --- shared build knobs (proven) --------------------------------------------
