@@ -9,7 +9,7 @@ import * as path from "@std/path";
 
 export const BRANDING = {
   base_name: "floorp",
-  display_name: "Floorp",
+  display_name: "Bork",
   dev_suffix: "noraneko-dev",
 } as const;
 
@@ -70,7 +70,7 @@ export const PROD_BIN_DIR = "../obj-artifact-build-output/dist/bin";
 
 /**
  * The macOS runtime binary is bork-branded at build time (the surrounding
- * folder and .app name stay Floorp), so the executable may be named either
+ * folder stays floorp), so the executable may be named either
  * "bork" (current runtimes) or the base name (older ones). Probed at call
  * time, not module load: extraction happens after imports in the same run,
  * so a constant would be resolved against a not-yet-extracted tree.

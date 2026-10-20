@@ -222,10 +222,13 @@ export async function run(): Promise<void> {
   if (needInit) {
     Deno.mkdirSync(BIN_ROOT_DIR, { recursive: true });
     await decompressBin();
-    brandMacBundle();
-    brandIcons();
     logger.success("Initialization complete.");
   }
+
+  // Every run, not only after an extract: the runtime is also copied in by
+  // hand (see AGENTS.md), and that copy arrives unbranded. Both are idempotent.
+  brandMacBundle();
+  brandIcons();
 
   savePrefsForProfile();
 }

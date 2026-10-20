@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0
 #
-# Brand a Floorp.app bundle as Bork.
+# Brand a runtime .app bundle as Bork.
 #
 # The macOS application menu title and the Dock/Finder name come from the
 # bundle plists, not from the runtime's brand strings (tools/patches/

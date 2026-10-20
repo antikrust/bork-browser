@@ -10,7 +10,7 @@
 # is Contents/Resources on macOS and the app directory elsewhere.
 # Idempotent, and quiet about targets a given platform does not have.
 #
-#   bash tools/release/brand-icons.sh _dist/bin/floorp/Floorp.app/Contents/Resources
+#   bash tools/release/brand-icons.sh _dist/bin/floorp/Bork.app/Contents/Resources
 
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."

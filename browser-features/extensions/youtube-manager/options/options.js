@@ -367,10 +367,192 @@
     });
   }
 
+  /* ----------------------------------------------------------- subscriptions */
+
+  const api = globalThis.browser ?? globalThis.chrome;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let subsPort = null;
+
+  function subsStatus(text) {
+    $("subs-status").textContent = text;
+  }
+
+  function subsBusy(busy) {
+    for (const id of ["subs-export-json", "subs-export-csv", "subs-import"]) {
+      $(id).disabled = busy;
+    }
+    $("subs-stop").hidden = !busy;
+  }
+
+  /** A YouTube tab to work through: an open one, or a new one in the background. */
+  async function youtubeTab() {
+    const open = await api.tabs.query({ url: "https://www.youtube.com/*" });
+    // A discarded tab has no content script to answer.
+    const tab = open.find((t) => !t.discarded && !String(t.url || "").includes("/live_chat"));
+    if (tab) return tab.id;
+    subsStatus("Opening YouTube in a background tab…");
+    const made = await api.tabs.create({ url: "https://www.youtube.com/feed/channels", active: false });
+    return made.id;
+  }
+
+  /** A port to subs.js in that tab, once its script is up. */
+  async function connectSubs() {
+    const tabId = await youtubeTab();
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const port = api.tabs.connect(tabId, { name: "ytm-subs", frameId: 0 });
+      const ready = await new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(false), 1000);
+        port.onMessage.addListener(function first(msg) {
+          if (msg.type !== "ready") return;
+          port.onMessage.removeListener(first);
+          clearTimeout(timer);
+          resolve(true);
+        });
+        port.onDisconnect.addListener(() => {
+          clearTimeout(timer);
+          resolve(false);
+        });
+      });
+      if (ready) return port;
+      try {
+        port.disconnect();
+      } catch {
+        // already gone
+      }
+      await sleep(500);
+    }
+    throw new Error("Couldn't reach YouTube — open youtube.com, sign in, and try again");
+  }
+
+  /** Run one op over a fresh port; resolves with the first message of `until` type. */
+  async function subsRun(op, until) {
+    subsBusy(true);
+    try {
+      subsPort = await connectSubs();
+      return await new Promise((resolve, reject) => {
+        subsPort.onMessage.addListener((msg) => {
+          if (msg.type === "progress") subsStatus(msg.text);
+          else if (msg.type === "error") reject(new Error(msg.text));
+          else if (msg.type === until) resolve(msg);
+        });
+        subsPort.onDisconnect.addListener(() => reject(new Error("The YouTube tab went away")));
+        subsPort.postMessage(op);
+      });
+    } finally {
+      try {
+        subsPort?.disconnect();
+      } catch {
+        // already gone
+      }
+      subsPort = null;
+      subsBusy(false);
+    }
+  }
+
+  function download(name, type, text) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  function csvField(value) {
+    const s = String(value ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  async function exportSubs(kind) {
+    try {
+      const { channels } = await subsRun({ op: "list" }, "list");
+      const day = new Date().toISOString().slice(0, 10);
+      if (kind === "csv") {
+        // Google Takeout's subscriptions.csv layout, so it goes anywhere theirs does.
+        const rows = ["Channel Id,Channel Url,Channel Title"].concat(
+          channels.map((c) => [c.id, `http://www.youtube.com/channel/${c.id}`, c.title].map(csvField).join(",")),
+        );
+        download(`youtube-subscriptions-${day}.csv`, "text/csv", rows.join("\n") + "\n");
+      } else {
+        const doc = { format: "youtube-manager-subscriptions", exported: new Date().toISOString(), channels };
+        download(`youtube-subscriptions-${day}.json`, "application/json", JSON.stringify(doc, null, 2));
+      }
+      subsStatus(`Exported ${channels.length} subscriptions.`);
+    } catch (e) {
+      subsStatus(`Export failed: ${e.message}`);
+    }
+  }
+
+  /**
+   * Channels out of whatever file this is. Our own JSON says so; anything
+   * else — Takeout CSV or JSON, an OPML from another app, a list of links —
+   * is searched for channel ids, taking a CSV row's last field as the title.
+   */
+  function parseSubs(text) {
+    try {
+      const doc = JSON.parse(text);
+      if (doc && Array.isArray(doc.channels)) {
+        return doc.channels.filter((c) => c && /^UC[\w-]{22}$/.test(c.id))
+          .map((c) => ({ id: c.id, title: String(c.title || "") }));
+      }
+    } catch {
+      // not JSON; fall through
+    }
+    const found = new Map();
+    for (const line of text.split(/\r?\n/)) {
+      for (const m of line.matchAll(/UC[\w-]{22}/g)) {
+        if (found.has(m[0])) continue;
+        let title = "";
+        if (line.includes(",") && !/<|\{/.test(line)) {
+          title = line.slice(line.lastIndexOf(",") + 1).replace(/^"|"$/g, "").trim();
+          if (title.includes(m[0])) title = "";
+        }
+        found.set(m[0], { id: m[0], title });
+      }
+    }
+    return [...found.values()];
+  }
+
+  async function importSubs(file) {
+    const channels = parseSubs(await file.text());
+    if (!channels.length) {
+      subsStatus(`No channel ids found in ${file.name}.`);
+      return;
+    }
+    if (!confirm(`Subscribe to the channels in ${file.name} you aren't already subscribed to? (${channels.length} in the file)`)) {
+      return;
+    }
+    try {
+      const r = await subsRun({ op: "import", channels }, "imported");
+      const parts = [`Subscribed to ${r.done}`, `${r.skipped} already subscribed`];
+      if (r.failed.length) {
+        parts.push(`${r.failed.length} failed: ${r.failed.map((c) => c.title || c.id).join(", ")}`);
+      }
+      subsStatus(`${r.stopped ? "Stopped. " : ""}${parts.join(", ")}.`);
+    } catch (e) {
+      subsStatus(`Import failed: ${e.message}`);
+    }
+  }
+
+  function wireSubs() {
+    $("subs-export-json").addEventListener("click", () => exportSubs("json"));
+    $("subs-export-csv").addEventListener("click", () => exportSubs("csv"));
+    $("subs-import").addEventListener("click", () => $("subs-file").click());
+    $("subs-file").addEventListener("change", () => {
+      const file = $("subs-file").files[0];
+      $("subs-file").value = "";
+      if (file) importSubs(file);
+    });
+    $("subs-stop").addEventListener("click", () => subsPort?.postMessage({ op: "stop" }));
+  }
+
   store.load().then((loaded) => {
     config = loaded;
     render();
     wire();
+    wireSubs();
     // Another tab (or the SHUT UP button in a live chat) may write while this
     // page is open; keep it truthful rather than stale.
     store.onChange((next) => {

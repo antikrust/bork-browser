@@ -96,12 +96,14 @@ Gotchas that cost real time:
   desktop looks empty. Fix once per bundle id:
   `defaults write app.floorp.bork ApplePersistenceIgnoreState -bool YES`
   (plus delete `~/Library/Saved Application State/app.floorp.bork.savedState`).
-- **`_dist/bin/floorp/Floorp.app` is a copy, not a product of the build** — feles-build
+- **`_dist/bin/floorp/Bork.app` is a copy, not a product of the build** — feles-build
   injects into whatever app sits there and never refreshes it. It rotted to a jul-20
   derp-branded runtime that crashed (SIGSEGV, main thread) 5s–5min after boot regardless of
   feature code (verified by stash test). When the runtime is rebuilt, re-copy
-  `../bork-runtime/obj-mac-aarch64/dist/Bork.app` over `_dist/bin/floorp/Floorp.app` (keep the
-  Floorp.app name; delete the profile's `compatibility.ini` + `startupCache` after).
+  `../bork-runtime/obj-mac-aarch64/dist/Bork.app` over `_dist/bin/floorp/Bork.app` (delete the
+  profile's `compatibility.ini` + `startupCache` after). Stage re-brands the bundle (name, icon)
+  on every launch, so a fresh copy needs nothing else. The bundle must be called `Bork.app`:
+  macOS names an app after its folder, whatever the plist says.
 - **The harness kills backgrounded launchers.** `nohup ... &` from a tool shell dies with the
   shell and takes the vite servers or browser with it. Launch stage (and anything long-lived)
   via python double-fork: `os.fork` → `os.setsid` → `os.fork` → `os.execvp`.

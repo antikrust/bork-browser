@@ -172,7 +172,7 @@ export BORK_OWN_RUNTIME_TAG="$TAG"
 #
 # Unlike linux/windows, the mac lane does not consume the published tag at all —
 # build-bork-packages.sh either copies $BORK_MAC_RUNTIME_APP or falls back to the
-# dev tree at _dist/bin/floorp/Floorp.app. That fallback is a trap: it is whatever
+# dev tree at _dist/bin/floorp/Bork.app. That fallback is a trap: it is whatever
 # the last dev cycle left behind, so a runtime fix can be built, committed and
 # published and the mac package still ships the old binary. That is exactly how a
 # runtime whose XUL still registered the since-deleted SSB command-line handler
@@ -189,7 +189,7 @@ fi
 if [ -n "${BORK_MAC_RUNTIME_APP:-}" ]; then
   log "mac runtime: $BORK_MAC_RUNTIME_APP (freshly built)"
 else
-  log "mac runtime: _dist/bin/floorp/Floorp.app (dev tree fallback — NOT a fresh build)"
+  log "mac runtime: _dist/bin/floorp/Bork.app (dev tree fallback — NOT a fresh build)"
 fi
 
 # 2 + 3. feature layer + overlay + package, per lane.

@@ -128,6 +128,40 @@
       </section>
 
       <section>
+        <h2>Subscriptions</h2>
+        <p class="hint">
+          Your whole subscription list, out and back in. Export saves it as a
+          file — JSON, or CSV laid out like Google Takeout's. Import subscribes
+          you to every channel in a file that you are not already subscribed
+          to: a file from here, Takeout's <code>subscriptions.csv</code>, or
+          anything else that lists channel ids (<code>UC…</code>).
+        </p>
+        <p class="hint">
+          It works through a YouTube tab you are signed in on, and opens one in
+          the background if there isn't one.
+        </p>
+        <div class="addrow">
+          <button type="button" id="subs-export-json">Export JSON</button>
+          <button type="button" id="subs-export-csv">Export CSV</button>
+          <button type="button" id="subs-import">Import file…</button>
+          <button type="button" id="subs-stop" hidden>Stop</button>
+          <input type="file" id="subs-file" accept=".json,.csv,.txt,.xml,.opml" hidden />
+        </div>
+        <p id="subs-status" class="hint"></p>
+      </section>
+
+      <section>
+        <h2>Your comments</h2>
+        <p class="hint">
+          Delete your YouTube comments, replies and live chat messages in bulk —
+          all of them, or only the ones matching what you choose.
+        </p>
+        <div class="addrow">
+          <a class="button" href="../comments/comments.html" target="_blank">Open comment deletion</a>
+        </div>
+      </section>
+
+      <section>
         <h2>Backup</h2>
         <p class="hint">Rules and blocklist as JSON, for keeping or moving to another machine.</p>
         <div class="addrow">

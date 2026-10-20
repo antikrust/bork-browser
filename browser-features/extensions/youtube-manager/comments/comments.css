@@ -1,0 +1,59 @@
+.field {
+  display: block;
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+.field textarea,
+.field input {
+  display: block;
+  margin-top: 4px;
+}
+
+.dates {
+  display: flex;
+  gap: 12px;
+}
+
+input[type="date"] {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--fg);
+  font: inherit;
+}
+
+input[type="number"]#delay {
+  width: 84px;
+}
+
+button.danger {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.log {
+  margin: 8px 0 0;
+  padding: 0 0 0 22px;
+  max-height: 420px;
+  overflow-y: auto;
+  font-size: 12.5px;
+}
+
+.log li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.log .meta {
+  color: var(--dim);
+}
+
+.log .deleted .what {
+  text-decoration: line-through;
+}
+
+.log .failed .meta {
+  color: var(--accent);
+}

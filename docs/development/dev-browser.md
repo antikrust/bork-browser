@@ -1,7 +1,7 @@
 # The dev browser: logins and extension testing
 
 The dev browser is what `deno task feles-build stage` launches: the runtime copy at
-`_dist/bin/floorp/Floorp.app` running against the profile at `_dist/profile/test`.
+`_dist/bin/floorp/Bork.app` running against the profile at `_dist/profile/test`.
 That profile is persistent — nothing in the tooling wipes it — and it behaves like a
 normal user profile, so you sign in to sites directly in it and the sessions stick.
 There is no need to copy a real profile over to test anything that needs an account.

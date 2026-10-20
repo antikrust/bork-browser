@@ -162,7 +162,7 @@ The tag is only mandatory when you are *building* runtimes (it is what they publ
 with `--skip-runtime` it is an optional pin.
 
 Or the pieces directly — `tools/release/build-bork-packages.sh [--build] mac linux windows`:
-- **mac** assembles from the local `_dist/bin/floorp/Floorp.app` (populate it first with a
+- **mac** assembles from the local `_dist/bin/floorp/Bork.app` (populate it first with a
   `feles-build stage` against the mac runtime), overlays `_dist/noraneko`, brands, ad-hoc signs, DMGs.
 - **linux/windows** `fetch_runtime` the published artifact — the **newest** release on the
   runtime host, resolved at run time, unless `BORK_OWN_RUNTIME_TAG=<tag>` pins an older one —
@@ -210,7 +210,7 @@ linux + windows over SSH to `BORK_BUILD_HOST`, windows via `run-win-build.sh`) a
   two, so a patch added to `tools/patches/` reaches packages only after the patcher has been run.
   Both package routes read the dev tree, by different paths: `overlay()` (linux + windows) replays
   `_dist/bin/applied_patches/*.patch` onto a freshly extracted runtime, while the mac lane skips
-  `overlay()` entirely and copies `_dist/bin/floorp/Floorp.app` — so it inherits whatever the dev
+  `overlay()` entirely and copies `_dist/bin/floorp/Bork.app` — so it inherits whatever the dev
   tree happens to have applied. A stale snapshot silently ships stock Firefox files.
   It bit us once: the two `chrome-toolkit-content-global-translations-about-translations*.patch`
   sat in `tools/patches/` but had never been applied, so the snapshot held 12 of 14 and every
@@ -225,7 +225,7 @@ linux + windows over SSH to `BORK_BUILD_HOST`, windows via `run-win-build.sh`) a
   `deno task feles-build misc patch apply` rebuilds the snapshot. It **reverses the currently
   listed set first** and aborts on the first failure, so `_dist/bin` must be consistent with that
   set going in. Dry-run the reversal rather than discovering it half-done — `git apply -R --check
-  --unsafe-paths --directory _dist/bin/floorp/Floorp.app/Contents/Resources <patch>` over each
+  --unsafe-paths --directory _dist/bin/floorp/Bork.app/Contents/Resources <patch>` over each
   file in `applied_patches/` — because the real run uses `--reject`, which leaves a partly
   reversed tree and `.rej` files behind. If a reversal fails, stop and repair the tree; do not
   force it. Verify afterwards by content, not by file count: grep the built package for
@@ -258,7 +258,7 @@ linux + windows over SSH to `BORK_BUILD_HOST`, windows via `run-win-build.sh`) a
   `--with-macos-sdk` at the local Xcode SDK; `mach bootstrap` 403s trying to download Apple's SDK.
 - **`feles-build` renames the mac binary.** It keys off `BRANDING.base_name="floorp"`, so the
   installed binary is `Contents/MacOS/bork` (CFBundleExecutable=bork) but the bundle path is
-  `_dist/bin/floorp/Floorp.app`. Launch `…/MacOS/bork` when driving by path; `open -a` is unaffected.
+  `_dist/bin/floorp/Bork.app`. Launch `…/MacOS/bork` when driving by path; `open -a` is unaffected.
 - **`override.sh` appends** to the already-modified `firefox.js` — deleting a pref line doesn't undo
   it; write the explicit opposite. The documented `@pref` lock syntax is not implemented.
 - **Verify by a code-level marker, not a log line or a pref** (prefs can be Marionette automation

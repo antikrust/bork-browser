@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YouTube Manager — delete comments</title>
+    <link rel="stylesheet" href="../options/options.css" />
+    <link rel="stylesheet" href="comments.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Delete comments</h1>
+      <p class="sub">Your YouTube comments, replies and live chat messages, in bulk.</p>
+    </header>
+
+    <main>
+      <section>
+        <h2>What</h2>
+        <label class="row">
+          <input type="radio" name="source" value="youtube_comments" checked />
+          Comments and replies
+        </label>
+        <label class="row">
+          <input type="radio" name="source" value="youtube_live_chat" />
+          Live chat messages
+        </label>
+        <label class="row" id="kind-row">
+          Of those
+          <select id="kind">
+            <option value="all">comments and replies</option>
+            <option value="comments">comments only</option>
+            <option value="replies">replies only</option>
+          </select>
+        </label>
+      </section>
+
+      <section>
+        <h2>Which</h2>
+        <p class="hint">
+          Leave everything empty to take all of them. One rule per line; plain
+          text matches anywhere, ignoring case, and <code>/pattern/flags</code>
+          is a regular expression. Lines starting with <code>#</code> are ignored.
+        </p>
+        <label class="field">Text contains
+          <textarea id="text" rows="4" spellcheck="false"></textarea>
+        </label>
+        <label class="field">Video title contains
+          <textarea id="titles" rows="3" spellcheck="false"></textarea>
+        </label>
+        <div class="dates">
+          <label class="field">From <input type="date" id="from" /></label>
+          <label class="field">To <input type="date" id="to" /></label>
+        </div>
+        <label class="row">
+          <select id="mode">
+            <option value="only">Delete what matches these</option>
+            <option value="except">Delete everything except what matches these</option>
+          </select>
+        </label>
+      </section>
+
+      <section>
+        <h2>Go</h2>
+        <p class="hint">
+          This works through Google's My Activity, which opens in a window of
+          its own — the list only loads while it is on screen, so leave it
+          there until this finishes. <strong>Find</strong> goes through
+          everything and deletes nothing; <strong>Delete</strong> cannot be
+          undone. Google says a deleted comment can take a few hours to vanish
+          from YouTube itself.
+        </p>
+        <label class="row">
+          Wait
+          <input type="number" id="delay" min="500" max="10000" step="100" value="1500" />
+          ms between deletions
+        </label>
+        <div class="addrow">
+          <button type="button" id="find">Find</button>
+          <button type="button" id="delete" class="danger">Delete</button>
+          <button type="button" id="stop" hidden>Stop</button>
+        </div>
+        <p id="status" class="hint"></p>
+        <ol id="log" class="log"></ol>
+      </section>
+    </main>
+
+    <script src="comments.js"></script>
+  </body>
+</html>

@@ -102,7 +102,7 @@ overlay() {
   # default add-ons (themes + uBO + Dark Reader) are ordinary removable
   # installs from distribution/extensions.
   log "installing distribution config + add-on pack"
-  local dist_src="_dist/bin/floorp/Floorp.app/Contents/Resources/distribution"
+  local dist_src="_dist/bin/floorp/Bork.app/Contents/Resources/distribution"
   [ -f "$dist_src/distribution.ini" ] ||
     fail "distribution.ini missing from dev tree — run 'deno task feles-build misc distribution'"
   [ -d "$dist_src/extensions" ] ||
@@ -635,7 +635,7 @@ build_mac() {
     # already carries the applied patches and injected xhtml from the dev
     # workflow — overlay refreshes content, manifest and prefs on the copy.
     log "mac: assembling from local runtime"
-    cp -R _dist/bin/floorp/Floorp.app "$app"
+    cp -R _dist/bin/floorp/Bork.app "$app"
     # The dev tree also carries tools/patches-dev (dev-runtime-only changes,
     # e.g. navigator.webdriver never reported); take them back out of the copy.
     local p

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Manager",
-  "version": "0.2.40",
+  "version": "0.2.41",
   "description": "Organise YouTube: block channels and users, search and the sidebar, sort your subscriptions into tabs of your own, toggle Shorts, and tame live chat with word and author filters, blocking and a threaded view.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -11,7 +11,14 @@
     "128": "icons/icon-128.png"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "scripting"
+  ],
+  "optional_permissions": [
+    "cookies"
+  ],
+  "optional_host_permissions": [
+    "https://myactivity.google.com/*"
   ],
   "content_scripts": [
     {
@@ -41,7 +48,8 @@
         "src/channels.js",
         "src/store.js",
         "src/filters.js",
-        "src/pages.js"
+        "src/pages.js",
+        "src/subs.js"
       ],
       "css": [
         "src/pages.css"
