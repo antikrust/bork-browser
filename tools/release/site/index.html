@@ -265,6 +265,17 @@ a.dl code {
   display: flex; flex-wrap: wrap; gap: 6px 18px;
   text-shadow: 0 1px 12px rgba(0,0,0,.7);
 }
+/* ---------- phones (two columns, below the photo) ---------- */
+.dlgrid.two { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 860px) { .dlgrid.two { grid-template-columns: 1fr; } }
+.phones .dlcard { background: rgba(236, 231, 224, .03);
+                  backdrop-filter: none; -webkit-backdrop-filter: none; }
+/* the iOS card's box holds a sentence, not a checksum: wrap at words */
+a.dl code.plain { word-break: normal; font-size: .72rem; }
+/* jumping to #phones from the top bar: land below the sticky bar */
+.phones { scroll-margin-top: 40px; }
+.phone-note { margin: 0; font-size: .95rem; line-height: 1.55; color: var(--soft); }
+.phone-note b { color: var(--paper); font-weight: 600; }
 @media (max-height: 720px) {
   /* short viewports: let the first screen breathe rather than clip */
   .hero { min-height: auto; }
@@ -527,6 +538,7 @@ footer { border-top: 1px solid var(--line);
       <img class="mark-img" src="assets/bork-wordmark.png" alt="bork" width="686" height="216">
     </a>
     <nav>
+      <a class="opt" href="#phones">phone</a>
       <a class="opt" href="#screens">screens</a>
       <a class="opt" href="#keys">keys</a>
       <a href="https://shithub.space/n01/bork-browser">code</a>
@@ -663,6 +675,64 @@ footer { border-top: 1px solid var(--line);
       <span>every sum on one page: <a href="downloads/SHA256SUMS.txt">SHA256SUMS.txt</a></span>
       <span>installing notes are <a href="#installing">further down</a></span>
     </p>
+  </div>
+</section>
+
+<!-- ============================ phones ============================ -->
+<section class="section phones" id="phones">
+  <div class="wrap">
+    <h2 class="eyebrow">on your phone</h2>
+    <div class="dlgrid two">
+
+      <div class="dlcol" data-os="android">
+        <div class="dlhead">
+          <svg class="oslogo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22A11.4 11.4 0 0 0 12 8.15c-1.8 0-3.5.37-4.92 1l-1.86-3.23a.38.38 0 0 0-.66.38l1.84 3.18A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg>
+          <h3>Android</h3>
+          <span class="youpill" hidden>your platform</span>
+        </div>
+        <div class="dlcard">
+          <a class="dl" href="downloads/Bork-android-arm64.apk">
+            <span class="dl-top">
+              <b>Android</b> <small>APK · arm64 · Android 8+ · 104 MB</small>
+            </span>
+            <span class="dl-sum">
+              <code>sha256 80693d2e4ff3eecbe44a6d5a24a315d77f229b2cb1869442c01cce93a77a9045</code>
+            </span>
+          </a>
+          <button class="copy" type="button" aria-label="Copy the Android sha256">
+            <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+        </div>
+        <p class="phone-note">Gecko, the same engine as the desktop builds, so the
+          <b>full uBlock Origin</b> runs here, not the Lite one. Dark Reader,
+          YouTube Manager and Cyberswine come installed. Workspaces, zen mode,
+          private tabs, and any other add-on from addons.mozilla.org.</p>
+      </div>
+
+      <div class="dlcol" data-os="ios">
+        <div class="dlhead">
+          <svg class="oslogo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11Z"/></svg>
+          <h3>iPhone &amp; iPad</h3>
+          <span class="youpill" hidden>your platform</span>
+        </div>
+        <div class="dlcard">
+          <a class="dl" href="https://shithub.space/n01/bork-mobile">
+            <span class="dl-top">
+              <b>Build it yourself</b> <small>Xcode · iOS 17+ · source on shithub</small>
+            </span>
+            <span class="dl-sum">
+              <code class="plain">no App Store build — Apple decides who installs what</code>
+            </span>
+          </a>
+        </div>
+        <p class="phone-note">Apple allows no engine but WebKit and runs no
+          extensions inside apps, so this one is bork on WebKit: workspaces,
+          zen mode, YouTube Manager and Cyberswine, with EasyList and
+          EasyPrivacy blocking ads where uBlock Origin can't go.</p>
+      </div>
+
+    </div>
   </div>
 </section>
 
@@ -912,6 +982,13 @@ footer { border-top: 1px solid var(--line);
       <li><b>Windows:</b> unzip anywhere, run
         <code class="inline">bork.exe</code>. SmartScreen will grumble —
         More info → Run anyway.</li>
+      <li><b>Android:</b> open the APK on the phone and let your browser
+        install apps when it asks. Later versions install over the top, your
+        tabs and add-ons intact.</li>
+      <li><b>iPhone &amp; iPad:</b> clone
+        <a href="https://shithub.space/n01/bork-mobile">bork-mobile</a>, open
+        <code class="inline">ios/Bork.xcodeproj</code> in Xcode, pick your
+        own signing team and run it on your device.</li>
     </ul>
   </div>
 </section>
@@ -923,6 +1000,8 @@ footer { border-top: 1px solid var(--line);
     <ul>
       <li>Source, issues and the full story:
         <a href="https://shithub.space/n01/bork-browser">shithub.space/n01/bork-browser</a></li>
+      <li>The phone versions:
+        <a href="https://shithub.space/n01/bork-mobile">shithub.space/n01/bork-mobile</a></li>
     </ul>
   </div>
 </section>
@@ -952,7 +1031,10 @@ footer { border-top: 1px solid var(--line);
 
   /* mark the visitor's own platform in the downloads grid */
   var ua = navigator.userAgent, os = null;
-  if (/Mac|iPhone|iPad/.test(ua)) os = 'mac';
+  // Phones first: Android says Linux and iOS says Mac, too.
+  if (/Android/.test(ua)) os = 'android';
+  else if (/iPhone|iPad|iPod/.test(ua)) os = 'ios';
+  else if (/Mac/.test(ua)) os = 'mac';
   else if (/Windows/.test(ua)) os = 'win';
   else if (/Linux|X11|CrOS/.test(ua)) os = 'linux';
   if (os) {

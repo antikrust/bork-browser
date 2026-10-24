@@ -23,6 +23,8 @@ ARTIFACTS = [
     "linux/Bork-linux-x86_64.AppImage",
     "linux/Bork-linux-x86_64.tar.gz",
     "windows/Bork-windows-x86_64.zip",
+    # Built in bork-mobile and staged by production-build.sh (stage_android_apk).
+    "android/Bork-android-arm64.apk",
 ]
 
 

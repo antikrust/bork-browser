@@ -120,6 +120,45 @@ stage_site_extension() {
   log "staged $2.xpi (unsigned) for the site"
 }
 
+# The Android APK is built in bork-mobile (../bork-mobile, or $BORK_MOBILE_DIR),
+# not by the lanes here. Staged into dist/android/ so the page, the sums file
+# and the upload treat it like any other package. A debug-signed APK is
+# refused: phones only install an update signed with the same key as the copy
+# they already have, so one wrong upload strands everyone who installed it.
+stage_android_apk() {
+  local mobile="${BORK_MOBILE_DIR:-$ROOT/../bork-mobile}"
+  local src="$mobile/android/app/build/outputs/apk/release/app-release.apk"
+  local dst="$ROOT/dist/android/Bork-android-arm64.apk"
+  if [ ! -f "$src" ]; then
+    log "WARNING: no release APK at $src — dist/android keeps whatever it had"
+    return
+  fi
+  local signer
+  signer="$(ls "${ANDROID_HOME:-$HOME/Library/Android/sdk}"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)"
+  if [ -z "$signer" ]; then
+    log "WARNING: no apksigner found — cannot check the APK's key, not staged"
+    return
+  fi
+  # apksigner is Java; macOS has none on the path unless one was installed,
+  # but Android Studio carries its own.
+  local jbr="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+  if [ -z "${JAVA_HOME:-}" ] && [ -d "$jbr" ]; then export JAVA_HOME="$jbr"; fi
+  local certs
+  if ! certs="$("$signer" verify --print-certs "$src" 2>&1)"; then
+    log "WARNING: apksigner could not verify $src — not staged:"
+    log "  $(printf '%s' "$certs" | head -1)"
+    return
+  fi
+  if printf '%s' "$certs" | grep -q "CN=Android Debug"; then
+    log "WARNING: $src is debug-signed — not staged."
+    log "WARNING: build it with android/keystore.properties in place (bork-mobile README)"
+    return
+  fi
+  mkdir -p "$(dirname "$dst")"
+  cp "$src" "$dst"
+  log "staged Bork-android-arm64.apk"
+}
+
 # 0. site-only: the page, nothing else. Same refresh + rsync as the upload step
 # below (deliberately the same two commands, so the page can never be published
 # with hand-edited sums or a stale version subtitle) minus the package upload,
@@ -141,6 +180,15 @@ if [ "$SITE_ONLY" = 1 ]; then
   fi
 
   log "site only — refreshing page sums, sizes and version from dist/"
+  # The one package site-only does send: the APK ships on its own schedule,
+  # from bork-mobile, and the page must never link an APK that is not there.
+  stage_android_apk
+  if [ -d "$ROOT/dist/android" ]; then
+    rsync -av "$ROOT/dist/android/" "$WEB_REMOTE/"
+    ( cd "$ROOT/dist" && find macos linux windows android -type f 2>/dev/null -exec shasum -a 256 {} \; \
+        | sed -E 's#  .*/#  #' > SHA256SUMS.txt ) || true
+    [ -f "$ROOT/dist/SHA256SUMS.txt" ] && rsync -av "$ROOT/dist/SHA256SUMS.txt" "$WEB_REMOTE/"
+  fi
   python3 "$ROOT/tools/release/update-site-sums.py"
   stage_site_extension "youtube-manager@bork" "youtube-manager"
   stage_site_extension "cyberswine@bork" "cyberswine"
@@ -249,15 +297,16 @@ if [ "$UPLOAD" = 1 ]; then
     exit 1
   fi
 
+  stage_android_apk
   log "uploading packages to $WEB_REMOTE"
   # upload artifacts before any index so the page never lists absent files
-  for d in dist/macos dist/linux dist/windows; do
+  for d in dist/macos dist/linux dist/windows dist/android; do
     [ -d "$d" ] || continue
     rsync -av "$d/" "$WEB_REMOTE/"
   done
   # flat basenames — the packages are served flat (rsync above uses "$d/"), so a
   # subdir-prefixed sums file fails `sha256sum -c` on the server.
-  ( cd dist && find macos linux windows -type f 2>/dev/null -exec shasum -a 256 {} \; \
+  ( cd dist && find macos linux windows android -type f 2>/dev/null -exec shasum -a 256 {} \; \
       | sed -E 's#  .*/#  #' > SHA256SUMS.txt ) || true
   [ -f dist/SHA256SUMS.txt ] && rsync -av dist/SHA256SUMS.txt "$WEB_REMOTE/"
 
