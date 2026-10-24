@@ -20,13 +20,36 @@ globalThis.FKOF = globalThis.FKOF || {};
    */
   const WRAPPED = ["url", "u", "q", "target", "redirect", "to"];
 
-  function unwrap(href) {
+  /**
+   * AMP addresses carry the publisher in the PATH, not a parameter, and they
+   * are what Google hands phones: its own cache (google.com/amp/s/host/...)
+   * and the AMP project's (host-with-dashes.cdn.ampproject.org/c/s/host/...).
+   * A desktop sees the publisher's own link; a phone sees one of these, so
+   * without this a blocked outlet read as Google on mobile and stayed up.
+   */
+  const GOOGLE_AMP = /^\/amp\/(s\/)?([^/?#]+)(\/[^?#]*)?/i;
+  const AMP_CACHE = /^\/[a-z]\/(s\/)?([^/?#]+)(\/[^?#]*)?/i;
+
+  function unwrapAmp(url) {
+    const host = url.hostname.toLowerCase();
+    let m = null;
+    if (/(^|\.)google\.[a-z.]+$/.test(host)) m = GOOGLE_AMP.exec(url.pathname);
+    else if (host.endsWith(".cdn.ampproject.org")) m = AMP_CACHE.exec(url.pathname);
+    if (!m || !m[2].includes(".")) return null;
+    return `${m[1] ? "https" : "http"}://${m[2]}${m[3] || "/"}`;
+  }
+
+  function unwrap(href, base) {
     try {
-      const url = new URL(href, "https://x.invalid/");
+      // The page's own address as the base: Google's AMP links are often
+      // relative ("/amp/s/host/..."), and only the base says they are Google's.
+      const url = new URL(href, base || "https://x.invalid/");
       for (const key of WRAPPED) {
         const value = url.searchParams.get(key);
         if (value && /^https?:\/\//i.test(value)) return value;
       }
+      const amp = unwrapAmp(url);
+      if (amp) return amp;
     } catch {
       // A malformed href is simply not a wrapper.
     }
@@ -41,7 +64,7 @@ globalThis.FKOF = globalThis.FKOF || {};
       return "";
     }
     try {
-      const url = new URL(unwrap(raw), base || "https://x.invalid/");
+      const url = new URL(unwrap(raw, base), base || "https://x.invalid/");
       if (url.protocol !== "http:" && url.protocol !== "https:") return "";
       return normalizeHost(url.hostname);
     } catch {

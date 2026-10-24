@@ -270,11 +270,10 @@
   function scanLabels() {
     if (labelIndex.size === 0) return;
     for (const el of document.querySelectorAll("div, span")) {
-      if (el.childElementCount !== 0) continue;
       if (el.dataset.fkofLabelGen === String(generation)) continue;
       el.dataset.fkofLabelGen = String(generation);
 
-      const outlet = labelIndex.get((el.textContent || "").trim().toLowerCase());
+      const outlet = labelIndex.get(ownText(el));
       if (!outlet) continue;
 
       // No article around it means it is not an article card: on Google News
@@ -369,13 +368,34 @@
   function blockedLabelsIn(node) {
     let n = 0;
     for (const el of node.querySelectorAll("div, span")) {
-      if (el.childElementCount !== 0) continue;
-      // textContent, not innerText: innerText is empty for anything already
-      // hidden, so counting with it undercounted every label we had just
-      // hidden and the wrapper around them survived.
-      if (labelIndex.has((el.textContent || "").trim().toLowerCase())) n += 1;
+      if (labelIndex.has(ownText(el))) n += 1;
     }
     return n;
+  }
+
+  /**
+   * The text an element prints itself, lowercased: its own text nodes, not
+   * its children's. That is what makes a publisher label a label.
+   *
+   * It used to be "an element with no children at all", which holds where
+   * the name sits alone, as on the desktop layout. A name sharing its element
+   * with anything else — the publisher's logo beside it, a dot — was unseen.
+   * That is the likely reason a Telegraph story stayed up on Google News on
+   * Android (reported 2026-10-25; the phone markup could not be inspected —
+   * Google answered with a bot check). Own text keeps the old rule's promise
+   * either way: a headline that MENTIONS the Telegraph prints a longer string
+   * and never equals the label.
+   *
+   * textContent of the text nodes, not innerText: innerText is empty for
+   * anything already hidden, and counting with it undercounted every label
+   * just hidden, so the wrapper around them survived.
+   */
+  function ownText(el) {
+    let out = "";
+    for (const child of el.childNodes) {
+      if (child.nodeType === 3) out += child.textContent;
+    }
+    return out.replace(/\s+/g, " ").trim().toLowerCase();
   }
 
   /** innerText, not textContent: the latter includes <style> rules as text. */
